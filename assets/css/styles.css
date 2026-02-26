@@ -782,3 +782,158 @@ rt {
 }
 
 /* --- INSERT END: JPAPP_L2_DEBUG_V1 --- */
+
+/* INSERT BEGIN: JPAPP_RESPONSIVE_MOBILE_V1 */
+@media (max-width: 900px) {
+
+    /* Layout 改成 column */
+    #hud {
+        flex-direction: column !important;
+        padding: 0 !important;
+        background: transparent !important;
+    }
+
+    /* 左側面板變 topbar（不要佔太高） */
+    #hud>.w-64 {
+        width: 100% !important;
+        flex-direction: column !important;
+        gap: 0 !important;
+    }
+
+    /* Hero Stats (Area 1) */
+    #hud>.w-64>div:first-child {
+        min-height: auto !important;
+        border: none !important;
+        padding: 0.5rem !important;
+        background: rgba(30, 41, 59, 0.95) !important;
+        border-radius: 0 !important;
+    }
+
+    #hud>.w-64>div:first-child>.bg-slate-900\/80 {
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        gap: 0.75rem !important;
+        padding: 0.5rem !important;
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        margin-bottom: 0 !important;
+    }
+
+    #heroAvatar {
+        width: 60px !important;
+        height: 60px !important;
+        margin-bottom: 0 !important;
+    }
+
+    /* Container for the avatar to stop it from taking full width */
+    #hud>.w-64>div:first-child>.bg-slate-900\/80>div:first-child {
+        width: auto !important;
+        margin-bottom: 0 !important;
+    }
+
+    /* Wrap HP/SP/Status in a new flex column right of avatar */
+    .hero-info-mobile-wrap {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-width: 0;
+        gap: 0.25rem;
+    }
+
+    /* Since we can't add hero-info-mobile-wrap to HTML, we target the containers directly */
+    #hud>.w-64>div:first-child>.bg-slate-900\/80>.w-full.flex.justify-between,
+    #hud>.w-64>div:first-child>.bg-slate-900\/80>.hp-bar-wrap,
+    #hud>.w-64>div:first-child>.bg-slate-900\/80>.sp-row,
+    #hud>.w-64>div:first-child>.bg-slate-900\/80>#heroStatusBar {
+        width: 100% !important;
+        margin-bottom: 0px !important;
+    }
+
+    /* Right side container hack: target all siblings after avatar wrapper */
+    #hud>.w-64>div:first-child>.bg-slate-900\/80>div:first-child~* {
+        margin-left: 72px;
+        /* Push past the avatar */
+    }
+
+    #hud>.w-64>div:first-child>.bg-slate-900\/80 {
+        display: block !important;
+        /* switch back to block to use margin hack */
+        position: relative;
+    }
+
+    #hud>.w-64>div:first-child>.bg-slate-900\/80>div:first-child {
+        position: absolute;
+        left: 0.5rem;
+        top: 0.5rem;
+    }
+
+    /* Hide the standalone GOLD banner to save topbar space */
+    #hud>.w-64>div:first-child>.mt-auto {
+        display: none !important;
+    }
+
+    /* 右側主區域 (Area 3) 佔滿且沒有邊界 */
+    #hud>.flex-1.border-2 {
+        border-radius: 0 !important;
+        border: none !important;
+        padding: 0.5rem !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding-bottom: 90px !important;
+        /* Leave room for bottom dock */
+    }
+
+    /* 選項按鈕（答題）變大，適合拇指 */
+    .grid-cols-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.5rem !important;
+    }
+
+    .choice-btn {
+        min-height: 52px !important;
+        font-size: 16px !important;
+        padding: 0.5rem !important;
+    }
+
+    /* 戰鬥舞台全寬，避免被裁切 */
+    #stage {
+        border-left: none !important;
+        border-right: none !important;
+        border-radius: 0 !important;
+    }
+
+    body {
+        padding: 0 !important;
+    }
+
+    #app {
+        max-width: 100% !important;
+    }
+
+    /* 底部工具列固定在底部，四顆一排、按鈕更大更扁 */
+    .left-actionbar {
+        width: 100% !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        padding: 10px 10px 15px 10px !important;
+        background: rgba(15, 23, 42, 0.85) !important;
+        backdrop-filter: blur(8px) !important;
+        border: none !important;
+        border-top: 1px solid rgba(245, 158, 11, 0.4) !important;
+        z-index: 100 !important;
+        border-radius: 0 !important;
+    }
+
+    .left-actionbar .action-btn {
+        height: 56px !important;
+    }
+
+    .left-actionbar .action-btn .label {
+        font-size: 11px !important;
+        margin-top: 4px !important;
+    }
+}
+
+/* INSERT END: JPAPP_RESPONSIVE_MOBILE_V1 */
