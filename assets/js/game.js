@@ -603,11 +603,22 @@ createApp({
             const results = [];
             // Temporary simulate currentLevel state
             const oldLevel = currentLevel.value;
-            currentLevel.value = (levelId === "L2") ? 2 : 1;
 
             for (let i = 0; i < n; i++) {
-                // L2 mostly uses GA_EXIST skill
-                const skillId = 'GA_EXIST';
+                let isReview = false;
+                if (levelId === "L2") {
+                    if (Math.random() < 0.25) {
+                        isReview = true;
+                    }
+                }
+
+                currentLevel.value = isReview ? 1 : (levelId === "L2" ? 2 : 1);
+
+                let skillId = 'GA_EXIST';
+                if (isReview) {
+                    skillId = Math.random() < 0.5 ? 'NO_POSSESS' : 'WA_TOPIC';
+                }
+
                 const q = generateQuestionBySkill(skillId, 1, {}, VOCAB.value);
 
                 if (!q) continue;
@@ -621,36 +632,37 @@ createApp({
                     errorMsg.push("含空字串");
                 }
 
-                // Extract subject (n) and verb (v) from segments for basic analysis
-                const nSegment = q.segments[0];
-                const vSegment = q.segments[2];
-                let subjectType = 'unknown';
-                let isPlaceValid = true;
+                if (!isReview && skillId === 'GA_EXIST') {
+                    // Extract subject (n) and verb (v) from segments for basic analysis
+                    const nSegment = q.segments[0];
+                    const vSegment = q.segments[2];
+                    let subjectType = 'unknown';
 
-                if (nSegment && nSegment.text) {
-                    const placeMatch = VOCAB.value.places.find(p => p.j === nSegment.text);
-                    if (placeMatch) {
-                        if (!placeMatch.tags || !placeMatch.tags.includes('place')) {
-                            isBad = true;
-                            errorMsg.push("place標籤錯誤");
+                    if (nSegment && nSegment.text) {
+                        const placeMatch = VOCAB.value.places.find(p => p.j === nSegment.text);
+                        if (placeMatch) {
+                            if (!placeMatch.tags || !placeMatch.tags.includes('place')) {
+                                isBad = true;
+                                errorMsg.push("place標籤錯誤");
+                            }
                         }
+
+                        const personMatch = VOCAB.value.people.find(p => p.j === nSegment.text);
+                        if (personMatch) subjectType = 'person';
+
+                        const objMatch = VOCAB.value.objects.find(o => o.j === nSegment.text);
+                        if (objMatch) subjectType = 'object';
                     }
 
-                    const personMatch = VOCAB.value.people.find(p => p.j === nSegment.text);
-                    if (personMatch) subjectType = 'person';
-
-                    const objMatch = VOCAB.value.objects.find(o => o.j === nSegment.text);
-                    if (objMatch) subjectType = 'object';
-                }
-
-                if (vSegment && vSegment.text) {
-                    if (vSegment.text.includes('ある') && subjectType === 'person') {
-                        isBad = true;
-                        errorMsg.push("人卻用ある");
-                    }
-                    if (vSegment.text.includes('いる') && subjectType === 'object') {
-                        isBad = true;
-                        errorMsg.push("物品卻用いる");
+                    if (vSegment && vSegment.text) {
+                        if (vSegment.text.includes('ある') && subjectType === 'person') {
+                            isBad = true;
+                            errorMsg.push("人卻用ある");
+                        }
+                        if (vSegment.text.includes('いる') && subjectType === 'object') {
+                            isBad = true;
+                            errorMsg.push("物品卻用いる");
+                        }
                     }
                 }
 
@@ -675,7 +687,8 @@ createApp({
                     answer: ansStr,
                     skillId: q.skillId || skillId,
                     isBad,
-                    errorMsg: errorMsg.join(', ')
+                    errorMsg: errorMsg.join(', '),
+                    sourceLevel: isReview ? "L1-review" : levelId
                 });
             }
 
@@ -685,12 +698,13 @@ createApp({
         };
 
         const generateL2Debug = () => {
-            l2DebugQuestions.value = window.dumpLevelQuestions("L2", 60);
+            // For checking ratio, let's use 200 explicitly but let user overwrite if they clicked a modified button, though current html passes none.
+            l2DebugQuestions.value = window.dumpLevelQuestions("L2", 200);
         };
 
         const copyL2Debug = () => {
             const text = l2DebugQuestions.value.map((q, idx) =>
-                `[${(idx + 1).toString().padStart(2, '0')}] ${q.text} | ans: ${q.answer} | skill: ${q.skillId} | err: ${q.errorMsg || 'none'}`
+                `[${(idx + 1).toString().padStart(3, '0')}] src: ${q.sourceLevel} | ${q.text} | ans: ${q.answer} | skill: ${q.skillId} | err: ${q.errorMsg || 'none'}`
             ).join('\n');
 
             navigator.clipboard.writeText(text).then(() => {
@@ -1758,18 +1772,37 @@ createApp({
             for (let i = 0; i < 100; i++) {
                 let q = null;
                 let skillId = null;
+                let isReview = false;
 
                 if (STRICT_L1 && lv === 1) {
                     skillId = Math.random() < 0.5 ? 'NO_POSSESS' : 'WA_TOPIC';
                 } else if (unlockedSkillIds.value.length > 0) {
-                    skillId = pickSkillIdForNextQuestion(lv);
+                    if (lv === 2 && Math.random() < 0.25) {
+                        isReview = true;
+                        skillId = Math.random() < 0.5 ? 'NO_POSSESS' : 'WA_TOPIC';
+                    } else {
+                        skillId = pickSkillIdForNextQuestion(lv);
+                    }
                 }
 
                 let generatedFromSkill = false;
                 let attempts = 0;
 
                 while (attempts < 10 && skillId && !generatedFromSkill) {
+                    // Temporarily trick generator into thinking we're L1 for review items
+                    const originalLevel = currentLevel.value;
+                    if (isReview) currentLevel.value = 1;
+
                     q = generateQuestionBySkill(skillId, blanks, db, VOCAB.value);
+
+                    if (isReview) {
+                        currentLevel.value = originalLevel;
+                        if (q) {
+                            q.meta = q.meta || {};
+                            q.meta.review = true;
+                        }
+                    }
+
                     if (q) {
                         const ansStr = Array.isArray(q.answers[0]) ? q.answers[0][0] : q.answers[0];
                         let valid = true;
@@ -1794,6 +1827,10 @@ createApp({
                 if (!generatedFromSkill && skillId) {
                     q = safeFallbackQuestion(skillId);
                     if (q) {
+                        if (isReview) {
+                            q.meta = q.meta || {};
+                            q.meta.review = true;
+                        }
                         generatedFromSkill = true;
                     }
                 }
