@@ -1,0 +1,82 @@
+[
+  {
+    "id": "NO_POSSESS",
+    "particle": "の",
+    "rank": 1,
+    "name": "の・第一式：連接",
+    "meaning": "A的B／名詞修飾",
+    "rule": "AのB",
+    "examples": ["川のそば", "男の子"],
+    "choiceSet": ["の", "は", "が"]
+  },
+  {
+    "id": "WA_TOPIC",
+    "particle": "は",
+    "rank": 1,
+    "name": "は・第一式：主題",
+    "meaning": "把話題提出來",
+    "rule": "Xは…",
+    "examples": ["私は学生です", "今日は休みです"],
+    "choiceSet": ["は", "が", "も"]
+  },
+  {
+    "id": "GA_EXIST",
+    "particle": "が",
+    "rank": 1,
+    "name": "が・第一式：存在",
+    "meaning": "有／在（います・あります）",
+    "rule": "Xがいる／ある",
+    "examples": ["猫がいる", "本がある"],
+    "choiceSet": ["が", "は", "に"]
+  },
+  {
+    "id": "WO_OBJECT",
+    "particle": "を",
+    "rank": 1,
+    "name": "を・第一式：受詞",
+    "meaning": "動作的對象",
+    "rule": "XをV",
+    "examples": ["ご飯を作る", "本を読む"],
+    "choiceSet": ["を", "が", "で", "に"]
+  },
+  {
+    "id": "NI_TIME",
+    "particle": "に",
+    "rank": 1,
+    "name": "に・第一式：時間點",
+    "meaning": "在某個時間點",
+    "rule": "TimeにV",
+    "examples": ["明日(に)行く", "3時に会う"],
+    "choiceSet": ["に", "で", "へ"]
+  },
+  {
+    "id": "HE_DEST",
+    "particle": "へ",
+    "rank": 1,
+    "name": "へ・第一式：方向／目的地",
+    "meaning": "移動的方向、目的地",
+    "rule": "Placeへ 行く／来る／帰る",
+    "examples": ["学校へ行く", "家へ帰る"],
+    "choiceSet": ["へ", "に", "で"]
+  },
+  {
+    "id": "DE_LOC",
+    "particle": "で",
+    "rank": 1,
+    "name": "で・第一式：動作場所",
+    "meaning": "動作發生的場所",
+    "rule": "PlaceでV",
+    "examples": ["台所で作る", "教室で勉強する"],
+    "choiceSet": ["で", "に", "へ"]
+  },
+  {
+    "id": "TO_WITH",
+    "particle": "と",
+    "rank": 1,
+    "name": "と・第一式：一起",
+    "meaning": "和…一起／對手",
+    "rule": "XとV",
+    "examples": ["犬と遊ぶ", "友達と話す"],
+    "choiceSet": ["と", "に", "で"]
+  }
+]

@@ -1,0 +1,1996 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日語助詞 RPG：魔王城大冒險</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        [v-cloak] {
+            display: none !important;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', 'Noto Sans JP', sans-serif;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 50%, #1e1b4b 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+        }
+
+        rt {
+            font-size: 0.45em;
+            color: #fcd34d;
+            font-weight: normal;
+        }
+
+        .particle-input {
+            border-bottom: 3px solid #f59e0b;
+            width: 3.5rem;
+            text-align: center;
+            font-weight: bold;
+            background: rgba(30, 41, 59, 0.8);
+            color: #fef3c7;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+        }
+
+        .particle-input:focus {
+            background: rgba(245, 158, 11, 0.2);
+            outline: none;
+            border-color: #fbbf24;
+        }
+
+        .correct {
+            color: #059669;
+            border-color: #059669;
+            background: rgba(5, 150, 105, 0.2);
+            color: #6ee7b7;
+        }
+
+        .wrong {
+            color: #dc2626;
+            border-color: #dc2626;
+            background: rgba(220, 38, 38, 0.2);
+            color: #fca5a5;
+        }
+
+        .choice-btn {
+            transition: all 0.2s;
+        }
+
+        .card {
+            backdrop-filter: blur(10px);
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .grammar-card {
+            background: #422006;
+            border: 1px solid #b45309;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .grammar-toggle {
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+
+        .grammar-toggle:hover {
+            opacity: 0.8;
+        }
+
+        .hp-bar-fill.danger {
+            background: #dc2626 !important;
+        }
+
+        /* Restore Hero HP Bar CSS */
+        .hp-bar-wrap {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .hp-bar-fill {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .potion-btn-hud {
+            position: absolute;
+            left: 0.75rem;
+            bottom: 0.75rem;
+            z-index: 50;
+        }
+
+        .potion-btn-hud.disabled {
+            filter: grayscale(100%);
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        @keyframes monster-shake {
+
+            0%,
+            100% {
+                transform: translateX(0)
+            }
+
+            25% {
+                transform: translateX(-4px)
+            }
+
+            75% {
+                transform: translateX(4px)
+            }
+        }
+
+        @keyframes player-blink {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.3
+            }
+        }
+
+        .monster-shake {
+            animation: monster-shake 0.4s ease-in-out;
+        }
+
+        .player-blink {
+            animation: player-blink 0.5s ease-in-out 2;
+        }
+
+        /* DQ戰鬥特效 */
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translate(0)
+            }
+
+            20%,
+            80% {
+                transform: translate(-4px, 2px)
+            }
+
+            40%,
+            60% {
+                transform: translate(4px, -2px)
+            }
+        }
+
+        .shake {
+            animation: shake 0.25s ease-in-out;
+        }
+
+        @keyframes hit {
+            0% {
+                transform: scale(1);
+                filter: brightness(100%)
+            }
+
+            25% {
+                transform: scale(1.1);
+                filter: brightness(150%)
+            }
+
+            50% {
+                transform: scale(1);
+                filter: brightness(100%)
+            }
+
+            75% {
+                transform: scale(1.1);
+                filter: brightness(150%)
+            }
+
+            100% {
+                transform: scale(1);
+                filter: brightness(100%)
+            }
+        }
+
+        .hit {
+            animation: hit 0.25s ease-in-out;
+        }
+
+        .flash-overlay {
+            position: fixed;
+            inset: 0;
+            background: #fff;
+            opacity: 0;
+            pointer-events: none;
+            animation: flash 0.3s ease-out;
+            z-index: 50;
+        }
+
+        @keyframes flash {
+            0% {
+                opacity: 1
+            }
+
+            100% {
+                opacity: 0
+            }
+        }
+
+        /* #stage 16:9 JRPG layout */
+        #stage {
+            position: relative;
+            height: min(92vh, calc(100vw * 9 / 16));
+            width: min(100%, calc(92vh * 16 / 9));
+            aspect-ratio: 16/9;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 1.5rem;
+            overflow: hidden;
+        }
+
+        #battleScene {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            position: relative;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+        }
+
+        #battleScene::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            /* Darken bg a bit for readability */
+            pointer-events: none;
+        }
+
+        #hud {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            padding: 1rem;
+            overflow: hidden;
+            gap: 1rem;
+        }
+
+        #question-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 0.5rem;
+        }
+
+        #question-area>div {
+            text-align: center;
+            max-width: 100%;
+            line-height: 1.6;
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .level-badge {
+            position: absolute;
+            top: 0.5rem;
+            left: 0.5rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            color: #fbbf24;
+            z-index: 10;
+            backdrop-filter: blur(4px);
+        }
+
+        .monster-speech-wrap {
+            position: absolute;
+            left: 50%;
+            top: 85%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 600px;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .monster-bubble {
+            pointer-events: auto;
+            background: rgba(15, 23, 42, 0.95);
+            border: 3px solid #f59e0b;
+            border-radius: 1.5rem;
+            padding: 1rem 1.5rem;
+            color: #fef3c7;
+            position: relative;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+        }
+
+        .monster-bubble::after {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 0 15px 15px;
+            border-style: solid;
+            border-color: transparent transparent #f59e0b;
+            display: none;
+            /* Hide the tail for centered bubble */
+        }
+
+        .monster-bubble.bottom-tail::after {
+            top: -15px;
+            border-width: 0 15px 15px;
+            border-color: transparent transparent #f59e0b;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-panel {
+            position: relative;
+            background: rgba(30, 41, 59, 0.98);
+            border: 2px solid rgba(251, 191, 36, 0.5);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            max-height: 80vh;
+            max-width: 600px;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .log-bubble {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid #f59e0b;
+            border-radius: 1rem;
+            padding: 0.5rem 1.25rem;
+            white-space: nowrap;
+            color: #fef3c7;
+            font-size: 1.125rem;
+            font-weight: 700;
+            z-index: 20;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .flash-card {
+            animation: popPulsing 0.8s ease-out;
+            z-index: 10;
+        }
+
+        @keyframes popPulsing {
+            0% {
+                box-shadow: 0 0 0 rgba(245, 158, 11, 0.8), inset 0 0 0 rgba(245, 158, 11, 0.8);
+                border-color: rgba(245, 158, 11, 1);
+                background-color: rgba(62, 39, 35, 0.9);
+                transform: scale(1);
+            }
+
+            50% {
+                box-shadow: 0 0 30px rgba(245, 158, 11, 1), inset 0 0 20px rgba(245, 158, 11, 0.8);
+                border-color: rgba(251, 191, 36, 1);
+                background-color: rgba(93, 64, 55, 1);
+                transform: scale(1.02);
+            }
+
+            100% {
+                box-shadow: 0 0 0 rgba(245, 158, 11, 0), inset 0 0 0 rgba(245, 158, 11, 0);
+                border-color: rgba(180, 83, 9, 0.5);
+                background-color: rgba(62, 39, 35, 0.6);
+                transform: scale(1);
+            }
+        }
+
+        .particle-slot {
+            display: inline-block;
+            min-width: 4rem;
+            padding: 0 0.25rem;
+            margin: 0 0.25rem;
+            text-align: center;
+            border-bottom-width: 4px;
+            border-bottom-style: solid;
+            font-size: 1.25rem;
+            font-weight: 900;
+            vertical-align: baseline;
+            transition: all 0.3s ease;
+        }
+
+        .particle-slot.is-empty {
+            border-bottom-color: #f59e0b !important;
+            /* amber-500 */
+            animation: slotPulse 1.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes slotPulse {
+            0% {
+                border-bottom-color: rgba(245, 158, 11, 0.5);
+                filter: drop-shadow(0 2px 4px rgba(245, 158, 11, 0.3));
+            }
+
+            100% {
+                border-bottom-color: rgba(245, 158, 11, 1);
+                filter: drop-shadow(0 4px 10px rgba(245, 158, 11, 0.9));
+            }
+        }
+
+        .particle-slot.is-correct {
+            border-bottom-color: #10b981 !important;
+            color: #10b981;
+            animation: flashGreen 0.6s ease-out forwards;
+        }
+
+        @keyframes flashGreen {
+            0% {
+                border-bottom-color: #10b981;
+                filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.8));
+            }
+
+            50% {
+                border-bottom-color: #34d399;
+                filter: drop-shadow(0 0 20px rgba(52, 211, 153, 1));
+                color: #34d399;
+            }
+
+            100% {
+                border-bottom-color: #10b981;
+                filter: drop-shadow(0 0 0px transparent);
+                color: #10b981;
+            }
+        }
+
+        .particle-slot.is-wrong {
+            border-bottom-color: #f43f5e !important;
+            color: #f43f5e;
+            animation: shakeRed 0.4s ease-out forwards;
+        }
+
+        @keyframes shakeRed {
+
+            0%,
+            100% {
+                filter: drop-shadow(0 0 4px rgba(244, 63, 94, 0.5));
+                transform: translateX(0);
+            }
+
+            20%,
+            60% {
+                filter: drop-shadow(0 0 12px rgba(244, 63, 94, 0.9));
+                transform: translateX(-3px);
+            }
+
+            40%,
+            80% {
+                filter: drop-shadow(0 0 12px rgba(244, 63, 94, 0.9));
+                transform: translateX(3px);
+            }
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8">
+    <div id="app" v-cloak class="w-full max-w-6xl mx-auto" @pointerdown="onUserGesture" :class="{ shake: screenShake }">
+        <!-- Menu button -->
+        <!-- Level select menu only -->
+        <div v-if="showLevelSelect"
+            class="card rounded-3xl shadow-2xl overflow-hidden border border-amber-500/30 p-12 text-center bg-slate-900/90 backdrop-blur-xl">
+            <h1 class="text-4xl font-black text-amber-400 mb-4 tracking-tighter">日語助詞 RPG：魔王城大冒險</h1>
+            <p class="text-slate-400 mb-6 text-lg">選擇難度開始挑戰</p>
+
+            <div class="flex justify-center gap-6 mb-12">
+                <button @click="difficulty = 'easy'"
+                    :class="difficulty === 'easy' ? 'border-emerald-500 bg-emerald-500/30 text-emerald-300 scale-110 shadow-[0_0_20px_rgba(16,185,129,0.2)]' : 'border-slate-700 text-slate-500 hover:border-slate-500'"
+                    class="px-10 py-5 rounded-2xl border-2 font-black text-xl transition-all duration-300">初級
+                    (Easy)</button>
+                <button @click="difficulty = 'hard'"
+                    :class="difficulty === 'hard' ? 'border-rose-500 bg-rose-500/30 text-rose-300 scale-110 shadow-[0_0_20px_rgba(225,29,72,0.2)]' : 'border-slate-700 text-slate-500 hover:border-slate-500'"
+                    class="px-10 py-5 rounded-2xl border-2 font-black text-xl transition-all duration-300">高級
+                    (Hard)</button>
+            </div>
+
+            <div
+                class="max-w-md mx-auto space-y-4 mb-8 text-slate-400 text-sm bg-slate-800/40 p-6 rounded-2xl border border-slate-700">
+                <div class="flex items-center gap-3">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span>初級模式：答錯後 2 秒可繼續手動跳題。</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                    <span>高級模式：答錯或時間到 3 秒後自動進入下一題。</span>
+                </div>
+            </div>
+
+            <button @click="startLevel(1)"
+                class="group relative inline-flex items-center justify-center px-16 py-6 font-black text-2xl tracking-widest text-slate-900 transition-all duration-200 bg-amber-500 rounded-2xl hover:bg-amber-400 active:scale-95 shadow-xl border-b-8 border-amber-700">
+                開始戰鬥
+            </button>
+        </div>
+
+        <div v-else id="stageWrap" class="w-full flex justify-center">
+            <div id="stage" class="rounded-3xl shadow-2xl overflow-hidden border border-white/50">
+                <!-- Top Bar Removed -->
+
+                <!-- #battleScene: upper half with enemy -->
+                <div id="battleScene" :style="{ backgroundImage: 'url(' + currentBg + ')' }">
+                    <div
+                        class="absolute top-4 left-4 px-3 py-1 bg-slate-900/80 rounded-lg border border-amber-500/30 text-xs font-bold text-amber-500 shadow-md">
+                        第 {{ currentLevel }} 關 • {{ difficulty === 'easy' ? 'Easy' : 'Hard' }}
+                    </div>
+
+                    <!-- 怪物 -->
+                    <div v-if="!monsterDead"
+                        class="flex flex-col items-center p-6 rounded-2xl bg-slate-800/40 border border-rose-500/20 relative mt-12"
+                        :class="{ hit: monsterHit }">
+                        <div v-if="battleLog" class="log-bubble">{{ battleLog }}</div>
+
+                        <!-- Radial ATB Timer -->
+                        <div v-if="!isFinished && !monsterDead && !playerDead" class="relative mb-4">
+                            <svg class="w-16 h-16 transform -rotate-90">
+                                <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="4" fill="transparent"
+                                    class="text-slate-800" />
+                                <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="4" fill="transparent"
+                                    :stroke-dasharray="175.9" :stroke-dashoffset="175.9 * (1 - timeLeft / 10)"
+                                    class="text-amber-500 transition-all duration-100 ease-linear shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                <span
+                                    class="text-[8px] font-black text-slate-300 leading-none tracking-tighter">次の攻撃まで</span>
+                            </div>
+                        </div>
+
+                        <div
+                            class="w-28 h-28 rounded-full bg-rose-900/80 flex items-center justify-center text-5xl mb-3 shadow-lg ring-4 ring-rose-500/20">
+                            {{ monster.sprite || '👹' }}
+                        </div>
+                        <span class="text-base font-bold text-slate-200 mb-1">{{ monster.name }}</span>
+                        <span class="text-xs text-amber-400/80 mb-3">{{ monster.trait }}</span>
+
+                        <!-- HP Bar -->
+                        <div class="w-full h-1.5 bg-slate-900/50 rounded-full overflow-hidden mb-3 border border-slate-700/30"
+                            style="width: 140px;">
+                            <div class="h-full bg-rose-600 shadow-[0_0_8px_rgba(225,29,72,0.4)] transition-all duration-500"
+                                :style="{ width: (monster.hp / monster.maxHp * 100) + '%' }"></div>
+                        </div>
+                    </div>
+                    <div v-else-if="battleLog" class="log-bubble mt-12">{{ battleLog }}</div>
+                </div>
+
+                <!-- #hud: lower half with player, questions, actions -->
+                <!-- NEW HUD LAYOUT -->
+                <div id="hud" v-if="!isFinished"
+                    class="flex-1 flex flex-row gap-4 p-4 bg-slate-900/90 rounded-b-3xl w-full h-full overflow-hidden">
+
+                    <!-- Left Column (Area 1 & 2) -->
+                    <div class="w-64 flex flex-col gap-4 shrink-0 h-full">
+                        <!-- Area 1: Party and Stats -->
+                        <div
+                            class="flex-1 border-2 border-amber-500/60 rounded-xl p-3 flex flex-col gap-2 relative bg-slate-800/60 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] overflow-hidden">
+                            <!-- Player 1 (Active) -->
+                            <div
+                                class="flex items-center gap-3 bg-slate-900/80 p-3 rounded-2xl border border-slate-700 shadow-md w-full">
+                                <div
+                                    class="w-12 h-12 rounded-full bg-emerald-900/60 flex items-center justify-center text-2xl border-2 flex-shrink-0 border-emerald-500/40">
+                                    🧙
+                                </div>
+                                <div class="flex flex-col gap-1 w-full">
+                                    <div class="flex justify-between items-end gap-2">
+                                        <span
+                                            class="text-[10px] font-black text-slate-400 uppercase tracking-widest">勇者</span>
+                                        <span class="text-[10px] font-mono font-bold">{{ player.hp }}/{{ player.maxHp
+                                            }}</span>
+                                    </div>
+                                    <div class="hp-bar-wrap h-2.5 shadow-inner w-full">
+                                        <div class="hp-bar-fill shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+                                            :class="[getHpColorClass(player.hp, player.maxHp), { danger: hpBarDanger, 'player-blink': playerBlink }]"
+                                            :style="{ width: (player.hp / player.maxHp * 100) + '%' }"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Empty slots -->
+                            <div v-for="i in 2" :key="i"
+                                class="flex items-center gap-3 bg-slate-900/40 p-2.5 rounded-2xl border border-slate-800 opacity-60 w-full">
+                                <div
+                                    class="w-10 h-10 rounded-2xl border-2 border-dashed border-slate-700 flex items-center justify-center text-slate-600 cursor-default flex-shrink-0">
+                                    +
+                                </div>
+                            </div>
+
+                            <!-- Gold Only -->
+                            <div class="mt-auto pt-2 border-t-2 border-slate-700/50 flex flex-col px-1 shrink-0">
+                                <div
+                                    class="flex justify-between items-center bg-slate-900/50 px-3 py-2 rounded-lg border border-slate-700/50 shadow-inner">
+                                    <span class="text-amber-400 text-xs font-black tracking-widest">💰 GOLD</span>
+                                    <span class="text-amber-400 text-base font-mono font-bold">{{ player.gold }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Area 2: System / Codex / Potion -->
+                        <div
+                            class="h-20 shrink-0 border-2 border-amber-500/60 rounded-xl p-2.5 flex justify-between items-center bg-slate-800/60 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]">
+                            <button @click="isCodexOpen = true; pauseBattle();" title="招式圖鑑"
+                                class="h-full aspect-square flex items-center justify-center rounded-xl bg-gradient-to-t from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500 border border-amber-400/50 text-2xl shadow-lg transition-transform active:scale-95">📖</button>
+                            <button @click="usePotion()" title="回復藥水"
+                                class="h-full aspect-square flex items-center justify-center rounded-xl bg-gradient-to-t from-emerald-700 to-emerald-600 hover:from-emerald-600 hover:to-emerald-500 text-2xl shadow-lg border border-emerald-400/50 relative transition-transform active:scale-95"
+                                :class="{ 'opacity-40 cursor-not-allowed grayscale': inventory.potions <= 0 || player.hp >= player.maxHp || monsterDead || playerDead }"
+                                :disabled="inventory.potions <= 0 || player.hp >= player.maxHp || monsterDead || playerDead">
+                                🧪
+                                <span
+                                    class="absolute -top-2 -right-2 bg-rose-600 border border-rose-300 text-white text-[11px] font-black px-2 py-0.5 rounded-full shadow-md z-10">{{
+                                    inventory.potions }}</span>
+                            </button>
+                            <button @click="isMenuOpen = !isMenuOpen; isMenuOpen ? pauseBattle() : resumeBattle()"
+                                title="選單"
+                                class="h-full aspect-square flex items-center justify-center rounded-xl bg-gradient-to-t from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white text-2xl font-bold transition-transform active:scale-95 border border-slate-400/50">☰</button>
+                        </div>
+                    </div>
+
+                    <!-- Right Column (Area 3): Commands & Results -->
+                    <div
+                        class="flex-1 border-2 border-amber-500/60 rounded-xl p-6 flex flex-col relative bg-slate-800/60 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] overflow-hidden">
+                        <div class="absolute top-4 right-5 text-right flex items-center gap-2">
+                            <span v-if="comboCount > 1"
+                                class="text-rose-400 font-black text-sm animate-bounce inline-block">🔥 {{ comboCount }}
+                                COMBO</span>
+                        </div>
+
+                        <div class="flex flex-col items-center justify-center flex-1 w-full gap-4 relative">
+                            <div v-if="!monsterDead && !playerDead"
+                                class="flex flex-col items-center justify-center w-full flex-1">
+                                <!-- Integrated Question Area -->
+                                <div id="question-area" class="w-full mb-1">
+                                    <div class="flex flex-wrap justify-center items-center gap-2">
+                                        <span v-for="(seg, idx) in displaySegments" :key="idx"
+                                            class="inline-flex items-center">
+                                            <span v-if="!seg.isBlank" class="text-slate-100">
+                                                <ruby v-if="seg.ruby">{{ seg.text }}<rt>{{ seg.ruby }}</rt></ruby>
+                                                <span v-else>{{ seg.text }}</span>
+                                            </span>
+                                            <div v-else-if="seg.showInput && !isChoiceMode">
+                                                <input v-model="userAnswers[seg.blankIndex]" :disabled="hasSubmitted"
+                                                    class="particle-input px-2 py-0.5 text-lg"
+                                                    :class="getInputStyle(seg.blankIndex)" type="text"
+                                                    spellcheck="false">
+                                            </div>
+                                            <span v-else-if="seg.showInput && isChoiceMode" class="particle-slot"
+                                                :class="[getInputStyle(seg.blankIndex), { 'is-empty': !hasSubmitted && !userAnswers[seg.blankIndex] }]">
+                                                {{ hasSubmitted ? getAnswerForDisplay(seg.blankIndex) :
+                                                (userAnswers[seg.blankIndex] || '\u00A0') }}
+                                            </span>
+                                            <span v-else
+                                                class="particle-input correct inline-block px-2 py-0.5 text-lg">{{
+                                                getAnswerForDisplay(seg.blankIndex) }}</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div v-if="isChoiceMode && currentQuestion.choices && !hasSubmitted"
+                                    class="flex flex-wrap justify-center gap-3 w-full">
+                                    <button v-for="opt in currentQuestion.choices" :key="opt" @click="selectChoice(opt)"
+                                        class="particle-option px-6 py-2 rounded-xl text-xl font-black transition-all border-2"
+                                        :class="getChoiceBtnClass(opt)">
+                                        {{ opt }}
+                                    </button>
+                                </div>
+                                <div v-else-if="hasSubmitted" class="text-center w-full">
+                                    <div class="inline-flex flex-col items-center gap-2">
+                                        <div class="inline-flex items-center gap-3 px-6 py-2 rounded-xl bg-slate-900/80 border-2 transition-all"
+                                            :class="isCurrentCorrect ? 'border-emerald-500/50' : 'border-rose-500/50'">
+                                            <span v-if="isCurrentCorrect"
+                                                class="text-emerald-400 text-xl font-black flex items-center gap-2">
+                                                <span
+                                                    class="bg-emerald-500 text-slate-900 rounded-full w-6 h-6 flex items-center justify-center text-[10px]">✓</span>
+                                                正確！
+                                            </span>
+                                            <span v-else
+                                                class="text-rose-400 text-xl font-black flex items-center gap-2">
+                                                <span
+                                                    class="bg-rose-500 text-slate-200 rounded-full w-6 h-6 flex items-center justify-center text-[10px]">✕</span>
+                                                攻擊失敗
+                                            </span>
+                                            <button v-if="currentQuestion.grammarTip"
+                                                @click="showGrammarDetail = !showGrammarDetail"
+                                                class="w-8 h-8 rounded-full bg-slate-700 text-slate-300 hover:bg-slate-600 font-bold transition-all text-sm">?</button>
+                                        </div>
+                                        <div v-if="showGrammarDetail && currentQuestion.grammarTip"
+                                            class="grammar-card mt-2 rounded-2xl p-4 text-amber-100 text-sm max-w-md shadow-xl border-l-8 border-amber-500">
+                                            {{ currentQuestion.grammarTip }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="flex justify-center gap-3 mt-3 w-full max-w-lg">
+                                    <button v-if="hasSubmitted && !isCurrentCorrect" @click="nextQuestion"
+                                        class="w-48 bg-amber-500 text-slate-900 px-6 py-2 rounded-xl font-black text-lg hover:bg-amber-400 shadow-lg border-b-4 border-amber-700 active:translate-y-1 active:border-b-0 transition-all">
+                                        次（つぎ）
+                                    </button>
+                                    <button v-else @click="checkAnswer"
+                                        class="w-48 bg-amber-500 text-slate-900 px-6 py-2 rounded-xl font-black text-lg hover:bg-amber-400 shadow-lg border-b-4 border-amber-700 active:translate-y-1 active:border-b-0 transition-all"
+                                        :class="(isChoiceMode && !userAnswers[0]) ? 'bg-slate-700 border-slate-800 text-slate-500 cursor-not-allowed opacity-50' : ''"
+                                        :disabled="isChoiceMode && !userAnswers[0]">
+                                        攻撃（こうげき）
+                                    </button>
+                                    <!-- TTS Button -->
+                                    <button @click="playVoice"
+                                        class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl shadow-lg border-b-4 border-blue-800 transition-all">
+                                        <span class="text-xl">🔊</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Victory/Loss States -->
+                            <div v-else class="flex flex-col items-center justify-center w-full flex-1">
+                                <div v-if="monsterDead"
+                                    class="flex flex-row items-center justify-center gap-12 py-4 w-full px-6 flex-1">
+                                    <!-- Left side -->
+                                    <div class="flex flex-col items-center max-w-[200px]">
+                                        <div class="text-6xl mb-2 flex-shrink-0">🏆</div>
+                                        <h2
+                                            class="text-3xl font-black text-amber-400 mb-6 tracking-widest whitespace-nowrap">
+                                            {{ currentLevel >= 3
+                                            ? '全章節破關！' : '戰鬥突破！' }}</h2>
+                                        <button v-if="currentLevel < 3" @click="goNextLevel"
+                                            class="w-full px-8 py-4 rounded-2xl bg-amber-500 text-slate-900 font-black text-xl hover:bg-amber-400 shadow-[0_6px_0_#b45309] active:translate-y-1 active:shadow-none transition-all">下一關</button>
+                                        <button v-else @click="startOver"
+                                            class="w-full px-8 py-4 rounded-2xl bg-amber-500 text-slate-900 font-black text-xl hover:bg-amber-400 shadow-[0_6px_0_#b45309] active:translate-y-1 active:shadow-none transition-all">回到首頁</button>
+                                        <button @click="isMistakesOpen = true"
+                                            class="w-full mt-3 px-6 py-3 rounded-2xl bg-blue-600 text-white font-black text-lg hover:bg-blue-500 shadow-[0_4px_0_#1e40af] active:translate-y-1 active:shadow-none transition-all">📒
+                                            錯題本</button>
+                                    </div>
+
+                                    <!-- Right side -->
+                                    <div
+                                        class="bg-slate-900/80 p-5 rounded-2xl border border-amber-500/30 shadow-xl w-64 flex-shrink-0">
+                                        <div class="flex justify-between items-center mb-4">
+                                            <span class="text-slate-400 font-bold">評價</span>
+                                            <span class="text-6xl font-black leading-none"
+                                                :class="getGradeColor(calculatedGrade)">{{
+                                                calculatedGrade }}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center mb-2 text-sm">
+                                            <span class="text-slate-400">正確率</span>
+                                            <span class="text-emerald-400 font-mono font-bold">{{ accuracyPct }}%</span>
+                                        </div>
+                                        <div class="flex justify-between items-center mb-2 text-sm">
+                                            <span class="text-slate-400">最大 Combo</span>
+                                            <span class="text-rose-400 font-mono font-bold">{{ maxComboCount }}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center mb-2 text-sm">
+                                            <span class="text-slate-400">獲得經驗值</span>
+                                            <span class="text-blue-400 font-mono font-bold">+{{ earnedExp }}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center text-sm">
+                                            <span class="text-slate-400">獲得金幣</span>
+                                            <span class="text-amber-400 font-mono font-bold">+{{ earnedGold }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-else
+                                    class="flex flex-row items-center justify-center gap-12 py-4 w-full px-6 flex-1">
+                                    <!-- Left side -->
+                                    <div class="flex flex-col items-center max-w-[200px]">
+                                        <div class="text-6xl mb-2 flex-shrink-0">💀</div>
+                                        <h2
+                                            class="text-3xl font-black text-rose-400 mb-6 tracking-widest whitespace-nowrap">
+                                            敗北...</h2>
+                                        <div class="flex flex-col gap-3 w-full">
+                                            <button @click="isMistakesOpen = true"
+                                                class="w-full px-6 py-3 rounded-2xl bg-blue-600 text-white font-black text-lg hover:bg-blue-500 shadow-[0_4px_0_#1e40af] active:translate-y-1 active:shadow-none transition-all">📒
+                                                錯題本</button>
+                                            <button @click="revive"
+                                                class="w-full px-6 py-3 rounded-2xl bg-emerald-600 text-white font-black text-lg hover:bg-emerald-500 shadow-[0_4px_0_#065f46] active:translate-y-1 active:shadow-none transition-all">重新開始</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Right side -->
+                                    <div
+                                        class="bg-slate-900/80 p-5 rounded-2xl border border-rose-500/30 shadow-xl w-64 flex-shrink-0">
+                                        <div class="flex justify-between items-center mb-4">
+                                            <span class="text-slate-400 font-bold">評價</span>
+                                            <span class="text-6xl font-black leading-none"
+                                                :class="getGradeColor(calculatedGrade)">{{
+                                                calculatedGrade }}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center mb-2 text-sm">
+                                            <span class="text-slate-400">正確率</span>
+                                            <span class="text-emerald-400 font-mono font-bold">{{ accuracyPct }}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-else
+                    class="py-12 flex-1 flex flex-col justify-center items-center bg-slate-900/40 backdrop-blur-md min-h-[400px]">
+                    <div class="text-8xl mb-4 animate-bounce">🎉</div>
+                    <h2 class="text-5xl font-black text-amber-400 mb-10 tracking-widest">通關成功！</h2>
+
+                    <div class="flex flex-row items-stretch justify-center gap-16 w-full px-6 max-w-4xl">
+                        <!-- Left side: Actions -->
+                        <div class="flex flex-col gap-4 flex-1 justify-center max-w-[240px]">
+                            <button v-if="currentLevel < 3" @click="goNextLevel"
+                                class="w-full bg-amber-500 text-slate-900 px-6 py-4 rounded-2xl font-black text-2xl hover:bg-amber-400 shadow-[0_8px_0_#b45309] active:translate-y-1 active:shadow-none transition-all">下一關</button>
+                            <button v-else @click="startOver"
+                                class="w-full bg-amber-500 text-slate-900 px-6 py-4 rounded-2xl font-black text-2xl hover:bg-amber-400 shadow-[0_8px_0_#b45309] active:translate-y-1 active:shadow-none transition-all">回首頁</button>
+                            <button @click="isMistakesOpen = true"
+                                class="w-full bg-blue-600 text-white px-6 py-3 rounded-xl font-bold text-lg hover:bg-blue-500 shadow-[0_4px_0_#1e40af] active:translate-y-1 active:shadow-none transition-all">📒
+                                錯題本</button>
+                            <button @click="retryLevel"
+                                class="w-full bg-slate-700 text-slate-300 px-6 py-3 rounded-xl font-bold text-lg hover:bg-slate-600 border border-slate-600 transition-all">重新開始此關</button>
+                        </div>
+
+                        <!-- Right side: Stats -->
+                        <div
+                            class="bg-slate-900/80 p-6 rounded-2xl border border-amber-500/50 shadow-2xl w-80 flex-shrink-0">
+                            <h3 class="text-xl font-bold text-slate-200 border-b border-slate-700 pb-3 mb-5">章節結算</h3>
+                            <div class="flex justify-between items-center mb-6">
+                                <span class="text-slate-400 font-bold text-xl">評價</span>
+                                <span class="text-7xl font-black leading-none"
+                                    :class="getGradeColor(calculatedGrade)">{{ calculatedGrade
+                                    }}</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-slate-400">正確率</span>
+                                <span class="text-emerald-400 font-mono font-bold text-xl">{{ accuracyPct }}%</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-slate-400">最大 Combo</span>
+                                <span class="text-rose-400 font-mono font-bold text-xl">{{ maxComboCount }}</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-slate-400">獲得經驗值</span>
+                                <span class="text-blue-400 font-mono font-bold text-xl">+{{ earnedExp }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-400">獲得金幣</span>
+                                <span class="text-amber-400 font-mono font-bold text-xl">+{{ earnedGold }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skill Unlock Modal -->
+        <div v-if="isSkillUnlockModalOpen" class="modal-overlay" @click.self="isSkillUnlockModalOpen = false"
+            style="z-index: 100;">
+            <div
+                class="modal-panel max-w-sm rounded-[1rem] border-2 border-amber-600/60 bg-[#1e110a]/95 drop-shadow-[0_0_20px_rgba(217,119,6,0.3)] shadow-2xl overflow-hidden font-serif">
+                <div class="text-6xl text-center mb-4 animate-bounce mt-4">✨</div>
+                <h2 class="text-2xl font-black text-amber-500 mb-6 text-center tracking-wider">新招式習得！</h2>
+                <div class="space-y-3 mb-8 px-2 max-h-64 overflow-y-auto custom-scrollbar">
+                    <div v-for="skill in newlyUnlocked" :key="skill.id"
+                        class="p-4 bg-[#3e2723]/60 rounded border border-amber-700/50 shadow-inner">
+                        <div class="font-bold text-lg text-amber-400 tracking-wide">{{ skill.name }}</div>
+                        <div class="text-sm text-amger-100/90 mt-2 leading-relaxed">{{ skill.meaning }}</div>
+                    </div>
+                </div>
+                <div class="flex gap-3 px-2 mb-2">
+                    <button @click="openCodexTo(newlyUnlocked[0]?.id)"
+                        class="flex-1 px-4 py-3 rounded bg-gradient-to-t from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500 text-amber-50 text-base font-bold shadow-lg transition-colors border border-amber-500/50">
+                        📖 立刻翻開秘笈
+                    </button>
+                    <button @click="isSkillUnlockModalOpen = false; resumeBattle();"
+                        class="px-4 py-3 rounded bg-[#2a1c15] hover:bg-[#3e2723] text-amber-600 hover:text-amber-500 text-base font-bold shadow-lg transition-colors border border-amber-900/50">
+                        稍後
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Codex Overlay (Spellbook) -->
+        <div v-if="isCodexOpen" class="fixed inset-0 z-[2000] flex items-center justify-center p-4 md:p-8"
+            @click.self="isCodexOpen = false; resumeBattle();">
+            <!-- Backdrop -->
+            <div class="absolute inset-0 bg-black/80 backdrop-blur-sm pointer-events-none"></div>
+
+            <!-- Book container -->
+            <div class="relative w-full max-w-4xl h-full max-h-[85vh] bg-[#2a1c15] text-amber-100/90 rounded-sm border-4 border-amber-600/60 shadow-[0_0_40px_rgba(217,119,6,0.5)] flex flex-col font-serif"
+                style="background-image: radial-gradient(circle at center, #3e2723 0%, #1e110a 100%);">
+                <!-- Gold corners / styling -->
+                <div
+                    class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-amber-400/80 m-2 pointer-events-none">
+                </div>
+                <div
+                    class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-amber-400/80 m-2 pointer-events-none">
+                </div>
+                <div
+                    class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-amber-400/80 m-2 pointer-events-none">
+                </div>
+                <div
+                    class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-amber-400/80 m-2 pointer-events-none">
+                </div>
+
+                <!-- Header -->
+                <div class="text-center py-6 border-b border-amber-900/60 shadow-md relative z-10 bg-[#2a1c15]/50">
+                    <h2 class="text-3xl font-black text-amber-500 tracking-widest"
+                        style="text-shadow: 0 2px 4px rgba(0,0,0,0.8);">📖 招式圖鑑</h2>
+                    <!-- Close btn -->
+                    <button @click="isCodexOpen = false; resumeBattle();"
+                        class="absolute top-6 right-6 text-amber-600 hover:text-amber-400 transition-colors">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Content list -->
+                <div class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar relative z-10 space-y-4"
+                    style="mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%);">
+                    <div v-for="skill in skillsWithUnlockLevel" :key="skill.id" :id="'skill-card-' + skill.id">
+                        <!-- Unlocked Card -->
+                        <div v-if="unlockedSkillIds.includes(skill.id)"
+                            class="bg-[#3e2723]/60 border border-amber-700/50 rounded pointer-events-auto transition-all shadow-md">
+                            <button @click="expandedSkillId = expandedSkillId === skill.id ? null : skill.id"
+                                class="w-full text-left px-4 py-3 flex justify-between items-center hover:bg-[#4e342e]/60 transition-colors rounded">
+                                <span class="font-bold text-lg text-amber-400 tracking-wide">{{ skill.name }}</span>
+                                <span class="text-amber-600">{{ expandedSkillId === skill.id ? '▼' : '▶' }}</span>
+                            </button>
+                            <div v-if="expandedSkillId === skill.id"
+                                class="p-4 pt-2 text-base space-y-3 bg-[#1e110a]/40 border-t border-amber-900/50">
+                                <div v-if="skill.meaning"><span class="text-emerald-500 font-bold mr-2">含義</span><span
+                                        class="text-amber-100/90 leading-relaxed">{{ skill.meaning }}</span></div>
+                                <div v-if="skill.rule"><span class="text-blue-400 font-bold mr-2">句型</span><span
+                                        class="text-amber-100/90 leading-relaxed">{{ skill.rule }}</span></div>
+                                <div v-if="skill.examples && skill.examples.length > 0">
+                                    <span class="text-amber-500/80 font-bold block mb-1">例句</span>
+                                    <ul class="list-disc list-inside text-amber-100/80 space-y-1 ml-1">
+                                        <li v-for="(ex, i) in skill.examples" :key="i">{{ ex }}</li>
+                                    </ul>
+                                </div>
+                                <div v-if="skill.antiExamples && skill.antiExamples.length > 0">
+                                    <span class="text-rose-500/80 font-bold block mb-1">誤用範例</span>
+                                    <ul class="list-disc list-inside text-rose-300/80 space-y-1 ml-1">
+                                        <li v-for="(ex, i) in skill.antiExamples" :key="i">{{ ex }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Locked Card -->
+                        <div v-else
+                            class="bg-[#1e110a]/80 border border-slate-800/80 rounded p-4 flex items-center justify-between pointer-events-none opacity-60 grayscale filter shadow-inner">
+                            <span class="font-bold text-slate-500 text-lg flex items-center gap-2">🔒 未習得</span>
+                            <span class="text-sm font-bold text-amber-700/50">{{ skill.unlockLevel ? '第 ' +
+                                skill.unlockLevel + ' 關習得' : '未安排' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu Modal -->
+        <div v-if="isMenuOpen" class="modal-overlay" @click.self="isMenuOpen = false; resumeBattle();">
+            <div class="modal-panel w-[400px]">
+                <h2 class="text-2xl font-black text-amber-400 mb-4">⏸ Menu</h2>
+                <div class="space-y-3">
+                    <div class="border-b border-slate-600 pb-3">
+                        <label class="flex items-center gap-2 text-sm text-slate-200 mb-2">
+                            <span v-if="isMuted" class="text-lg">🔇</span>
+                            <span v-else class="text-lg">🔊</span>
+                            <button @click="isMuted = !isMuted; saveAudioSettings(); playBgm();"
+                                class="flex-1 text-left underline">{{ isMuted ? '靜音中' : '已開啟' }}</button>
+                        </label>
+                        <label class="flex items-center gap-2 text-xs text-slate-300 mb-1">
+                            <span>BGM</span>
+                            <input type="range" min="0" max="1" step="0.01" v-model.number="bgmVolume"
+                                @input="playBgm(); saveAudioSettings()" class="flex-1">
+                        </label>
+                        <label class="flex items-center gap-2 text-xs text-slate-300">
+                            <span>SFX</span>
+                            <input type="range" min="0" max="1" step="0.01" v-model.number="sfxVolume"
+                                @input="saveAudioSettings()" class="flex-1">
+                        </label>
+                    </div>
+
+                    <button @pointerdown="startRunAwayPress" @pointerup="cancelRunAwayPress"
+                        @pointerleave="cancelRunAwayPress" @contextmenu.prevent
+                        class="relative w-full px-4 py-3 rounded-lg bg-rose-900/60 border border-rose-500/50 hover:border-rose-400 text-white text-sm font-bold shadow-lg transition-all overflow-hidden select-none"
+                        :class="{'scale-95': runAwayPressTimer}">
+                        <div class="absolute left-0 top-0 bottom-0 bg-rose-500 pointer-events-none"
+                            :style="{ width: runAwayPressTimer ? '100%' : '0%', transition: runAwayPressTimer ? 'width 3s linear' : 'width 0.2s ease-out' }">
+                        </div>
+                        <span class="relative z-10 drop-shadow-md">🏃 長按 3 秒逃回首頁</span>
+                    </button>
+                </div>
+                <button @click="isMenuOpen = false; resumeBattle();"
+                    class="mt-4 w-full px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold">關閉</button>
+            </div>
+        </div>
+
+        <!-- Mistakes Modal -->
+        <div v-if="isMistakesOpen" class="modal-overlay" @click.self="isMistakesOpen = false">
+            <div class="modal-panel">
+                <h2 class="text-2xl font-black text-blue-400 mb-4">📒 錯題本</h2>
+                <div v-if="mistakes.length === 0" class="text-slate-400 text-center py-6">尚無錯題。</div>
+                <div v-else class="space-y-2 mb-4">
+                    <div v-for="(m, i) in mistakes.slice(0, 20)" :key="i"
+                        class="p-2 bg-slate-700/50 rounded border-l-3 border-blue-500">
+                        <div class="text-slate-200 font-bold text-sm mb-1">{{ m.prompt }}</div>
+                        <div class="text-amber-300 text-xs mb-1">正解: {{ formatCorrect(m.correct) }}</div>
+                        <div v-if="m.grammarTip" class="text-slate-400 text-xs">{{ m.grammarTip }}</div>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button @click="clearMistakes"
+                        class="flex-1 px-3 py-2 rounded-lg bg-red-600/60 hover:bg-red-500 text-white text-sm font-bold whitespace-nowrap flex items-center justify-center gap-1">🗑
+                        清空</button>
+                    <button @click="isMistakesOpen = false"
+                        class="flex-1 px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold whitespace-nowrap">關閉</button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="flashOverlay" class="flash-overlay"></div>
+    </div>
+
+    <script>
+        console.log('Vue版本:', Vue);
+        const { createApp, ref, computed, onMounted, watch } = Vue;
+        console.log('開始創建應用...');
+        createApp({
+            setup() {
+                const db = {
+                    places: [{ j: "部屋", r: "へや", t: "房間" }, { j: "学校", r: "がっこう", t: "學校" }, { j: "図書館", r: "としょかん", t: "圖書館" }, { j: "庭", r: "にわ", t: "院子" }, { j: "教室", r: "きょうしつ", t: "教室" }],
+                    objects: [
+                        { j: "本", r: "ほん", t: "書", type: "read", exists: true },
+                        { j: "料理", r: "りょうり", t: "料理", type: "eat", exists: true },
+                        { j: "音楽", r: "おんがく", t: "音樂", type: "hear", exists: false },
+                        { j: "手紙", r: "てがみ", t: "信", type: "write", exists: true },
+                        { j: "日記", r: "にっき", t: "日記", type: "write", exists: true },
+                        { j: "パン", r: "ぱん", t: "麵包", type: "eat", exists: true },
+                        { j: "プレゼント", r: "ぷれぜんと", t: "禮物", type: "give", exists: true }
+                    ],
+                    people: [{ j: "友達", r: "ともだち", t: "朋友" }, { j: "先生", r: "せんせい", t: "老師" }, { j: "母", r: "はは", t: "媽媽" }],
+                    tools: [{ j: "ペン", r: "ぺん", t: "筆" }, { j: "スマホ", r: "すまほ", t: "手機" }, { j: "はし", r: "はし", t: "筷子" }],
+                    grammarTips: {
+                        move: "「へ」或「に」表示移動的目標、方向，接在場所後表示「往～去」。",
+                        placeAction: "「で」表示動作發生的場所；「を」表示動作的受詞（讀什麼、吃什麼）。",
+                        existence: "「に」表示物品存在的場所；「が」表示主語（有什麼）。",
+                        accompany: "「と」表示一起做事的對象（和誰）；「を」表示動作的受詞。",
+                        tool: "「で」表示使用的工具或手段（用什麼）；「を」表示動作的受詞。",
+                        give: "「に」表示給予的對象（給誰）；「を」表示給予的物品。"
+                    }
+                };
+
+                const fallbackLevels = {
+                    1: { blanks: 1, types: [0, 1, 2], title: '森林' },
+                    2: { blanks: 1, types: [0, 1, 2, 3, 4, 5], title: '洞窟' },
+                    3: { blanks: 2, types: [0, 1, 2, 3, 4, 5], title: '魔王城' }
+                };
+                const LEVEL_CONFIG = ref(fallbackLevels);
+                const SKILLS = ref([]);
+
+                // Unlock logic states
+                const skillsAll = ref({});
+                const skillUnlockMap = ref({});
+                const unlockedSkillIds = ref([]);
+                const newlyUnlocked = ref([]);
+                const isSkillUnlockModalOpen = ref(false);
+                const isCodexOpen = ref(false);
+                const expandedSkillId = ref(null);
+
+                const skillsWithUnlockLevel = computed(() => {
+                    const unlocked = [];
+                    const locked = [];
+                    SKILLS.value.forEach(s => {
+                        if (unlockedSkillIds.value.includes(s.id)) unlocked.push(s);
+                        else locked.push(s);
+                    });
+                    unlocked.sort((a, b) => {
+                        if (a.particle !== b.particle) return (a.particle || '').localeCompare(b.particle || '', 'ja');
+                        return (a.rank || 0) - (b.rank || 0);
+                    });
+                    locked.sort((a, b) => {
+                        const lA = skillUnlockMap.value[a.id] || 999;
+                        const lB = skillUnlockMap.value[b.id] || 999;
+                        if (lA !== lB) return lA - lB;
+                        if (a.particle !== b.particle) return (a.particle || '').localeCompare(b.particle || '', 'ja');
+                        return (a.rank || 0) - (b.rank || 0);
+                    });
+                    return [...unlocked, ...locked].map(s => ({
+                        ...s,
+                        unlockLevel: skillUnlockMap.value[s.id]
+                    }));
+                });
+
+                // Add keydown listener to close codex on Esc
+                window.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && isCodexOpen.value) {
+                        isCodexOpen.value = false;
+                        resumeBattle();
+                    }
+                });
+
+                const loadGameData = async () => {
+                    try {
+                        const res = await fetch('assets/data/skills.v1.json');
+                        if (res.ok) {
+                            SKILLS.value = await res.json();
+                            const skillsMap = {};
+                            SKILLS.value.forEach(s => skillsMap[s.id] = s);
+                            skillsAll.value = skillsMap;
+                            console.log('Skills loaded successfully:', SKILLS.value);
+                        } else {
+                            console.warn('Failed to load skills.v1.json, using fallback');
+                        }
+                    } catch (e) {
+                        console.warn('Error loading skills.v1.json', e);
+                    }
+
+                    try {
+                        const res = await fetch('assets/data/levels.v1.json');
+                        if (res.ok) {
+                            const data = await res.json();
+                            const mappedLevels = {};
+                            data.forEach((lvl, idx) => {
+                                const lvNum = idx + 1;
+                                mappedLevels[lvNum] = {
+                                    ...lvl,
+                                    title: lvl.name || fallbackLevels[lvNum]?.title,
+                                    blanks: fallbackLevels[lvNum]?.blanks || 1,
+                                    types: fallbackLevels[lvNum]?.types || [0, 1, 2, 3, 4, 5]
+                                };
+                            });
+                            LEVEL_CONFIG.value = mappedLevels;
+
+                            // Map unlock levels for codex sorting
+                            const tempMap = {};
+                            Object.keys(LEVEL_CONFIG.value).forEach(lvStr => {
+                                const lvNum = parseInt(lvStr);
+                                const unlocks = LEVEL_CONFIG.value[lvStr].unlockSkills || [];
+                                unlocks.forEach(id => {
+                                    if (!tempMap[id]) tempMap[id] = lvNum;
+                                });
+                            });
+                            skillUnlockMap.value = tempMap;
+                            console.log('Skill Unlock Mapping (first appearance):', skillUnlockMap.value);
+
+                            console.log('Levels loaded and mapped:', LEVEL_CONFIG.value);
+                        } else {
+                            console.warn('Failed to load levels.v1.json, using fallback');
+                        }
+                    } catch (e) {
+                        console.warn('Error loading levels.v1.json', e);
+                    }
+                };
+
+                onMounted(() => {
+                    loadGameData();
+                });
+                const MONSTER_NAMES = { 1: '助詞怪', 2: '助詞妖', 3: '助詞魔王' };
+                const MONSTER_HP = 100;
+                const DAMAGE_TO_MONSTER = 20;
+                const DAMAGE_TO_PLAYER = 20;
+                const GOLD_PER_HIT = 10;
+                const EXP_PER_HIT = 15;
+                const POTION_HP = 30;
+                const INITIAL_POTIONS = 3;
+                const COMBO_PERFECT = 3;
+                const PASS_SCORE = 0;
+
+                // monster definitions for DQ風 appearance
+                const MONSTERS = [
+                    { id: 1, name: '助詞怪', sprite: '👹', hpMax: 100, attack: 20, trait: '普通型' },
+                    { id: 2, name: '助詞妖', sprite: '🧌', hpMax: 120, attack: 25, trait: '會閃避' },
+                    { id: 3, name: '助詞魔', sprite: '👺', hpMax: 140, attack: 30, trait: '攻擊高' },
+                    { id: 4, name: '助詞龍', sprite: '🐉', hpMax: 160, attack: 35, trait: '火焰吐息' },
+                    { id: 5, name: '助詞鬼', sprite: '👻', hpMax: 180, attack: 40, trait: '無形' },
+                    { id: 6, name: '助詞王', sprite: '👑', hpMax: 200, attack: 50, trait: '王者氣息' }
+                ];
+
+                const showLevelSelect = ref(true);
+                const showGrammarDetail = ref(false);
+                const runAwayPressTimer = ref(null);
+                const isMenuOpen = ref(false);
+                const isMistakesOpen = ref(false);
+                const player = ref({ hp: 100, maxHp: 100, gold: 0, exp: 0 });
+                const monster = ref({ hp: MONSTER_HP, maxHp: MONSTER_HP, name: '助詞怪' });
+                const inventory = ref({ potions: INITIAL_POTIONS });
+                const battleLog = ref('用正確的助詞攻擊怪物吧！');
+                const monsterShake = ref(false);
+                const playerBlink = ref(false);
+                const hpBarDanger = ref(false);
+                const goldDoubleNext = ref(false);
+                const difficulty = ref('easy');
+                const currentBg = ref('assets/images/bg_01.jpg');
+
+                const questions = ref([]);
+                const currentIndex = ref(0);
+                const userAnswers = ref([]);
+                const slotFeedbacks = ref({});
+                const hasSubmitted = ref(false);
+                const totalScore = ref(0);
+                const comboCount = ref(0);
+                const maxComboCount = ref(0);
+                const currentLevel = ref(1);
+                const isFinished = ref(false);
+                const isCurrentCorrect = ref(false);
+                const timeLeft = ref(10);
+                const timeUp = ref(false);
+                const wrongAnswerPause = ref(false);
+                const wrongAnswerPauseCountdown = ref(0);
+                const mistakes = ref([]);
+                const totalQuestionsAnswered = ref(0);
+                const correctAnswersAmount = ref(0);
+                const earnedExp = ref(0);
+                const earnedGold = ref(0);
+                const monsterHit = ref(false);
+                const screenShake = ref(false);
+                const flashOverlay = ref(false);
+                // audio system
+                const audioInited = ref(false);
+                const bgmAudio = ref(null);
+                const gameOverAudio = ref(null);
+                const bgmVolume = ref(0.5);
+                const sfxVolume = ref(0.5);
+                const isMuted = ref(false);
+                const bgmEnabled = ref(true);
+                const needsUserGestureToResumeBgm = ref(false);
+                const audioSettingsKey = 'jpRpgAudioV1';
+                let timerId = null;
+                let pauseTimerId = null;
+
+                // Pause / Resume Logic
+                let wasTimerRunning = false;
+                let wasPauseTimerRunning = false;
+
+                const pauseBattle = () => {
+                    wasTimerRunning = wasTimerRunning || !!timerId;
+                    wasPauseTimerRunning = wasPauseTimerRunning || !!pauseTimerId;
+                    if (timerId) { clearInterval(timerId); timerId = null; }
+                    if (pauseTimerId) { clearInterval(pauseTimerId); pauseTimerId = null; }
+                };
+
+                const resumeBattle = () => {
+                    if (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value) return;
+                    if (wasTimerRunning && !timerId) timerId = setInterval(runTimerLogic, 100);
+                    if (wasPauseTimerRunning && !pauseTimerId) pauseTimerId = setInterval(runPauseTimerLogic, 1000);
+                    wasTimerRunning = false;
+                    wasPauseTimerRunning = false;
+                };
+
+                const openCodexTo = (skillId) => {
+                    isSkillUnlockModalOpen.value = false;
+                    expandedSkillId.value = skillId;
+                    isCodexOpen.value = true;
+                    pauseBattle();
+                    setTimeout(() => {
+                        const el = document.getElementById('skill-card-' + skillId);
+                        if (el) {
+                            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            const card = el.querySelector('.bg-\\[\\#3e2723\\]\\/60') || el.firstElementChild;
+                            if (card) {
+                                card.classList.add('flash-card');
+                                setTimeout(() => card.classList.remove('flash-card'), 800);
+                            }
+                        }
+                    }, 100);
+                };
+
+                const loadAudioSettings = () => {
+                    try {
+                        const raw = localStorage.getItem(audioSettingsKey);
+                        if (raw) {
+                            const obj = JSON.parse(raw);
+                            bgmVolume.value = obj.bgmVolume ?? bgmVolume.value;
+                            sfxVolume.value = obj.sfxVolume ?? sfxVolume.value;
+                            isMuted.value = obj.isMuted ?? isMuted.value;
+                        }
+                    } catch (_) { }
+                };
+                const saveAudioSettings = () => {
+                    try {
+                        localStorage.setItem(audioSettingsKey, JSON.stringify({ bgmVolume: bgmVolume.value, sfxVolume: sfxVolume.value, isMuted: isMuted.value }));
+                    } catch (_) { }
+                };
+
+                const initAudio = () => {
+                    if (audioInited.value) return;
+                    audioInited.value = true;
+                    // create bgm
+                    try {
+                        bgmAudio.value = new Audio('assets/audio/bgm.mp3');
+                        bgmAudio.value.loop = true;
+                        bgmAudio.value.volume = isMuted.value ? 0 : bgmVolume.value;
+                        bgmAudio.value.play().catch(() => {
+                            console.log('BGM 無法播放，可能缺少檔案或權限');
+                        });
+                    } catch (_) { console.log('無法建立 BGM'); }
+                };
+                const stopAllAudio = () => {
+                    try {
+                        if (bgmAudio.value) {
+                            bgmAudio.value.pause();
+                            try { bgmAudio.value.currentTime = 0; } catch (_) { }
+                        }
+                    } catch (_) { }
+                    try {
+                        if (gameOverAudio.value) {
+                            gameOverAudio.value.pause();
+                            try { gameOverAudio.value.currentTime = 0; } catch (_) { }
+                            gameOverAudio.value = null;
+                        }
+                    } catch (_) { }
+                };
+                const handleGameOver = () => {
+                    // stop bgm first to ensure gameover sound is audible
+                    try { if (bgmAudio.value) { bgmAudio.value.pause(); try { bgmAudio.value.currentTime = 0; } catch (_) { } } } catch (_) { }
+                    try {
+                        gameOverAudio.value = new Audio('assets/audio/sfx_gameover.mp3');
+                        gameOverAudio.value.volume = isMuted.value ? 0 : sfxVolume.value;
+                        gameOverAudio.value.play().catch(() => { console.log('無法播放 gameover 音效，可能缺少檔案'); });
+                    } catch (_) { console.log('建立 gameover 音效失敗'); }
+                };
+                const runAway = () => {
+                    clearTimer(); if (pauseTimerId) { clearInterval(pauseTimerId); pauseTimerId = null; }
+                    if (runAwayPressTimer.value) clearTimeout(runAwayPressTimer.value);
+                    runAwayPressTimer.value = null;
+                    stopAllAudio();
+                    setBattleMessage('你逃跑了！', 800);
+                    hasSubmitted.value = false;
+                    isFinished.value = false;
+                    userAnswers.value = [];
+                    slotFeedbacks.value = {};
+                    setTimeout(() => { showLevelSelect.value = true; }, 900);
+                };
+                const startRunAwayPress = () => {
+                    if (hasSubmitted.value) return;
+                    runAwayPressTimer.value = setTimeout(() => { playSfx('click'); runAway(); }, 3000);
+                };
+                const cancelRunAwayPress = () => {
+                    if (runAwayPressTimer.value) { clearTimeout(runAwayPressTimer.value); runAwayPressTimer.value = null; }
+                };
+                let battleMessageTimer = null;
+                const setBattleMessage = (text, ttlMs = 5200) => {
+                    if (battleMessageTimer) clearTimeout(battleMessageTimer);
+                    battleLog.value = text;
+                    battleMessageTimer = setTimeout(() => { battleLog.value = ''; battleMessageTimer = null; }, ttlMs);
+                };
+                const playBgm = () => {
+                    if (!audioInited.value) initAudio();
+                    if (bgmAudio.value) {
+                        const volumeScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
+                        bgmAudio.value.volume = isMuted.value ? 0 : bgmVolume.value * volumeScale;
+                        if (bgmAudio.value.paused) bgmAudio.value.play().catch(() => { });
+                    }
+                };
+
+                watch([isMenuOpen, isCodexOpen, isSkillUnlockModalOpen, isMistakesOpen, bgmVolume, isMuted], () => {
+                    if (!bgmAudio.value) return;
+                    const volumeScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
+                    bgmAudio.value.volume = isMuted.value ? 0 : bgmVolume.value * volumeScale;
+                });
+                const ensureBgmPlaying = (reason) => {
+                    if (!audioInited.value) initAudio();
+                    if (!bgmEnabled.value || isMuted.value || bgmVolume.value <= 0) return;
+                    if (bgmAudio.value && bgmAudio.value.paused) {
+                        bgmAudio.value.play().catch(() => {
+                            needsUserGestureToResumeBgm.value = true;
+                        });
+                    }
+                };
+                const pauseBgm = () => {
+                    if (bgmAudio.value && !bgmAudio.value.paused) bgmAudio.value.pause();
+                };
+                const playSfx = (name) => {
+                    if (!audioInited.value) return;
+                    const srcMap = {
+                        hit: 'assets/audio/sfx_hit.mp3',
+                        miss: 'assets/audio/mmiss.mp3',
+                        potion: 'assets/audio/sfx_potion.mp3',
+                        click: 'assets/audio/sfx_click.mp3',
+                        damage: 'assets/audio/damage.mp3',
+                        fanfare: 'assets/audio/fanfare.mp3',
+                        pop: 'assets/audio/pop.mp3',
+                        win: 'assets/audio/win.mp3'
+                    };
+                    const src = srcMap[name];
+                    if (!src) return;
+                    try {
+                        const a = new Audio(src);
+                        a.volume = isMuted.value ? 0 : sfxVolume.value;
+                        a.play().catch(() => { console.log(`無法播放 ${name}`); });
+                    } catch (_) { console.log(`建立 sfx ${name} 失敗`); }
+                };
+
+                const clearTimer = () => {
+                    if (timerId) { clearInterval(timerId); timerId = null; }
+                };
+
+                const runTimerLogic = () => {
+                    if (isFinished.value || monsterDead.value || playerDead.value || (hasSubmitted.value && !isCurrentCorrect.value) || showLevelSelect.value) {
+                        if (showLevelSelect.value || isFinished.value) {
+                            clearTimer();
+                        }
+                        return;
+                    }
+                    timeLeft.value -= 0.1;
+                    if (timeLeft.value <= 0) {
+                        applyMonsterAttack();
+                        timeLeft.value = 10;
+                    }
+                };
+
+                const startTimer = () => {
+                    clearTimer();
+                    timeUp.value = false;
+                    if (isFinished.value) return;
+                    timeLeft.value = 10;
+
+                    if (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value) {
+                        wasTimerRunning = true;
+                    } else {
+                        timerId = setInterval(runTimerLogic, 100);
+                    }
+                };
+
+                const runPauseTimerLogic = () => {
+                    wrongAnswerPauseCountdown.value--;
+                    if (wrongAnswerPauseCountdown.value <= 0) {
+                        if (pauseTimerId) { clearInterval(pauseTimerId); pauseTimerId = null; }
+                        wrongAnswerPause.value = false;
+                        const isHard = difficulty.value === 'hard';
+                        if (isHard && !playerDead.value) nextQuestion();
+                    }
+                };
+
+                const applyMonsterAttack = () => {
+                    const isMiss = Math.random() < 0.05;
+
+                    screenShake.value = true;
+                    setTimeout(() => { screenShake.value = false; }, 400);
+
+                    if (isMiss) {
+                        playSfx('miss');
+                        setBattleMessage(`怪物攻擊失誤！勇者閃開了！`, 1200);
+                    } else {
+                        playerBlink.value = true;
+                        flashOverlay.value = true;
+                        setTimeout(() => { playerBlink.value = false; }, 500);
+                        setTimeout(() => { flashOverlay.value = false; }, 300);
+
+                        playSfx('damage');
+                        const dmg = DAMAGE_TO_PLAYER;
+                        player.value.hp = Math.max(0, player.value.hp - dmg);
+                        setBattleMessage(`怪物發動攻擊，你損失了 ${dmg} 點 HP！`, 1200);
+                        if (player.value.hp <= 0) {
+                            handleGameOver();
+                        }
+                        hpBarDanger.value = true;
+                        setTimeout(() => { hpBarDanger.value = false; }, 500);
+                    }
+
+                    wrongAnswerPause.value = true;
+                    wrongAnswerPauseCountdown.value = difficulty.value === 'hard' ? 3 : 2;
+                    if (pauseTimerId) clearInterval(pauseTimerId);
+                    pauseTimerId = setInterval(runPauseTimerLogic, 1000);
+                };
+
+                // mistakes storage helpers
+                const loadMistakes = () => {
+                    try {
+                        const data = JSON.parse(localStorage.getItem('jpRpgMistakesV1') || '[]');
+                        mistakes.value = data;
+                    } catch (_) { }
+                };
+                const saveMistakes = () => {
+                    try { localStorage.setItem('jpRpgMistakesV1', JSON.stringify(mistakes.value)); } catch (_) { }
+                };
+                const addMistake = () => {
+                    const q = currentQuestion.value;
+                    const entry = {
+                        prompt: q.chinese,
+                        correct: q.answers,
+                        choices: q.choices || null,
+                        grammarTip: q.grammarTip || null,
+                        timestamp: new Date().toISOString(),
+                        levelId: currentLevel.value
+                    };
+                    mistakes.value.unshift(entry);
+                    if (mistakes.value.length > 20) mistakes.value.length = 20;
+                    saveMistakes();
+                };
+                const clearMistakes = () => { mistakes.value = []; saveMistakes(); };
+
+                const ALL_PARTICLES = ['は', 'が', 'を', 'に', 'で', 'へ', 'と'];
+                const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
+                const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
+                const makeChoices = (correct) => {
+                    const correctArr = Array.isArray(correct) ? correct : [correct];
+                    const wrong = ALL_PARTICLES.filter(p => !correctArr.includes(p));
+                    const picked = [correctArr[0], ...shuffle(wrong).slice(0, 3)];
+                    return shuffle(picked);
+                };
+                const onUserGesture = () => {
+                    if (needsUserGestureToResumeBgm.value) {
+                        ensureBgmPlaying('gesture');
+                        needsUserGestureToResumeBgm.value = false;
+                    }
+                };
+
+                const levelConfig = computed(() => LEVEL_CONFIG.value[currentLevel.value] || LEVEL_CONFIG.value[1] || {});
+                const levelTitle = computed(() => levelConfig.value.title || '');
+                const isChoiceMode = computed(() => levelConfig.value.blanks === 1);
+
+                let audioCtx = null;
+                const getAudioContext = () => {
+                    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    return audioCtx;
+                };
+                const playBeep = (frequency, duration, type) => {
+                    try {
+                        const ctx = getAudioContext();
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.frequency.value = frequency;
+                        osc.type = type || 'sine';
+                        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+                        osc.start(ctx.currentTime);
+                        osc.stop(ctx.currentTime + duration);
+                    } catch (_) { }
+                };
+                const playCorrectBeep = () => { playBeep(523, 0.15); playBeep(659, 0.15, 'sine'); };
+                const playWrongBeep = () => { playBeep(200, 0.25, 'sawtooth'); };
+
+                const startLevel = (level) => {
+                    stopAllAudio();
+                    initAudio();
+                    playSfx('click');
+                    showLevelSelect.value = false;
+                    currentLevel.value = level;
+                    initGame(level);
+                    needsUserGestureToResumeBgm.value = false;
+                    ensureBgmPlaying('startLevel');
+                };
+                const usePotion = () => {
+                    initAudio();
+                    if (needsUserGestureToResumeBgm.value) { ensureBgmPlaying('potion'); needsUserGestureToResumeBgm.value = false; }
+                    playSfx('potion');
+                    if (inventory.value.potions <= 0 || player.value.hp >= player.value.maxHp) return;
+                    inventory.value.potions--;
+                    player.value.hp = Math.min(player.value.maxHp, player.value.hp + POTION_HP);
+                    setBattleMessage(`喝了藥水，回復 ${POTION_HP} 點 HP！`, 1000);
+                };
+
+                const initGame = (level) => {
+                    isMistakesOpen.value = false;
+                    isMenuOpen.value = false;
+                    // audio settings should already be loaded in setup
+                    const lv = level ?? currentLevel.value;
+                    currentLevel.value = lv;
+                    const config = LEVEL_CONFIG.value[lv] || LEVEL_CONFIG.value[1] || { types: [0, 1, 2], blanks: 1 };
+
+                    // Trigger Unlock Logic when game initializes specific level
+                    if (config.unlockSkills && config.unlockSkills.length > 0) {
+                        const newUnlocks = [];
+                        config.unlockSkills.forEach(skillId => {
+                            if (!unlockedSkillIds.value.includes(skillId)) {
+                                unlockedSkillIds.value.push(skillId);
+                                newUnlocks.push(skillId);
+                            }
+                        });
+                        if (newUnlocks.length > 0) {
+                            newlyUnlocked.value = newUnlocks.map(id => skillsAll.value[id]).filter(Boolean);
+                            isSkillUnlockModalOpen.value = true;
+                        }
+                    }
+
+                    const typePool = config.types;
+                    const blanks = config.blanks;
+                    const qList = [];
+                    for (let i = 0; i < 100; i++) {
+                        const type = typePool[Math.floor(Math.random() * typePool.length)];
+                        let q;
+                        switch (type) {
+                            case 0: // 移動 (へ/に)
+                                const p0 = rand(db.places);
+                                q = { chinese: `去${p0.t}`, segments: [{ text: p0.j, ruby: p0.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: "行く", ruby: "い", isBlank: false }], answers: [["へ", "に"]], grammarTip: db.grammarTips.move };
+                                if (blanks === 1) q.choices = makeChoices(["へ", "に"]);
+                                break;
+                            case 1: { // 場所動作 (で/を)
+                                const verbTypes = [
+                                    { type: "read", v: { j: "読む", r: "よ", full: "よむ" }, ch: "讀" },
+                                    { type: "eat", v: { j: "食べる", r: "た", full: "たべる" }, ch: "吃" },
+                                    { type: "hear", v: { j: "聞く", r: "き", full: "きく" }, ch: "聽" },
+                                    { type: "write", v: { j: "書く", r: "か", full: "かく" }, ch: "寫" }
+                                ];
+                                const vt = rand(verbTypes);
+                                const pool1 = db.objects.filter(x => x.type === vt.type);
+                                const o1 = rand(pool1);
+                                const p1 = rand(db.places);
+                                if (blanks === 1) {
+                                    const vReading = vt.v.full || vt.v.r + "む";
+                                    q = { chinese: `在${p1.t}${vt.ch}${o1.t}`, segments: [{ text: p1.j, ruby: p1.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: o1.j + "を" + vt.v.j, ruby: o1.r + "を" + vReading, isBlank: false }], answers: ["で"], grammarTip: db.grammarTips.placeAction };
+                                    q.choices = makeChoices("で");
+                                } else {
+                                    q = { chinese: `在${p1.t}${vt.ch}${o1.t}`, segments: [{ text: p1.j, ruby: p1.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: o1.j, ruby: o1.r, isBlank: false }, { isBlank: true, blankIndex: 1 }, { text: vt.v.j, ruby: vt.v.r, isBlank: false }], answers: ["で", "を"], grammarTip: db.grammarTips.placeAction };
+                                }
+                                break;
+                            }
+                            case 2: { // 存在 (に/が)：只使用 exists:true 的實體物品
+                                const p2 = rand(db.places);
+                                const pool2 = db.objects.filter(x => x.exists !== false);
+                                const o2 = rand(pool2);
+                                if (blanks === 1) {
+                                    q = { chinese: `${p2.t}有${o2.t}`, segments: [{ text: p2.j, ruby: p2.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: o2.j + "が" + "ある", ruby: o2.r + "がある", isBlank: false }], answers: ["に"], grammarTip: db.grammarTips.existence };
+                                    q.choices = makeChoices("に");
+                                } else {
+                                    q = { chinese: `${p2.t}有${o2.t}`, segments: [{ text: p2.j, ruby: p2.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: o2.j, ruby: o2.r, isBlank: false }, { isBlank: true, blankIndex: 1 }, { text: "ある", isBlank: false }], answers: ["に", "が"], grammarTip: db.grammarTips.existence };
+                                }
+                                break;
+                            }
+                            case 3: { // 伴隨 (と/を)
+                                const pe3 = rand(db.people); const o3 = db.objects.filter(x => x.type === 'read').random();
+                                const v3 = { j: "読む", r: "よ", full: "よむ" };
+                                if (blanks === 1) {
+                                    q = { chinese: `和${pe3.t}一起讀${o3.t}`, segments: [{ text: pe3.j, ruby: pe3.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: o3.j + "を" + v3.j, ruby: o3.r + "を" + v3.full, isBlank: false }], answers: ["と"], grammarTip: db.grammarTips.accompany };
+                                    q.choices = makeChoices("と");
+                                } else {
+                                    q = { chinese: `和${pe3.t}一起讀${o3.t}`, segments: [{ text: pe3.j, ruby: pe3.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: o3.j, ruby: o3.r, isBlank: false }, { isBlank: true, blankIndex: 1 }, { text: "読む", ruby: "よ", isBlank: false }], answers: ["と", "を"], grammarTip: db.grammarTips.accompany };
+                                }
+                                break;
+                            }
+                            case 4: { // 工具 (で/を)
+                                const useRead = Math.random() < 0.5;
+                                const t4 = useRead ? db.tools.find(x => x.j === "スマホ") : db.tools.find(x => x.j === "ペン");
+                                const pool4 = db.objects.filter(x => x.type === (useRead ? "read" : "write"));
+                                const o4 = rand(pool4);
+                                const verb4 = useRead ? { j: "読む", r: "よ", full: "よむ", ch: "看" } : { j: "書く", r: "か", full: "かく", ch: "寫" };
+                                if (blanks === 1) {
+                                    q = { chinese: `用${t4.t}${verb4.ch}${o4.t}`, segments: [{ text: t4.j, ruby: t4.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: o4.j + "を" + verb4.j, ruby: o4.r + "を" + verb4.full, isBlank: false }], answers: ["で"], grammarTip: db.grammarTips.tool };
+                                    q.choices = makeChoices("で");
+                                } else {
+                                    q = { chinese: `用${t4.t}${verb4.ch}${o4.t}`, segments: [{ text: t4.j, ruby: t4.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: o4.j, ruby: o4.r, isBlank: false }, { isBlank: true, blankIndex: 1 }, { text: verb4.j, ruby: verb4.r, isBlank: false }], answers: ["で", "を"], grammarTip: db.grammarTips.tool };
+                                }
+                                break;
+                            }
+                            case 5: { // 給予 (に/を)
+                                const pe5 = rand(db.people); const o5 = rand(db.objects);
+                                if (blanks === 1) {
+                                    q = { chinese: `給${pe5.t}${o5.t}`, segments: [{ text: pe5.j, ruby: pe5.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: o5.j + "をあげる", ruby: o5.r + "をあげる", isBlank: false }], answers: ["に"], grammarTip: db.grammarTips.give };
+                                    q.choices = makeChoices("に");
+                                } else {
+                                    q = { chinese: `給${pe5.t}${o5.t}`, segments: [{ text: pe5.j, ruby: pe5.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: o5.j, ruby: o5.r, isBlank: false }, { isBlank: true, blankIndex: 1 }, { text: "あげる", isBlank: false }], answers: ["に", "を"], grammarTip: db.grammarTips.give };
+                                }
+                                break;
+                            }
+                        }
+                        qList.push(q);
+                    }
+                    questions.value = qList;
+                    currentIndex.value = 0;
+                    // totalScore.value = 0;
+                    comboCount.value = 0;
+                    maxComboCount.value = 0;
+                    totalQuestionsAnswered.value = 0;
+                    correctAnswersAmount.value = 0;
+                    earnedExp.value = 0;
+                    earnedGold.value = 0;
+                    isFinished.value = false;
+                    userAnswers.value = [];
+                    slotFeedbacks.value = {};
+                    hasSubmitted.value = false;
+                    timeUp.value = false;
+                    // pick monster based on level index
+                    const mdef = MONSTERS[(lv - 1) % MONSTERS.length] || MONSTERS[0];
+                    monster.value = { hp: mdef.hpMax, maxHp: mdef.hpMax, name: mdef.name, sprite: mdef.sprite, trait: mdef.trait };
+                    const bgIdx = Math.floor(Math.random() * 6) + 1;
+                    currentBg.value = `assets/images/bg_0${bgIdx}.jpg`;
+                    setBattleMessage(monster.value.name + ' 出現了！', 1000);
+                    hpBarDanger.value = false;
+                    clearTimer();
+                    startTimer();
+                    playSfx('pop');
+                };
+
+                const currentQuestion = computed(() => questions.value[currentIndex.value] || { chinese: '', segments: [] });
+
+                const getFormattedAnswer = () => {
+                    return currentQuestion.value.answers.map(ans => {
+                        const parsed = parseAcceptableAnswers(ans);
+                        return parsed.join('/');
+                    }).join(' 、 ');
+                };
+
+                const getSentenceText = () => {
+                    return currentQuestion.value.segments.map(s => s.isBlank ? (Array.isArray(currentQuestion.value.answers[s.blankIndex]) ? currentQuestion.value.answers[s.blankIndex][0] : currentQuestion.value.answers[s.blankIndex]) : s.text).join('');
+                };
+                const playVoice = () => {
+                    const text = getSentenceText();
+                    if (!text) return;
+                    const url = 'https://translate.google.com/translate_tts?ie=UTF-8&q=' + encodeURIComponent(text) + '&tl=ja&client=tw-ob';
+                    const audio = new Audio(url);
+                    audio.play().catch(() => {
+                        try {
+                            window.speechSynthesis.cancel();
+                            const u = new SpeechSynthesisUtterance(text);
+                            u.lang = 'ja-JP'; u.rate = 0.8;
+                            window.speechSynthesis.speak(u);
+                        } catch (_) { }
+                    });
+                };
+
+                const parseAcceptableAnswers = (ans) => {
+                    if (typeof ans === 'string') {
+                        return ans.split(/[/、,]/g).map(s => s.trim()).filter(s => s);
+                    }
+                    return Array.isArray(ans) ? ans : [ans];
+                };
+                const checkAnswer = () => {
+                    hpBarDanger.value = false;
+                    const blanks = levelConfig.value.blanks;
+
+                    let allCorrect = true;
+                    currentQuestion.value.answers.slice(0, blanks).forEach((ans, i) => {
+                        const userIn = (userAnswers.value[i] || "").trim();
+                        const acceptableAnswers = parseAcceptableAnswers(ans);
+                        const isCorrect = acceptableAnswers.includes(userIn);
+                        if (!isCorrect) allCorrect = false;
+
+                        slotFeedbacks.value[i] = isCorrect ? 'is-correct' : 'is-wrong';
+                        setTimeout(() => {
+                            if (slotFeedbacks.value[i] === (isCorrect ? 'is-correct' : 'is-wrong')) {
+                                slotFeedbacks.value[i] = '';
+                            }
+                        }, isCorrect ? 600 : 400);
+                    });
+                    isCurrentCorrect.value = allCorrect;
+
+                    if (!hasSubmitted.value) {
+                        totalQuestionsAnswered.value++;
+                    }
+
+                    if (isCurrentCorrect.value) {
+                        initAudio();
+                        // No playVoice() here per request
+                        monsterHit.value = true;
+                        setTimeout(() => { monsterHit.value = false; }, 250);
+                        playSfx('hit');
+                        comboCount.value++;
+                        if (comboCount.value > maxComboCount.value) maxComboCount.value = comboCount.value;
+                        if (!hasSubmitted.value) {
+                            correctAnswersAmount.value++;
+                        }
+                        const dmg = DAMAGE_TO_MONSTER;
+                        monster.value.hp = Math.max(0, monster.value.hp - dmg);
+                        setBattleMessage(`造成 ${dmg} 點傷害！`, 800);
+
+                        if (monster.value.hp <= 0) {
+                            grantRewards();
+                        }
+                        // Immediate next for correct answer
+                        setTimeout(() => { nextQuestion(); }, 600);
+                    } else {
+                        initAudio();
+                        playSfx('miss');
+                        comboCount.value = 0;
+                        addMistake();
+                        setBattleMessage(`攻擊失敗！`, 800);
+                        // Play voice only on wrong answer per request
+                        playVoice();
+                        // Auto-show grammar detail on mistake
+                        showGrammarDetail.value = true;
+                        // Stay on this question for manual 'Next'
+                    }
+                    hasSubmitted.value = true;
+                };
+
+                const nextQuestion = () => {
+                    showGrammarDetail.value = false;
+                    initAudio();
+                    if (needsUserGestureToResumeBgm.value) { ensureBgmPlaying('nextQuestion'); needsUserGestureToResumeBgm.value = false; }
+                    playSfx('click');
+                    // Logic: currentIndex reflects current level progress (1/10)
+                    // If monster is dead, we don't need next question here, it's handled by victory state
+                    if (currentIndex.value < 49) { // Allow more questions within a battle
+                        currentIndex.value++;
+                        if (currentIndex.value >= questions.value.length) currentIndex.value = 0; // Cycle questions if they run out
+                        userAnswers.value = [];
+                        slotFeedbacks.value = {};
+                        hasSubmitted.value = false;
+                        // DO NOT call startTimer() here, let it run continuously
+                    } else {
+                        // Prevent running out of questions
+                        currentIndex.value = 0;
+                        userAnswers.value = [];
+                        slotFeedbacks.value = {};
+                        hasSubmitted.value = false;
+                    }
+                };
+
+                const grantRewards = () => {
+                    const lv = currentLevel.value;
+                    const baseExp = 50 + (lv * 20);
+                    const baseGold = 30 + (lv * 15);
+                    const comboBonus = maxComboCount.value * 5;
+                    earnedExp.value = baseExp;
+                    earnedGold.value = baseGold + comboBonus;
+                    player.value.exp += earnedExp.value;
+                    player.value.gold += earnedGold.value;
+                    setBattleMessage(`擊敗了怪物！獲得 ${earnedExp.value} EXP 與 ${earnedGold.value} 金幣！`, 2000);
+                    clearTimer(); // Stop ATB when monster is dead
+
+                    // Victory Audio Sequence: Stop BGM, play Win, then Fanfare after 2s
+                    stopAllAudio();
+                    playSfx('win');
+                    setTimeout(() => {
+                        playSfx('fanfare');
+                    }, 2000);
+                };
+
+                const getInputStyle = (idx) => {
+                    if (!hasSubmitted.value) return '';
+                    return slotFeedbacks.value[idx] || '';
+                };
+
+                const displaySegments = computed(() => {
+                    const q = currentQuestion.value;
+                    const blanks = levelConfig.value.blanks;
+                    return (q.segments || []).map(seg => {
+                        if (!seg.isBlank) return { ...seg, showInput: false };
+                        return { ...seg, showInput: seg.blankIndex < blanks };
+                    });
+                });
+
+                const getAnswerForDisplay = (blankIndex) => {
+                    const ans = currentQuestion.value.answers[blankIndex];
+                    return Array.isArray(ans) ? ans[0] : ans;
+                };
+
+                const selectChoice = (opt) => {
+                    initAudio();
+                    if (needsUserGestureToResumeBgm.value) { ensureBgmPlaying('selectChoice'); needsUserGestureToResumeBgm.value = false; }
+                    playSfx('click');
+                    if (hasSubmitted.value) return;
+                    userAnswers.value[0] = opt;
+                };
+                const getChoiceBtnClass = (opt) => {
+                    if (!hasSubmitted.value) {
+                        return (userAnswers.value[0] === opt) ? 'border-amber-400 bg-amber-500/30 text-amber-100' : 'border-slate-500 bg-slate-700/50 text-slate-200 hover:border-amber-500/50';
+                    }
+                    const correct = Array.isArray(currentQuestion.value.answers[0]) ? currentQuestion.value.answers[0] : [currentQuestion.value.answers[0]];
+                    const isCorrectOpt = correct.includes(opt);
+                    const isSelected = userAnswers.value[0] === opt;
+                    if (isCorrectOpt) return 'border-emerald-500 bg-emerald-500/20 text-emerald-300';
+                    if (isSelected) return 'border-rose-500 bg-rose-500/20 text-rose-300';
+                    return 'border-slate-600 bg-slate-800/50 text-slate-400';
+                };
+
+                const monsterDead = computed(() => monster.value.hp <= 0);
+                const playerDead = computed(() => player.value.hp <= 0);
+                const levelPassed = computed(() => monsterDead.value);
+                const goNextLevel = () => {
+                    stopAllAudio();
+
+                    // Difficulty based recovery
+                    if (difficulty.value === 'easy') {
+                        player.value.hp = 100;
+                        inventory.value.potions = INITIAL_POTIONS;
+                    } else {
+                        player.value.hp = Math.min(100, player.value.hp + 50);
+                        // Potions unchanged in hard mode
+                    }
+
+                    currentLevel.value++;
+                    initGame(currentLevel.value);
+                    playBgm(); // Restart BGM for the next level
+                };
+                const retryLevel = () => { stopAllAudio(); initGame(currentLevel.value); };
+                const startOver = () => {
+                    isMistakesOpen.value = false;
+                    isMenuOpen.value = false;
+                    stopAllAudio();
+                    clearTimer();
+                    if (pauseTimerId) { clearInterval(pauseTimerId); pauseTimerId = null; }
+                    needsUserGestureToResumeBgm.value = false;
+                    showLevelSelect.value = true;
+                    inventory.value.potions = INITIAL_POTIONS;
+                };
+                const revive = () => {
+                    isMistakesOpen.value = false;
+                    isMenuOpen.value = false;
+                    stopAllAudio();
+                    clearTimer();
+                    if (pauseTimerId) { clearInterval(pauseTimerId); pauseTimerId = null; }
+                    needsUserGestureToResumeBgm.value = false;
+                    player.value = { hp: 100, maxHp: 100, gold: 0, exp: 0 };
+                    inventory.value.potions = INITIAL_POTIONS;
+                    showLevelSelect.value = true;
+                };
+
+                const accuracyPct = computed(() => {
+                    if (totalQuestionsAnswered.value === 0) return 0;
+                    return Math.round((correctAnswersAmount.value / totalQuestionsAnswered.value) * 100);
+                });
+
+                const calculatedGrade = computed(() => {
+                    const acc = accuracyPct.value;
+                    if (acc === 100) return 'S';
+                    if (acc >= 90) return 'A';
+                    if (acc >= 80) return 'B';
+                    if (acc >= 60) return 'C';
+                    if (acc >= 40) return 'D';
+                    return 'E';
+                });
+
+                const getGradeColor = (grade) => {
+                    const colors = {
+                        'S': 'text-purple-400 drop-shadow-[0_0_8px_rgba(192,132,252,0.8)]',
+                        'A': 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]',
+                        'B': 'text-blue-400',
+                        'C': 'text-amber-400',
+                        'D': 'text-orange-400',
+                        'E': 'text-rose-500'
+                    };
+                    return colors[grade] || 'text-slate-400';
+                };
+
+                const getHpColorClass = (hp, maxHp) => {
+                    const ratio = hp / maxHp;
+                    if (ratio <= 0.4) return 'bg-rose-500';
+                    if (ratio <= 0.79) return 'bg-amber-400';
+                    return 'bg-emerald-500';
+                };
+
+                const formatCorrect = (ans) => {
+                    if (Array.isArray(ans)) return ans.join('/');
+                    return ans;
+                };
+
+                // Array Helper
+                if (!Array.prototype.random) {
+                    Array.prototype.random = function () { return this[Math.floor(Math.random() * this.length)]; };
+                }
+
+                loadAudioSettings();
+                return { questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, battleLog, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, isMenuOpen, isMistakesOpen, formatCorrect, monsterHit, screenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, clearMistakes, playBgm, pauseBgm, playSfx, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo };
+            }
+        }).mount('#app');
+        console.log('應用已掛載！');
+
+        window.addEventListener('error', (e) => {
+            console.error('全局錯誤:', e.error);
+        });
+    </script>
+</body>
+
+</html>

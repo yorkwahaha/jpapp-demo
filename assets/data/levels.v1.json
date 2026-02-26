@@ -1,0 +1,46 @@
+[
+  {
+    "id": "L1",
+    "name": "新手村：連接與主題",
+    "unlockSkills": ["NO_POSSESS", "WA_TOPIC"],
+    "skillMix": { "newSkillWeight": 0.75, "oldSkillWeight": 0.25 },
+    "questionCount": 10,
+    "boss": null
+  },
+  {
+    "id": "L2",
+    "name": "森林1：存在（が）",
+    "unlockSkills": ["GA_EXIST"],
+    "skillMix": { "newSkillWeight": 0.75, "oldSkillWeight": 0.25 },
+    "questionCount": 10,
+    "boss": null
+  },
+  {
+    "id": "L3",
+    "name": "森林2：受詞（を）",
+    "unlockSkills": ["WO_OBJECT"],
+    "skillMix": { "newSkillWeight": 0.75, "oldSkillWeight": 0.25 },
+    "questionCount": 10,
+    "boss": null
+  },
+  {
+    "id": "L4",
+    "name": "森林3：時間（に）",
+    "unlockSkills": ["NI_TIME"],
+    "skillMix": { "newSkillWeight": 0.75, "oldSkillWeight": 0.25 },
+    "questionCount": 10,
+    "boss": null
+  },
+  {
+    "id": "L5_BOSS",
+    "name": "森林Boss：綜合考",
+    "unlockSkills": ["HE_DEST"],
+    "skillMix": { "newSkillWeight": 0.75, "oldSkillWeight": 0.25 },
+    "questionCount": 15,
+    "boss": {
+      "everyNLevels": 5,
+      "mode": "all_unlocked",
+      "sampling": "balanced"
+    }
+  }
+]

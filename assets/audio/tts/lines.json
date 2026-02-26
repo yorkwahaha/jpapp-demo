@@ -1,0 +1,22 @@
+[
+  {
+    "key": "question.sample_001",
+    "text": "これは私の本です。どれですか？",
+    "voice": "ja-JP-NanamiNeural"
+  },
+  {
+    "key": "ui.correct",
+    "text": "せいかい！",
+    "voice": "ja-JP-NanamiNeural"
+  },
+  {
+    "key": "ui.wrong",
+    "text": "ちがう…！",
+    "voice": "ja-JP-NanamiNeural"
+  },
+  {
+    "key": "narration.support_001",
+    "text": "だいじょうぶ。落ち着いて、もう一度行こう。",
+    "voice": "ja-JP-MayuNeural"
+  }
+]

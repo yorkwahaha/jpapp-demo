@@ -1,0 +1,819 @@
+{
+  "places": [
+    {
+      "id": "school",
+      "j": "学校",
+      "r": "がっこう",
+      "zh": "學校",
+      "tags": [
+        "place",
+        "institution"
+      ]
+    },
+    {
+      "id": "home",
+      "j": "家",
+      "r": "いえ",
+      "zh": "家",
+      "tags": [
+        "place",
+        "home"
+      ]
+    },
+    {
+      "id": "kitchen",
+      "j": "台所",
+      "r": "だいどころ",
+      "zh": "廚房",
+      "tags": [
+        "place"
+      ]
+    },
+    {
+      "id": "company",
+      "j": "会社",
+      "r": "かいしゃ",
+      "zh": "公司",
+      "tags": [
+        "place"
+      ]
+    },
+    {
+      "id": "bank",
+      "j": "銀行",
+      "r": "ぎんこう",
+      "zh": "銀行",
+      "tags": [
+        "place",
+        "institution"
+      ]
+    },
+    {
+      "id": "library",
+      "j": "図書館",
+      "r": "としょかん",
+      "zh": "圖書館",
+      "tags": [
+        "place",
+        "public"
+      ]
+    },
+    {
+      "id": "park",
+      "j": "公園",
+      "r": "こうえん",
+      "zh": "公園",
+      "tags": [
+        "place",
+        "public"
+      ]
+    },
+    {
+      "id": "dept_store",
+      "j": "デパート",
+      "r": "でぱーと",
+      "zh": "百貨公司",
+      "tags": [
+        "place",
+        "public"
+      ]
+    },
+    {
+      "id": "hospital",
+      "j": "病院",
+      "r": "びょういん",
+      "zh": "醫院",
+      "tags": [
+        "place",
+        "institution"
+      ]
+    },
+    {
+      "id": "station",
+      "j": "駅",
+      "r": "えき",
+      "zh": "車站",
+      "tags": [
+        "place",
+        "public"
+      ]
+    },
+    {
+      "id": "mountain",
+      "j": "山",
+      "r": "やま",
+      "zh": "山",
+      "tags": [
+        "place",
+        "landform"
+      ]
+    },
+    {
+      "id": "river",
+      "j": "川",
+      "r": "かわ",
+      "zh": "河",
+      "tags": [
+        "place",
+        "landform"
+      ]
+    }
+  ],
+  "verbs_move": [
+    {
+      "id": "go",
+      "j": "行く",
+      "r": "いく",
+      "zh": "去"
+    },
+    {
+      "id": "return",
+      "j": "帰る",
+      "r": "かえる",
+      "zh": "回家"
+    },
+    {
+      "id": "come",
+      "j": "来る",
+      "r": "くる",
+      "zh": "來"
+    }
+  ],
+  "nature": [
+    {
+      "id": "snow",
+      "j": "雪",
+      "r": "ゆき",
+      "zh": "雪",
+      "kind": "precip"
+    },
+    {
+      "id": "sky",
+      "j": "空",
+      "r": "そら",
+      "zh": "天空",
+      "kind": "sky"
+    },
+    {
+      "id": "rain",
+      "j": "雨",
+      "r": "あめ",
+      "zh": "雨",
+      "kind": "precip"
+    },
+    {
+      "id": "wind",
+      "j": "風",
+      "r": "かぜ",
+      "zh": "風",
+      "kind": "wind"
+    },
+    {
+      "id": "flower",
+      "j": "花",
+      "r": "はな",
+      "zh": "花",
+      "kind": "flower"
+    }
+  ],
+  "verbs_nature": [
+    {
+      "id": "fall",
+      "j": "降る",
+      "r": "ふる",
+      "zh": "下（雨雪）",
+      "kinds": [
+        "precip"
+      ]
+    },
+    {
+      "id": "cloud",
+      "j": "曇る",
+      "r": "くもる",
+      "zh": "變陰",
+      "kinds": [
+        "sky"
+      ]
+    },
+    {
+      "id": "blow",
+      "j": "吹く",
+      "r": "ふく",
+      "zh": "吹（風）",
+      "kinds": [
+        "wind"
+      ]
+    },
+    {
+      "id": "bloom",
+      "j": "咲く",
+      "r": "さく",
+      "zh": "開（花）",
+      "kinds": [
+        "flower"
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "id": "book",
+      "j": "本",
+      "r": "ほん",
+      "zh": "書",
+      "tags": [
+        "media"
+      ],
+      "ownable": true,
+      "placeable": true,
+      "domain": [
+        "home",
+        "school",
+        "library",
+        "general"
+      ]
+    },
+    {
+      "id": "meal",
+      "j": "ご飯",
+      "r": "ごはん",
+      "zh": "飯",
+      "tags": [
+        "food"
+      ],
+      "ownable": true,
+      "placeable": true,
+      "domain": [
+        "home",
+        "school",
+        "company",
+        "general"
+      ]
+    },
+    {
+      "id": "water",
+      "j": "水",
+      "r": "みず",
+      "zh": "水",
+      "tags": [
+        "drink"
+      ],
+      "ownable": true,
+      "placeable": true,
+      "domain": [
+        "home",
+        "school",
+        "company",
+        "general"
+      ]
+    },
+    {
+      "id": "apple",
+      "j": "りんご",
+      "r": "りんご",
+      "zh": "蘋果",
+      "tags": [
+        "food"
+      ],
+      "ownable": true,
+      "placeable": true,
+      "domain": [
+        "home",
+        "school",
+        "company",
+        "general"
+      ]
+    },
+    {
+      "id": "meat",
+      "j": "肉",
+      "r": "にく",
+      "zh": "肉",
+      "tags": [
+        "food"
+      ],
+      "ownable": true,
+      "placeable": true,
+      "domain": [
+        "general"
+      ]
+    },
+    {
+      "id": "fish",
+      "j": "魚",
+      "r": "さかな",
+      "zh": "魚",
+      "tags": [
+        "food"
+      ],
+      "ownable": true,
+      "placeable": true,
+      "domain": [
+        "general"
+      ]
+    },
+    {
+      "id": "vegetable",
+      "j": "野菜",
+      "r": "やさい",
+      "zh": "蔬菜",
+      "tags": [
+        "food"
+      ],
+      "ownable": true,
+      "placeable": true,
+      "domain": [
+        "general"
+      ]
+    },
+    {
+      "id": "tea",
+      "j": "お茶",
+      "r": "おちゃ",
+      "zh": "茶",
+      "tags": [
+        "drink"
+      ],
+      "ownable": true,
+      "placeable": true,
+      "domain": [
+        "home",
+        "school",
+        "company",
+        "general"
+      ]
+    },
+    {
+      "id": "coffee",
+      "j": "コーヒー",
+      "r": "こーひー",
+      "zh": "咖啡",
+      "tags": [
+        "drink"
+      ],
+      "ownable": true,
+      "placeable": true,
+      "domain": [
+        "home",
+        "school",
+        "company",
+        "general"
+      ]
+    },
+    {
+      "id": "milk",
+      "j": "牛乳",
+      "r": "ぎゅうにゅう",
+      "zh": "牛奶",
+      "tags": [
+        "drink"
+      ],
+      "ownable": true,
+      "placeable": true,
+      "domain": [
+        "home",
+        "school",
+        "company",
+        "general"
+      ]
+    },
+    {
+      "id": "letter",
+      "j": "手紙",
+      "r": "てがみ",
+      "zh": "信",
+      "tags": [
+        "media"
+      ],
+      "ownable": true,
+      "placeable": true,
+      "domain": [
+        "home",
+        "school",
+        "general"
+      ]
+    },
+    {
+      "id": "newspaper",
+      "j": "新聞",
+      "r": "しんぶん",
+      "zh": "報紙",
+      "tags": [
+        "media"
+      ],
+      "ownable": true,
+      "placeable": true,
+      "domain": [
+        "home",
+        "school",
+        "general"
+      ]
+    },
+    {
+      "id": "magazine",
+      "j": "雑誌",
+      "r": "ざっし",
+      "zh": "雜誌",
+      "tags": [
+        "media"
+      ],
+      "ownable": true,
+      "placeable": true,
+      "domain": [
+        "home",
+        "school",
+        "general"
+      ]
+    },
+    {
+      "id": "television",
+      "j": "テレビ",
+      "r": "てれび",
+      "zh": "電視",
+      "tags": [
+        "inplace"
+      ],
+      "ownable": false,
+      "placeable": true,
+      "domain": [
+        "home",
+        "school",
+        "general"
+      ]
+    },
+    {
+      "id": "movie",
+      "j": "映画",
+      "r": "えいが",
+      "zh": "電影",
+      "tags": [
+        "media"
+      ],
+      "ownable": false,
+      "placeable": true,
+      "domain": [
+        "library",
+        "general"
+      ]
+    },
+    {
+      "id": "music",
+      "j": "音楽",
+      "r": "おんがく",
+      "zh": "音樂",
+      "tags": [
+        "media"
+      ],
+      "ownable": false,
+      "placeable": true,
+      "domain": [
+        "library",
+        "general"
+      ]
+    },
+    {
+      "id": "photo",
+      "j": "写真",
+      "r": "しゃしん",
+      "zh": "照片",
+      "tags": [
+        "inplace"
+      ],
+      "ownable": false,
+      "placeable": true,
+      "domain": [
+        "home",
+        "school",
+        "general"
+      ]
+    },
+    {
+      "id": "homework",
+      "j": "宿題",
+      "r": "しゅくだい",
+      "zh": "作業",
+      "tags": [
+        "academic"
+      ],
+      "ownable": false,
+      "placeable": true,
+      "domain": [
+        "school"
+      ]
+    },
+    {
+      "id": "test",
+      "j": "テスト",
+      "r": "てすと",
+      "zh": "考試",
+      "tags": [
+        "academic"
+      ],
+      "ownable": false,
+      "placeable": true,
+      "domain": [
+        "school"
+      ]
+    },
+    {
+      "id": "shoes",
+      "j": "靴",
+      "r": "くつ",
+      "zh": "鞋子",
+      "tags": [
+        "owned"
+      ],
+      "ownable": true,
+      "placeable": false,
+      "domain": [
+        "general"
+      ]
+    },
+    {
+      "id": "clothes",
+      "j": "服",
+      "r": "ふく",
+      "zh": "衣服",
+      "tags": [
+        "owned"
+      ],
+      "ownable": true,
+      "placeable": false,
+      "domain": [
+        "general"
+      ]
+    },
+    {
+      "id": "bag",
+      "j": "鞄",
+      "r": "かばん",
+      "zh": "包包",
+      "tags": [
+        "owned"
+      ],
+      "ownable": true,
+      "placeable": false,
+      "domain": [
+        "general"
+      ]
+    },
+    {
+      "id": "door",
+      "j": "ドア",
+      "r": "どあ",
+      "zh": "門",
+      "tags": [
+        "inplace"
+      ],
+      "ownable": false,
+      "placeable": true,
+      "domain": [
+        "home",
+        "school",
+        "company",
+        "hospital",
+        "library",
+        "general"
+      ]
+    },
+    {
+      "id": "window",
+      "j": "窓",
+      "r": "まど",
+      "zh": "窗戶",
+      "tags": [
+        "inplace"
+      ],
+      "ownable": false,
+      "placeable": true,
+      "domain": [
+        "home",
+        "school",
+        "company",
+        "hospital",
+        "library",
+        "general"
+      ]
+    }
+  ],
+  "verbs_do": [
+    {
+      "id": "eat",
+      "j": "食べる",
+      "r": "たべる",
+      "zh": "吃",
+      "vt": true,
+      "kind": "eat"
+    },
+    {
+      "id": "drink",
+      "j": "飲む",
+      "r": "のむ",
+      "zh": "喝",
+      "vt": true,
+      "kind": "drink"
+    },
+    {
+      "id": "read",
+      "j": "読む",
+      "r": "よむ",
+      "zh": "讀",
+      "vt": true,
+      "kind": "read"
+    },
+    {
+      "id": "write",
+      "j": "書く",
+      "r": "かく",
+      "zh": "寫",
+      "vt": true,
+      "kind": "write"
+    },
+    {
+      "id": "watch",
+      "j": "見る",
+      "r": "みる",
+      "zh": "看",
+      "vt": true,
+      "kind": "watch"
+    },
+    {
+      "id": "listen",
+      "j": "聞く",
+      "r": "きく",
+      "zh": "聽",
+      "vt": true,
+      "kind": "listen"
+    },
+    {
+      "id": "buy",
+      "j": "買う",
+      "r": "かう",
+      "zh": "買",
+      "vt": true,
+      "kind": "buy"
+    },
+    {
+      "id": "do",
+      "j": "する",
+      "r": "する",
+      "zh": "做",
+      "vt": true,
+      "kind": "do"
+    },
+    {
+      "id": "study",
+      "j": "勉強する",
+      "r": "べんきょうする",
+      "zh": "學習",
+      "vt": true,
+      "kind": "study"
+    },
+    {
+      "id": "wash",
+      "j": "洗う",
+      "r": "あらう",
+      "zh": "洗",
+      "vt": true,
+      "kind": "wash"
+    },
+    {
+      "id": "take_photo",
+      "j": "撮る",
+      "r": "とる",
+      "zh": "拍（照）",
+      "vt": true,
+      "kind": "take_photo"
+    },
+    {
+      "id": "sing",
+      "j": "歌う",
+      "r": "うたう",
+      "zh": "唱（歌）",
+      "vt": true,
+      "kind": "sing"
+    },
+    {
+      "id": "make",
+      "j": "作る",
+      "r": "つくる",
+      "zh": "製作",
+      "vt": true,
+      "kind": "make"
+    },
+    {
+      "id": "wait",
+      "j": "待つ",
+      "r": "まつ",
+      "zh": "等待",
+      "vt": true,
+      "kind": "wait"
+    },
+    {
+      "id": "open",
+      "j": "開ける",
+      "r": "あける",
+      "zh": "打開",
+      "vt": true,
+      "kind": "open"
+    },
+    {
+      "id": "close",
+      "j": "閉める",
+      "r": "しめる",
+      "zh": "關閉",
+      "vt": true,
+      "kind": "close"
+    },
+    {
+      "id": "wear_top",
+      "j": "着る",
+      "r": "きる",
+      "zh": "穿（上衣）",
+      "vt": true,
+      "kind": "wear_top"
+    },
+    {
+      "id": "wear_bottom",
+      "j": "履く",
+      "r": "はく",
+      "zh": "穿（鞋褲）",
+      "vt": true,
+      "kind": "wear_bottom"
+    },
+    {
+      "id": "hold",
+      "j": "持つ",
+      "r": "もつ",
+      "zh": "拿/擁有",
+      "vt": true,
+      "kind": "hold"
+    },
+    {
+      "id": "use",
+      "j": "使う",
+      "r": "つかう",
+      "zh": "使用",
+      "vt": true,
+      "kind": "use"
+    }
+  ],
+  "people": [
+    {
+      "id": "teacher",
+      "j": "先生",
+      "r": "せんせい",
+      "zh": "老師",
+      "tags": [
+        "person",
+        "role"
+      ]
+    },
+    {
+      "id": "doctor",
+      "j": "医者",
+      "r": "いしゃ",
+      "zh": "醫生",
+      "tags": [
+        "person",
+        "role"
+      ]
+    },
+    {
+      "id": "student",
+      "j": "学生",
+      "r": "がくせい",
+      "zh": "學生",
+      "tags": [
+        "person",
+        "role"
+      ]
+    },
+    {
+      "id": "friend",
+      "j": "友達",
+      "r": "ともだち",
+      "zh": "朋友",
+      "tags": [
+        "person"
+      ]
+    },
+    {
+      "id": "mother",
+      "j": "母",
+      "r": "はは",
+      "zh": "媽媽",
+      "tags": [
+        "person"
+      ]
+    },
+    {
+      "id": "me",
+      "j": "私",
+      "r": "わたし",
+      "zh": "我",
+      "tags": [
+        "person"
+      ]
+    }
+  ]
+}

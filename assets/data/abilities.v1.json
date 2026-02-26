@@ -1,0 +1,26 @@
+[
+  {
+    "id": "ODOODO",
+    "name": "オドオド",
+    "desc": "讓敵人的攻擊準備時間延長 30%，持續 3 回合。",
+    "cost": 5,
+    "type": "debuff",
+    "icon": "⏳"
+  },
+  {
+    "id": "UTOUTO",
+    "name": "ウトウト",
+    "desc": "讓敵人陷入睡眠，暫停攻擊，直到受到玩家攻擊為止。",
+    "cost": 5,
+    "type": "debuff",
+    "icon": "💤"
+  },
+  {
+    "id": "WAKUWAKU",
+    "name": "ワクワク",
+    "desc": "讓敵人造成的傷害減少 40%，持續 2 回合。",
+    "cost": 5,
+    "type": "buff",
+    "icon": "✨"
+  }
+]

@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日語助詞 RPG：魔王城大冒險</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/styles.css">
+
+</head>
+
+<body class="p-4 md:p-8">
+    <div id="app" v-cloak class="w-full max-w-6xl mx-auto" @pointerdown="onUserGesture" :class="{ shake: screenShake }">
+        <!-- Menu button -->
+        <!-- Level select menu only -->
+        <div v-if="showLevelSelect"
+            class="card rounded-3xl shadow-2xl overflow-hidden border border-amber-500/30 p-12 text-center bg-slate-900/90 backdrop-blur-xl">
+            <h1 class="text-4xl font-black text-amber-400 mb-4 tracking-tighter">日語助詞 RPG：魔王城大冒險</h1>
+            <p class="text-slate-400 mb-6 text-lg">選擇難度開始挑戰</p>
+
+            <div class="flex justify-center gap-6 mb-12">
+                <button @click="difficulty = 'easy'"
+                    :class="difficulty === 'easy' ? 'border-emerald-500 bg-emerald-500/30 text-emerald-300 scale-110 shadow-[0_0_20px_rgba(16,185,129,0.2)]' : 'border-slate-700 text-slate-500 hover:border-slate-500'"
+                    class="px-10 py-5 rounded-2xl border-2 font-black text-xl transition-all duration-300">初級
+                    (Easy)</button>
+                <button @click="difficulty = 'hard'"
+                    :class="difficulty === 'hard' ? 'border-rose-500 bg-rose-500/30 text-rose-300 scale-110 shadow-[0_0_20px_rgba(225,29,72,0.2)]' : 'border-slate-700 text-slate-500 hover:border-slate-500'"
+                    class="px-10 py-5 rounded-2xl border-2 font-black text-xl transition-all duration-300">高級
+                    (Hard)</button>
+            </div>
+
+            <div
+                class="max-w-md mx-auto space-y-4 mb-8 text-slate-400 text-sm bg-slate-800/40 p-6 rounded-2xl border border-slate-700">
+                <div class="flex items-center gap-3">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span>初級模式：答錯後 2 秒可繼續手動跳題。</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                    <span>高級模式：答錯或時間到 3 秒後自動進入下一題。</span>
+                </div>
+            </div>
+
+            <button @click="startLevel(1)"
+                class="group relative inline-flex items-center justify-center px-16 py-6 font-black text-2xl tracking-widest text-slate-900 transition-all duration-200 bg-amber-500 rounded-2xl hover:bg-amber-400 active:scale-95 shadow-xl border-b-8 border-amber-700">
+                開始戰鬥
+            </button>
+        </div>
+
+        <div v-else id="stageWrap" class="w-full flex justify-center">
+            <div id="stage" class="rounded-3xl shadow-2xl overflow-hidden border border-white/50">
+                <!-- Top Bar Removed -->
+
+                <!-- #battleScene: upper half with enemy -->
+                <div id="battleScene" class="transition-all duration-300"
+                    :style="{ backgroundImage: 'url(' + currentBg + ')' }"
+                    :class="{'bg-dodge': isPlayerDodging, 'brightness-50 grayscale saturate-50': (hasSubmitted && !isCurrentCorrect)}">
+                    <div
+                        class="absolute top-4 left-4 px-3 py-1 bg-slate-900/80 rounded-lg border border-amber-500/30 text-xs font-bold text-amber-500 shadow-md">
+                        第 {{ currentLevel }} 關 • {{ difficulty === 'easy' ? 'Easy' : 'Hard' }}
+                    </div>
+
+                    <!-- 怪物 -->
+                    <div v-if="!monsterDead"
+                        class="flex flex-col items-center p-6 rounded-2xl bg-slate-800/40 border border-rose-500/20 relative mt-12"
+                        :class="{ hit: monsterHit }">
+                        <div v-if="battleLog" class="log-bubble">{{ battleLog }}</div>
+
+                        <!-- Radial ATB Timer -->
+                        <div v-if="!isFinished && !monsterDead && !playerDead" class="relative mb-4">
+                            <svg class="w-16 h-16 transform -rotate-90">
+                                <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="4" fill="transparent"
+                                    class="text-slate-800" />
+                                <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="4" fill="transparent"
+                                    :stroke-dasharray="175.9" :stroke-dashoffset="175.9 * (1 - timeLeft / 10)"
+                                    class="text-amber-500 transition-all duration-100 ease-linear shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                <span
+                                    class="text-[8px] font-black text-slate-300 leading-none tracking-tighter">次の攻撃まで</span>
+                            </div>
+                        </div>
+
+                        <div
+                            class="w-28 h-28 rounded-full bg-rose-900/80 flex items-center justify-center text-5xl mb-3 shadow-lg ring-4 ring-rose-500/20">
+                            {{ monster.sprite || '👹' }}
+                        </div>
+                        <span class="text-base font-bold text-slate-200 mb-1">{{ monster.name }}</span>
+                        <span class="text-xs text-amber-400/80 mb-3">{{ monster.trait }}</span>
+
+                        <!-- HP Bar -->
+                        <div class="w-full h-1.5 bg-slate-900/50 rounded-full overflow-hidden mb-3 border border-slate-700/30"
+                            style="width: 140px;">
+                            <div class="h-full bg-rose-600 shadow-[0_0_8px_rgba(225,29,72,0.4)] transition-all duration-500"
+                                :style="{ width: (monster.hp / monster.maxHp * 100) + '%' }"></div>
+                        </div>
+                    </div>
+                    <div v-else-if="battleLog" class="log-bubble mt-12">{{ battleLog }}</div>
+                </div>
+
+                <!-- #hud: lower half with player, questions, actions -->
+                <!-- NEW HUD LAYOUT -->
+                <div id="hud" v-if="!isFinished" :class="{'hud-shake': screenShake}"
+                    class="flex-1 flex flex-row gap-4 p-4 bg-slate-900/90 rounded-b-3xl w-full h-full overflow-hidden">
+
+                    <!-- Left Column (Area 1 & 2) -->
+                    <div class="w-64 flex flex-col gap-4 shrink-0 h-full">
+                        <!-- Area 1: Party and Stats -->
+                        <div
+                            class="flex-1 border-2 border-amber-500/60 rounded-xl p-3 flex flex-col gap-2 relative bg-slate-800/60 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] overflow-hidden">
+                            <!-- Player 1 (Active) -->
+                            <div
+                                class="flex items-center gap-3 bg-slate-900/80 p-3 rounded-2xl border border-slate-700 shadow-md w-full">
+                                <div
+                                    class="w-12 h-12 rounded-full bg-emerald-900/60 flex items-center justify-center text-2xl border-2 flex-shrink-0 border-emerald-500/40">
+                                    🧙
+                                </div>
+                                <div class="flex flex-col gap-1 w-full">
+                                    <div class="flex justify-between items-end gap-2">
+                                        <span
+                                            class="text-[10px] font-black text-slate-400 uppercase tracking-widest">勇者</span>
+                                        <span class="text-[10px] font-mono font-bold">{{ player.hp }}/{{ player.maxHp
+                                            }}</span>
+                                    </div>
+                                    <div class="hp-bar-wrap h-2.5 shadow-inner w-full">
+                                        <div class="hp-bar-fill shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+                                            :class="[getHpColorClass(player.hp, player.maxHp), { danger: hpBarDanger, 'player-blink': playerBlink }]"
+                                            :style="{ width: (player.hp / player.maxHp * 100) + '%' }"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Empty slots -->
+                            <div v-for="i in 2" :key="i"
+                                class="flex items-center gap-3 bg-slate-900/40 p-2.5 rounded-2xl border border-slate-800 opacity-60 w-full">
+                                <div
+                                    class="w-10 h-10 rounded-2xl border-2 border-dashed border-slate-700 flex items-center justify-center text-slate-600 cursor-default flex-shrink-0">
+                                    +
+                                </div>
+                            </div>
+
+                            <!-- Gold & Inventory -->
+                            <div class="mt-auto pt-2 border-t-2 border-slate-700/50 flex gap-2 px-1 shrink-0">
+                                <div
+                                    class="flex-1 flex justify-between items-center bg-slate-900/50 px-3 py-2 rounded-lg border border-slate-700/50 shadow-inner">
+                                    <span class="text-amber-400 text-xs font-black tracking-widest">💰 GOLD</span>
+                                    <span class="text-amber-400 text-base font-mono font-bold">{{ player.gold }}</span>
+                                </div>
+                                <button @click="isInventoryOpen = true; pauseBattle();" title="背包"
+                                    class="aspect-square flex items-center justify-center rounded-lg bg-gradient-to-t from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white text-xl transition-transform active:scale-95 border border-slate-500/50 shadow-lg px-3">🎒</button>
+                            </div>
+                        </div>
+
+                        <!-- Area 2: System / Codex / Potion -->
+                        <div
+                            class="h-20 shrink-0 border-2 border-amber-500/60 rounded-xl p-2.5 flex justify-between items-center bg-slate-800/60 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]">
+                            <button @click="isCodexOpen = true; pauseBattle();" title="招式圖鑑"
+                                class="h-full aspect-square flex items-center justify-center rounded-xl bg-gradient-to-t from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500 border border-amber-400/50 text-2xl shadow-lg transition-transform active:scale-95">📖</button>
+                            <button @click="usePotion()" title="回復藥水"
+                                class="h-full aspect-square flex items-center justify-center rounded-xl bg-gradient-to-t from-emerald-700 to-emerald-600 hover:from-emerald-600 hover:to-emerald-500 text-2xl shadow-lg border border-emerald-400/50 relative transition-transform active:scale-95"
+                                :class="{ 'opacity-40 cursor-not-allowed grayscale': inventory.potions <= 0 || player.hp >= player.maxHp || monsterDead || playerDead }"
+                                :disabled="inventory.potions <= 0 || player.hp >= player.maxHp || monsterDead || playerDead">
+                                🧪
+                                <span
+                                    class="absolute -top-2 -right-2 bg-rose-600 border border-rose-300 text-white text-[11px] font-black px-2 py-0.5 rounded-full shadow-md z-10">{{
+                                    inventory.potions }}</span>
+                            </button>
+                            <button @click="isMenuOpen = !isMenuOpen; isMenuOpen ? pauseBattle() : resumeBattle()"
+                                title="選單"
+                                class="h-full aspect-square flex items-center justify-center rounded-xl bg-gradient-to-t from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white text-2xl font-bold transition-transform active:scale-95 border border-slate-400/50">☰</button>
+                        </div>
+                    </div>
+
+                    <!-- Right Column (Area 3): Commands & Results -->
+                    <div
+                        class="flex-1 border-2 border-amber-500/60 rounded-xl p-6 flex flex-col relative bg-slate-800/60 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] overflow-hidden">
+                        <div class="absolute top-4 right-5 text-right flex items-center gap-2">
+                            <span v-if="comboCount > 1"
+                                class="text-rose-400 font-black text-sm animate-bounce inline-block">🔥 {{ comboCount }}
+                                COMBO</span>
+                        </div>
+
+                        <div class="flex flex-col items-center justify-center flex-1 w-full gap-4 relative">
+                            <div v-if="!monsterDead && !playerDead"
+                                class="flex flex-col items-center justify-center w-full flex-1">
+                                <!-- Integrated Question Area -->
+                                <div id="question-area" class="w-full mb-1 flex flex-col items-center">
+                                    <div class="text-slate-300/80 font-bold mb-2 text-sm tracking-widest drop-shadow">{{
+                                        currentQuestion?.chinese || '' }}</div>
+                                    <div class="flex flex-wrap justify-center items-center gap-2">
+                                        <span v-for="(seg, idx) in displaySegments" :key="idx"
+                                            class="inline-flex items-center">
+                                            <span v-if="!seg.isBlank" class="text-slate-100">
+                                                <ruby v-if="seg.ruby">{{ seg.text }}<rt>{{ seg.ruby }}</rt></ruby>
+                                                <span v-else>{{ seg.text }}</span>
+                                            </span>
+                                            <div v-else-if="seg.showInput && !isChoiceMode">
+                                                <input v-model="userAnswers[seg.blankIndex]" :disabled="hasSubmitted"
+                                                    class="particle-input px-2 py-0.5 text-lg"
+                                                    :class="getInputStyle(seg.blankIndex)" type="text"
+                                                    spellcheck="false">
+                                            </div>
+                                            <span v-else-if="seg.showInput && isChoiceMode" class="particle-slot"
+                                                :class="[getInputStyle(seg.blankIndex), { 'is-empty': !hasSubmitted && !userAnswers[seg.blankIndex] }]">
+                                                {{ hasSubmitted ? getAnswerForDisplay(seg.blankIndex) :
+                                                (userAnswers[seg.blankIndex] || '\u00A0') }}
+                                            </span>
+                                            <span v-else
+                                                class="particle-input correct inline-block px-2 py-0.5 text-lg">{{
+                                                getAnswerForDisplay(seg.blankIndex) }}</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div v-if="isChoiceMode && currentQuestion.choices && !hasSubmitted"
+                                    class="flex flex-wrap justify-center gap-3 w-full">
+                                    <button v-for="opt in currentQuestion.choices" :key="opt" @click="selectChoice(opt)"
+                                        class="particle-option px-6 py-2 rounded-xl text-xl font-black transition-all border-2"
+                                        :class="getChoiceBtnClass(opt)">
+                                        {{ opt }}
+                                    </button>
+                                </div>
+                                <div v-else-if="hasSubmitted" class="text-center w-full">
+                                    <div class="inline-flex flex-col items-center gap-2">
+                                        <div class="inline-flex items-center gap-3 px-6 py-2 rounded-xl bg-slate-900/80 border-2 transition-all"
+                                            :class="isCurrentCorrect ? 'border-emerald-500/50' : 'border-rose-500/50'">
+                                            <span v-if="isCurrentCorrect"
+                                                class="text-emerald-400 text-xl font-black flex items-center gap-2">
+                                                <span
+                                                    class="bg-emerald-500 text-slate-900 rounded-full w-6 h-6 flex items-center justify-center text-[10px]">✓</span>
+                                                正確！
+                                            </span>
+                                            <span v-else
+                                                class="text-rose-400 text-xl font-black flex items-center gap-2">
+                                                <span
+                                                    class="bg-rose-500 text-slate-200 rounded-full w-6 h-6 flex items-center justify-center text-[10px]">✕</span>
+                                                攻擊失敗
+                                            </span>
+                                            <button v-if="currentQuestion.grammarTip"
+                                                @click="showGrammarDetail = !showGrammarDetail"
+                                                class="w-8 h-8 rounded-full bg-slate-700 text-slate-300 hover:bg-slate-600 font-bold transition-all text-sm">?</button>
+                                        </div>
+                                        <div v-if="showGrammarDetail && currentQuestion.grammarTip"
+                                            class="grammar-card mt-2 rounded-2xl p-4 text-amber-100 text-sm max-w-md shadow-xl border-l-8 border-amber-500">
+                                            {{ currentQuestion.grammarTip }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="flex justify-center gap-3 mt-3 w-full max-w-lg">
+                                    <button v-if="hasSubmitted && !isCurrentCorrect" @click="nextQuestion"
+                                        class="w-48 bg-amber-500 text-slate-900 px-6 py-2 rounded-xl font-black text-lg hover:bg-amber-400 shadow-lg border-b-4 border-amber-700 active:translate-y-1 active:border-b-0 transition-all">
+                                        次（つぎ）
+                                    </button>
+                                    <button v-else @click="checkAnswer"
+                                        class="w-48 bg-amber-500 text-slate-900 px-6 py-2 rounded-xl font-black text-lg hover:bg-amber-400 shadow-lg border-b-4 border-amber-700 active:translate-y-1 active:border-b-0 transition-all"
+                                        :class="(isChoiceMode && !userAnswers[0]) ? 'bg-slate-700 border-slate-800 text-slate-500 cursor-not-allowed opacity-50' : ''"
+                                        :disabled="isChoiceMode && !userAnswers[0]">
+                                        攻撃（こうげき）
+                                    </button>
+                                    <!-- TTS Button -->
+                                    <button @click="playVoice"
+                                        class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl shadow-lg border-b-4 border-blue-800 transition-all">
+                                        <span class="text-xl">🔊</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Victory/Loss States -->
+                            <div v-else class="flex flex-col items-center justify-center w-full flex-1">
+                                <div v-if="monsterDead"
+                                    class="flex flex-row items-center justify-center gap-12 py-4 w-full px-6 flex-1">
+                                    <!-- Left side -->
+                                    <div class="flex flex-col items-center max-w-[200px]">
+                                        <div class="text-6xl mb-2 flex-shrink-0">🏆</div>
+                                        <h2
+                                            class="text-3xl font-black text-amber-400 mb-6 tracking-widest whitespace-nowrap">
+                                            {{ currentLevel >= 3
+                                            ? '全章節破關！' : '戰鬥突破！' }}</h2>
+                                        <button v-if="currentLevel < 3" @click="goNextLevel"
+                                            class="w-full px-8 py-4 rounded-2xl bg-amber-500 text-slate-900 font-black text-xl hover:bg-amber-400 shadow-[0_6px_0_#b45309] active:translate-y-1 active:shadow-none transition-all">下一關</button>
+                                        <button v-else @click="startOver"
+                                            class="w-full px-8 py-4 rounded-2xl bg-amber-500 text-slate-900 font-black text-xl hover:bg-amber-400 shadow-[0_6px_0_#b45309] active:translate-y-1 active:shadow-none transition-all">回到首頁</button>
+                                        <button @click="isMistakesOpen = true"
+                                            class="w-full mt-3 px-6 py-3 rounded-2xl bg-blue-600 text-white font-black text-lg hover:bg-blue-500 shadow-[0_4px_0_#1e40af] active:translate-y-1 active:shadow-none transition-all">📒
+                                            錯題本</button>
+                                    </div>
+
+                                    <!-- Right side -->
+                                    <div
+                                        class="bg-slate-900/80 p-5 rounded-2xl border border-amber-500/30 shadow-xl w-64 flex-shrink-0">
+                                        <div class="flex justify-between items-center mb-4">
+                                            <span class="text-slate-400 font-bold">評價</span>
+                                            <span class="text-6xl font-black leading-none"
+                                                :class="getGradeColor(calculatedGrade)">{{
+                                                calculatedGrade }}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center mb-2 text-sm">
+                                            <span class="text-slate-400">正確率</span>
+                                            <span class="text-emerald-400 font-mono font-bold">{{ accuracyPct }}%</span>
+                                        </div>
+                                        <div class="flex justify-between items-center mb-2 text-sm">
+                                            <span class="text-slate-400">最大 Combo</span>
+                                            <span class="text-rose-400 font-mono font-bold">{{ maxComboCount }}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center mb-2 text-sm">
+                                            <span class="text-slate-400">獲得經驗值</span>
+                                            <span class="text-blue-400 font-mono font-bold">+{{ earnedExp }}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center text-sm">
+                                            <span class="text-slate-400">獲得金幣</span>
+                                            <span class="text-amber-400 font-mono font-bold">+{{ earnedGold }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-else
+                                    class="flex flex-row items-center justify-center gap-12 py-4 w-full px-6 flex-1">
+                                    <!-- Left side -->
+                                    <div class="flex flex-col items-center max-w-[200px]">
+                                        <div class="text-6xl mb-2 flex-shrink-0">💀</div>
+                                        <h2
+                                            class="text-3xl font-black text-rose-400 mb-6 tracking-widest whitespace-nowrap">
+                                            敗北...</h2>
+                                        <div class="flex flex-col gap-3 w-full">
+                                            <button @click="isMistakesOpen = true"
+                                                class="w-full px-6 py-3 rounded-2xl bg-blue-600 text-white font-black text-lg hover:bg-blue-500 shadow-[0_4px_0_#1e40af] active:translate-y-1 active:shadow-none transition-all">📒
+                                                錯題本</button>
+                                            <button @click="revive"
+                                                class="w-full px-6 py-3 rounded-2xl bg-emerald-600 text-white font-black text-lg hover:bg-emerald-500 shadow-[0_4px_0_#065f46] active:translate-y-1 active:shadow-none transition-all">重新開始</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Right side -->
+                                    <div
+                                        class="bg-slate-900/80 p-5 rounded-2xl border border-rose-500/30 shadow-xl w-64 flex-shrink-0">
+                                        <div class="flex justify-between items-center mb-4">
+                                            <span class="text-slate-400 font-bold">評價</span>
+                                            <span class="text-6xl font-black leading-none"
+                                                :class="getGradeColor(calculatedGrade)">{{
+                                                calculatedGrade }}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center mb-2 text-sm">
+                                            <span class="text-slate-400">正確率</span>
+                                            <span class="text-emerald-400 font-mono font-bold">{{ accuracyPct }}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-else
+                    class="py-12 flex-1 flex flex-col justify-center items-center bg-slate-900/40 backdrop-blur-md min-h-[400px]">
+                    <div class="text-8xl mb-4 animate-bounce">🎉</div>
+                    <h2 class="text-5xl font-black text-amber-400 mb-10 tracking-widest">通關成功！</h2>
+
+                    <div class="flex flex-row items-stretch justify-center gap-16 w-full px-6 max-w-4xl">
+                        <!-- Left side: Actions -->
+                        <div class="flex flex-col gap-4 flex-1 justify-center max-w-[240px]">
+                            <button v-if="currentLevel < 3" @click="goNextLevel"
+                                class="w-full bg-amber-500 text-slate-900 px-6 py-4 rounded-2xl font-black text-2xl hover:bg-amber-400 shadow-[0_8px_0_#b45309] active:translate-y-1 active:shadow-none transition-all">下一關</button>
+                            <button v-else @click="startOver"
+                                class="w-full bg-amber-500 text-slate-900 px-6 py-4 rounded-2xl font-black text-2xl hover:bg-amber-400 shadow-[0_8px_0_#b45309] active:translate-y-1 active:shadow-none transition-all">回首頁</button>
+                            <button @click="isMistakesOpen = true"
+                                class="w-full bg-blue-600 text-white px-6 py-3 rounded-xl font-bold text-lg hover:bg-blue-500 shadow-[0_4px_0_#1e40af] active:translate-y-1 active:shadow-none transition-all">📒
+                                錯題本</button>
+                            <button @click="retryLevel"
+                                class="w-full bg-slate-700 text-slate-300 px-6 py-3 rounded-xl font-bold text-lg hover:bg-slate-600 border border-slate-600 transition-all">重新開始此關</button>
+                        </div>
+
+                        <!-- Right side: Stats -->
+                        <div
+                            class="bg-slate-900/80 p-6 rounded-2xl border border-amber-500/50 shadow-2xl w-80 flex-shrink-0">
+                            <h3 class="text-xl font-bold text-slate-200 border-b border-slate-700 pb-3 mb-5">章節結算</h3>
+                            <div class="flex justify-between items-center mb-6">
+                                <span class="text-slate-400 font-bold text-xl">評價</span>
+                                <span class="text-7xl font-black leading-none"
+                                    :class="getGradeColor(calculatedGrade)">{{ calculatedGrade
+                                    }}</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-slate-400">正確率</span>
+                                <span class="text-emerald-400 font-mono font-bold text-xl">{{ accuracyPct }}%</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-slate-400">最大 Combo</span>
+                                <span class="text-rose-400 font-mono font-bold text-xl">{{ maxComboCount }}</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-slate-400">獲得經驗值</span>
+                                <span class="text-blue-400 font-mono font-bold text-xl">+{{ earnedExp }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-400">獲得金幣</span>
+                                <span class="text-amber-400 font-mono font-bold text-xl">+{{ earnedGold }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skill Unlock Modal -->
+        <div v-if="isSkillUnlockModalOpen" class="modal-overlay" @click.self="isSkillUnlockModalOpen = false"
+            style="z-index: 100;">
+            <div
+                class="modal-panel max-w-sm rounded-[1rem] border-2 border-amber-600/60 bg-[#1e110a]/95 drop-shadow-[0_0_20px_rgba(217,119,6,0.3)] shadow-2xl overflow-hidden font-serif">
+                <div class="text-6xl text-center mb-4 animate-bounce mt-4">✨</div>
+                <h2 class="text-2xl font-black text-amber-500 mb-6 text-center tracking-wider">新招式習得！</h2>
+                <div class="space-y-3 mb-8 px-2 max-h-64 overflow-y-auto custom-scrollbar">
+                    <div v-for="skill in newlyUnlocked" :key="skill.id"
+                        class="p-4 bg-[#3e2723]/60 rounded border border-amber-700/50 shadow-inner">
+                        <div class="font-bold text-lg text-amber-400 tracking-wide">{{ skill.name }}</div>
+                        <div class="text-sm text-amger-100/90 mt-2 leading-relaxed">{{ skill.meaning }}</div>
+                    </div>
+                </div>
+                <div class="flex gap-3 px-2 mb-2">
+                    <button @click="openCodexTo(newlyUnlocked[0]?.id)"
+                        class="flex-1 px-4 py-3 rounded bg-gradient-to-t from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500 text-amber-50 text-base font-bold shadow-lg transition-colors border border-amber-500/50">
+                        📖 立刻翻開秘笈
+                    </button>
+                    <button @click="isSkillUnlockModalOpen = false; resumeBattle();"
+                        class="px-4 py-3 rounded bg-[#2a1c15] hover:bg-[#3e2723] text-amber-600 hover:text-amber-500 text-base font-bold shadow-lg transition-colors border border-amber-900/50">
+                        稍後
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Codex Overlay (Spellbook) -->
+        <div v-if="isCodexOpen" class="fixed inset-0 z-[2000] flex items-center justify-center p-4 md:p-8"
+            @click.self="isCodexOpen = false; resumeBattle();">
+            <!-- Backdrop -->
+            <div class="absolute inset-0 bg-black/80 backdrop-blur-sm pointer-events-none"></div>
+
+            <!-- Book container -->
+            <div class="relative w-full max-w-4xl h-full max-h-[85vh] bg-[#2a1c15] text-amber-100/90 rounded-sm border-4 border-amber-600/60 shadow-[0_0_40px_rgba(217,119,6,0.5)] flex flex-col font-serif"
+                style="background-image: radial-gradient(circle at center, #3e2723 0%, #1e110a 100%);">
+                <!-- Gold corners / styling -->
+                <div
+                    class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-amber-400/80 m-2 pointer-events-none">
+                </div>
+                <div
+                    class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-amber-400/80 m-2 pointer-events-none">
+                </div>
+                <div
+                    class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-amber-400/80 m-2 pointer-events-none">
+                </div>
+                <div
+                    class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-amber-400/80 m-2 pointer-events-none">
+                </div>
+
+                <!-- Header -->
+                <div class="text-center py-6 border-b border-amber-900/60 shadow-md relative z-10 bg-[#2a1c15]/50">
+                    <h2 class="text-3xl font-black text-amber-500 tracking-widest"
+                        style="text-shadow: 0 2px 4px rgba(0,0,0,0.8);">📖 招式圖鑑</h2>
+                    <!-- Close btn -->
+                    <button @click="isCodexOpen = false; resumeBattle();"
+                        class="absolute top-6 right-6 text-amber-600 hover:text-amber-400 transition-colors">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Content list -->
+                <div class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar relative z-10 space-y-4"
+                    style="mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%);">
+                    <div v-for="skill in skillsWithUnlockLevel" :key="skill.id" :id="'skill-card-' + skill.id">
+                        <!-- Unlocked Card -->
+                        <div v-if="unlockedSkillIds.includes(skill.id)"
+                            class="bg-[#3e2723]/60 border border-amber-700/50 rounded pointer-events-auto transition-all shadow-md">
+                            <button @click="expandedSkillId = expandedSkillId === skill.id ? null : skill.id"
+                                class="w-full text-left px-4 py-3 flex justify-between items-center hover:bg-[#4e342e]/60 transition-colors rounded">
+                                <span class="font-bold text-lg text-amber-400 tracking-wide">{{ skill.name }}</span>
+                                <span class="text-amber-600">{{ expandedSkillId === skill.id ? '▼' : '▶' }}</span>
+                            </button>
+                            <div v-if="expandedSkillId === skill.id"
+                                class="p-4 pt-2 text-base space-y-3 bg-[#1e110a]/40 border-t border-amber-900/50">
+                                <div v-if="skill.meaning"><span class="text-emerald-500 font-bold mr-2">含義</span><span
+                                        class="text-amber-100/90 leading-relaxed">{{ skill.meaning }}</span></div>
+                                <div v-if="skill.rule"><span class="text-blue-400 font-bold mr-2">句型</span><span
+                                        class="text-amber-100/90 leading-relaxed">{{ skill.rule }}</span></div>
+                                <div v-if="skill.examples && skill.examples.length > 0">
+                                    <span class="text-amber-500/80 font-bold block mb-1">例句</span>
+                                    <ul class="list-disc list-inside text-amber-100/80 space-y-1 ml-1">
+                                        <li v-for="(ex, i) in skill.examples" :key="i">{{ ex }}</li>
+                                    </ul>
+                                </div>
+                                <div v-if="skill.antiExamples && skill.antiExamples.length > 0">
+                                    <span class="text-rose-500/80 font-bold block mb-1">誤用範例</span>
+                                    <ul class="list-disc list-inside text-rose-300/80 space-y-1 ml-1">
+                                        <li v-for="(ex, i) in skill.antiExamples" :key="i">{{ ex }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Locked Card -->
+                        <div v-else
+                            class="bg-[#1e110a]/80 border border-slate-800/80 rounded p-4 flex items-center justify-between pointer-events-none opacity-60 grayscale filter shadow-inner">
+                            <span class="font-bold text-slate-500 text-lg flex items-center gap-2">🔒 未習得</span>
+                            <span class="text-sm font-bold text-amber-700/50">{{ skill.unlockLevel ? '第 ' +
+                                skill.unlockLevel + ' 關習得' : '未安排' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu Modal -->
+        <div v-if="isMenuOpen" class="modal-overlay" @click.self="isMenuOpen = false; resumeBattle();">
+            <div class="modal-panel w-[400px]">
+                <h2 class="text-2xl font-black text-amber-400 mb-4">⏸ Menu</h2>
+                <div class="space-y-3">
+                    <div class="border-b border-slate-600 pb-3">
+                        <label class="flex items-center gap-2 text-sm text-slate-200 mb-2">
+                            <span v-if="isMuted" class="text-lg">🔇</span>
+                            <span v-else class="text-lg">🔊</span>
+                            <button @click="isMuted = !isMuted; saveAudioSettings(); playBgm();"
+                                class="flex-1 text-left underline">{{ isMuted ? '靜音中' : '已開啟' }}</button>
+                        </label>
+                        <label class="flex items-center gap-2 text-xs text-slate-300 mb-1">
+                            <span>BGM</span>
+                            <input type="range" min="0" max="1" step="0.01" v-model.number="bgmVolume"
+                                @input="playBgm(); saveAudioSettings()" class="flex-1">
+                        </label>
+                        <label class="flex items-center gap-2 text-xs text-slate-300">
+                            <span>SFX</span>
+                            <input type="range" min="0" max="1" step="0.01" v-model.number="sfxVolume"
+                                @input="saveAudioSettings()" class="flex-1">
+                        </label>
+                    </div>
+
+                    <button @pointerdown="startRunAwayPress" @pointerup="cancelRunAwayPress"
+                        @pointerleave="cancelRunAwayPress" @pointercancel="cancelRunAwayPress" @contextmenu.prevent
+                        class="relative w-full px-4 py-3 rounded-lg bg-rose-900/60 border border-rose-500/50 hover:border-rose-400 text-white text-sm font-bold shadow-lg transition-all overflow-hidden select-none"
+                        :class="{'scale-95': isRunAwayPressing}">
+                        <div class="absolute left-0 top-0 bottom-0 bg-rose-500 pointer-events-none"
+                            :style="{ width: isRunAwayPressing ? '100%' : '0%', transition: isRunAwayPressing ? 'width 3s linear' : 'width 0.2s ease-out' }">
+                        </div>
+                        <span class="relative z-10 drop-shadow-md">🏃 長按 3 秒逃回首頁</span>
+                    </button>
+                </div>
+                <button @click="isMenuOpen = false; resumeBattle();"
+                    class="mt-4 w-full px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold">關閉</button>
+            </div>
+        </div>
+
+        <!-- Mistakes Modal -->
+        <div v-if="isMistakesOpen" class="modal-overlay" @click.self="isMistakesOpen = false">
+            <div class="modal-panel">
+                <h2 class="text-2xl font-black text-blue-400 mb-4">📒 錯題本</h2>
+                <div v-if="mistakes.length === 0" class="text-slate-400 text-center py-6">尚無錯題。</div>
+                <div v-else class="space-y-2 mb-4">
+                    <div v-for="(m, i) in mistakes.slice(0, 20)" :key="i"
+                        class="p-2 bg-slate-700/50 rounded border-l-3 border-blue-500">
+                        <div class="text-slate-200 font-bold text-sm mb-1">{{ m.prompt }}</div>
+                        <div class="text-amber-300 text-xs mb-1">正解: {{ formatCorrect(m.correct) }}</div>
+                        <div v-if="m.grammarTip" class="text-slate-400 text-xs">{{ m.grammarTip }}</div>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button @click="clearMistakes"
+                        class="flex-1 px-3 py-2 rounded-lg bg-red-600/60 hover:bg-red-500 text-white text-sm font-bold whitespace-nowrap flex items-center justify-center gap-1">🗑
+                        清空</button>
+                    <button @click="isMistakesOpen = false"
+                        class="flex-1 px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold whitespace-nowrap">關閉</button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="flashOverlay" class="flash-overlay"></div>
+
+        <!-- Inventory Modal -->
+        <div v-if="isInventoryOpen" class="modal-overlay" @click.self="isInventoryOpen = false; resumeBattle();">
+            <div class="modal-panel w-[400px]">
+                <h2 class="text-2xl font-black text-emerald-400 mb-4 flex items-center gap-2">🎒 冒險者背包</h2>
+
+                <div class="space-y-3 mb-4">
+                    <!-- Speed Potion Item -->
+                    <div class="flex items-center gap-3 bg-slate-700/50 p-3 rounded-xl border border-slate-600/50">
+                        <div
+                            class="w-12 h-12 flex-shrink-0 bg-gradient-to-tr from-cyan-900 to-cyan-500 rounded-lg flex items-center justify-center text-2xl shadow-inner border border-cyan-400/30">
+                            💨
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-slate-100 font-bold text-base flex justify-between items-center">
+                                神速藥水
+                                <span
+                                    class="bg-cyan-600/50 text-cyan-200 text-xs px-2 py-0.5 rounded-full border border-cyan-500/30">x
+                                    {{ inventory.speedPotions }}</span>
+                            </h3>
+                            <p class="text-slate-400 text-xs mt-1 leading-relaxed">
+                                飲用後的一分鐘內，面對怪物的接下來 6 次攻擊，自身閃避率提升至 <span class="text-amber-400 font-bold">50%</span>。
+                            </p>
+                            <div v-if="evasionBuffAttacksLeft > 0"
+                                class="text-cyan-300 text-xs mt-1 font-bold animate-pulse">效果持續中... (剩餘 {{
+                                evasionBuffAttacksLeft }} 次)</div>
+                        </div>
+                        <button @click="useSpeedPotion"
+                            class="shrink-0 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-lg transition-transform active:scale-95 shadow-md disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
+                            :disabled="inventory.speedPotions <= 0 || evasionBuffAttacksLeft > 0 || monsterDead || playerDead">
+                            使用
+                        </button>
+                    </div>
+
+                    <!-- Other item placeholders could go here -->
+                </div>
+
+                <div class="flex gap-2">
+                    <button @click="isInventoryOpen = false; resumeBattle();"
+                        class="w-full px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold shadow-md">關閉</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/game.js" defer></script>
+</body>
+
+</html>

@@ -1,0 +1,767 @@
+[v-cloak] {
+    display: none !important;
+}
+
+body {
+    font-family: 'Noto Sans TC', 'Noto Sans JP', sans-serif;
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 50%, #1e1b4b 100%);
+    min-height: 100vh;
+    color: #e2e8f0;
+}
+
+rt {
+    font-size: 0.45em;
+    color: #fcd34d;
+    font-weight: normal;
+}
+
+.particle-input {
+    border-bottom: 3px solid #f59e0b;
+    width: 3.5rem;
+    text-align: center;
+    font-weight: bold;
+    background: rgba(30, 41, 59, 0.8);
+    color: #fef3c7;
+    border-radius: 0.25rem;
+    transition: all 0.2s;
+}
+
+.particle-input:focus {
+    background: rgba(245, 158, 11, 0.2);
+    outline: none;
+    border-color: #fbbf24;
+}
+
+.correct {
+    color: #059669;
+    border-color: #059669;
+    background: rgba(5, 150, 105, 0.2);
+    color: #6ee7b7;
+}
+
+.wrong {
+    color: #dc2626;
+    border-color: #dc2626;
+    background: rgba(220, 38, 38, 0.2);
+    color: #fca5a5;
+}
+
+.choice-btn {
+    transition: all 0.2s;
+}
+
+.card {
+    backdrop-filter: blur(10px);
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.grammar-card {
+    background: #422006;
+    border: 1px solid #b45309;
+    border-left: 4px solid #f59e0b;
+}
+
+.grammar-toggle {
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s;
+}
+
+.grammar-toggle:hover {
+    opacity: 0.8;
+}
+
+.hp-bar-fill.danger {
+    background: #dc2626 !important;
+}
+
+/* Restore Hero HP Bar CSS */
+.hp-bar-wrap {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 9999px;
+    overflow: hidden;
+}
+
+.hp-bar-fill {
+    height: 100%;
+    border-radius: 9999px;
+    transition: width 0.5s ease;
+}
+
+.potion-btn-hud {
+    position: absolute;
+    left: 0.75rem;
+    bottom: 0.75rem;
+    z-index: 50;
+}
+
+.potion-btn-hud.disabled {
+    filter: grayscale(100%);
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@keyframes monster-shake {
+
+    0%,
+    100% {
+        transform: translateX(0)
+    }
+
+    25% {
+        transform: translateX(-4px)
+    }
+
+    75% {
+        transform: translateX(4px)
+    }
+}
+
+@keyframes player-blink {
+
+    0%,
+    100% {
+        opacity: 1
+    }
+
+    50% {
+        opacity: 0.3
+    }
+}
+
+.monster-shake {
+    animation: monster-shake 0.4s ease-in-out;
+}
+
+.player-blink {
+    animation: player-blink 0.5s ease-in-out 2;
+}
+
+/* DQ戰鬥特效 */
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translate(0)
+    }
+
+    20%,
+    80% {
+        transform: translate(-4px, 2px)
+    }
+
+    40%,
+    60% {
+        transform: translate(4px, -2px)
+    }
+}
+
+.shake {
+    animation: shake 0.25s ease-in-out;
+}
+
+@keyframes hudShake {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    15% {
+        transform: translate(-8px, -4px) rotate(-1deg);
+    }
+
+    30% {
+        transform: translate(8px, 6px) rotate(1deg);
+    }
+
+    45% {
+        transform: translate(-6px, 8px) rotate(-1deg);
+    }
+
+    60% {
+        transform: translate(6px, -6px) rotate(1deg);
+    }
+
+    75% {
+        transform: translate(-4px, 2px) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(0, 0);
+        filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.5));
+    }
+}
+
+.hud-shake {
+    animation: hudShake 0.3s cubic-bezier(.36, .07, .19, .97) both;
+}
+
+@keyframes hit {
+    0% {
+        transform: scale(1);
+        filter: brightness(100%)
+    }
+
+    25% {
+        transform: scale(1.1);
+        filter: brightness(150%)
+    }
+
+    50% {
+        transform: scale(1);
+        filter: brightness(100%)
+    }
+
+    75% {
+        transform: scale(1.1);
+        filter: brightness(150%)
+    }
+
+    100% {
+        transform: scale(1);
+        filter: brightness(100%)
+    }
+}
+
+.hit {
+    animation: hit 0.25s ease-in-out;
+}
+
+.flash-overlay {
+    position: fixed;
+    inset: 0;
+    background: #fff;
+    opacity: 0;
+    pointer-events: none;
+    animation: flash 0.3s ease-out;
+    z-index: 50;
+}
+
+@keyframes flash {
+    0% {
+        opacity: 1
+    }
+
+    100% {
+        opacity: 0
+    }
+}
+
+/* #stage 16:9 JRPG layout */
+#stage {
+    position: relative;
+    height: min(92vh, calc(100vw * 9 / 16));
+    width: min(100%, calc(92vh * 16 / 9));
+    aspect-ratio: 16/9;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 1.5rem;
+    overflow: hidden;
+}
+
+#battleScene {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    position: relative;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+}
+
+#battleScene::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.4);
+    /* Darken bg a bit for readability */
+    pointer-events: none;
+}
+
+#hud {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    padding: 1rem;
+    overflow: hidden;
+    gap: 1rem;
+}
+
+#question-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 0.5rem;
+}
+
+#question-area>div {
+    text-align: center;
+    max-width: 100%;
+    line-height: 1.6;
+    font-size: clamp(1rem, 2vw, 1.5rem);
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.level-badge {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(251, 191, 36, 0.4);
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    color: #fbbf24;
+    z-index: 10;
+    backdrop-filter: blur(4px);
+}
+
+.monster-speech-wrap {
+    position: absolute;
+    left: 50%;
+    top: 85%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 600px;
+    z-index: 20;
+    pointer-events: none;
+}
+
+.monster-bubble {
+    pointer-events: auto;
+    background: rgba(15, 23, 42, 0.95);
+    border: 3px solid #f59e0b;
+    border-radius: 1.5rem;
+    padding: 1rem 1.5rem;
+    color: #fef3c7;
+    position: relative;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+}
+
+.monster-bubble::after {
+    content: '';
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 0 15px 15px;
+    border-style: solid;
+    border-color: transparent transparent #f59e0b;
+    display: none;
+    /* Hide the tail for centered bubble */
+}
+
+.monster-bubble.bottom-tail::after {
+    top: -15px;
+    border-width: 0 15px 15px;
+    border-color: transparent transparent #f59e0b;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-panel {
+    position: relative;
+    background: rgba(30, 41, 59, 0.98);
+    border: 2px solid rgba(251, 191, 36, 0.5);
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    max-height: 80vh;
+    max-width: 600px;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.log-bubble {
+    display: none !important;
+    /* 隱藏舊的對話框，避免擋住戰鬥舞台 */
+}
+
+.flash-card {
+    animation: popPulsing 0.8s ease-out;
+    z-index: 10;
+}
+
+@keyframes popPulsing {
+    0% {
+        box-shadow: 0 0 0 rgba(245, 158, 11, 0.8), inset 0 0 0 rgba(245, 158, 11, 0.8);
+        border-color: rgba(245, 158, 11, 1);
+        background-color: rgba(62, 39, 35, 0.9);
+        transform: scale(1);
+    }
+
+    50% {
+        box-shadow: 0 0 30px rgba(245, 158, 11, 1), inset 0 0 20px rgba(245, 158, 11, 0.8);
+        border-color: rgba(251, 191, 36, 1);
+        background-color: rgba(93, 64, 55, 1);
+        transform: scale(1.02);
+    }
+
+    100% {
+        box-shadow: 0 0 0 rgba(245, 158, 11, 0), inset 0 0 0 rgba(245, 158, 11, 0);
+        border-color: rgba(180, 83, 9, 0.5);
+        background-color: rgba(62, 39, 35, 0.6);
+        transform: scale(1);
+    }
+}
+
+.particle-slot {
+    display: inline-block;
+    min-width: 4rem;
+    padding: 0 0.25rem;
+    margin: 0 0.25rem;
+    text-align: center;
+    border-bottom-width: 4px;
+    border-bottom-style: solid;
+    font-size: 1.25rem;
+    font-weight: 900;
+    vertical-align: baseline;
+    transition: all 0.3s ease;
+    position: relative;
+    cursor: pointer;
+}
+
+.particle-slot.is-empty {
+    border-bottom-color: #fbbf24 !important;
+    /* amber-400 */
+    text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+    box-shadow: 0 8px 12px -8px rgba(251, 191, 36, 0.5);
+    /* Base subtle glow beneath */
+    animation: slotPulse 2s infinite alternate ease-in-out;
+}
+
+/* Hover / Selected strong glow with animated background trick */
+.particle-slot.is-empty:hover,
+.particle-slot.is-empty:focus,
+.particle-slot.is-empty:active {
+    border-bottom-color: #f59e0b !important;
+    text-shadow: 0 0 12px rgba(245, 158, 11, 0.8);
+    box-shadow: 0 12px 16px -6px rgba(245, 158, 11, 0.8);
+    animation: flowGlow 1.5s linear infinite;
+}
+
+@keyframes slotPulse {
+    0% {
+        border-bottom-color: rgba(251, 191, 36, 0.6);
+        filter: drop-shadow(0 2px 4px rgba(251, 191, 36, 0.4));
+    }
+
+    100% {
+        border-bottom-color: rgba(251, 191, 36, 1);
+        filter: drop-shadow(0 4px 10px rgba(251, 191, 36, 0.8));
+    }
+}
+
+/* Flowing keyframe effect simulating energy shifting under the line */
+@keyframes flowGlow {
+    0% {
+        filter: drop-shadow(-4px 4px 8px rgba(245, 158, 11, 0.4)) drop-shadow(4px 4px 8px rgba(245, 158, 11, 0.8));
+    }
+
+    50% {
+        filter: drop-shadow(4px 4px 8px rgba(245, 158, 11, 0.4)) drop-shadow(-4px 4px 8px rgba(245, 158, 11, 0.8));
+    }
+
+    100% {
+        filter: drop-shadow(-4px 4px 8px rgba(245, 158, 11, 0.4)) drop-shadow(4px 4px 8px rgba(245, 158, 11, 0.8));
+    }
+}
+
+.particle-slot.is-correct {
+    border-bottom-color: #10b981 !important;
+    color: #10b981;
+    /* Replaced zero-opacity drop shadow at 100% with a persistent soft glow */
+    animation: flashGreen 0.6s ease-out forwards;
+}
+
+@keyframes flashGreen {
+    0% {
+        border-bottom-color: #10b981;
+        filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.8));
+        text-shadow: 0 0 8px rgba(16, 185, 129, 0);
+    }
+
+    50% {
+        border-bottom-color: #34d399;
+        filter: drop-shadow(0 0 20px rgba(52, 211, 153, 1));
+        color: #34d399;
+        text-shadow: 0 0 12px rgba(52, 211, 153, 0.8);
+    }
+
+    100% {
+        border-bottom-color: #10b981;
+        filter: drop-shadow(0 2px 6px rgba(16, 185, 129, 0.5));
+        color: #10b981;
+        text-shadow: 0 0 4px rgba(16, 185, 129, 0.3);
+    }
+}
+
+.particle-slot.is-wrong {
+    border-bottom-color: #f43f5e !important;
+    color: #f43f5e;
+    animation: shakeRed 0.4s ease-out forwards;
+}
+
+@keyframes shakeRed {
+    0% {
+        filter: drop-shadow(0 0 4px rgba(244, 63, 94, 0.5));
+        transform: translateX(0);
+        text-shadow: 0 0 4px rgba(244, 63, 94, 0.3);
+    }
+
+    20%,
+    60% {
+        filter: drop-shadow(0 0 12px rgba(244, 63, 94, 0.9));
+        transform: translateX(-3px);
+        text-shadow: 0 0 12px rgba(244, 63, 94, 0.8);
+    }
+
+    40%,
+    80% {
+        filter: drop-shadow(0 0 12px rgba(244, 63, 94, 0.9));
+        transform: translateX(3px);
+        text-shadow: 0 0 12px rgba(244, 63, 94, 0.8);
+    }
+
+    100% {
+        filter: drop-shadow(0 2px 6px rgba(244, 63, 94, 0.5));
+        transform: translateX(0);
+        text-shadow: 0 0 4px rgba(244, 63, 94, 0.3);
+    }
+}
+
+.bg-dodge {
+    animation: bgDodge 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@keyframes bgDodge {
+    0% {
+        background-position: center center;
+    }
+
+    45% {
+        background-position: calc(50% + 25px) center;
+    }
+
+    100% {
+        background-position: center center;
+    }
+}
+
+/* INSERT BEGIN: JPAPP_BATTLELOG_CSS_V1 */
+.battle-log {
+    position: absolute;
+    /* 改為 absolute，使它始終相對於 battleScene 容器定位，保持高度一致 */
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(680px, 92vw);
+    height: auto;
+    background: rgba(0, 0, 0, 0.45);
+    /* 底色加深以確保文字在雜亂背景中依然清晰 */
+    border: 2px solid rgba(255, 200, 80, 0.35);
+    border-radius: 14px;
+    padding: 10px 14px;
+    z-index: 40;
+    /* 確保在背景之上且不遮擋 modal */
+    pointer-events: none;
+
+    font-size: 14px;
+    line-height: 1.2;
+    font-weight: 600;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+}
+
+.battle-log:empty {
+    display: none;
+}
+
+.battle-log .log-item {
+    transition: opacity 0.3s ease;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    /* 確保文字維持單行 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.battle-log .log-item.type-dmg {
+    color: #fca5a5;
+}
+
+.battle-log .log-item.type-heal {
+    color: #86efac;
+}
+
+.battle-log .log-item.type-buff {
+    color: #fde047;
+}
+
+.battle-log .log-item.type-info {
+    color: #e2e8f0;
+}
+
+@keyframes fadeInLog {
+    0% {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* INSERT BEGIN: JPAPP_BATTLELOG_FLASH_CSS_V1 */
+.battle-log.flash {
+    /* 只提高文字亮度與一點點陰影，避免刺眼 */
+    filter: brightness(1.25);
+}
+
+.battle-log,
+.battle-log.flash {
+    transition: filter 180ms ease;
+}
+
+/* INSERT END: JPAPP_BATTLELOG_FLASH_CSS_V1 */
+/* INSERT END: JPAPP_BATTLELOG_CSS_V1 */
+
+/* INSERT BEGIN: JPAPP_HEROAVATAR_CSS_V1 */
+.hero-avatar-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 999px;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+/* INSERT END: JPAPP_HEROAVATAR_CSS_V1 */
+
+/* INSERT BEGIN: JPAPP_LEFTPANEL_LAYOUT_V3 */
+.hero-avatar,
+.hero-avatar-img {
+    width: 128px;
+    height: 128px;
+    margin: 0 auto;
+    border-radius: 999px;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+/* INSERT END: JPAPP_LEFTPANEL_LAYOUT_V3 */
+
+.hero-statusbar {
+    margin-top: 4px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.hero-status-pill {
+    min-width: 28px;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.92);
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.hero-status-pill.weak {
+    background: rgba(255, 160, 90, 0.20);
+    border-color: rgba(255, 180, 120, 0.45);
+}
+
+.hero-status-pill.speed {
+    background: rgba(120, 200, 255, 0.18);
+    border-color: rgba(150, 220, 255, 0.45);
+}
+
+/* INSERT END: JPAPP_HEROCARD_V2_CSS */
+
+/* INSERT BEGIN: JPAPP_ACTIONBAR_ROW4_CSS_V1 */
+/* --- ACTION BAR: force clean row-4 layout --- */
+.left-actionbar {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    justify-content: space-between;
+    padding: 10px;
+}
+
+.left-actionbar .action-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    /* 允許等分收縮，避免被文字撐開 */
+    height: 64px;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.left-actionbar .action-btn .icon {
+    width: 26px;
+    height: 26px;
+    display: block;
+}
+
+.left-actionbar .action-btn .label {
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.left-actionbar .action-btn .badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+}
+
+/* INSERT END: JPAPP_ACTIONBAR_ROW4_CSS_V1 */
+
+/* INSERT BEGIN: JPAPP_LEFTPANEL_TWEAKS_V4 */
+.sp-row {
+    margin-top: 2px;
+}
+
+/* INSERT END: JPAPP_LEFTPANEL_TWEAKS_V4 */
