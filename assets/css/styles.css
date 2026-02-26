@@ -786,17 +786,87 @@ rt {
 /* INSERT BEGIN: JPAPP_RESPONSIVE_MOBILE_V1 */
 @media (max-width: 900px) {
 
-    /* 手機直式：主容器改 column */
-    #hud {
-        display: flex !important;
-        flex-direction: column !important;
+    /* 整體高度與溢出控制 */
+    html,
+    body {
+        height: 100%;
+        margin: 0;
+        padding: 0 !important;
+        background: #0f172a;
     }
 
-    /* topbar（原 left panel）改全寬 */
+    body {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #app {
+        flex: 1;
+        min-height: 100dvh;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        padding: 0 !important;
+        max-width: 100% !important;
+    }
+
+    /* 戰鬥舞台外部容器 */
+    #stageWrap {
+        flex: 1;
+        min-height: 0;
+        width: 100% !important;
+        padding: 0 !important;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* 戰鬥舞台內部容器 */
+    #stage {
+        flex: 1;
+        min-height: 0;
+        width: 100% !important;
+        border: none !important;
+        border-radius: 0 !important;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* 上半身：怪物與背景 */
+    #battleScene {
+        flex: 0 0 auto;
+        min-height: 180px;
+        padding-bottom: 1rem;
+    }
+
+    /* 下半身：HUD (包含勇者列與答題區) */
+    #hud {
+        flex: 1;
+        min-height: 0;
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 0 !important;
+        background: transparent !important;
+        overflow-y: auto;
+        /* 允許題目區有需要時滾動 */
+        padding-bottom: 84px !important;
+        /* !! 預留給 fixed 底部工具列的空間 !! */
+    }
+
+    /* topbar（原 left panel，勇者狀態）改全寬 */
     #hud>.w-64 {
         width: 100% !important;
         max-width: none !important;
         height: auto !important;
+        flex: 0 0 auto;
+        /* 不伸縮 */
+    }
+
+    #hud>.w-64>div:first-child {
+        min-height: auto !important;
+        padding: 0.5rem !important;
+        border: none !important;
+        border-radius: 0 !important;
     }
 
     #hud>.w-64>div:first-child>.bg-slate-900\/80 {
@@ -805,11 +875,16 @@ rt {
         align-items: center !important;
         gap: 12px !important;
         flex-wrap: wrap !important;
+        padding: 0.5rem !important;
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        margin-bottom: 0 !important;
     }
 
     .hero-avatar-img {
-        width: 72px !important;
-        height: 72px !important;
+        width: 64px !important;
+        height: 64px !important;
         margin-bottom: 0 !important;
     }
 
@@ -829,27 +904,30 @@ rt {
         flex-wrap: wrap !important;
     }
 
-    /* 戰鬥舞台全寬，避免被裁切 */
-    #stageWrap {
-        width: 100% !important;
-        padding: 0 !important;
-    }
-
-    #stage {
-        width: 100% !important;
+    /* 右側主要題目與選項區塊 (Area 3) */
+    #hud>.flex-1.border-2 {
+        flex: 1;
+        border-radius: 0 !important;
         border: none !important;
+        padding: 0.5rem !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        overflow: visible !important;
     }
 
-    /* 底部工具列固定在底部，四顆一排、按鈕更大更扁 */
+    /* 底部工具列固定在最底部視窗位置，四顆一排、按鈕更大更扁 */
     .left-actionbar {
         width: 100% !important;
-        position: sticky !important;
+        height: 76px !important;
+        /* 明確指定高度 */
+        position: fixed !important;
         bottom: 0 !important;
+        left: 0 !important;
         padding: 10px !important;
-        background: rgba(0, 0, 0, 0.35) !important;
+        background: rgba(15, 23, 42, 0.95) !important;
         backdrop-filter: blur(8px) !important;
-        z-index: 50 !important;
-        margin-top: auto !important;
+        z-index: 100 !important;
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.5);
     }
 
     .left-actionbar .action-btn {
@@ -857,9 +935,15 @@ rt {
     }
 
     /* 選項按鈕（答題）變大，適合拇指 */
+    .grid-cols-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.5rem !important;
+    }
+
     .choice-btn {
         min-height: 52px !important;
         font-size: 16px !important;
+        padding: 0.5rem !important;
     }
 }
 
