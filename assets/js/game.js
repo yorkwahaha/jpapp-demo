@@ -1330,6 +1330,7 @@ createApp({
 
         const gaExistRecentSentences = [];
         const gaExistRecentTemplates = [];
+        const gaExistRecentCategories = []; // Track recent categories (nature, state, event)
 
         const generateQuestionBySkill = (skillId, blanks, db, vocab) => {
             const skillDef = skillsAll.value[skillId];
@@ -1499,13 +1500,49 @@ createApp({
                 const allNouns = [...poolNature, ...poolPhenomena];
                 const allVerbs = [...poolVerbsNature, ...poolVerbsPhenomena];
 
+                // Categorize nouns
+                const catNature = allNouns.filter(n => n.kind === 'precip' || n.kind === 'wind' || n.kind === 'sky' || n.kind === 'flower' || (n.tags && n.tags.includes('phenomenon')));
+                const catState = allNouns.filter(n => n.tags && (n.tags.includes('state') || n.tags.includes('feeling')));
+                const catEvent = allNouns.filter(n => n.tags && n.tags.includes('event'));
+
                 let n = null;
                 let v = null;
                 let attempt = 0;
                 let valid = false;
 
                 while (!valid && attempt < 50) {
-                    n = pickOne(allNouns);
+                    // Determine category weight (Nature 40%, State 35%, Event 25%)
+                    let targetCategory = 'nature';
+                    let roll = Math.random() * 100;
+
+                    // Base weights
+                    let wNature = 40;
+                    let wState = 35;
+                    let wEvent = 25;
+
+                    // Deduplication logic for categories
+                    // If the last two questions were the same category, force a different one
+                    if (gaExistRecentCategories.length >= 2) {
+                        const last1 = gaExistRecentCategories[gaExistRecentCategories.length - 1];
+                        const last2 = gaExistRecentCategories[gaExistRecentCategories.length - 2];
+                        if (last1 === last2) {
+                            if (last1 === 'nature') { wNature = 0; roll = Math.random() * 60; }
+                            else if (last1 === 'state') { wState = 0; roll = Math.random() * 65; }
+                            else if (last1 === 'event') { wEvent = 0; roll = Math.random() * 75; }
+                        }
+                    }
+
+                    if (roll < wNature) targetCategory = 'nature';
+                    else if (roll < wNature + wState) targetCategory = 'state';
+                    else targetCategory = 'event';
+
+                    let selectedPool;
+                    if (targetCategory === 'nature' && catNature.length > 0) selectedPool = catNature;
+                    else if (targetCategory === 'state' && catState.length > 0) selectedPool = catState;
+                    else if (targetCategory === 'event' && catEvent.length > 0) selectedPool = catEvent;
+                    else selectedPool = allNouns; // fallback
+
+                    n = pickOne(selectedPool);
                     let candidates = allVerbs.filter(verb => (verb.kinds || []).includes(n.kind));
 
                     if (candidates.length === 0) {
@@ -1527,6 +1564,9 @@ createApp({
                     }
 
                     valid = true;
+                    gaExistRecentCategories.push(targetCategory);
+                    if (gaExistRecentCategories.length > 3) gaExistRecentCategories.shift(); // keep 3 to check last 2
+
                     gaExistRecentSentences.push(sentenceKey);
                     if (gaExistRecentSentences.length > 5) gaExistRecentSentences.shift();
 
