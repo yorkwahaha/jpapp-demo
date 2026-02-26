@@ -604,19 +604,36 @@ createApp({
             // Temporary simulate currentLevel state
             const oldLevel = currentLevel.value;
 
+            let reviewCycle = { remainingReview: 1, remainingL2: 3, lastWasReview: false };
+            const allowSkills = ['WA_TOPIC', 'NO_POSSESS'];
+
             for (let i = 0; i < n; i++) {
                 let isReview = false;
                 if (levelId === "L2") {
-                    if (Math.random() < 0.25) {
-                        isReview = true;
+                    if (reviewCycle.remainingReview === 0 && reviewCycle.remainingL2 === 0) {
+                        reviewCycle.remainingReview = 1;
+                        reviewCycle.remainingL2 = 3;
                     }
+                    if (reviewCycle.lastWasReview) {
+                        isReview = false;
+                    } else if (reviewCycle.remainingReview === 0) {
+                        isReview = false;
+                    } else if (reviewCycle.remainingL2 === 0) {
+                        isReview = true;
+                    } else {
+                        const chance = reviewCycle.remainingReview / (reviewCycle.remainingReview + reviewCycle.remainingL2);
+                        isReview = Math.random() < chance;
+                    }
+                    if (isReview) reviewCycle.remainingReview--;
+                    else reviewCycle.remainingL2--;
+                    reviewCycle.lastWasReview = isReview;
                 }
 
                 currentLevel.value = isReview ? 1 : (levelId === "L2" ? 2 : 1);
 
                 let skillId = 'GA_EXIST';
                 if (isReview) {
-                    skillId = Math.random() < 0.5 ? 'NO_POSSESS' : 'WA_TOPIC';
+                    skillId = Math.random() < 0.5 ? allowSkills[0] : allowSkills[1];
                 }
 
                 const q = generateQuestionBySkill(skillId, 1, {}, VOCAB.value);
@@ -1769,17 +1786,41 @@ createApp({
             const DEBUG_LOG_SAMPLES = true;
             let rejectedCount = 0;
 
+            let reviewCycle = { remainingReview: 1, remainingL2: 3, lastWasReview: false };
+            const allowSkills = ['WA_TOPIC', 'NO_POSSESS'];
+
             for (let i = 0; i < 100; i++) {
                 let q = null;
                 let skillId = null;
                 let isReview = false;
 
                 if (STRICT_L1 && lv === 1) {
-                    skillId = Math.random() < 0.5 ? 'NO_POSSESS' : 'WA_TOPIC';
+                    skillId = Math.random() < 0.5 ? allowSkills[0] : allowSkills[1];
                 } else if (unlockedSkillIds.value.length > 0) {
-                    if (lv === 2 && Math.random() < 0.25) {
-                        isReview = true;
-                        skillId = Math.random() < 0.5 ? 'NO_POSSESS' : 'WA_TOPIC';
+                    if (lv === 2) {
+                        if (reviewCycle.remainingReview === 0 && reviewCycle.remainingL2 === 0) {
+                            reviewCycle.remainingReview = 1;
+                            reviewCycle.remainingL2 = 3;
+                        }
+                        if (reviewCycle.lastWasReview) {
+                            isReview = false;
+                        } else if (reviewCycle.remainingReview === 0) {
+                            isReview = false;
+                        } else if (reviewCycle.remainingL2 === 0) {
+                            isReview = true;
+                        } else {
+                            const chance = reviewCycle.remainingReview / (reviewCycle.remainingReview + reviewCycle.remainingL2);
+                            isReview = Math.random() < chance;
+                        }
+
+                        if (isReview) {
+                            reviewCycle.remainingReview--;
+                            skillId = Math.random() < 0.5 ? allowSkills[0] : allowSkills[1];
+                        } else {
+                            reviewCycle.remainingL2--;
+                            skillId = pickSkillIdForNextQuestion(lv);
+                        }
+                        reviewCycle.lastWasReview = isReview;
                     } else {
                         skillId = pickSkillIdForNextQuestion(lv);
                     }
