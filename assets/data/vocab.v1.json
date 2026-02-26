@@ -815,5 +815,250 @@
         "person"
       ]
     }
+  ],
+  "phenomena": [
+    {
+      "id": "thunder",
+      "j": "雷",
+      "r": "かみなり",
+      "zh": "雷",
+      "kind": "roar",
+      "tags": [
+        "phenomenon"
+      ]
+    },
+    {
+      "id": "fog",
+      "j": "霧",
+      "r": "きり",
+      "zh": "霧",
+      "kind": "appear",
+      "tags": [
+        "phenomenon"
+      ]
+    },
+    {
+      "id": "rainbow",
+      "j": "虹",
+      "r": "にじ",
+      "zh": "彩虹",
+      "kind": "appear",
+      "tags": [
+        "phenomenon"
+      ]
+    },
+    {
+      "id": "wave",
+      "j": "波",
+      "r": "なみ",
+      "zh": "波浪",
+      "kind": "stand",
+      "tags": [
+        "phenomenon"
+      ]
+    },
+    {
+      "id": "sound",
+      "j": "音",
+      "r": "おと",
+      "zh": "聲音",
+      "kind": "do",
+      "tags": [
+        "phenomenon"
+      ]
+    },
+    {
+      "id": "smell",
+      "j": "匂い",
+      "r": "におい",
+      "zh": "氣味",
+      "kind": "do",
+      "tags": [
+        "phenomenon"
+      ]
+    },
+    {
+      "id": "stomach",
+      "j": "お腹",
+      "r": "おなか",
+      "zh": "肚子",
+      "kind": "empty",
+      "tags": [
+        "state"
+      ]
+    },
+    {
+      "id": "throat",
+      "j": "のど",
+      "r": "のど",
+      "zh": "喉嚨",
+      "kind": "dry",
+      "tags": [
+        "state"
+      ]
+    },
+    {
+      "id": "sleepiness",
+      "j": "眠気",
+      "r": "ねむけ",
+      "zh": "睡意",
+      "kind": "feel",
+      "tags": [
+        "feeling"
+      ]
+    },
+    {
+      "id": "sweat",
+      "j": "汗",
+      "r": "あせ",
+      "zh": "汗水",
+      "kind": "feel",
+      "tags": [
+        "state"
+      ]
+    },
+    {
+      "id": "fever",
+      "j": "熱",
+      "r": "ねつ",
+      "zh": "發燒/熱度",
+      "kind": "feel",
+      "tags": [
+        "state"
+      ]
+    },
+    {
+      "id": "energy",
+      "j": "元気",
+      "r": "げんき",
+      "zh": "精神/活力",
+      "kind": "feel",
+      "tags": [
+        "feeling"
+      ]
+    },
+    {
+      "id": "motivation",
+      "j": "やる気",
+      "r": "やるき",
+      "zh": "幹勁",
+      "kind": "feel",
+      "tags": [
+        "feeling"
+      ]
+    },
+    {
+      "id": "electricity",
+      "j": "電気",
+      "r": "でんき",
+      "zh": "電燈/電力",
+      "kind": "light",
+      "tags": [
+        "event"
+      ]
+    },
+    {
+      "id": "contact",
+      "j": "連絡",
+      "r": "れんらく",
+      "zh": "聯絡",
+      "kind": "come",
+      "tags": [
+        "event"
+      ]
+    },
+    {
+      "id": "problem",
+      "j": "問題",
+      "r": "もんだい",
+      "zh": "問題",
+      "kind": "happen",
+      "tags": [
+        "event"
+      ]
+    }
+  ],
+  "verbs_phenomena": [
+    {
+      "j": "鳴る",
+      "r": "なる",
+      "t": "響",
+      "kinds": [
+        "roar"
+      ]
+    },
+    {
+      "j": "出る",
+      "r": "でる",
+      "t": "出現/產生",
+      "kinds": [
+        "appear",
+        "feel"
+      ]
+    },
+    {
+      "j": "立つ",
+      "r": "たつ",
+      "t": "揚起",
+      "kinds": [
+        "stand"
+      ]
+    },
+    {
+      "j": "する",
+      "r": "する",
+      "t": "有(感覺/聲音)",
+      "kinds": [
+        "do"
+      ]
+    },
+    {
+      "j": "すく",
+      "r": "すく",
+      "t": "空腹",
+      "kinds": [
+        "empty"
+      ]
+    },
+    {
+      "j": "渇く",
+      "r": "かわく",
+      "t": "渴",
+      "kinds": [
+        "dry"
+      ]
+    },
+    {
+      "j": "つく",
+      "r": "つく",
+      "t": "點亮",
+      "kinds": [
+        "light"
+      ]
+    },
+    {
+      "j": "消える",
+      "r": "きえる",
+      "t": "消失/熄滅",
+      "kinds": [
+        "light"
+      ]
+    },
+    {
+      "j": "来る",
+      "r": "くる",
+      "t": "來",
+      "kinds": [
+        "come"
+      ]
+    },
+    {
+      "j": "起きる",
+      "r": "おきる",
+      "t": "發生",
+      "kinds": [
+        "happen"
+      ]
+    }
   ]
 }

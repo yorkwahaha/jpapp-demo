@@ -1328,6 +1328,9 @@ createApp({
             return q;
         };
 
+        const gaExistRecentSentences = [];
+        const gaExistRecentTemplates = [];
+
         const generateQuestionBySkill = (skillId, blanks, db, vocab) => {
             const skillDef = skillsAll.value[skillId];
             if (!skillDef || !skillDef.id) return null;
@@ -1488,12 +1491,50 @@ createApp({
                 if (blanks === 1) q.choices = getChoices(["は", "が", "を", "に"]);
             }
             else if (skillDef.id === 'GA_EXIST') {
-                const nList = safeVocab.nature || [{ j: "雨", r: "あめ", t: "雨", kind: "precip" }];
-                const vList = safeVocab.verbs_nature || [{ j: "降る", r: "ふる", t: "下（雨雪）", kinds: ["precip"] }];
-                let n = pickOne(nList);
-                let candidates = vList.filter(v => (v.kinds || []).includes(n.kind));
+                const poolNature = safeVocab.nature || [{ j: "雨", r: "あめ", t: "雨", kind: "precip" }];
+                const poolVerbsNature = safeVocab.verbs_nature || [{ j: "降る", r: "ふる", t: "下（雨雪）", kinds: ["precip"] }];
+                const poolPhenomena = safeVocab.phenomena || [];
+                const poolVerbsPhenomena = safeVocab.verbs_phenomena || [];
 
-                if (candidates.length === 0) {
+                const allNouns = [...poolNature, ...poolPhenomena];
+                const allVerbs = [...poolVerbsNature, ...poolVerbsPhenomena];
+
+                let n = null;
+                let v = null;
+                let attempt = 0;
+                let valid = false;
+
+                while (!valid && attempt < 50) {
+                    n = pickOne(allNouns);
+                    let candidates = allVerbs.filter(verb => (verb.kinds || []).includes(n.kind));
+
+                    if (candidates.length === 0) {
+                        attempt++;
+                        continue;
+                    }
+
+                    v = pickOne(candidates);
+
+                    const sentenceKey = `${n.j}_${v.j}`;
+                    const templateKey = n.kind;
+
+                    const isSentenceDup = gaExistRecentSentences.includes(sentenceKey);
+                    const isTemplateDup = gaExistRecentTemplates.includes(templateKey);
+
+                    if (isSentenceDup || isTemplateDup) {
+                        attempt++;
+                        continue;
+                    }
+
+                    valid = true;
+                    gaExistRecentSentences.push(sentenceKey);
+                    if (gaExistRecentSentences.length > 5) gaExistRecentSentences.shift();
+
+                    gaExistRecentTemplates.push(templateKey);
+                    if (gaExistRecentTemplates.length > 3) gaExistRecentTemplates.shift();
+                }
+
+                if (!valid) {
                     const fallbackCombos = [
                         { n: { j: "雨", r: "あめ", t: "雨", kind: "precip" }, v: { j: "降る", r: "ふる", t: "下（雨雪）", kinds: ["precip"] } },
                         { n: { j: "雪", r: "ゆき", t: "雪", kind: "precip" }, v: { j: "降る", r: "ふる", t: "下（雨雪）", kinds: ["precip"] } },
@@ -1503,11 +1544,8 @@ createApp({
                     ];
                     const safe = pickOne(fallbackCombos);
                     n = safe.n;
-                    candidates = [safe.v];
+                    v = safe.v;
                 }
-
-                const v = pickOne(candidates);
-                // console.log(`[DEBUG] GA_EXIST output: n.kind=${n.kind}, v.kinds=${(v.kinds||[]).join(',')}`);
 
                 q = {
                     chinese: `${v.t || v.zh || '…'}${n.t || n.zh || '…'}`,
