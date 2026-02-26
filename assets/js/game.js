@@ -1362,9 +1362,9 @@ createApp({
             if (skillDef.id === 'NO_POSSESS') {
                 const isPersonA = Math.random() < 0.5;
 
-                let personPool = [...db.people, ...(safeVocab.people || [])];
-                let placePool = [...db.places, ...(safeVocab.places || []), ...(safeVocab.nature || []).filter(x => x.kind === 'landform')];
-                let objPool = [...db.objects, ...(safeVocab.objects || [])];
+                let personPool = [...(db?.people || []), ...(safeVocab.people || [])];
+                let placePool = [...(db?.places || []), ...(safeVocab.places || []), ...(safeVocab.nature || []).filter(x => x.kind === 'landform')];
+                let objPool = [...(db?.objects || []), ...(safeVocab.objects || [])];
 
                 let ownableObjPool = objPool.filter(o => o.ownable !== false);
                 let placeableObjPool = objPool.filter(o => o.placeable !== false);
@@ -1618,13 +1618,13 @@ createApp({
                 const vList = (safeVocab.verbs_do || []).filter(v => v.vt === true);
                 const v = pickOne(vList) || { j: "読む", r: "よむ", t: "讀", kind: "read" };
 
-                let oPool = safeVocab.objects || db.objects;
+                let oPool = safeVocab.objects || db?.objects || [];
                 if (v.kind === "eat") oPool = oPool.filter(o => ["ご飯", "りんご", "肉", "魚", "野菜", "パン", "料理"].includes(o.j));
                 else if (v.kind === "drink") oPool = oPool.filter(o => ["水", "牛乳", "お茶", "コーヒー"].includes(o.j));
                 else if (v.kind === "listen") oPool = oPool.filter(o => ["音楽", "ラジオ"].includes(o.j));
                 else if (v.kind === "read") oPool = oPool.filter(o => ["本", "新聞", "雑誌", "手紙"].includes(o.j));
 
-                if (!oPool || oPool.length === 0) oPool = safeVocab.objects || db.objects;
+                if (!oPool || oPool.length === 0) oPool = safeVocab.objects || db?.objects || [];
                 const o = pickOne(oPool) || { j: "本", r: "ほん", t: "書" };
 
                 q = {
