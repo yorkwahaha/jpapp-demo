@@ -593,10 +593,130 @@ createApp({
             if (typeof resumeBattle !== 'undefined') resumeBattle();
         };
 
+        // --- INSERT BEGIN: JPAPP_L2_DEBUG_V1 Vue State ---
+        const showL2DebugPanel = ref(false);
+        const l2DebugQuestions = ref([]);
+
+        window.dumpLevelQuestions = (levelId = "L2", n = 60) => {
+            if (!VOCAB.value) return [];
+
+            const results = [];
+            // Temporary simulate currentLevel state
+            const oldLevel = currentLevel.value;
+            currentLevel.value = (levelId === "L2") ? 2 : 1;
+
+            for (let i = 0; i < n; i++) {
+                // L2 mostly uses GA_EXIST skill
+                const skillId = 'GA_EXIST';
+                const q = generateQuestionBySkill(skillId, 1, {}, VOCAB.value);
+
+                if (!q) continue;
+
+                let isBad = false;
+                let errorMsg = [];
+
+                const hasEmpty = q.segments.some(s => s.isBlank === false && !s.text);
+                if (hasEmpty) {
+                    isBad = true;
+                    errorMsg.push("含空字串");
+                }
+
+                // Extract subject (n) and verb (v) from segments for basic analysis
+                const nSegment = q.segments[0];
+                const vSegment = q.segments[2];
+                let subjectType = 'unknown';
+                let isPlaceValid = true;
+
+                if (nSegment && nSegment.text) {
+                    const placeMatch = VOCAB.value.places.find(p => p.j === nSegment.text);
+                    if (placeMatch) {
+                        if (!placeMatch.tags || !placeMatch.tags.includes('place')) {
+                            isBad = true;
+                            errorMsg.push("place標籤錯誤");
+                        }
+                    }
+
+                    const personMatch = VOCAB.value.people.find(p => p.j === nSegment.text);
+                    if (personMatch) subjectType = 'person';
+
+                    const objMatch = VOCAB.value.objects.find(o => o.j === nSegment.text);
+                    if (objMatch) subjectType = 'object';
+                }
+
+                if (vSegment && vSegment.text) {
+                    if (vSegment.text.includes('ある') && subjectType === 'person') {
+                        isBad = true;
+                        errorMsg.push("人卻用ある");
+                    }
+                    if (vSegment.text.includes('いる') && subjectType === 'object') {
+                        isBad = true;
+                        errorMsg.push("物品卻用いる");
+                    }
+                }
+
+                // Format answer string
+                let ansStr = '';
+                if (q.answers && q.answers[0]) {
+                    ansStr = Array.isArray(q.answers[0]) ? q.answers[0].join('/') : q.answers[0];
+                }
+
+                // Build sentence
+                let sentence = '';
+                q.segments.forEach(s => {
+                    if (s.isBlank) {
+                        sentence += `[${ansStr.split('/')[0]}]`;
+                    } else {
+                        sentence += s.text;
+                    }
+                });
+
+                results.push({
+                    text: sentence,
+                    answer: ansStr,
+                    skillId: q.skillId || skillId,
+                    isBad,
+                    errorMsg: errorMsg.join(', ')
+                });
+            }
+
+            // Restore state
+            currentLevel.value = oldLevel;
+            return results;
+        };
+
+        const generateL2Debug = () => {
+            l2DebugQuestions.value = window.dumpLevelQuestions("L2", 60);
+        };
+
+        const copyL2Debug = () => {
+            const text = l2DebugQuestions.value.map((q, idx) =>
+                `[${(idx + 1).toString().padStart(2, '0')}] ${q.text} | ans: ${q.answer} | skill: ${q.skillId} | err: ${q.errorMsg || 'none'}`
+            ).join('\n');
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert("已複製到剪貼簿！");
+            }).catch(e => {
+                console.error("Copy failed", e);
+                alert("複製失敗");
+            });
+        };
+        // --- INSERT END: JPAPP_L2_DEBUG_V1 ---
+
 
 
         onMounted(() => {
             loadGameData();
+
+            // --- INSERT BEGIN: JPAPP_L2_DEBUG_V1 Hotkey ---
+            window.addEventListener("keydown", (e) => {
+                if ((e.shiftKey || e.ctrlKey) && e.key === "2") {
+                    showL2DebugPanel.value = !showL2DebugPanel.value;
+                    if (showL2DebugPanel.value && l2DebugQuestions.value.length === 0) {
+                        generateL2Debug();
+                    }
+                }
+            });
+            // --- INSERT END: JPAPP_L2_DEBUG_V1 Hotkey ---
         });
         const MONSTER_NAMES = { 1: '助詞怪', 2: '助詞妖', 3: '助詞魔王' };
         const MONSTER_HP = 100;
@@ -2115,7 +2235,7 @@ createApp({
         }
 
         loadAudioSettings();
-        return { appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay, skillList, castAbility, __sp };
+        return { appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay, skillList, castAbility, __sp, showL2DebugPanel, l2DebugQuestions, generateL2Debug, copyL2Debug };
     }
 }).mount('#app');
 console.log('應用已掛載！');
@@ -2126,6 +2246,15 @@ window.addEventListener('error', (e) => {
 
 // ----- INSERT BEGIN: JPAPP_TTS_TESTKEY_V1 -----
 window.addEventListener("keydown", (e) => {
+    // --- INSERT BEGIN: JPAPP_L2_DEBUG_V1 Hotkey ---
+    if ((e.shiftKey || e.ctrlKey) && e.key === "2") {
+        const appInstance = document.querySelector('#app').__vue_app__.config.globalProperties;
+        // The vue instance bindings might not be directly on globalProperties. 
+        // Best robust way to toggle is using a custom event or mutating a global state, but in this architecture we can click a hidden button or dispatch event.
+        // Actually, since this is bound to Vue via `showL2DebugPanel` ref returned by `setup`, we can just fire an event and let the component listen to it in `onUserGesture` or simpler: add an event listener inside setup.
+    }
+    // --- INSERT END: JPAPP_L2_DEBUG_V1 Hotkey ---
+
     if (e.key && e.key.toLowerCase() === "t") {
         playTtsKey("narration.support_001", "だいじょうぶ。落ち着いて、もう一度行こう。");
     }

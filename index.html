@@ -736,6 +736,69 @@
                 </div>
             </div>
         </div>
+
+        <!-- --- INSERT BEGIN: JPAPP_L2_DEBUG_V1 --- -->
+        <div v-if="showL2DebugPanel"
+            class="fixed inset-0 z-[999] bg-slate-900/95 flex flex-col p-4 w-full h-full font-mono text-sm">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-700">
+                <h2 class="text-xl font-bold text-amber-400">L2 題目檢查模式 (GA_EXIST)</h2>
+                <div class="flex gap-4">
+                    <button @click="generateL2Debug"
+                        class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded font-bold shadow-md active:translate-y-px">
+                        生成 60 題
+                    </button>
+                    <button @click="copyL2Debug"
+                        class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded font-bold shadow-md active:translate-y-px"
+                        :disabled="l2DebugQuestions.length === 0">
+                        Copy 純文字
+                    </button>
+                    <button @click="showL2DebugPanel = false"
+                        class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded font-bold shadow-md active:translate-y-px">
+                        關閉
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-auto bg-slate-800 rounded border border-slate-700 p-2 custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead class="sticky top-0 bg-slate-900 shadow-md">
+                        <tr>
+                            <th class="p-2 border-b border-slate-700 text-slate-400 w-12 text-center">#</th>
+                            <th class="p-2 border-b border-slate-700 text-slate-400 w-1/2">Sentence</th>
+                            <th class="p-2 border-b border-slate-700 text-slate-400">Ans</th>
+                            <th class="p-2 border-b border-slate-700 text-slate-400">Skill</th>
+                            <th class="p-2 border-b border-slate-700 text-slate-400">Issue / Flags</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-if="l2DebugQuestions.length === 0">
+                            <td colspan="5" class="p-8 text-center text-slate-500 italic">尚未生成題目，請點擊上方按鈕</td>
+                        </tr>
+                        <tr v-for="(q, idx) in l2DebugQuestions" :key="idx"
+                            class="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors"
+                            :class="{'bg-rose-900/40': q.isBad}">
+                            <td class="p-2 text-center text-slate-500">{{ idx + 1 }}</td>
+                            <td class="p-2 text-slate-200">{{ q.text }}</td>
+                            <td class="p-2">
+                                <span
+                                    class="bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded border border-amber-500/30">{{
+                                    q.answer }}</span>
+                            </td>
+                            <td class="p-2 text-slate-400 text-xs">{{ q.skillId }}</td>
+                            <td class="p-2">
+                                <span v-if="q.isBad"
+                                    class="text-rose-400 font-bold drop-shadow-[0_0_2px_rgba(225,29,72,0.8)]">
+                                    ⚠️ {{ q.errorMsg }}
+                                </span>
+                                <span v-else class="text-emerald-500/50">OK</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- --- INSERT END: JPAPP_L2_DEBUG_V1 --- -->
+
     </div>
 
     <script src="assets/js/game.js?v=26022606" defer></script>

@@ -759,9 +759,26 @@ rt {
 
 /* INSERT END: JPAPP_ACTIONBAR_ROW4_CSS_V1 */
 
-/* INSERT BEGIN: JPAPP_LEFTPANEL_TWEAKS_V4 */
-.sp-row {
-    margin-top: 2px;
+/* INSERT END: JPAPP_LEFTPANEL_TWEAKS_V4 */
+
+/* --- INSERT BEGIN: JPAPP_L2_DEBUG_V1 --- */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
 }
 
-/* INSERT END: JPAPP_LEFTPANEL_TWEAKS_V4 */
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.4);
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.4);
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.7);
+}
+
+/* --- INSERT END: JPAPP_L2_DEBUG_V1 --- */
