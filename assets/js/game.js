@@ -402,7 +402,7 @@ createApp({
         const SKILLS = ref([]);
         const VOCAB = ref(null);
 
-        const APP_VERSION = "26030104";
+        const APP_VERSION = "26030105";
         const appVersion = ref(APP_VERSION);
         const isChangelogOpen = ref(false);
         const changelogData = ref([]);
@@ -1052,10 +1052,11 @@ createApp({
                 }
             } catch (e) { }
 
-            // Wait for critical ones at least
-            await Promise.all(promises.slice(0, 5));
-            // Let the rest continue in background or wait a bit more for mobile
-            await new Promise(r => setTimeout(r, 300));
+            // Wait for all SFX and TTS sounds to ensure no lag on first play
+            // Especially critical for mobile. We wait for more than just 5.
+            await Promise.all(promises.slice(0, 15));
+            // Let the rest continue or wait a bit more
+            await new Promise(r => setTimeout(r, 500));
 
             isPreloading.value = false;
             console.log('[AudioPreload] Finished. Pool size:', audioPool.size);
@@ -2355,6 +2356,9 @@ createApp({
             hpBarDanger.value = false;
             const blanks = levelConfig.value.blanks;
 
+            // Increment counters early to ensure accurate result screen calculations
+            totalQuestionsAnswered.value++;
+
             let allCorrect = true;
             currentQuestion.value.answers.slice(0, blanks).forEach((ans, i) => {
                 const userIn = (userAnswers.value[i] || "").trim();
@@ -2371,17 +2375,10 @@ createApp({
             });
             isCurrentCorrect.value = allCorrect;
 
-            if (!hasSubmitted.value) {
-                totalQuestionsAnswered.value++;
-            }
-
             if (isCurrentCorrect.value) {
+                correctAnswersAmount.value++;
                 initAudio();
                 playTtsKey("ui.correct", "せいかい！");
-
-                if (!hasSubmitted.value) {
-                    correctAnswersAmount.value++;
-                }
 
                 const isPlayerMiss = Math.random() < 0.05;
                 if (isPlayerMiss) {
@@ -2571,6 +2568,10 @@ createApp({
                 player.value.hp = Math.min(100, player.value.hp + 50);
                 // Potions unchanged in hard mode
             }
+
+            // SP Refill on Level Transition
+            window.__sp.cur = window.__sp.max;
+            if (window.updateSpUI) window.updateSpUI();
 
             currentLevel.value++;
             initGame(currentLevel.value);
