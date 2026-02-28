@@ -251,8 +251,32 @@ const heroBuffs = { enemyAtbMult: 1.0, enemyDmgMult: 1.0, odoodoTurns: 0, wakuwa
 
 function setSpeedStatus(ms) {
     heroStatusTimers.speedUntil = Date.now() + ms;
+    showStatusToast('💨 加速・閃避', { bg: 'rgba(56,189,248,0.92)', border: '#7dd3fc', color: '#0c4a6e' });
     updateHeroStatusBar();
     window.setTimeout(updateHeroStatusBar, ms + 50);
+}
+
+// ── Status Toast ─────────────────────────────────────────────────────────────
+let _toastTimer = null;
+function showStatusToast(label, { bg = 'rgba(251,191,36,0.92)', border = '#fbbf24', color = '#1c1400' } = {}) {
+    const existing = document.getElementById('statusToast');
+    if (existing) existing.remove();
+    if (_toastTimer) { clearTimeout(_toastTimer); _toastTimer = null; }
+
+    const el = document.createElement('div');
+    el.id = 'statusToast';
+    el.className = 'status-toast';
+    el.style.cssText = `background:${bg}; border:2px solid ${border}; color:${color};`;
+    el.textContent = label;
+    document.body.appendChild(el);
+
+    _toastTimer = setTimeout(() => {
+        if (el.parentNode) {
+            el.classList.add('out');
+            setTimeout(() => el.remove(), 260);
+        }
+        _toastTimer = null;
+    }, 1200);
 }
 
 function clearSpeedStatus() {
@@ -576,17 +600,20 @@ createApp({
             if (id === 'ODOODO') {
                 heroBuffs.enemyAtbMult = 1.3;
                 heroBuffs.odoodoTurns = 3;
+                showStatusToast('🐌 怪物遲緩！×3回合', { bg: 'rgba(163,230,53,0.92)', border: '#84cc16', color: '#1a2e05' });
                 if (typeof pushBattleLog !== 'undefined') {
                     pushBattleLog(`使用了技能：${skill.name}！怪物減速三回合！`, 'buff');
                 }
             } else if (id === 'WAKUWAKU') {
                 heroBuffs.enemyDmgMult = 0.6;
                 heroBuffs.wakuwakuTurns = 2;
+                showStatusToast('🛡️ 怪物衰弱！×2回合', { bg: 'rgba(251,146,60,0.92)', border: '#f97316', color: '#431407' });
                 if (typeof pushBattleLog !== 'undefined') {
                     pushBattleLog(`使用了技能：${skill.name}！怪物攻擊減傷兩回合！`, 'buff');
                 }
             } else if (id === 'UTOUTO') {
                 heroBuffs.monsterSleep = true;
+                showStatusToast('💤 怪物睡著了！', { bg: 'rgba(168,85,247,0.92)', border: '#c084fc', color: '#1e0a2e' });
                 if (typeof pushBattleLog !== 'undefined') {
                     pushBattleLog(`使用了技能：${skill.name}！怪物睡著了！`, 'buff');
                 }
