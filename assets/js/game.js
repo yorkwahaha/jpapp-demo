@@ -402,7 +402,7 @@ createApp({
         const SKILLS = ref([]);
         const VOCAB = ref(null);
 
-        const APP_VERSION = "26030103";
+        const APP_VERSION = "26030104";
         const appVersion = ref(APP_VERSION);
         const isChangelogOpen = ref(false);
         const changelogData = ref([]);
@@ -1061,24 +1061,31 @@ createApp({
             console.log('[AudioPreload] Finished. Pool size:', audioPool.size);
         };
 
-        const initAudioCtx = () => {
-            if (audioCtx.value) return;
+        const initAudioCtx = async () => {
+            if (audioCtx.value && audioCtx.value.state === 'running') return;
             try {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                audioCtx.value = new AudioContext();
+                if (!audioCtx.value) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    audioCtx.value = new AudioContext();
 
-                masterGain.value = audioCtx.value.createGain();
-                bgmGain.value = audioCtx.value.createGain();
-                sfxGain.value = audioCtx.value.createGain();
+                    masterGain.value = audioCtx.value.createGain();
+                    bgmGain.value = audioCtx.value.createGain();
+                    sfxGain.value = audioCtx.value.createGain();
 
-                bgmGain.value.connect(masterGain.value);
-                sfxGain.value.connect(masterGain.value);
-                masterGain.value.connect(audioCtx.value.destination);
+                    bgmGain.value.connect(masterGain.value);
+                    sfxGain.value.connect(masterGain.value);
+                    masterGain.value.connect(audioCtx.value.destination);
 
-                updateGainVolumes();
-                console.log('[WebAudio] Context & Gains initialized');
+                    updateGainVolumes();
+                    console.log('[WebAudio] Context & Gains created');
+                }
+
+                if (audioCtx.value.state === 'suspended' || audioCtx.value.state === 'interrupted') {
+                    await audioCtx.value.resume();
+                    console.log('[WebAudio] Context resumed');
+                }
             } catch (e) {
-                console.warn('[WebAudio] Failed to init AudioContext:', e);
+                console.warn('[WebAudio] Failed to init/resume:', e);
             }
         };
 
@@ -1094,10 +1101,10 @@ createApp({
             sfxGain.value.gain.setTargetAtTime(sfxVolume.value, audioCtx.value.currentTime, 0.1);
         };
 
-        const initAudio = () => {
+        const initAudio = async () => {
             if (audioInited.value) return;
             audioInited.value = true;
-            initAudioCtx();
+            await initAudioCtx();
             try {
                 let bgm = audioPool.get('assets/audio/bgm.mp3');
                 if (!bgm) {
@@ -1167,9 +1174,10 @@ createApp({
         const setBattleMessage = (text, ttlMs = 5200) => {
             pushBattleLog(text, 'info');
         };
-        const playBgm = () => {
-            if (!audioInited.value) initAudio();
-            if (audioCtx.value && audioCtx.value.state === 'suspended') audioCtx.value.resume();
+        const playBgm = async () => {
+            await initAudioCtx();
+            if (!audioInited.value) await initAudio();
+            if (audioCtx.value && audioCtx.value.state === 'suspended') await audioCtx.value.resume();
             updateGainVolumes();
             if (bgmAudio.value && bgmAudio.value.paused) {
                 bgmAudio.value.play().catch(() => { });
@@ -1465,6 +1473,7 @@ createApp({
             return shuffle(picked);
         };
         const onUserGesture = () => {
+            initAudioCtx();
             if (needsUserGestureToResumeBgm.value) {
                 ensureBgmPlaying('gesture');
                 needsUserGestureToResumeBgm.value = false;
@@ -1496,9 +1505,10 @@ createApp({
         const playWrongBeep = () => { playBeep(200, 0.25, 'sawtooth'); };
 
         const startLevel = async (level) => {
+            initAudioCtx(); // JPAPP_IOS_GESTURE: Run immediately on click
             stopAllAudio();
             await preloadAllAudio(); // JPAPP_AUDIO_PRELOAD
-            initAudio();
+            await initAudio();
             playSfx('click');
             showLevelSelect.value = false;
             currentLevel.value = level;
@@ -1507,7 +1517,8 @@ createApp({
             ensureBgmPlaying('startLevel');
         };
         const usePotion = () => {
-            initAudio();
+            initAudioCtx(); // Capture gesture
+            if (!audioInited.value) initAudio();
             if (needsUserGestureToResumeBgm.value) { ensureBgmPlaying('potion'); needsUserGestureToResumeBgm.value = false; }
             playSfx('potion');
             if (inventory.value.potions <= 0 || player.value.hp >= player.value.maxHp) return;
@@ -1517,7 +1528,8 @@ createApp({
         };
 
         const useSpeedPotion = () => {
-            initAudio();
+            initAudioCtx(); // Capture gesture
+            if (!audioInited.value) initAudio();
             if (needsUserGestureToResumeBgm.value) { ensureBgmPlaying('potion'); needsUserGestureToResumeBgm.value = false; }
             playSfx('potion'); // You can add a distinct jump/whoosh SFX later if desired
             if (inventory.value.speedPotions <= 0 || evasionBuffAttacksLeft.value > 0 || playerDead.value || monsterDead.value) return;
@@ -2523,7 +2535,8 @@ createApp({
         // --- INSERT BEGIN: JPAPP_MOBILE_AUTOSUBMIT_V1 ---
         let _autoSubmitTimer = null;
         const selectChoice = (opt) => {
-            initAudio();
+            initAudioCtx(); // Capture gesture
+            if (!audioInited.value) initAudio();
             if (needsUserGestureToResumeBgm.value) { ensureBgmPlaying('selectChoice'); needsUserGestureToResumeBgm.value = false; }
             playSfx('click');
             if (hasSubmitted.value) return;
