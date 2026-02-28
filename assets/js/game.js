@@ -402,7 +402,7 @@ createApp({
         const SKILLS = ref([]);
         const VOCAB = ref(null);
 
-        const APP_VERSION = "26030101";
+        const APP_VERSION = "26030102";
         const appVersion = ref(APP_VERSION);
         const isChangelogOpen = ref(false);
         const changelogData = ref([]);
@@ -586,15 +586,34 @@ createApp({
             window.__sp.cur -= skill.cost;
             if (window.updateSpUI) window.updateSpUI();
 
+            // JPAPP_BGM_DUCKING
+            if (bgmAudio.value && !isMuted.value) {
+                const vScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
+                bgmAudio.value.volume = bgmVolume.value * masterVolume.value * vScale * 0.3;
+                clearTimeout(window._bgmDuckTimer);
+                window._bgmDuckTimer = setTimeout(() => {
+                    if (bgmAudio.value && !isMuted.value) {
+                        const vs = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
+                        bgmAudio.value.volume = bgmVolume.value * masterVolume.value * vs;
+                    }
+                }, 2500); // Wait longer for skills
+            }
+
             // Play specific audio for skill
-            const skillAudio = new Audio(`assets/audio/skill/${id.toLowerCase()}.mp3`);
-            skillAudio.volume = sfxVolume.value;
-            skillAudio.play().catch(e => console.warn("Audio play failed:", e));
+            const skillSfx1 = `assets/audio/skill/${id.toLowerCase()}.mp3`;
+            let a1 = audioPool.get(skillSfx1);
+            if (!a1) { a1 = new Audio(skillSfx1); audioPool.set(skillSfx1, a1); }
+            a1.currentTime = 0;
+            a1.volume = isMuted.value ? 0 : sfxVolume.value * masterVolume.value;
+            a1.play().catch(e => console.warn("Audio play failed:", e));
 
             setTimeout(() => {
-                const skillAudio2 = new Audio(`assets/audio/skill/${id.toLowerCase()}2.mp3`);
-                skillAudio2.volume = sfxVolume.value;
-                skillAudio2.play().catch(e => console.warn("Audio2 play failed:", e));
+                const skillSfx2 = `assets/audio/skill/${id.toLowerCase()}2.mp3`;
+                let a2 = audioPool.get(skillSfx2);
+                if (!a2) { a2 = new Audio(skillSfx2); audioPool.set(skillSfx2, a2); }
+                a2.currentTime = 0;
+                a2.volume = isMuted.value ? 0 : sfxVolume.value * masterVolume.value;
+                a2.play().catch(e => console.warn("Audio2 play failed:", e));
             }, 1000);
 
             if (id === 'ODOODO') {
@@ -786,34 +805,30 @@ createApp({
             // --- INSERT END: JPAPP_L2_DEBUG_V1 Hotkey ---
 
             // --- INSERT BEGIN: JPAPP_IOS_AUDIO_FIX_V1 ---
-            // iOS Safari： <input type="range"> 拖動時只觸發 change 而非 input，
-            // Vue 的 v-model 預設監聽 input，導致 bgmVolume/sfxVolume ref 不更新。
-            // 用全域 change 事件委派（capture phase）強制補上這個缺口。
-            document.addEventListener('change', (e) => {
+            const handleVolumeChange = (e) => {
                 const el = e.target;
                 if (el.tagName !== 'INPUT' || el.type !== 'range') return;
                 const val = parseFloat(el.value);
                 if (isNaN(val)) return;
 
-                // 判斷是哪個 slider（依最近 label 的文字內容區分）
                 const label = el.closest('label');
                 const labelText = label ? label.textContent.trim() : '';
 
                 if (labelText.startsWith('BGM')) {
                     bgmVolume.value = val;
                     saveAudioSettings();
-                    // 直接套用到 bgmAudio
                     if (bgmAudio.value) {
-                        bgmAudio.value.volume = isMuted.value ? 0 : val;
+                        const volumeScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
+                        bgmAudio.value.volume = isMuted.value ? 0 : val * masterVolume.value * volumeScale;
                         bgmAudio.value.muted = isMuted.value;
                     }
-                    console.log('[iOS-Audio-Fix] BGM change => val:', val, 'bgmAudio.volume:', bgmAudio.value?.volume, 'muted:', bgmAudio.value?.muted);
                 } else if (labelText.startsWith('SFX')) {
                     sfxVolume.value = val;
                     saveAudioSettings();
-                    console.log('[iOS-Audio-Fix] SFX change => val:', val);
                 }
-            }, true); // capture:true 確保在 Vue 的 handler 之前收到
+            };
+            document.addEventListener('input', handleVolumeChange, true);
+            document.addEventListener('change', handleVolumeChange, true);
             // --- INSERT END: JPAPP_IOS_AUDIO_FIX_V1 ---
         });
         const MONSTER_NAMES = { 1: '助詞怪', 2: '助詞妖', 3: '助詞魔王' };
@@ -881,11 +896,14 @@ createApp({
         const voicePlayedForCurrentQuestion = ref(false);
         // audio system
         const audioInited = ref(false);
+        const isPreloading = ref(false); // JPAPP_AUDIO_PRELOAD
         const bgmAudio = ref(null);
         const gameOverAudio = ref(null);
-        const bgmVolume = ref(0.5);
-        const sfxVolume = ref(0.5);
+        const bgmVolume = ref(0.35); // JPAPP_AUDIO_BALANCE: Default 0.35
+        const sfxVolume = ref(1.0);  // JPAPP_AUDIO_BALANCE: Default 1.0
+        const masterVolume = ref(1.0);
         const isMuted = ref(false);
+        const audioPool = new Map(); // JPAPP_AUDIO_POOL
         const bgmEnabled = ref(true);
         const needsUserGestureToResumeBgm = ref(false);
         const audioSettingsKey = 'jpRpgAudioV1';
@@ -938,24 +956,102 @@ createApp({
                     const obj = JSON.parse(raw);
                     bgmVolume.value = obj.bgmVolume ?? bgmVolume.value;
                     sfxVolume.value = obj.sfxVolume ?? sfxVolume.value;
+                    masterVolume.value = obj.masterVolume ?? masterVolume.value; // JPAPP_AUDIO_BALANCE
                     isMuted.value = obj.isMuted ?? isMuted.value;
                 }
             } catch (_) { }
         };
         const saveAudioSettings = () => {
             try {
-                localStorage.setItem(audioSettingsKey, JSON.stringify({ bgmVolume: bgmVolume.value, sfxVolume: sfxVolume.value, isMuted: isMuted.value }));
+                localStorage.setItem(audioSettingsKey, JSON.stringify({
+                    bgmVolume: bgmVolume.value,
+                    sfxVolume: sfxVolume.value,
+                    masterVolume: masterVolume.value, // JPAPP_AUDIO_BALANCE
+                    isMuted: isMuted.value
+                }));
             } catch (_) { }
+        };
+
+        const preloadAllAudio = async () => {
+            if (isPreloading.value) return;
+            isPreloading.value = true;
+            console.log('[AudioPreload] Start...');
+
+            const sfxPaths = {
+                hit: 'assets/audio/sfx_hit.mp3',
+                miss: 'assets/audio/mmiss.mp3',
+                potion: 'assets/audio/sfx_potion.mp3',
+                click: 'assets/audio/sfx_click.mp3',
+                damage: 'assets/audio/damage.mp3',
+                fanfare: 'assets/audio/fanfare.mp3',
+                pop: 'assets/audio/pop.mp3',
+                win: 'assets/audio/win.mp3',
+                gameover: 'assets/audio/sfx_gameover.mp3'
+            };
+
+            const criticalAssets = ['assets/audio/bgm.mp3', sfxPaths.click, sfxPaths.pop];
+            const promises = [];
+
+            const loadAsset = (url) => {
+                if (audioPool.has(url)) return Promise.resolve();
+                return new Promise((res) => {
+                    const a = new Audio();
+                    a.addEventListener('canplaythrough', () => res(), { once: true });
+                    a.addEventListener('error', () => res(), { once: true });
+                    a.src = url;
+                    a.load();
+                    audioPool.set(url, a);
+                });
+            };
+
+            // Critical assets first
+            for (const url of criticalAssets) {
+                promises.push(loadAsset(url));
+            }
+
+            // Common SFX
+            for (const key in sfxPaths) {
+                promises.push(loadAsset(sfxPaths[key]));
+            }
+
+            // TTS base sounds
+            promises.push(loadAsset(TTS_AUDIO_BASE + 'ui_correct.mp3'));
+            promises.push(loadAsset(TTS_AUDIO_BASE + 'ui_wrong.mp3'));
+
+            // Load TTS lines dynamically
+            try {
+                const res = await fetch('assets/audio/tts/lines.json');
+                if (res.ok) {
+                    const lines = await res.json();
+                    lines.forEach(l => {
+                        const url = TTS_AUDIO_BASE + ttsKeyToFile(l.key);
+                        promises.push(loadAsset(url));
+                    });
+                }
+            } catch (e) { }
+
+            // Wait for critical ones at least
+            await Promise.all(promises.slice(0, 5));
+            // Let the rest continue in background or wait a bit more for mobile
+            await new Promise(r => setTimeout(r, 300));
+
+            isPreloading.value = false;
+            console.log('[AudioPreload] Finished. Pool size:', audioPool.size);
         };
 
         const initAudio = () => {
             if (audioInited.value) return;
             audioInited.value = true;
-            // create bgm
             try {
-                bgmAudio.value = new Audio('assets/audio/bgm.mp3');
+                let bgm = audioPool.get('assets/audio/bgm.mp3');
+                if (!bgm) {
+                    bgm = new Audio('assets/audio/bgm.mp3');
+                    audioPool.set('assets/audio/bgm.mp3', bgm);
+                }
+                bgmAudio.value = bgm;
                 bgmAudio.value.loop = true;
-                bgmAudio.value.volume = isMuted.value ? 0 : bgmVolume.value;
+                const volumeScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
+                bgmAudio.value.volume = isMuted.value ? 0 : bgmVolume.value * masterVolume.value * volumeScale;
                 bgmAudio.value.play().catch(() => {
                     console.log('BGM 無法播放，可能缺少檔案或權限');
                 });
@@ -1016,21 +1112,19 @@ createApp({
             if (!audioInited.value) initAudio();
             if (bgmAudio.value) {
                 const volumeScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
-                const targetVol = isMuted.value ? 0 : bgmVolume.value * volumeScale;
+                const targetVol = isMuted.value ? 0 : bgmVolume.value * masterVolume.value * volumeScale;
                 bgmAudio.value.volume = targetVol;
-                // iOS Safari 需要明確設置 muted 屬性，光是 volume=0 有時不夠
                 bgmAudio.value.muted = isMuted.value;
                 console.log('[playBgm] vol:', targetVol, 'bgmAudio.volume:', bgmAudio.value.volume, 'muted:', bgmAudio.value.muted);
                 if (bgmAudio.value.paused) bgmAudio.value.play().catch(() => { });
             }
         };
 
-        watch([isMenuOpen, isCodexOpen, isSkillUnlockModalOpen, isMistakesOpen, bgmVolume, isMuted], () => {
+        watch([isMenuOpen, isCodexOpen, isSkillUnlockModalOpen, isMistakesOpen, bgmVolume, masterVolume, isMuted], () => {
             if (!bgmAudio.value) return;
             const volumeScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
-            const targetVol = isMuted.value ? 0 : bgmVolume.value * volumeScale;
+            const targetVol = isMuted.value ? 0 : bgmVolume.value * masterVolume.value * volumeScale;
             bgmAudio.value.volume = targetVol;
-            // iOS Safari：同步 muted 屬性
             bgmAudio.value.muted = isMuted.value;
             console.log('[watch-audio] vol:', targetVol, 'bgmAudio.volume:', bgmAudio.value.volume, 'muted:', bgmAudio.value.muted);
         });
@@ -1068,13 +1162,33 @@ createApp({
                 damage: 'assets/audio/damage.mp3',
                 fanfare: 'assets/audio/fanfare.mp3',
                 pop: 'assets/audio/pop.mp3',
-                win: 'assets/audio/win.mp3'
+                win: 'assets/audio/win.mp3',
+                gameover: 'assets/audio/sfx_gameover.mp3'
             };
             const src = srcMap[name];
             if (!src) return;
+
+            // JPAPP_BGM_DUCKING
+            if (bgmAudio.value && !isMuted.value && name !== 'click' && name !== 'pop') {
+                const volumeScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
+                bgmAudio.value.volume = bgmVolume.value * masterVolume.value * volumeScale * 0.3;
+                clearTimeout(window._bgmDuckTimer);
+                window._bgmDuckTimer = setTimeout(() => {
+                    if (bgmAudio.value && !isMuted.value) {
+                        const vScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
+                        bgmAudio.value.volume = bgmVolume.value * masterVolume.value * vScale;
+                    }
+                }, 1000);
+            }
+
             try {
-                const a = new Audio(src);
-                a.volume = isMuted.value ? 0 : sfxVolume.value;
+                let a = audioPool.get(src);
+                if (!a) {
+                    a = new Audio(src);
+                    audioPool.set(src, a);
+                }
+                a.currentTime = 0;
+                a.volume = isMuted.value ? 0 : sfxVolume.value * masterVolume.value;
                 a.play().catch(() => { console.log(`無法播放 ${name}`); });
             } catch (_) { console.log(`建立 sfx ${name} 失敗`); }
         };
@@ -1320,8 +1434,9 @@ createApp({
         const playCorrectBeep = () => { playBeep(523, 0.15); playBeep(659, 0.15, 'sine'); };
         const playWrongBeep = () => { playBeep(200, 0.25, 'sawtooth'); };
 
-        const startLevel = (level) => {
+        const startLevel = async (level) => {
             stopAllAudio();
+            await preloadAllAudio(); // JPAPP_AUDIO_PRELOAD
             initAudio();
             playSfx('click');
             showLevelSelect.value = false;
@@ -2471,7 +2586,7 @@ createApp({
         }
 
         loadAudioSettings();
-        return { appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay, skillList, castAbility, __sp, showL2DebugPanel, l2DebugQuestions, generateL2Debug, copyL2Debug };
+        return { appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay, skillList, castAbility, __sp, showL2DebugPanel, l2DebugQuestions, generateL2Debug, copyL2Debug };
     }
 }).mount('#app');
 console.log('應用已掛載！');
