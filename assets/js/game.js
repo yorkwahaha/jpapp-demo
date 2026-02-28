@@ -307,16 +307,22 @@ function hasSpeedOrEvadeBuffBestEffort() {
 function updateHeroStatusBar() {
     const bar = document.getElementById("heroStatusBar");
     if (!bar) return;
-    bar.innerHTML = "";
 
     // Only show hero-own buffs (speed/evade from potion)
-    // Monster debuffs (遅/衰/眠) are shown exclusively on #monsterStatusBar
-    if (hasSpeedOrEvadeBuffBestEffort()) {
-        const span = document.createElement("span");
-        span.className = "hero-status-pill speed";
-        span.title = "加速／閃避";
-        span.textContent = "速";
+    // Monster debuffs (遲/衰/眠) are shown exclusively on #monsterStatusBar
+    const hasSpeed = hasSpeedOrEvadeBuffBestEffort();
+
+    // Diff-based update: only add/remove pills when status actually changes.
+    // This prevents the statusPop animation from re-triggering on every re-render.
+    const existing = bar.querySelector('.pill-speed');
+    if (hasSpeed && !existing) {
+        const span = document.createElement('span');
+        span.className = 'hero-status-pill speed pill-speed';
+        span.title = '加速／閃避';
+        span.textContent = '速';
         bar.appendChild(span);
+    } else if (!hasSpeed && existing) {
+        existing.remove();
     }
 
     if (window.updateSpUI) window.updateSpUI();
@@ -325,30 +331,48 @@ function updateHeroStatusBar() {
 function updateMonsterStatusBar() {
     const bar = document.getElementById("monsterStatusBar");
     if (!bar) return;
-    bar.innerHTML = "";
 
-    if (heroBuffs.odoodoTurns > 0) {
-        const span = document.createElement("span");
-        span.className = "hero-status-pill speed";
+    // Diff-based update: only add/remove pills when debuff state changes.
+    const wantOdoodo = heroBuffs.odoodoTurns > 0;
+    const wantWakuwaku = heroBuffs.wakuwakuTurns > 0;
+    const wantSleep = !!heroBuffs.monsterSleep;
+
+    const pillOdoodo = bar.querySelector('.pill-ododo');
+    const pillWakuwaku = bar.querySelector('.pill-wakuwaku');
+    const pillSleep = bar.querySelector('.pill-sleep');
+
+    if (wantOdoodo && !pillOdoodo) {
+        const span = document.createElement('span');
+        span.className = 'hero-status-pill speed pill-ododo';
         span.title = `緩速 (${heroBuffs.odoodoTurns} 回合)`;
-        span.textContent = "遲";
+        span.textContent = '遲';
         bar.appendChild(span);
+    } else if (wantOdoodo && pillOdoodo) {
+        pillOdoodo.title = `緩速 (${heroBuffs.odoodoTurns} 回合)`; // Update turn count silently
+    } else if (!wantOdoodo && pillOdoodo) {
+        pillOdoodo.remove();
     }
 
-    if (heroBuffs.wakuwakuTurns > 0) {
-        const span = document.createElement("span");
-        span.className = "hero-status-pill speed";
+    if (wantWakuwaku && !pillWakuwaku) {
+        const span = document.createElement('span');
+        span.className = 'hero-status-pill speed pill-wakuwaku';
         span.title = `減傷 (${heroBuffs.wakuwakuTurns} 回合)`;
-        span.textContent = "衰";
+        span.textContent = '衰';
         bar.appendChild(span);
+    } else if (wantWakuwaku && pillWakuwaku) {
+        pillWakuwaku.title = `減傷 (${heroBuffs.wakuwakuTurns} 回合)`;
+    } else if (!wantWakuwaku && pillWakuwaku) {
+        pillWakuwaku.remove();
     }
 
-    if (heroBuffs.monsterSleep) {
-        const span = document.createElement("span");
-        span.className = "hero-status-pill speed";
-        span.title = `睡眠`;
-        span.textContent = "眠";
+    if (wantSleep && !pillSleep) {
+        const span = document.createElement('span');
+        span.className = 'hero-status-pill speed pill-sleep';
+        span.title = '睡眠';
+        span.textContent = '眠';
         bar.appendChild(span);
+    } else if (!wantSleep && pillSleep) {
+        pillSleep.remove();
     }
 }
 // INSERT END: JPAPP_HEROSTATUS_JS_V1
@@ -402,7 +426,7 @@ createApp({
         const SKILLS = ref([]);
         const VOCAB = ref(null);
 
-        const APP_VERSION = "26030105";
+        const APP_VERSION = "26030106";
         const appVersion = ref(APP_VERSION);
         const isChangelogOpen = ref(false);
         const changelogData = ref([]);
@@ -601,38 +625,29 @@ createApp({
                 }, 2500);
             }
 
-            // Play specific audio for skill
-            const skillSfx1 = `assets/audio/skill/${id.toLowerCase()}.mp3`;
-            let a1 = audioPool.get(skillSfx1);
-            if (!a1) {
-                a1 = new Audio(skillSfx1);
-                a1.crossOrigin = "anonymous";
-                audioPool.set(skillSfx1, a1);
-            }
-            if (audioCtx.value && !a1._connected) {
-                const source = audioCtx.value.createMediaElementSource(a1);
-                source.connect(sfxGain.value);
-                a1._connected = true;
-            }
-            a1.currentTime = 0;
-            a1.play().catch(e => console.warn("Audio play failed:", e));
+            // Play specific audio for skill — use preloaded assets from audioPool
+            const playSkillSfx = (url) => {
+                let a = audioPool.get(url);
+                if (!a) {
+                    a = new Audio(url);
+                    a.crossOrigin = 'anonymous';
+                    audioPool.set(url, a);
+                }
+                if (audioCtx.value && sfxGain.value && !a._connected) {
+                    try {
+                        const src = audioCtx.value.createMediaElementSource(a);
+                        src.connect(sfxGain.value);
+                        a._connected = true;
+                    } catch (e) { /* already connected */ }
+                }
+                a.pause();
+                a.currentTime = 0;
+                a.play().catch(e => console.warn('[SkillSfx] play failed:', e));
+            };
 
-            setTimeout(() => {
-                const skillSfx2 = `assets/audio/skill/${id.toLowerCase()}2.mp3`;
-                let a2 = audioPool.get(skillSfx2);
-                if (!a2) {
-                    a2 = new Audio(skillSfx2);
-                    a2.crossOrigin = "anonymous";
-                    audioPool.set(skillSfx2, a2);
-                }
-                if (audioCtx.value && !a2._connected) {
-                    const source = audioCtx.value.createMediaElementSource(a2);
-                    source.connect(sfxGain.value);
-                    a2._connected = true;
-                }
-                a2.currentTime = 0;
-                a2.play().catch(e => console.warn("Audio2 play failed:", e));
-            }, 1000);
+            const sfxBase = `assets/audio/skill/${id.toLowerCase()}`;
+            playSkillSfx(`${sfxBase}.mp3`);
+            setTimeout(() => playSkillSfx(`${sfxBase}2.mp3`), 1000);
 
             if (id === 'ODOODO') {
                 heroBuffs.enemyAtbMult = 1.3;
@@ -1051,6 +1066,13 @@ createApp({
                     });
                 }
             } catch (e) { }
+
+            // Skill audio: preload both tracks for all abilities so they're ready instantly
+            const abilityIds = ['ODOODO', 'WAKUWAKU', 'UTOUTO'];
+            for (const sid of abilityIds) {
+                promises.push(loadAsset(`assets/audio/skill/${sid.toLowerCase()}.mp3`));
+                promises.push(loadAsset(`assets/audio/skill/${sid.toLowerCase()}2.mp3`));
+            }
 
             // Wait for all SFX and TTS sounds to ensure no lag on first play
             // Especially critical for mobile. We wait for more than just 5.
