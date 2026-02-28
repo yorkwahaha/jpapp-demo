@@ -786,32 +786,23 @@ rt {
 /* INSERT BEGIN: JPAPP_RESPONSIVE_MOBILE_V1 */
 @media (max-width: 900px) {
 
-    /* 整體高度與溢出控制 */
     html,
     body {
         height: 100%;
         margin: 0;
         padding: 0 !important;
         background: #0f172a;
-    }
-
-    body {
-        display: flex;
-        flex-direction: column;
+        overflow: hidden;
     }
 
     #app {
-        flex: 1;
-        min-height: 100dvh;
         height: 100dvh;
         display: flex;
         flex-direction: column;
-        overflow: hidden;
         padding: 0 !important;
         max-width: 100% !important;
     }
 
-    /* 戰鬥舞台外部容器 */
     #stageWrap {
         flex: 1;
         min-height: 0;
@@ -821,129 +812,494 @@ rt {
         flex-direction: column;
     }
 
-    /* 戰鬥舞台內部容器 */
     #stage {
         flex: 1;
         min-height: 0;
         width: 100% !important;
         border: none !important;
         border-radius: 0 !important;
-        display: flex;
-        flex-direction: column;
+        background: #0f172a !important;
     }
 
-    /* 上半身：怪物與背景 */
+    /* 1. Top Bar / Battle Log as single line bubble (A1) */
+    .battle-log {
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 92%;
+        height: 38px !important;
+        line-height: 38px !important;
+        padding: 0 16px !important;
+        background: rgba(30, 41, 59, 1) !important;
+        border: 2px solid #5fa7ff !important;
+        border-radius: 20px !important;
+        font-size: 13px !important;
+        color: #fff !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+        z-index: 100;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Hide badges (月亮icon/關卡/版本) per A1 */
+    #battleScene>div.absolute.top-4.left-4,
+    #app>div.absolute.top-2.right-4,
+    #app>div.absolute.top-2.right-4.pointer-events-none {
+        display: none !important;
+    }
+
+    /* 2. Monster Stage Resize (A2) ~30-33% */
     #battleScene {
-        flex: 0 0 auto;
-        min-height: 180px;
-        padding-bottom: 1rem;
+        flex: 0 0 32vh !important;
+        max-height: 32vh !important;
+        padding-top: 54px !important;
+        padding-bottom: 0 !important;
+        justify-content: center !important;
+        display: flex !important;
     }
 
-    /* 下半身：HUD (包含勇者列與答題區) */
+    #battleScene .flex-col.items-center.p-6 {
+        padding: 0 !important;
+        margin-top: 0 !important;
+        background: transparent !important;
+        border: none !important;
+    }
+
+    #battleScene .w-28.h-28 {
+        width: 80px !important;
+        height: 80px !important;
+        margin-bottom: 2px !important;
+    }
+
+    #battleScene .text-base.font-bold {
+        font-size: 14px !important;
+    }
+
+    #battleScene .text-xs {
+        font-size: 11px !important;
+        margin-bottom: 4px !important;
+    }
+
+    #battleScene .w-full.h-1.5 {
+        height: 4px !important;
+        margin-bottom: 2px !important;
+    }
+
+    /* 3. Hero HUD Horizontal Card (A3) */
     #hud {
         flex: 1;
-        min-height: 0;
         display: flex !important;
         flex-direction: column !important;
-        padding: 0 !important;
-        background: transparent !important;
-        overflow-y: auto;
-        /* 允許題目區有需要時滾動 */
-        padding-bottom: 84px !important;
-        /* !! 預留給 fixed 底部工具列的空間 !! */
+        padding: 8px 12px !important;
+        gap: 8px !important;
+        background: #0f172a !important;
+        padding-bottom: 80px !important;
+        /* space for dock dock */
     }
 
-    /* topbar（原 left panel，勇者狀態）改全寬 */
+    /* Hero HUD ribbon */
     #hud>.w-64 {
         width: 100% !important;
-        max-width: none !important;
+        flex: 0 0 auto !important;
+        max-height: none !important;
         height: auto !important;
-        flex: 0 0 auto;
-        /* 不伸縮 */
+        /* ← break h-full (height:100%) which was consuming ~464px and leaving 0 for the question panel */
     }
 
+    /* Hero card outer amber panel */
     #hud>.w-64>div:first-child {
-        min-height: auto !important;
-        padding: 0.5rem !important;
-        border: none !important;
-        border-radius: 0 !important;
+        min-height: 130px !important;
+        height: auto !important;
+        padding: 8px 10px !important;
+        border-radius: 12px !important;
+        background: rgba(30, 41, 59, 0.85) !important;
+        border: 2px solid #fbbf24 !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        display: flex !important;
+        /* outer area flex stays */
+        flex-direction: column !important;
+        align-items: stretch !important;
     }
 
+    /* ── CSS GRID: avatar left | stats right ── */
     #hud>.w-64>div:first-child>.bg-slate-900\/80 {
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        gap: 12px !important;
-        flex-wrap: wrap !important;
-        padding: 0.5rem !important;
-        border: none !important;
+        display: grid !important;
+        grid-template-columns: 106px 1fr !important;
+        grid-template-rows: auto auto auto auto !important;
+        column-gap: 10px !important;
+        row-gap: 5px !important;
+        padding: 6px !important;
         background: transparent !important;
+        border: none !important;
         box-shadow: none !important;
-        margin-bottom: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        /* undo any flex overrides */
+        flex-direction: unset !important;
+        align-items: unset !important;
+    }
+
+    /* Grid cell 1 — avatar wrapper: left col, spans rows 1-4 */
+    #hud>.w-64>div:first-child>.bg-slate-900\/80>div:nth-child(1) {
+        grid-column: 1 !important;
+        grid-row: 1 / span 4 !important;
+        width: 106px !important;
+        height: 106px !important;
+        min-height: 106px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        flex: none !important;
+        align-self: center !important;
     }
 
     .hero-avatar-img {
-        width: 64px !important;
-        height: 64px !important;
-        margin-bottom: 0 !important;
+        width: 106px !important;
+        height: 106px !important;
+        border-radius: 12px !important;
+        border: 2px solid rgba(255, 200, 100, 0.45) !important;
+        object-fit: cover !important;
     }
 
-    /* HP/SP/狀態在右側垂直堆疊 */
-    #hud>.w-64>div:first-child>.bg-slate-900\/80>div {
-        flex: 1;
-        min-width: 100%;
+    /* Grid cell 2 — hero name + HP number: right col, row 1 */
+    #hud>.w-64>div:first-child>.bg-slate-900\/80>div:nth-child(2) {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: baseline !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 2px !important;
     }
 
-    #hud>.w-64>div:first-child>.bg-slate-900\/80>div:first-child {
-        flex: 0 0 auto;
-        min-width: 0;
+    /* Grid cell 3 — HP row: right col, row 2, flex LEFT→RIGHT: label | bar | number */
+    #hud>.w-64>div:first-child>.bg-slate-900\/80>div:nth-child(3),
+    #hud>.w-64>div:first-child>.bg-slate-900\/80>.hp-row {
+        grid-column: 2 !important;
+        grid-row: 2 !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        width: 100% !important;
+        gap: 5px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
+        overflow: visible !important;
+        visibility: visible !important;
+        opacity: 1 !important;
     }
 
-    .hero-statusbar {
-        justify-content: flex-start !important;
+    /* HP bar within HP row: flex-1 to fill remaining space */
+    #hud>.w-64>div:first-child>.bg-slate-900\/80>.hp-row>.hp-bar-wrap,
+    #hud>.w-64>div:first-child>.bg-slate-900\/80>div:nth-child(3)>.hp-bar-wrap {
+        flex: 1 !important;
+        display: block !important;
+        height: 10px !important;
+        min-height: 10px !important;
+        border-radius: 5px !important;
+        overflow: hidden !important;
+    }
+
+    /* HP fill */
+    .hp-bar-fill {
+        height: 100% !important;
+        border-radius: 5px !important;
+    }
+
+    /* Grid cell 4 — SP row: right col, row 3, flex LEFT→RIGHT: label | bar | number */
+    #hud>.w-64>div:first-child>.bg-slate-900\/80>div:nth-child(4),
+    #hud>.w-64>div:first-child>.bg-slate-900\/80>.sp-row {
+        grid-column: 2 !important;
+        grid-row: 3 !important;
+        display: flex !important;
+        flex-direction: row !important;
+        /* SP | bar | 20/20 */
+        align-items: center !important;
+        width: 100% !important;
+        gap: 5px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
+        overflow: visible !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    /* SP bar within SP row: flex-1 to fill remaining space */
+    #hud>.w-64>div:first-child>.bg-slate-900\/80>.sp-row>.sp-bar-wrap,
+    #hud>.w-64>div:first-child>.bg-slate-900\/80>div:nth-child(4)>.sp-bar-wrap {
+        flex: 1 !important;
+        display: block !important;
+        height: 10px !important;
+        min-height: 10px !important;
+        border-radius: 5px !important;
+        overflow: hidden !important;
+    }
+
+    /* SP fill */
+    .sp-fill,
+    #spFill {
+        display: block !important;
+        height: 10px !important;
+        min-height: 10px !important;
+        border-radius: 5px !important;
+    }
+
+    /* SP label + number text size */
+    .sp-label,
+    .sp-text {
+        font-size: 10px !important;
+        white-space: nowrap !important;
+        line-height: 1 !important;
+        visibility: visible !important;
+        display: inline !important;
+        /* revert any display:none */
+    }
+
+    /* Grid cell 5 — Status badges: right col, row 4, flex-wrap left-aligned */
+    #hud>.w-64>div:first-child>.bg-slate-900\/80>div:nth-child(5),
+    #hud>.w-64>div:first-child>.bg-slate-900\/80>#heroStatusBar {
+        grid-column: 2 !important;
+        grid-row: 4 !important;
+        display: flex !important;
+        flex-direction: row !important;
         flex-wrap: wrap !important;
+        justify-content: flex-start !important;
+        align-items: flex-start !important;
+        gap: 4px !important;
+        width: 100% !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        position: static !important;
     }
 
-    /* 右側主要題目與選項區塊 (Area 3) */
+
+    .text-xs.font-mono.font-bold {
+        font-size: 12px !important;
+    }
+
+    .sp-text,
+    .sp-label {
+        font-size: 10px !important;
+        line-height: 1 !important;
+        white-space: nowrap;
+    }
+
+    /* Status badges — 在右側欄 SP bar 下方靠左排列 */
+    .hero-statusbar {
+        position: static !important;
+        min-height: auto !important;
+        margin-top: 2px !important;
+        gap: 4px !important;
+        flex-wrap: wrap !important;
+        justify-content: flex-start !important;
+        /* 靠左不散落右邊 */
+        align-items: flex-start !important;
+    }
+
+    .hero-status-pill {
+        height: 16px !important;
+        min-width: 20px !important;
+        font-size: 10px !important;
+        padding: 0 4px !important;
+    }
+
+    /* 怪物 debuff bar — 固定置中，不受 hero-statusbar 靠左影響 */
+    #monsterStatusBar {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        flex-wrap: wrap !important;
+        gap: 4px !important;
+        width: 100% !important;
+        position: static !important;
+    }
+
+    /* Hide Gold from top HUD */
+    #hud>.w-64>div:first-child>.mt-auto {
+        display: none !important;
+    }
+
+    /* 4. Question Card (A4) */
     #hud>.flex-1.border-2 {
-        flex: 1;
-        border-radius: 0 !important;
+        flex: 1 !important;
+        padding: 0 !important;
         border: none !important;
-        padding: 0.5rem !important;
         background: transparent !important;
         box-shadow: none !important;
-        overflow: visible !important;
+        justify-content: center !important;
     }
 
-    /* 底部工具列固定在最底部視窗位置，四顆一排、按鈕更大更扁 */
-    .left-actionbar {
+    #question-area {
+        margin-bottom: 8px !important;
+    }
+
+    #question-area>div:first-child {
+        font-size: 13px !important;
+        margin-bottom: 4px !important;
+    }
+
+    #question-area>div:last-child {
+        font-size: 1.5rem !important;
+    }
+
+    /* 5. Options (3 per row) (A5) */
+    .flex.flex-wrap.justify-center.gap-3.w-full {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 10px !important;
         width: 100% !important;
-        height: 76px !important;
-        /* 明確指定高度 */
+        padding: 0 4px !important;
+    }
+
+    .particle-option {
+        padding: 8px 4px !important;
+        font-size: 1.1rem !important;
+        border-radius: 8px !important;
+        height: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: rgba(30, 41, 59, 0.7) !important;
+    }
+
+    /* Selection State (A5) */
+    .particle-option.border-amber-400 {
+        border-color: #fbbf24 !important;
+        background: rgba(251, 191, 36, 0.4) !important;
+        box-shadow: 0 0 10px rgba(251, 191, 36, 0.5) !important;
+    }
+
+    /* 6. Attack & Speech (A6) */
+    .flex.justify-center.gap-3.mt-3.w-full.max-w-lg {
+        margin-top: 12px !important;
+        display: flex !important;
+        width: 100% !important;
+        max-width: none !important;
+        gap: 8px !important;
+    }
+
+    .flex.justify-center.gap-3.mt-3.w-full.max-w-lg>button.w-48 {
+        flex: 1 !important;
+        height: 48px !important;
+        padding: 0 !important;
+        border-radius: 10px !important;
+        font-size: 1.2rem !important;
+        border-bottom-width: 4px !important;
+    }
+
+    .flex.justify-center.gap-3.mt-3.w-full.max-w-lg>button:last-child {
+        width: 56px !important;
+        height: 48px !important;
+        padding: 0 !important;
+        border-radius: 10px !important;
+        border-bottom-width: 4px !important;
+    }
+
+
+    /* 8. Result Screen (Victory/Defeat) — position:fixed FULL-SCREEN OVERLAY */
+
+    /* 結算面板的直接父層變成 fixed 覆蓋全螢幕 */
+    .flex.flex-row.items-center.justify-center.gap-12.py-4.w-full.px-6.flex-1 {
+        position: fixed !important;
+        inset: 0 !important;
+        /* top:0 right:0 bottom:0 left:0 */
+        z-index: 2000 !important;
+        background: rgba(10, 16, 30, 0.97) !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 20px !important;
+        padding: 32px 16px 100px !important;
+        /* 100px = 70px dock + 30px margin */
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    /* icon + 標題：置中全寬 */
+    .flex.flex-row.items-center.justify-center.gap-12.py-4.w-full.px-6.flex-1>div:first-child {
+        max-width: none !important;
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    /* 評價統計卡：全寬 */
+    .flex.flex-row.items-center.justify-center.gap-12.py-4.w-full.px-6.flex-1>.flex-shrink-0.w-64,
+    .flex.flex-row.items-center.justify-center.gap-12.py-4.w-full.px-6.flex-1>div:last-child {
+        width: 100% !important;
+        max-width: 400px !important;
+        flex-shrink: 1 !important;
+    }
+
+    /* 標題 h2 置中 */
+    .flex.flex-row.items-center.justify-center.gap-12.py-4.w-full.px-6.flex-1>div:first-child>h2 {
+        text-align: center !important;
+    }
+
+    /* 敗北按鈕（錯題本 + 重新開始）左右並排同一列 */
+    .flex.flex-row.items-center.justify-center.gap-12.py-4.w-full.px-6.flex-1>div:first-child>.flex.flex-col.gap-3.w-full {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 12px !important;
+        width: 100% !important;
+        max-width: 360px !important;
+    }
+
+    .flex.flex-row.items-center.justify-center.gap-12.py-4.w-full.px-6.flex-1>div:first-child>.flex.flex-col.gap-3.w-full>button {
+        flex: 1 !important;
+        height: 52px !important;
+        font-size: 1rem !important;
+        padding: 0 8px !important;
+        border-radius: 14px !important;
+    }
+
+
+    /* 7. Bottom Dock (A7) */
+    .left-actionbar {
         position: fixed !important;
         bottom: 0 !important;
         left: 0 !important;
-        padding: 10px !important;
-        background: rgba(15, 23, 42, 0.95) !important;
+        width: 100% !important;
+        height: 70px !important;
+        padding: 8px 12px 10px 12px !important;
+        background: #111827 !important;
+        border-top: 2px solid #fbbf24 !important;
+        z-index: 1500 !important;
+        display: flex !important;
+        gap: 10px !important;
         backdrop-filter: blur(8px) !important;
-        z-index: 100 !important;
-        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.5);
     }
 
     .left-actionbar .action-btn {
-        height: 56px !important;
+        height: 52px !important;
+        border-radius: 8px !important;
+        padding: 0 !important;
     }
 
-    /* 選項按鈕（答題）變大，適合拇指 */
-    .grid-cols-4 {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-        gap: 0.5rem !important;
+    .left-actionbar .action-btn .icon {
+        font-size: 20px !important;
     }
 
-    .choice-btn {
-        min-height: 52px !important;
-        font-size: 16px !important;
-        padding: 0.5rem !important;
+    .left-actionbar .action-btn .label {
+        font-size: 10px !important;
+        margin-top: 0 !important;
+    }
+
+    .left-actionbar .action-btn .badge {
+        transform: translate(4px, -4px) scale(0.85);
     }
 }
 

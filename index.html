@@ -21,7 +21,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/styles.css?v=26022703">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26030101">
 
 </head>
 
@@ -103,7 +103,9 @@
 
                         <div
                             class="w-28 h-28 rounded-full bg-rose-900/80 flex items-center justify-center text-5xl mb-3 shadow-lg ring-4 ring-rose-500/20">
-                            {{ monster.sprite || '👹' }}
+                            <img v-if="monster.sprite && monster.sprite.includes('/')" :src="monster.sprite"
+                                alt="monster" class="w-20 h-20 object-contain drop-shadow-lg">
+                            <span v-else>{{ monster.sprite || '👹' }}</span>
                         </div>
                         <span class="text-base font-bold text-slate-200 mb-1">{{ monster.name }}</span>
                         <span class="text-xs text-amber-400/80 mb-3">{{ monster.trait }}</span>
@@ -139,18 +141,22 @@
                                         class="hero-avatar-img">
                                 </div>
 
-                                <div class="w-full flex justify-between items-end mb-1 px-1">
+                                <div class="w-full flex justify-start items-end mb-1 px-1">
                                     <span class="text-xs font-black text-slate-300 tracking-widest">勇者</span>
-                                    <span class="text-xs font-mono font-bold">{{ player.hp }}/{{ player.maxHp }}</span>
                                 </div>
 
-                                <div class="hp-bar-wrap h-3 shadow-inner w-full mb-1.5">
-                                    <div class="hp-bar-fill shadow-[0_0_10px_rgba(255,255,255,0.2)]"
-                                        :class="[getHpColorClass(player.hp, player.maxHp), { danger: hpBarDanger, 'player-blink': playerBlink }]"
-                                        :style="{ width: (player.hp / player.maxHp * 100) + '%' }"></div>
+                                <div class="hp-row w-full flex items-center gap-2 mb-1">
+                                    <span class="text-[10px] font-black text-rose-400 tracking-wider">HP</span>
+                                    <div class="hp-bar-wrap h-3 shadow-inner flex-1">
+                                        <div class="hp-bar-fill shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+                                            :class="[getHpColorClass(player.hp, player.maxHp), { danger: hpBarDanger, 'player-blink': playerBlink }]"
+                                            :style="{ width: (player.hp / player.maxHp * 100) + '%' }"></div>
+                                    </div>
+                                    <span class="text-[9px] font-mono font-bold text-slate-300"
+                                        style="min-width: 3.5ch; text-align: right;">{{ player.hp }}</span>
                                 </div>
 
-                                <div class="sp-row w-full flex items-center gap-2 mb-2">
+                                <div class="sp-row w-full flex items-center gap-2 mb-1">
                                     <span class="sp-label text-[10px] font-black text-cyan-400 tracking-wider">SP</span>
                                     <div
                                         class="sp-bar-wrap h-2 flex-1 bg-slate-800 rounded-full shadow-inner overflow-hidden border border-slate-700/50">
@@ -158,8 +164,8 @@
                                             class="sp-fill h-full bg-gradient-to-r from-cyan-600 to-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.4)] transition-all duration-300"
                                             style="width: 100%;"></div>
                                     </div>
-                                    <span id="spText"
-                                        class="sp-text text-[9px] font-mono font-bold text-slate-300">20/20</span>
+                                    <span id="spText" class="sp-text text-[9px] font-mono font-bold text-slate-300"
+                                        style="min-width: 4.5ch; text-align: right;">20/20</span>
                                 </div>
 
                                 <div id="heroStatusBar" class="hero-statusbar w-full justify-start min-h-[22px]"></div>
@@ -807,4 +813,3 @@
 </body>
 
 </html>
-

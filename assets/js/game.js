@@ -285,8 +285,8 @@ function updateHeroStatusBar() {
     if (!bar) return;
     bar.innerHTML = "";
 
-    const ratio = getHeroHpRatioBestEffort();
-
+    // Only show hero-own buffs (speed/evade from potion)
+    // Monster debuffs (遅/衰/眠) are shown exclusively on #monsterStatusBar
     if (hasSpeedOrEvadeBuffBestEffort()) {
         const span = document.createElement("span");
         span.className = "hero-status-pill speed";
@@ -378,7 +378,7 @@ createApp({
         const SKILLS = ref([]);
         const VOCAB = ref(null);
 
-        const APP_VERSION = "26022606";
+        const APP_VERSION = "26030101";
         const appVersion = ref(APP_VERSION);
         const isChangelogOpen = ref(false);
         const changelogData = ref([]);
@@ -528,22 +528,31 @@ createApp({
                 heroBuffs.odoodoTurns--;
                 if (heroBuffs.odoodoTurns <= 0) {
                     heroBuffs.enemyAtbMult = 1.0;
-                    if (typeof pushBattleLog !== 'undefined') {
-                        pushBattleLog("オドオドの効果が切れた（怪物速度恢復）", 'info');
-                    }
+                    pushBattleLog("オドオド 效果結束（怪物速度恢復）", 'info');
                 }
             }
             if (heroBuffs.wakuwakuTurns > 0) {
                 heroBuffs.wakuwakuTurns--;
                 if (heroBuffs.wakuwakuTurns <= 0) {
                     heroBuffs.enemyDmgMult = 1.0;
-                    if (typeof pushBattleLog !== 'undefined') {
-                        pushBattleLog("ワクワクの効果が切れた（怪物攻擊力恢復）", 'info');
-                    }
+                    pushBattleLog("ワクワク 效果結束（怪物攻擊力恢復）", 'info');
                 }
             }
+
             updateHeroStatusBar();
             if (typeof updateMonsterStatusBar === 'function') updateMonsterStatusBar();
+
+            // Debug log (set window.__buffDebug = true in console to enable)
+            if (window.__buffDebug) {
+                console.log(
+                    '[BuffDebug] turn tick →',
+                    `odoodo=${heroBuffs.odoodoTurns}`,
+                    `wakuwaku=${heroBuffs.wakuwakuTurns}`,
+                    `sleep=${heroBuffs.monsterSleep}`,
+                    `atbMult=${heroBuffs.enemyAtbMult}`,
+                    `dmgMult=${heroBuffs.enemyDmgMult}`
+                );
+            }
         };
 
         const castAbility = (id) => {
@@ -748,6 +757,37 @@ createApp({
                 }
             });
             // --- INSERT END: JPAPP_L2_DEBUG_V1 Hotkey ---
+
+            // --- INSERT BEGIN: JPAPP_IOS_AUDIO_FIX_V1 ---
+            // iOS Safari： <input type="range"> 拖動時只觸發 change 而非 input，
+            // Vue 的 v-model 預設監聽 input，導致 bgmVolume/sfxVolume ref 不更新。
+            // 用全域 change 事件委派（capture phase）強制補上這個缺口。
+            document.addEventListener('change', (e) => {
+                const el = e.target;
+                if (el.tagName !== 'INPUT' || el.type !== 'range') return;
+                const val = parseFloat(el.value);
+                if (isNaN(val)) return;
+
+                // 判斷是哪個 slider（依最近 label 的文字內容區分）
+                const label = el.closest('label');
+                const labelText = label ? label.textContent.trim() : '';
+
+                if (labelText.startsWith('BGM')) {
+                    bgmVolume.value = val;
+                    saveAudioSettings();
+                    // 直接套用到 bgmAudio
+                    if (bgmAudio.value) {
+                        bgmAudio.value.volume = isMuted.value ? 0 : val;
+                        bgmAudio.value.muted = isMuted.value;
+                    }
+                    console.log('[iOS-Audio-Fix] BGM change => val:', val, 'bgmAudio.volume:', bgmAudio.value?.volume, 'muted:', bgmAudio.value?.muted);
+                } else if (labelText.startsWith('SFX')) {
+                    sfxVolume.value = val;
+                    saveAudioSettings();
+                    console.log('[iOS-Audio-Fix] SFX change => val:', val);
+                }
+            }, true); // capture:true 確保在 Vue 的 handler 之前收到
+            // --- INSERT END: JPAPP_IOS_AUDIO_FIX_V1 ---
         });
         const MONSTER_NAMES = { 1: '助詞怪', 2: '助詞妖', 3: '助詞魔王' };
         const MONSTER_HP = 100;
@@ -760,12 +800,12 @@ createApp({
 
         // monster definitions for DQ風 appearance
         const MONSTERS = [
-            { id: 1, name: '助詞怪', sprite: '👹', hpMax: 100, attack: 20, trait: '普通型' },
-            { id: 2, name: '助詞妖', sprite: '🧌', hpMax: 120, attack: 25, trait: '會閃避' },
-            { id: 3, name: '助詞魔', sprite: '👺', hpMax: 140, attack: 30, trait: '攻擊高' },
-            { id: 4, name: '助詞龍', sprite: '🐉', hpMax: 160, attack: 35, trait: '火焰吐息' },
-            { id: 5, name: '助詞鬼', sprite: '👻', hpMax: 180, attack: 40, trait: '無形' },
-            { id: 6, name: '助詞王', sprite: '👑', hpMax: 200, attack: 50, trait: '王者氣息' }
+            { id: 1, name: '助詞怪', sprite: 'assets/images/monsters/slime.png', hpMax: 100, attack: 20, trait: '普通型' },
+            { id: 2, name: '助詞妖', sprite: 'assets/images/monsters/slime.png', hpMax: 120, attack: 25, trait: '會閃避' },
+            { id: 3, name: '助詞魔', sprite: 'assets/images/monsters/slime.png', hpMax: 140, attack: 30, trait: '攻擊高' },
+            { id: 4, name: '助詞龍', sprite: 'assets/images/monsters/slime.png', hpMax: 160, attack: 35, trait: '火焰吐息' },
+            { id: 5, name: '助詞鬼', sprite: 'assets/images/monsters/slime.png', hpMax: 180, attack: 40, trait: '無形' },
+            { id: 6, name: '助詞王', sprite: 'assets/images/monsters/slime.png', hpMax: 200, attack: 50, trait: '王者氣息' }
         ];
 
         const showLevelSelect = ref(true);
@@ -949,7 +989,11 @@ createApp({
             if (!audioInited.value) initAudio();
             if (bgmAudio.value) {
                 const volumeScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
-                bgmAudio.value.volume = isMuted.value ? 0 : bgmVolume.value * volumeScale;
+                const targetVol = isMuted.value ? 0 : bgmVolume.value * volumeScale;
+                bgmAudio.value.volume = targetVol;
+                // iOS Safari 需要明確設置 muted 屬性，光是 volume=0 有時不夠
+                bgmAudio.value.muted = isMuted.value;
+                console.log('[playBgm] vol:', targetVol, 'bgmAudio.volume:', bgmAudio.value.volume, 'muted:', bgmAudio.value.muted);
                 if (bgmAudio.value.paused) bgmAudio.value.play().catch(() => { });
             }
         };
@@ -957,7 +1001,11 @@ createApp({
         watch([isMenuOpen, isCodexOpen, isSkillUnlockModalOpen, isMistakesOpen, bgmVolume, isMuted], () => {
             if (!bgmAudio.value) return;
             const volumeScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
-            bgmAudio.value.volume = isMuted.value ? 0 : bgmVolume.value * volumeScale;
+            const targetVol = isMuted.value ? 0 : bgmVolume.value * volumeScale;
+            bgmAudio.value.volume = targetVol;
+            // iOS Safari：同步 muted 屬性
+            bgmAudio.value.muted = isMuted.value;
+            console.log('[watch-audio] vol:', targetVol, 'bgmAudio.volume:', bgmAudio.value.volume, 'muted:', bgmAudio.value.muted);
         });
 
         watch(() => player.value.hp, (newHp) => {
@@ -2269,13 +2317,18 @@ createApp({
             return Array.isArray(ans) ? ans[0] : ans;
         };
 
+        // --- INSERT BEGIN: JPAPP_MOBILE_AUTOSUBMIT_V1 ---
+        let _autoSubmitTimer = null;
         const selectChoice = (opt) => {
             initAudio();
             if (needsUserGestureToResumeBgm.value) { ensureBgmPlaying('selectChoice'); needsUserGestureToResumeBgm.value = false; }
             playSfx('click');
             if (hasSubmitted.value) return;
             userAnswers.value[0] = opt;
+            // 手機模式：不再自動提交，由使用者點擊「攻撃」觸發
         };
+        // --- INSERT END: JPAPP_AUTOSUBMIT_V1 ---
+
         const getChoiceBtnClass = (opt) => {
             if (!hasSubmitted.value) {
                 return (userAnswers.value[0] === opt) ? 'border-amber-400 bg-amber-500/30 text-amber-100' : 'border-slate-500 bg-slate-700/50 text-slate-200 hover:border-amber-500/50';
