@@ -1,5 +1,15 @@
 [
     {
+        "version": "26030103",
+        "date": "2026-03-01",
+        "changes": [
+            "修復 iOS 重新載入按鈕失效（TypeError: location.reload）問題。",
+            "修復 iOS 音量控制失效：導入 Web Audio API (AudioContext + GainNode) 接管 BGM/SFX 音量，繞過系統限制。",
+            "優化 BGM Ducking 效果，確保在所有行動裝置上均能正確運作。",
+            "優化音訊系統初始化流程，提高移動端穩定性。"
+        ]
+    },
+    {
         "version": "26030102",
         "date": "2026-03-01",
         "changes": [

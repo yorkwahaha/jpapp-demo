@@ -402,7 +402,7 @@ createApp({
         const SKILLS = ref([]);
         const VOCAB = ref(null);
 
-        const APP_VERSION = "26030102";
+        const APP_VERSION = "26030103";
         const appVersion = ref(APP_VERSION);
         const isChangelogOpen = ref(false);
         const changelogData = ref([]);
@@ -586,33 +586,51 @@ createApp({
             window.__sp.cur -= skill.cost;
             if (window.updateSpUI) window.updateSpUI();
 
-            // JPAPP_BGM_DUCKING
-            if (bgmAudio.value && !isMuted.value) {
+            // JPAPP_BGM_DUCKING using Web Audio
+            if (bgmGain.value && !isMuted.value) {
+                const b = bgmVolume.value;
                 const vScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
-                bgmAudio.value.volume = bgmVolume.value * masterVolume.value * vScale * 0.3;
+                bgmGain.value.gain.setTargetAtTime(b * vScale * 0.3, audioCtx.value.currentTime, 0.1);
+
                 clearTimeout(window._bgmDuckTimer);
                 window._bgmDuckTimer = setTimeout(() => {
-                    if (bgmAudio.value && !isMuted.value) {
+                    if (bgmGain.value && !isMuted.value) {
                         const vs = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
-                        bgmAudio.value.volume = bgmVolume.value * masterVolume.value * vs;
+                        bgmGain.value.gain.setTargetAtTime(b * vs, audioCtx.value.currentTime, 0.3);
                     }
-                }, 2500); // Wait longer for skills
+                }, 2500);
             }
 
             // Play specific audio for skill
             const skillSfx1 = `assets/audio/skill/${id.toLowerCase()}.mp3`;
             let a1 = audioPool.get(skillSfx1);
-            if (!a1) { a1 = new Audio(skillSfx1); audioPool.set(skillSfx1, a1); }
+            if (!a1) {
+                a1 = new Audio(skillSfx1);
+                a1.crossOrigin = "anonymous";
+                audioPool.set(skillSfx1, a1);
+            }
+            if (audioCtx.value && !a1._connected) {
+                const source = audioCtx.value.createMediaElementSource(a1);
+                source.connect(sfxGain.value);
+                a1._connected = true;
+            }
             a1.currentTime = 0;
-            a1.volume = isMuted.value ? 0 : sfxVolume.value * masterVolume.value;
             a1.play().catch(e => console.warn("Audio play failed:", e));
 
             setTimeout(() => {
                 const skillSfx2 = `assets/audio/skill/${id.toLowerCase()}2.mp3`;
                 let a2 = audioPool.get(skillSfx2);
-                if (!a2) { a2 = new Audio(skillSfx2); audioPool.set(skillSfx2, a2); }
+                if (!a2) {
+                    a2 = new Audio(skillSfx2);
+                    a2.crossOrigin = "anonymous";
+                    audioPool.set(skillSfx2, a2);
+                }
+                if (audioCtx.value && !a2._connected) {
+                    const source = audioCtx.value.createMediaElementSource(a2);
+                    source.connect(sfxGain.value);
+                    a2._connected = true;
+                }
                 a2.currentTime = 0;
-                a2.volume = isMuted.value ? 0 : sfxVolume.value * masterVolume.value;
                 a2.play().catch(e => console.warn("Audio2 play failed:", e));
             }, 1000);
 
@@ -817,14 +835,11 @@ createApp({
                 if (labelText.startsWith('BGM')) {
                     bgmVolume.value = val;
                     saveAudioSettings();
-                    if (bgmAudio.value) {
-                        const volumeScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
-                        bgmAudio.value.volume = isMuted.value ? 0 : val * masterVolume.value * volumeScale;
-                        bgmAudio.value.muted = isMuted.value;
-                    }
+                    updateGainVolumes();
                 } else if (labelText.startsWith('SFX')) {
                     sfxVolume.value = val;
                     saveAudioSettings();
+                    updateGainVolumes();
                 }
             };
             document.addEventListener('input', handleVolumeChange, true);
@@ -899,6 +914,13 @@ createApp({
         const isPreloading = ref(false); // JPAPP_AUDIO_PRELOAD
         const bgmAudio = ref(null);
         const gameOverAudio = ref(null);
+
+        // JPAPP_WEB_AUDIO_V1: Use AudioContext for reliable volume on iOS
+        const audioCtx = ref(null);
+        const masterGain = ref(null);
+        const bgmGain = ref(null);
+        const sfxGain = ref(null);
+
         const bgmVolume = ref(0.35); // JPAPP_AUDIO_BALANCE: Default 0.35
         const sfxVolume = ref(1.0);  // JPAPP_AUDIO_BALANCE: Default 1.0
         const masterVolume = ref(1.0);
@@ -1039,19 +1061,60 @@ createApp({
             console.log('[AudioPreload] Finished. Pool size:', audioPool.size);
         };
 
+        const initAudioCtx = () => {
+            if (audioCtx.value) return;
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx.value = new AudioContext();
+
+                masterGain.value = audioCtx.value.createGain();
+                bgmGain.value = audioCtx.value.createGain();
+                sfxGain.value = audioCtx.value.createGain();
+
+                bgmGain.value.connect(masterGain.value);
+                sfxGain.value.connect(masterGain.value);
+                masterGain.value.connect(audioCtx.value.destination);
+
+                updateGainVolumes();
+                console.log('[WebAudio] Context & Gains initialized');
+            } catch (e) {
+                console.warn('[WebAudio] Failed to init AudioContext:', e);
+            }
+        };
+
+        const updateGainVolumes = () => {
+            if (!masterGain.value) return;
+            const m = isMuted.value ? 0 : masterVolume.value;
+            masterGain.value.gain.setTargetAtTime(m, audioCtx.value.currentTime, 0.1);
+
+            const b = bgmVolume.value;
+            const bScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
+            bgmGain.value.gain.setTargetAtTime(b * bScale, audioCtx.value.currentTime, 0.1);
+
+            sfxGain.value.gain.setTargetAtTime(sfxVolume.value, audioCtx.value.currentTime, 0.1);
+        };
+
         const initAudio = () => {
             if (audioInited.value) return;
             audioInited.value = true;
+            initAudioCtx();
             try {
                 let bgm = audioPool.get('assets/audio/bgm.mp3');
                 if (!bgm) {
                     bgm = new Audio('assets/audio/bgm.mp3');
+                    bgm.crossOrigin = "anonymous";
                     audioPool.set('assets/audio/bgm.mp3', bgm);
                 }
                 bgmAudio.value = bgm;
                 bgmAudio.value.loop = true;
-                const volumeScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
-                bgmAudio.value.volume = isMuted.value ? 0 : bgmVolume.value * masterVolume.value * volumeScale;
+
+                // Connect to Web Audio
+                if (audioCtx.value && !bgm._connected) {
+                    const source = audioCtx.value.createMediaElementSource(bgm);
+                    source.connect(bgmGain.value);
+                    bgm._connected = true;
+                }
+
                 bgmAudio.value.play().catch(() => {
                     console.log('BGM 無法播放，可能缺少檔案或權限');
                 });
@@ -1076,11 +1139,7 @@ createApp({
             setHeroAvatar('lose');
             // stop bgm first to ensure gameover sound is audible
             try { if (bgmAudio.value) { bgmAudio.value.pause(); try { bgmAudio.value.currentTime = 0; } catch (_) { } } } catch (_) { }
-            try {
-                gameOverAudio.value = new Audio('assets/audio/sfx_gameover.mp3');
-                gameOverAudio.value.volume = isMuted.value ? 0 : sfxVolume.value;
-                gameOverAudio.value.play().catch(() => { console.log('無法播放 gameover 音效，可能缺少檔案'); });
-            } catch (_) { console.log('建立 gameover 音效失敗'); }
+            playSfx('gameover');
         };
         const runAway = () => {
             clearTimer(); if (pauseTimerId) { clearInterval(pauseTimerId); pauseTimerId = null; }
@@ -1110,23 +1169,15 @@ createApp({
         };
         const playBgm = () => {
             if (!audioInited.value) initAudio();
-            if (bgmAudio.value) {
-                const volumeScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
-                const targetVol = isMuted.value ? 0 : bgmVolume.value * masterVolume.value * volumeScale;
-                bgmAudio.value.volume = targetVol;
-                bgmAudio.value.muted = isMuted.value;
-                console.log('[playBgm] vol:', targetVol, 'bgmAudio.volume:', bgmAudio.value.volume, 'muted:', bgmAudio.value.muted);
-                if (bgmAudio.value.paused) bgmAudio.value.play().catch(() => { });
+            if (audioCtx.value && audioCtx.value.state === 'suspended') audioCtx.value.resume();
+            updateGainVolumes();
+            if (bgmAudio.value && bgmAudio.value.paused) {
+                bgmAudio.value.play().catch(() => { });
             }
         };
 
-        watch([isMenuOpen, isCodexOpen, isSkillUnlockModalOpen, isMistakesOpen, bgmVolume, masterVolume, isMuted], () => {
-            if (!bgmAudio.value) return;
-            const volumeScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
-            const targetVol = isMuted.value ? 0 : bgmVolume.value * masterVolume.value * volumeScale;
-            bgmAudio.value.volume = targetVol;
-            bgmAudio.value.muted = isMuted.value;
-            console.log('[watch-audio] vol:', targetVol, 'bgmAudio.volume:', bgmAudio.value.volume, 'muted:', bgmAudio.value.muted);
+        watch([isMenuOpen, isCodexOpen, isSkillUnlockModalOpen, isMistakesOpen, bgmVolume, masterVolume, isMuted, sfxVolume], () => {
+            updateGainVolumes();
         });
 
         watch(() => player.value.hp, (newHp) => {
@@ -1154,6 +1205,8 @@ createApp({
         };
         const playSfx = (name) => {
             if (!audioInited.value) return;
+            if (audioCtx.value && audioCtx.value.state === 'suspended') audioCtx.value.resume();
+
             const srcMap = {
                 hit: 'assets/audio/sfx_hit.mp3',
                 miss: 'assets/audio/mmiss.mp3',
@@ -1168,15 +1221,17 @@ createApp({
             const src = srcMap[name];
             if (!src) return;
 
-            // JPAPP_BGM_DUCKING
-            if (bgmAudio.value && !isMuted.value && name !== 'click' && name !== 'pop') {
-                const volumeScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
-                bgmAudio.value.volume = bgmVolume.value * masterVolume.value * volumeScale * 0.3;
+            // JPAPP_BGM_DUCKING using Web Audio node
+            if (bgmGain.value && !isMuted.value && name !== 'click' && name !== 'pop') {
+                const b = bgmVolume.value;
+                const bScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
+                bgmGain.value.gain.setTargetAtTime(b * bScale * 0.3, audioCtx.value.currentTime, 0.1);
+
                 clearTimeout(window._bgmDuckTimer);
                 window._bgmDuckTimer = setTimeout(() => {
-                    if (bgmAudio.value && !isMuted.value) {
-                        const vScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
-                        bgmAudio.value.volume = bgmVolume.value * masterVolume.value * vScale;
+                    if (bgmGain.value && !isMuted.value) {
+                        const vs = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
+                        bgmGain.value.gain.setTargetAtTime(b * vs, audioCtx.value.currentTime, 0.3);
                     }
                 }, 1000);
             }
@@ -1185,12 +1240,21 @@ createApp({
                 let a = audioPool.get(src);
                 if (!a) {
                     a = new Audio(src);
+                    a.crossOrigin = "anonymous";
                     audioPool.set(src, a);
                 }
+
+                // Connect SFX to sfxGain only once
+                if (audioCtx.value && !a._connected) {
+                    const source = audioCtx.value.createMediaElementSource(a);
+                    source.connect(sfxGain.value);
+                    a._connected = true;
+                }
+
                 a.currentTime = 0;
-                a.volume = isMuted.value ? 0 : sfxVolume.value * masterVolume.value;
-                a.play().catch(() => { console.log(`無法播放 ${name}`); });
-            } catch (_) { console.log(`建立 sfx ${name} 失敗`); }
+                // Since it's connected to sfxGain, we don't set a.volume (which doesn't work on iOS anyway)
+                a.play().catch(() => { });
+            } catch (_) { }
         };
 
         const clearTimer = () => {
@@ -1411,14 +1475,11 @@ createApp({
         const levelTitle = computed(() => levelConfig.value.title || '');
         const isChoiceMode = computed(() => levelConfig.value.blanks === 1);
 
-        let audioCtx = null;
-        const getAudioContext = () => {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            return audioCtx;
-        };
         const playBeep = (frequency, duration, type) => {
             try {
-                const ctx = getAudioContext();
+                if (!audioCtx.value) initAudioCtx();
+                const ctx = audioCtx.value;
+                if (ctx.state === 'suspended') ctx.resume();
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
                 osc.connect(gain);
@@ -2585,8 +2646,12 @@ createApp({
             Array.prototype.random = function () { return this[Math.floor(Math.random() * this.length)]; };
         }
 
+        const handleReload = () => {
+            window.location.reload();
+        };
+
         loadAudioSettings();
-        return { appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay, skillList, castAbility, __sp, showL2DebugPanel, l2DebugQuestions, generateL2Debug, copyL2Debug };
+        return { appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay, skillList, castAbility, __sp, showL2DebugPanel, l2DebugQuestions, generateL2Debug, copyL2Debug, handleReload };
     }
 }).mount('#app');
 console.log('應用已掛載！');
