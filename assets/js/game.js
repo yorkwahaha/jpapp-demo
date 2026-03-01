@@ -1082,6 +1082,30 @@ createApp({
 
             isPreloading.value = false;
             console.log('[AudioPreload] Finished. Pool size:', audioPool.size);
+
+            // Pre-connect all pooled SFX to sfxGain as soon as AudioContext is available.
+            // On iOS, createMediaElementSource() on first use adds ~50-100ms stall.
+            // Doing it eagerly here eliminates that latency on first skill cast / hit / etc.
+            const tryPreConnect = () => {
+                if (!audioCtx.value || !sfxGain.value) return;
+                audioPool.forEach((a) => {
+                    if (!a._connected) {
+                        try {
+                            a.crossOrigin = 'anonymous';
+                            const src = audioCtx.value.createMediaElementSource(a);
+                            src.connect(sfxGain.value);
+                            a._connected = true;
+                        } catch (_) { /* already connected or not an HTMLMediaElement */ }
+                    }
+                });
+                console.log('[AudioPreload] Pre-connected all pool nodes to sfxGain.');
+            };
+            // AudioContext may not exist yet if user hasn't interacted — retry shortly
+            if (audioCtx.value && sfxGain.value) {
+                tryPreConnect();
+            } else {
+                window._preConnectRetry = setTimeout(tryPreConnect, 2000);
+            }
         };
 
         const initAudioCtx = async () => {
@@ -1253,18 +1277,27 @@ createApp({
             if (!src) return;
 
             // JPAPP_BGM_DUCKING using Web Audio node
+            // NOTE: Delay ducking by 80ms on iOS so the SFX element has already
+            // started filling its buffer before we touch the gain graph. Touching
+            // AudioParam nodes synchronously before .play() can cause iOS to
+            // re-initialise its audio session and clip the first few frames.
             if (bgmGain.value && !isMuted.value && name !== 'click' && name !== 'pop') {
                 const b = bgmVolume.value;
                 const bScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
-                bgmGain.value.gain.setTargetAtTime(b * bScale * 0.3, audioCtx.value.currentTime, 0.1);
 
                 clearTimeout(window._bgmDuckTimer);
+                // Delay duck so SFX starts playing FIRST, then we lower BGM
                 window._bgmDuckTimer = setTimeout(() => {
                     if (bgmGain.value && !isMuted.value) {
-                        const vs = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
-                        bgmGain.value.gain.setTargetAtTime(b * vs, audioCtx.value.currentTime, 0.3);
+                        bgmGain.value.gain.setTargetAtTime(b * bScale * 0.3, audioCtx.value.currentTime, 0.15);
+                        setTimeout(() => {
+                            if (bgmGain.value && !isMuted.value) {
+                                const vs = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
+                                bgmGain.value.gain.setTargetAtTime(b * vs, audioCtx.value.currentTime, 0.4);
+                            }
+                        }, 1200);
                     }
-                }, 1000);
+                }, 80);
             }
 
             try {
@@ -1497,16 +1530,36 @@ createApp({
         };
         const onUserGesture = () => {
             initAudioCtx().then(() => {
-                // iOS audio session warmup: play a 1-frame silent buffer to pre-activate
-                // the audio session so the first real SFX doesn't get its start clipped.
+                // iOS audio session warmup: play a 1-frame silent buffer through the REAL
+                // audio path (masterGain) to pre-activate sfxGain / masterGain chain.
+                // Without this the first SFX frame gets absorbed by iOS audio session init.
                 if (audioCtx.value && audioCtx.value.state === 'running') {
                     try {
-                        const silentBuf = audioCtx.value.createBuffer(1, 1, audioCtx.value.sampleRate);
+                        const silentBuf = audioCtx.value.createBuffer(1, 128, audioCtx.value.sampleRate);
                         const silentSrc = audioCtx.value.createBufferSource();
                         silentSrc.buffer = silentBuf;
-                        silentSrc.connect(audioCtx.value.destination);
+                        // Route through masterGain so the entire SFX chain is warmed
+                        silentSrc.connect(masterGain.value);
                         silentSrc.start(0);
                     } catch (_) { }
+
+                    // Eagerly pre-connect any pooled audio that loaded before AudioContext existed
+                    if (window._preConnectRetry) {
+                        clearTimeout(window._preConnectRetry);
+                        window._preConnectRetry = null;
+                    }
+                    if (sfxGain.value) {
+                        audioPool.forEach((a) => {
+                            if (!a._connected) {
+                                try {
+                                    a.crossOrigin = 'anonymous';
+                                    const src = audioCtx.value.createMediaElementSource(a);
+                                    src.connect(sfxGain.value);
+                                    a._connected = true;
+                                } catch (_) { }
+                            }
+                        });
+                    }
                 }
             });
             if (needsUserGestureToResumeBgm.value) {
