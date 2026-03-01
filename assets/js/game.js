@@ -1496,7 +1496,19 @@ createApp({
             return shuffle(picked);
         };
         const onUserGesture = () => {
-            initAudioCtx();
+            initAudioCtx().then(() => {
+                // iOS audio session warmup: play a 1-frame silent buffer to pre-activate
+                // the audio session so the first real SFX doesn't get its start clipped.
+                if (audioCtx.value && audioCtx.value.state === 'running') {
+                    try {
+                        const silentBuf = audioCtx.value.createBuffer(1, 1, audioCtx.value.sampleRate);
+                        const silentSrc = audioCtx.value.createBufferSource();
+                        silentSrc.buffer = silentBuf;
+                        silentSrc.connect(audioCtx.value.destination);
+                        silentSrc.start(0);
+                    } catch (_) { }
+                }
+            });
             if (needsUserGestureToResumeBgm.value) {
                 ensureBgmPlaying('gesture');
                 needsUserGestureToResumeBgm.value = false;
@@ -2459,7 +2471,6 @@ createApp({
                 stopTtsAudio();
                 stopWebSpeech();
                 playTtsKey("ui.wrong", "ちがう…！");
-                showGrammarDetail.value = true;
 
                 // Build prompt text inserting correct answer into the blanks
                 let azureTextBuilder = '';
