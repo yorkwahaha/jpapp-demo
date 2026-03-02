@@ -1,5 +1,14 @@
 [
     {
+        "version": "26030300",
+        "date": "2026-03-03",
+        "changes": [
+            "優化 Flick 彈射模式特效：投射物從按鍵中心精確射向怪物。",
+            "將 VFX Layer 鎖定為全銀幕 Fixed Overlay，根除畫面捲動或視窗重調大小導致的座標偏移。",
+            "移除預設顯示的軌跡除錯點 (Debug Markers)，若需診斷可手動開啟 `window.__VFX_DEBUG = true`。"
+        ]
+    },
+    {
         "version": "26030106",
         "date": "2026-03-01",
         "changes": [

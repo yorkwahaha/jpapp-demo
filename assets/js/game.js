@@ -426,7 +426,7 @@ createApp({
         const SKILLS = ref([]);
         const VOCAB = ref(null);
 
-        const APP_VERSION = "26030106";
+        const APP_VERSION = "26030300";
         const appVersion = ref(APP_VERSION);
         const isChangelogOpen = ref(false);
         // --- FLICK MODE STATE (Patch 2 & 3) ---
@@ -1386,31 +1386,146 @@ createApp({
             setTimeout(() => { flickState.successOpt = null; }, 400);
         };
 
-        const spawnProjectile = (opt, originEl) => {
+        function rectCenter(el) {
+            if (!el || !el.getBoundingClientRect) return null;
+            const r = el.getBoundingClientRect();
+            return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+        }
+
+        const safeNum = (n, fallback) => Number.isFinite(n) ? n : fallback;
+        const getCenterOrFallback = (originEl, fallbackX, fallbackY) => {
+            const center = rectCenter(originEl);
+            if (center) {
+                return { x: safeNum(center.x, fallbackX), y: safeNum(center.y, fallbackY) };
+            }
+            return { x: fallbackX, y: fallbackY };
+        };
+
+        // Debug helper to draw dot at start & end
+        window.__vfxDot = (startX, startY, endX, endY) => {
+            if (!window.__VFX_DEBUG) return;
             const vfxLayer = document.getElementById('flickVfxLayer');
             if (!vfxLayer) return;
+            const createDot = (x, y, color) => {
+                const dot = document.createElement('div');
+                dot.style.position = 'absolute';
+                dot.style.left = `${x - 10}px`;
+                dot.style.top = `${y - 10}px`;
+                dot.style.width = '20px';
+                dot.style.height = '20px';
+                dot.style.backgroundColor = color;
+                dot.style.borderRadius = '50%';
+                dot.style.zIndex = '100000';
+                dot.style.pointerEvents = 'none';
+                dot.style.border = '2px solid white';
+                vfxLayer.appendChild(dot);
+                setTimeout(() => { if (dot.isConnected) dot.remove(); }, 600);
+            };
+            if (startX !== undefined && startY !== undefined) createDot(startX, startY, 'lime');
+            if (endX !== undefined && endY !== undefined) createDot(endX, endY, 'cyan');
+        };
 
-            const rect = originEl.getBoundingClientRect();
-            const layerRect = vfxLayer.getBoundingClientRect();
+        const spawnProjectile = (fromX, fromY, toX, toY, textOpt) => {
+            let vfxLayer = document.getElementById('flickVfxLayer');
+            if (!vfxLayer) {
+                vfxLayer = document.createElement('div');
+                vfxLayer.id = 'flickVfxLayer';
+                document.body.appendChild(vfxLayer);
+            }
+            vfxLayer.style.position = 'fixed';
+            vfxLayer.style.inset = '0';
+            vfxLayer.style.pointerEvents = 'none';
+            vfxLayer.style.zIndex = '99999';
 
-            // Calculate center of the button relative to the VFX layer
-            const x = rect.left + rect.width / 2 - layerRect.left;
-            const y = rect.top + rect.height / 2 - layerRect.top;
+            const now = Date.now();
+            const ttl = 560;
 
             const projectile = document.createElement('div');
             projectile.className = 'flick-projectile';
-            projectile.textContent = opt;
-            projectile.style.left = `${x}px`;
-            projectile.style.top = `${y}px`;
+            projectile.dataset.ts = String(now);
+            projectile.dataset.expiresAt = String(now + ttl + 100);
 
+            projectile.style.setProperty('display', 'flex', 'important');
+            projectile.style.setProperty('visibility', 'visible', 'important');
+            projectile.style.setProperty('opacity', '1', 'important');
+            projectile.style.position = 'absolute';
+            projectile.style.justifyContent = 'center';
+            projectile.style.alignItems = 'center';
+            projectile.style.width = '40px';
+            projectile.style.height = '40px';
+            projectile.style.zIndex = '99999';
+            projectile.style.pointerEvents = 'none';
+
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+
+            projectile.style.left = `${fromX - 20}px`;
+            projectile.style.top = `${fromY - 20}px`;
+
+            const createSkin = (size, bg, shadow, z) => {
+                const el = document.createElement('div');
+                el.style.position = 'absolute';
+                el.style.width = `${size}px`;
+                el.style.height = `${size}px`;
+                el.style.borderRadius = '50%';
+                el.style.background = bg;
+                el.style.boxShadow = shadow;
+                el.style.zIndex = z;
+                el.style.willChange = 'transform, opacity';
+                return el;
+            };
+
+            const core = createSkin(
+                16,
+                'radial-gradient(circle, white 0%, rgba(255,255,255,0.9) 35%, rgba(255,230,150,0.65) 70%, rgba(255,180,80,0.0) 100%)',
+                '0 0 10px rgba(255,220,140,0.95), 0 0 22px rgba(255,170,70,0.75), 0 0 36px rgba(255,120,30,0.35)',
+                10
+            );
+            const trail1 = createSkin(10, 'rgba(255,150,70,0.55)', '0 0 8px rgba(255,150,70,0.5)', 5);
+            const trail2 = createSkin(8, 'rgba(255,120,50,0.40)', '0 0 6px rgba(255,120,50,0.4)', 4);
+            const trail3 = createSkin(6, 'rgba(255,100,40,0.28)', '0 0 4px rgba(255,100,40,0.3)', 3);
+
+            const textEl = document.createElement('div');
+            textEl.style.position = 'absolute';
+            textEl.style.fontSize = '20px';
+            textEl.style.fontWeight = '900';
+            textEl.style.color = '#78350f';
+            textEl.style.zIndex = 20;
+            textEl.style.pointerEvents = 'none';
+            textEl.textContent = textOpt || '';
+            core.appendChild(textEl);
+
+            projectile.appendChild(trail3);
+            projectile.appendChild(trail2);
+            projectile.appendChild(trail1);
+            projectile.appendChild(core);
             vfxLayer.appendChild(projectile);
 
-            // Remove after animation ends
+            const easing = 'cubic-bezier(.2, .8, .2, 1)';
+
+            projectile.animate([
+                { transform: `translate(0px, 0px)`, opacity: 1 },
+                { transform: `translate(${dx}px, ${dy}px)`, opacity: 0 }
+            ], { duration: ttl, easing: easing, fill: 'forwards' });
+
+            trail1.animate([
+                { transform: `translate(0px, 0px) scale(1)`, opacity: 0.8 },
+                { transform: `translate(${dx}px, ${dy}px) scale(0.6)`, opacity: 0 }
+            ], { duration: ttl - 40, delay: 40, easing: easing, fill: 'forwards' });
+
+            trail2.animate([
+                { transform: `translate(0px, 0px) scale(1)`, opacity: 0.6 },
+                { transform: `translate(${dx}px, ${dy}px) scale(0.4)`, opacity: 0 }
+            ], { duration: ttl - 90, delay: 90, easing: easing, fill: 'forwards' });
+
+            trail3.animate([
+                { transform: `translate(0px, 0px) scale(1)`, opacity: 0.4 },
+                { transform: `translate(${dx}px, ${dy}px) scale(0.2)`, opacity: 0 }
+            ], { duration: ttl - 140, delay: 140, easing: easing, fill: 'forwards' });
+
             setTimeout(() => {
-                if (projectile.parentNode === vfxLayer) {
-                    vfxLayer.removeChild(projectile);
-                }
-            }, 700);
+                if (projectile.isConnected) projectile.remove();
+            }, ttl + 80);
         };
 
         const startFlick = (e, opt) => {
@@ -1445,7 +1560,27 @@ createApp({
             // Detection: dy <= -25px (upwards) and limited horizontal deviation
             if (dy <= -25 && Math.abs(dx) < 120) {
                 if (e.cancelable) e.preventDefault();
-                spawnProjectile(opt, originEl);
+
+                const startPoint = getCenterOrFallback(originEl, flickState.startX, flickState.startY);
+                let toX = e.clientX;
+                let toY = e.clientY;
+
+                const monsterEl = document.querySelector('img[alt="monster"]') || document.querySelector('.w-28.h-28.rounded-full');
+                const monsterCenter = rectCenter(monsterEl);
+                if (monsterCenter && monsterCenter.x !== undefined && monsterCenter.y !== undefined) {
+                    toX = monsterCenter.x;
+                    toY = monsterCenter.y;
+                } else {
+                    console.warn('[flick-debug] Monster element not found, using fallback coordinates (-200y).');
+                    toY = startPoint.y - 200;
+                    toX = startPoint.x;
+                }
+
+                if (window.__VFX_DEBUG && typeof window.__vfxDot === 'function') {
+                    window.__vfxDot(startPoint.x, startPoint.y, toX, toY);
+                }
+
+                spawnProjectile(startPoint.x, startPoint.y, toX, toY, opt);
                 handleRuneClick(opt, true);
             }
 
