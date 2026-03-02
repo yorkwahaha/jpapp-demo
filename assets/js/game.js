@@ -1373,7 +1373,10 @@ createApp({
             if (timerId) { clearInterval(timerId); timerId = null; }
         };
         // --- FLICK MODE INTERACTION (Patch 2 & 3) ---
-        const handleRuneClick = (opt) => {
+        const handleRuneClick = (opt, isFromFlick = false) => {
+            // 在 flick 模式下，忽略原生 click 事件（純點擊不給過），只接受來自 endFlick 的顯式呼叫
+            if (!isFromFlick) return;
+
             if (answerMode.value !== 'flick' || monsterDead.value || playerDead.value || isFinished.value || hasSubmitted.value) return;
             selectChoice(opt);
             checkAnswer();
@@ -1441,8 +1444,9 @@ createApp({
 
             // Detection: dy <= -25px (upwards) and limited horizontal deviation
             if (dy <= -25 && Math.abs(dx) < 120) {
+                if (e.cancelable) e.preventDefault();
                 spawnProjectile(opt, originEl);
-                handleRuneClick(opt);
+                handleRuneClick(opt, true);
             }
 
             flickState.isArmed = false;
@@ -2673,7 +2677,14 @@ createApp({
                     speakAzure(cleanQuestionText, "ja-JP-NanamiNeural");
                 }, 2000);
 
-                // Stay on this question for manual 'Next'
+                // Stay on this question for manual 'Next' for tap mode, auto-advance for flick mode
+                if (answerMode.value === 'flick') {
+                    setTimeout(() => {
+                        if (!isFinished.value && !monsterDead.value && !playerDead.value) {
+                            nextQuestion();
+                        }
+                    }, 3500); // Allow time for the ui.wrong and corrected Japanese phrase to play
+                }
             }
         };
 
