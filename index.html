@@ -228,6 +228,18 @@
                     <!-- Right Column (Area 3): Commands & Results -->
                     <div
                         class="flex-1 border-2 border-amber-500/60 rounded-xl p-6 flex flex-col relative bg-slate-800/60 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] overflow-hidden">
+
+                        <!-- 答題模式切換 -->
+                        <div
+                            class="answer-mode-toggle absolute top-4 left-5 flex bg-slate-900/80 p-1 rounded-lg border border-slate-700 shadow-md z-30">
+                            <button @click="answerMode = 'flick'"
+                                :class="(answerMode === 'flick') ? 'bg-amber-500 text-slate-900' : 'text-slate-400 hover:text-slate-200'"
+                                class="px-3 py-1 text-[10px] rounded font-bold transition-all uppercase tracking-tighter">彈射模式</button>
+                            <button @click="answerMode = 'tap'"
+                                :class="(answerMode !== 'flick') ? 'bg-amber-500 text-slate-900' : 'text-slate-400 hover:text-slate-200'"
+                                class="px-3 py-1 text-[10px] rounded font-bold transition-all uppercase tracking-tighter">點選模式</button>
+                        </div>
+
                         <div class="absolute top-4 right-5 text-right flex items-center gap-2">
                             <span v-if="comboCount > 1"
                                 class="text-rose-400 font-black text-sm animate-bounce inline-block">🔥 {{ comboCount }}
@@ -235,7 +247,8 @@
                         </div>
 
                         <div class="flex flex-col items-center justify-center flex-1 w-full gap-4 relative">
-                            <div v-if="!monsterDead && !playerDead"
+                            <!-- Tap UI (原本的選項按鈕 + 攻擊按鈕) -->
+                            <div v-show="(answerMode !== 'flick') && !monsterDead && !playerDead && !isFinished"
                                 class="flex flex-col items-center justify-center w-full flex-1">
                                 <!-- Integrated Question Area -->
                                 <div id="question-area" class="w-full mb-1 flex flex-col items-center">
@@ -445,6 +458,20 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- FLICK UI 容器 (Patch 1/4) -->
+                <div id="flickLayer" v-show="answerMode === 'flick' && !monsterDead && !playerDead && !isFinished"
+                    class="flick-layer-overlay">
+                    <div id="sentenceShield" class="sentence-shield"></div>
+                    <div id="aimLine" class="aim-line"></div>
+                </div>
+
+                <div id="runeBar" v-show="answerMode === 'flick' && !monsterDead && !playerDead && !isFinished"
+                    class="rune-bar-fixed">
+                    <button class="rune-btn-placeholder">が</button>
+                    <button class="rune-btn-placeholder">は</button>
+                    <button class="rune-btn-placeholder">も</button>
                 </div>
             </div>
         </div>
