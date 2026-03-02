@@ -967,7 +967,7 @@ rt {
         margin-bottom: 4px !important;
     }
 
-    #battleScene .w-full.h-1.5 {
+    #battleScene .w-full.h-1\.5 {
         height: 4px !important;
         margin-bottom: 2px !important;
     }
@@ -1383,161 +1383,199 @@ rt {
     .left-actionbar .action-btn .badge {
         transform: translate(4px, -4px) scale(0.85);
     }
-}
 
-/* INSERT END: JPAPP_RESPONSIVE_MOBILE_V1 */
+    /* INSERT END: JPAPP_RESPONSIVE_MOBILE_V1 */
 
-/* --- FLICK MODE UI SKELETON (Patch 1/4) --- */
-.flick-layer-overlay {
-    position: absolute;
-    inset: 0;
-    z-index: 25;
-    pointer-events: none;
-    touch-action: none;
-}
-
-.sentence-shield {
-    position: absolute;
-    top: 30%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 100%;
-    height: 100px;
-    pointer-events: none;
-}
-
-.aim-line {
-    position: absolute;
-    bottom: 120px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 2px;
-    height: 150px;
-    background: linear-gradient(to top, rgba(251, 191, 36, 0.5), transparent);
-    opacity: 0;
-    pointer-events: none;
-}
-
-.rune-bar-fixed {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    max-width: 600px;
-    margin: 0 auto;
-    height: 90px;
-    background: rgba(15, 23, 42, 0.9);
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(245, 158, 11, 0.5);
-    border-bottom: none;
-    border-radius: 20px 20px 0 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1.5rem;
-    padding: 0 1rem;
-    z-index: 100;
-    box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.6);
-}
-
-.rune-btn-placeholder {
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(to bottom, #334155, #1e293b);
-    border: 2px solid #f59e0b;
-    border-radius: 12px;
-    color: #fbbf24;
-    font-weight: 900;
-    font-size: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 0 #b45309;
-    cursor: grab;
-    transition: all 0.1s;
-    touch-action: none;
-    user-select: none;
-}
-
-.rune-btn-placeholder.flick-armed {
-    transform: scale(1.1) translateY(-5px);
-    background: linear-gradient(to bottom, #475569, #334155);
-    border-color: #fbbf24;
-    box-shadow: 0 0 20px rgba(251, 191, 36, 0.4), 0 4px 0 #b45309;
-    cursor: grabbing;
-}
-
-.rune-btn-placeholder.flick-success {
-    animation: runeSuccessFlash 0.4s ease-out;
-}
-
-@keyframes runeSuccessFlash {
-    0% {
-        transform: scale(1.1) translateY(-10px);
-        filter: brightness(1);
+    /* --- FLICK MODE UI SKELETON (Patch 1/4) --- */
+    .flick-layer-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 25;
+        pointer-events: none;
+        touch-action: none;
     }
 
-    50% {
-        transform: scale(1.2) translateY(-20px);
-        filter: brightness(2) drop-shadow(0 0 30px #fbbf24);
+    .sentence-shield {
+        position: absolute;
+        top: 30%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: 100px;
+        pointer-events: none;
     }
 
-    100% {
-        transform: scale(1) translateY(0);
-        filter: brightness(1);
-    }
-}
-
-/* Patch 4C: Projectile VFX */
-.flick-vfx-layer {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 50;
-    overflow: hidden;
-}
-
-.flick-projectile {
-    position: absolute;
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(to bottom, #f59e0b, #d97706);
-    border: 2px solid #fff;
-    border-radius: 12px;
-    color: #fff;
-    font-weight: 900;
-    font-size: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 0 20px rgba(245, 158, 11, 0.6);
-    z-index: 1000;
-    animation: flickShootUp 0.6s ease-out forwards;
-}
-
-@keyframes flickShootUp {
-    0% {
-        transform: translate(-50%, -50%) scale(1);
-        opacity: 1;
-    }
-
-    100% {
-        transform: translate(-50%, calc(-50% - 400px)) scale(0.8);
+    .aim-line {
+        position: absolute;
+        bottom: 120px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 150px;
+        background: linear-gradient(to top, rgba(251, 191, 36, 0.5), transparent);
         opacity: 0;
+        pointer-events: none;
     }
-}
 
-.rune-btn-placeholder:active {
-    transform: translateY(2px);
-    box-shadow: 0 2px 0 #b45309;
-}
+    .rune-bar-fixed {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        max-width: 600px;
+        margin: 0 auto;
+        height: 90px;
+        background: rgba(15, 23, 42, 0.9);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(245, 158, 11, 0.5);
+        border-bottom: none;
+        border-radius: 20px 20px 0 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+        padding: 0 1rem;
+        z-index: 100;
+        box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.6);
+    }
 
-/* 避免固定底欄遮擋主內容 */
-#stage {
-    padding-bottom: 20px;
-}
+    .rune-btn-placeholder {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(to bottom, #334155, #1e293b);
+        border: 2px solid #f59e0b;
+        border-radius: 12px;
+        color: #fbbf24;
+        font-weight: 900;
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 0 #b45309;
+        cursor: grab;
+        transition: all 0.1s;
+        touch-action: none;
+        user-select: none;
+    }
 
-/* 模式切換按鈕微調 */
-.answer-mode-toggle button {
-    white-space: nowrap;
+    .rune-btn-placeholder.flick-armed {
+        transform: scale(1.1) translateY(-5px);
+        background: linear-gradient(to bottom, #475569, #334155);
+        border-color: #fbbf24;
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.4), 0 4px 0 #b45309;
+        cursor: grabbing;
+    }
+
+    .rune-btn-placeholder.flick-success {
+        animation: runeSuccessFlash 0.4s ease-out;
+    }
+
+    @keyframes runeSuccessFlash {
+        0% {
+            transform: scale(1.1) translateY(-10px);
+            filter: brightness(1);
+        }
+
+        50% {
+            transform: scale(1.2) translateY(-20px);
+            filter: brightness(2) drop-shadow(0 0 30px #fbbf24);
+        }
+
+        100% {
+            transform: scale(1) translateY(0);
+            filter: brightness(1);
+        }
+    }
+
+    /* Patch 4C: Projectile VFX */
+    .flick-vfx-layer {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 50;
+        overflow: hidden;
+    }
+
+    .flick-projectile {
+        position: absolute;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(to bottom, #f59e0b, #d97706);
+        border: 2px solid #fff;
+        border-radius: 12px;
+        color: #fff;
+        font-weight: 900;
+        font-size: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.6);
+        z-index: 1000;
+        animation: flickShootUp 0.6s ease-out forwards;
+    }
+
+    @keyframes flickShootUp {
+        0% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        100% {
+            transform: translate(-50%, calc(-50% - 400px)) scale(0.8);
+            opacity: 0;
+        }
+    }
+
+    .rune-btn-placeholder:active {
+        transform: translateY(2px);
+        box-shadow: 0 2px 0 #b45309;
+    }
+
+    /* 避免固定底欄遮擋主內容 */
+    #stage {
+        padding-bottom: 20px;
+    }
+
+    /* 模式切換按鈕微調 */
+    .answer-mode-toggle button {
+        white-space: nowrap;
+    }
+
+    /* === HOTFIX v2: lock runeBar layout & button appearance === */
+    #runeBar {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 18px !important;
+        padding: 16px 20px !important;
+        background: rgba(2, 6, 23, .45) !important;
+        border: 1px solid rgba(245, 158, 11, .45) !important;
+        border-radius: 22px !important;
+        backdrop-filter: blur(6px);
+    }
+
+    #runeBar .rune-btn-placeholder {
+        appearance: none !important;
+        -webkit-appearance: none !important;
+
+        min-width: 84px !important;
+        height: 84px !important;
+        padding: 0 !important;
+
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+
+        border: 2px solid rgba(245, 158, 11, .95) !important;
+        border-radius: 22px !important;
+
+        background: rgba(15, 23, 42, .92) !important;
+        color: #fbbf24 !important;
+
+        font-weight: 900 !important;
+        font-size: 42px !important;
+        line-height: 1 !important;
+
+        box-shadow: 0 10px 25px rgba(0, 0, 0, .35) !important;
+    }
 }
