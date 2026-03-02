@@ -1451,6 +1451,37 @@ rt {
     box-shadow: 0 4px 0 #b45309;
     cursor: grab;
     transition: all 0.1s;
+    touch-action: none;
+    user-select: none;
+}
+
+.rune-btn-placeholder.flick-armed {
+    transform: scale(1.1) translateY(-5px);
+    background: linear-gradient(to bottom, #475569, #334155);
+    border-color: #fbbf24;
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.4), 0 4px 0 #b45309;
+    cursor: grabbing;
+}
+
+.rune-btn-placeholder.flick-success {
+    animation: runeSuccessFlash 0.4s ease-out;
+}
+
+@keyframes runeSuccessFlash {
+    0% {
+        transform: scale(1.1) translateY(-10px);
+        filter: brightness(1);
+    }
+
+    50% {
+        transform: scale(1.2) translateY(-20px);
+        filter: brightness(2) shadow(0 0 30px #fbbf24);
+    }
+
+    100% {
+        transform: scale(1) translateY(0);
+        filter: brightness(1);
+    }
 }
 
 .rune-btn-placeholder:active {

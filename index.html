@@ -247,8 +247,8 @@
                         </div>
 
                         <div class="flex flex-col items-center justify-center flex-1 w-full gap-4 relative">
-                            <!-- Tap UI (原本的選項按鈕 + 攻擊按鈕) -->
-                            <div v-show="(answerMode !== 'flick') && !monsterDead && !playerDead && !isFinished"
+                            <!-- Battle Info Area (Questions & Commands) -->
+                            <div v-if="!monsterDead && !playerDead && !isFinished"
                                 class="flex flex-col items-center justify-center w-full flex-1">
                                 <!-- Integrated Question Area -->
                                 <div id="question-area" class="w-full mb-1 flex flex-col items-center">
@@ -278,7 +278,7 @@
                                         </span>
                                     </div>
                                 </div>
-                                <div v-if="isChoiceMode && currentQuestion.choices && !hasSubmitted"
+                                <div v-if="(answerMode !== 'flick') && isChoiceMode && currentQuestion.choices && !hasSubmitted"
                                     class="flex flex-wrap justify-center gap-3 w-full">
                                     <button v-for="opt in currentQuestion.choices" :key="opt" @click="selectChoice(opt)"
                                         class="particle-option px-6 py-2 rounded-xl text-xl font-black transition-all border-2"
@@ -307,17 +307,18 @@
                                     </div>
                                 </div>
 
-                                <!-- Action Buttons -->
-                                <div class="flex justify-center gap-3 mt-3 w-full max-w-lg">
+                                <!-- Action Buttons (Only for Tap) -->
+                                <div v-show="(answerMode !== 'flick')"
+                                    class="flex justify-center gap-3 mt-3 w-full max-w-lg">
                                     <button v-if="hasSubmitted && !isCurrentCorrect" @click="nextQuestion"
                                         class="w-48 bg-amber-500 text-slate-900 px-6 py-2 rounded-xl font-black text-lg hover:bg-amber-400 shadow-lg border-b-4 border-amber-700 active:translate-y-1 active:border-b-0 transition-all">
                                         次（つぎ）
                                     </button>
-                                    <button v-else @click="checkAnswer"
+                                    <button v-else-if="!hasSubmitted" @click="checkAnswer"
                                         class="w-48 bg-amber-500 text-slate-900 px-6 py-2 rounded-xl font-black text-lg hover:bg-amber-400 shadow-lg border-b-4 border-amber-700 active:translate-y-1 active:border-b-0 transition-all"
                                         :class="(isChoiceMode && !userAnswers[0]) ? 'bg-slate-700 border-slate-800 text-slate-500 cursor-not-allowed opacity-50' : ''"
                                         :disabled="isChoiceMode && !userAnswers[0]">
-                                        攻撃（こうげき）
+                                        攻擊（こうげき）
                                     </button>
                                     <!-- TTS Button -->
                                     <button @click="playQuestionVoice"
@@ -326,8 +327,6 @@
                                     </button>
                                 </div>
                             </div>
-
-                            <!-- Victory/Loss States -->
                             <div v-else class="flex flex-col items-center justify-center w-full flex-1">
                                 <div v-if="monsterDead"
                                     class="flex flex-row items-center justify-center gap-12 py-4 w-full px-6 flex-1">
@@ -374,7 +373,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div v-else
+                                <div v-else-if="playerDead"
                                     class="flex flex-row items-center justify-center gap-12 py-4 w-full px-6 flex-1">
                                     <!-- Left side -->
                                     <div class="flex flex-col items-center max-w-[200px]">
@@ -406,11 +405,11 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div v-else></div>
                             </div>
                         </div>
                     </div>
                 </div>
-
                 <div v-else
                     class="py-12 flex-1 flex flex-col justify-center items-center bg-slate-900/40 backdrop-blur-md min-h-[400px]">
                     <div class="text-8xl mb-4 animate-bounce">🎉</div>
@@ -469,9 +468,13 @@
 
                 <div id="runeBar" v-show="answerMode === 'flick' && !monsterDead && !playerDead && !isFinished"
                     class="rune-bar-fixed">
-                    <button class="rune-btn-placeholder" @click="handleRuneClick('が')">が</button>
-                    <button class="rune-btn-placeholder" @click="handleRuneClick('は')">は</button>
-                    <button class="rune-btn-placeholder" @click="handleRuneClick('も')">も</button>
+                    <button v-for="opt in ['が', 'は', 'も']" :key="opt" class="rune-btn-placeholder" :class="{ 
+                            'flick-armed': flickState.isArmed && flickState.activeOpt === opt,
+                            'flick-success': flickState.successOpt === opt
+                        }" @pointerdown="startFlick($event, opt)" @pointermove="moveFlick($event)"
+                        @pointerup="endFlick($event)" @click="handleRuneClick(opt)">
+                        {{ opt }}
+                    </button>
                 </div>
             </div>
         </div>
@@ -522,7 +525,7 @@
                 <div class="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
                     <div v-for="skill in skillList" :key="skill.id" @click="castAbility(skill.id)"
                         class="group relative bg-slate-900/60 border border-slate-700 hover:border-amber-500/50 rounded-xl p-3 flex gap-4 cursor-pointer transition-all hover:bg-slate-800"
-                        :class="{ 'opacity-50 grayscale cursor-not-allowed': __sp.cur < skill.cost || playerDead || monsterDead }">
+                        :class="{ 'opacity-50 grayscale cursor-not-allowed': spState.cur < skill.cost || playerDead || monsterDead }">
                         <div
                             class="w-12 h-12 flex-shrink-0 bg-slate-800 rounded-lg flex items-center justify-center text-2xl border border-slate-600 group-hover:border-amber-400">
                             {{ skill.icon }}

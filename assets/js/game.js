@@ -429,9 +429,19 @@ createApp({
         const APP_VERSION = "26030106";
         const appVersion = ref(APP_VERSION);
         const isChangelogOpen = ref(false);
+        // --- FLICK MODE STATE (Patch 2 & 3) ---
+        const answerMode = ref('tap');
+        const flickState = reactive({
+            activeOpt: null,
+            startX: 0,
+            startY: 0,
+            currentX: 0,
+            currentY: 0,
+            isArmed: false,
+            successOpt: null // For flash animation
+        });
         const changelogData = ref([]);
         const changelogError = ref(false);
-
         const openChangelog = async () => {
             isChangelogOpen.value = true;
             if (changelogData.value.length === 0 && !changelogError.value) {
@@ -890,7 +900,7 @@ createApp({
         const player = ref({ hp: 100, maxHp: 100, gold: 0, exp: 0 });
         const monster = ref({ hp: MONSTER_HP, maxHp: MONSTER_HP, name: '助詞怪' });
         const inventory = ref({ potions: INITIAL_POTIONS, speedPotions: 3 });
-        const __sp = window.__sp;
+        const spState = window.__sp;
         const evasionBuffAttacksLeft = ref(0);
         const monsterShake = ref(false);
         const playerBlink = ref(false);
@@ -1360,6 +1370,52 @@ createApp({
 
         const clearTimer = () => {
             if (timerId) { clearInterval(timerId); timerId = null; }
+        };
+        // --- FLICK MODE INTERACTION (Patch 2 & 3) ---
+        const handleRuneClick = (opt) => {
+            if (answerMode.value !== 'flick' || monsterDead.value || playerDead.value || isFinished.value || hasSubmitted.value) return;
+            selectChoice(opt);
+            checkAnswer();
+
+            // Visual feedback for successful manual click or flick
+            flickState.successOpt = opt;
+            setTimeout(() => { flickState.successOpt = null; }, 400);
+        };
+
+        const startFlick = (e, opt) => {
+            if (answerMode.value !== 'flick' || monsterDead.value || playerDead.value || isFinished.value || hasSubmitted.value) return;
+
+            const el = e.currentTarget;
+            el.setPointerCapture(e.pointerId);
+
+            flickState.activeOpt = opt;
+            flickState.startX = e.clientX;
+            flickState.startY = e.clientY;
+            flickState.currentX = e.clientX;
+            flickState.currentY = e.clientY;
+            flickState.isArmed = true;
+        };
+
+        const moveFlick = (e) => {
+            if (!flickState.isArmed) return;
+            flickState.currentX = e.clientX;
+            flickState.currentY = e.clientY;
+        };
+
+        const endFlick = (e) => {
+            if (!flickState.isArmed) return;
+
+            const dx = e.clientX - flickState.startX;
+            const dy = e.clientY - flickState.startY;
+            const opt = flickState.activeOpt;
+
+            // Detection: dy <= -25px (upwards) and limited horizontal deviation
+            if (dy <= -25 && Math.abs(dx) < 120) {
+                handleRuneClick(opt);
+            }
+
+            flickState.isArmed = false;
+            flickState.activeOpt = null;
         };
 
         const runTimerLogic = () => {
@@ -2789,7 +2845,7 @@ createApp({
         };
 
         loadAudioSettings();
-        return { appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay, skillList, castAbility, __sp, showL2DebugPanel, l2DebugQuestions, generateL2Debug, copyL2Debug, handleReload };
+        return { answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay, skillList, castAbility, spState, showL2DebugPanel, l2DebugQuestions, generateL2Debug, copyL2Debug, handleReload };
     }
 }).mount('#app');
 console.log('應用已掛載！');
