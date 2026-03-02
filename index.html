@@ -469,9 +469,9 @@
 
                 <div id="runeBar" v-show="answerMode === 'flick' && !monsterDead && !playerDead && !isFinished"
                     class="rune-bar-fixed">
-                    <button class="rune-btn-placeholder">が</button>
-                    <button class="rune-btn-placeholder">は</button>
-                    <button class="rune-btn-placeholder">も</button>
+                    <button class="rune-btn-placeholder" @click="handleRuneClick('が')">が</button>
+                    <button class="rune-btn-placeholder" @click="handleRuneClick('は')">は</button>
+                    <button class="rune-btn-placeholder" @click="handleRuneClick('も')">も</button>
                 </div>
             </div>
         </div>
