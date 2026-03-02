@@ -277,8 +277,30 @@
                                                 getAnswerForDisplay(seg.blankIndex) }}</span>
                                         </span>
                                     </div>
+                                    <!-- FLICK UI 容器 (Patch 1/4) -->
+                                    <div id="flickLayer"
+                                        v-show="answerMode === 'flick' && !monsterDead && !playerDead && !isFinished"
+                                        class="flick-layer-overlay">
+                                        <div id="sentenceShield" class="sentence-shield"></div>
+                                        <div id="aimLine" class="aim-line"></div>
+                                    </div>
+                                    <div id="runeBar"
+                                        v-if="answerMode === 'flick' && !monsterDead && !playerDead && !isFinished"
+                                        class="rune-bar-fixed">
+                                        <button v-for="opt in currentQuestion?.choices || []"
+                                            :key="typeof opt === 'object' ? opt.text : opt" class="rune-btn-placeholder"
+                                            :class="{ 
+                            'flick-armed': flickState.isArmed && flickState.activeOpt === (typeof opt === 'object' ? opt.text : opt),
+                            'flick-success': flickState.successOpt === (typeof opt === 'object' ? opt.text : opt)
+                        }" @pointerdown="startFlick($event, typeof opt === 'object' ? opt.text : opt)"
+                                            @pointermove="moveFlick($event)" @pointerup="endFlick($event)"
+                                            @click="handleRuneClick(typeof opt === 'object' ? opt.text : opt)">
+                                            {{ typeof opt === 'object' ? (opt.text || opt.label) : opt }}
+                                        </button>
+                                    </div>
+
                                 </div>
-                                <div v-if="(answerMode !== 'flick') && isChoiceMode && currentQuestion.choices && !hasSubmitted"
+                                <div v-if="answerMode === 'tap' && isChoiceMode && currentQuestion.choices && !hasSubmitted"
                                     class="flex flex-wrap justify-center gap-3 w-full">
                                     <button v-for="opt in currentQuestion.choices" :key="opt" @click="selectChoice(opt)"
                                         class="particle-option px-6 py-2 rounded-xl text-xl font-black transition-all border-2"
@@ -308,13 +330,13 @@
                                 </div>
 
                                 <!-- Action Buttons (Only for Tap) -->
-                                <div v-show="(answerMode !== 'flick')"
-                                    class="flex justify-center gap-3 mt-3 w-full max-w-lg">
-                                    <button v-if="hasSubmitted && !isCurrentCorrect" @click="nextQuestion"
+                                <div class="flex justify-center gap-3 mt-3 w-full max-w-lg">
+                                    <button v-if="hasSubmitted && !isCurrentCorrect" v-show="answerMode === 'tap'"
+                                        @click="nextQuestion"
                                         class="w-48 bg-amber-500 text-slate-900 px-6 py-2 rounded-xl font-black text-lg hover:bg-amber-400 shadow-lg border-b-4 border-amber-700 active:translate-y-1 active:border-b-0 transition-all">
                                         次（つぎ）
                                     </button>
-                                    <button v-else-if="!hasSubmitted" @click="checkAnswer"
+                                    <button v-else-if="!hasSubmitted" v-show="answerMode === 'tap'" @click="checkAnswer"
                                         class="w-48 bg-amber-500 text-slate-900 px-6 py-2 rounded-xl font-black text-lg hover:bg-amber-400 shadow-lg border-b-4 border-amber-700 active:translate-y-1 active:border-b-0 transition-all"
                                         :class="(isChoiceMode && !userAnswers[0]) ? 'bg-slate-700 border-slate-800 text-slate-500 cursor-not-allowed opacity-50' : ''"
                                         :disabled="isChoiceMode && !userAnswers[0]">
@@ -460,26 +482,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- FLICK UI 容器 (Patch 1/4) -->
-                <div id="flickLayer" v-show="answerMode === 'flick' && !monsterDead && !playerDead && !isFinished"
-                    class="flick-layer-overlay">
-                    <div id="sentenceShield" class="sentence-shield"></div>
-                    <div id="aimLine" class="aim-line"></div>
-                </div>
-
-                <div id="runeBar" v-show="answerMode === 'flick' && !monsterDead && !playerDead && !isFinished"
-                    class="rune-bar-fixed">
-                    <button v-for="opt in currentQuestion?.choices || []"
-                        :key="typeof opt === 'object' ? opt.text : opt" class="rune-btn-placeholder" :class="{ 
-                            'flick-armed': flickState.isArmed && flickState.activeOpt === (typeof opt === 'object' ? opt.text : opt),
-                            'flick-success': flickState.successOpt === (typeof opt === 'object' ? opt.text : opt)
-                        }" @pointerdown="startFlick($event, typeof opt === 'object' ? opt.text : opt)"
-                        @pointermove="moveFlick($event)" @pointerup="endFlick($event)"
-                        @click="handleRuneClick(typeof opt === 'object' ? opt.text : opt)">
-                        {{ typeof opt === 'object' ? (opt.text || opt.label) : opt }}
-                    </button>
                 </div>
             </div>
         </div>
