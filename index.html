@@ -326,8 +326,11 @@
                                         <span class="text-xl">🔊</span>
                                     </button>
                                 </div>
+                                <!-- Flick VFX Layer -->
+                                <div id="flickVfxLayer" class="flick-vfx-layer"></div>
                             </div>
                             <div v-else class="flex flex-col items-center justify-center w-full flex-1">
+                                <!-- Victory/Loss States -->
                                 <div v-if="monsterDead"
                                     class="flex flex-row items-center justify-center gap-12 py-4 w-full px-6 flex-1">
                                     <!-- Left side -->
@@ -468,12 +471,14 @@
 
                 <div id="runeBar" v-show="answerMode === 'flick' && !monsterDead && !playerDead && !isFinished"
                     class="rune-bar-fixed">
-                    <button v-for="opt in ['が', 'は', 'も']" :key="opt" class="rune-btn-placeholder" :class="{ 
-                            'flick-armed': flickState.isArmed && flickState.activeOpt === opt,
-                            'flick-success': flickState.successOpt === opt
-                        }" @pointerdown="startFlick($event, opt)" @pointermove="moveFlick($event)"
-                        @pointerup="endFlick($event)" @click="handleRuneClick(opt)">
-                        {{ opt }}
+                    <button v-for="opt in currentQuestion?.choices || []"
+                        :key="typeof opt === 'object' ? opt.text : opt" class="rune-btn-placeholder" :class="{ 
+                            'flick-armed': flickState.isArmed && flickState.activeOpt === (typeof opt === 'object' ? opt.text : opt),
+                            'flick-success': flickState.successOpt === (typeof opt === 'object' ? opt.text : opt)
+                        }" @pointerdown="startFlick($event, typeof opt === 'object' ? opt.text : opt)"
+                        @pointermove="moveFlick($event)" @pointerup="endFlick($event)"
+                        @click="handleRuneClick(typeof opt === 'object' ? opt.text : opt)">
+                        {{ typeof opt === 'object' ? (opt.text || opt.label) : opt }}
                     </button>
                 </div>
             </div>

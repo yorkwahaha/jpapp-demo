@@ -438,7 +438,8 @@ createApp({
             currentX: 0,
             currentY: 0,
             isArmed: false,
-            successOpt: null // For flash animation
+            successOpt: null, // For flash animation
+            capturedEl: null // For projectile origin
         });
         const changelogData = ref([]);
         const changelogError = ref(false);
@@ -1382,6 +1383,33 @@ createApp({
             setTimeout(() => { flickState.successOpt = null; }, 400);
         };
 
+        const spawnProjectile = (opt, originEl) => {
+            const vfxLayer = document.getElementById('flickVfxLayer');
+            if (!vfxLayer) return;
+
+            const rect = originEl.getBoundingClientRect();
+            const layerRect = vfxLayer.getBoundingClientRect();
+
+            // Calculate center of the button relative to the VFX layer
+            const x = rect.left + rect.width / 2 - layerRect.left;
+            const y = rect.top + rect.height / 2 - layerRect.top;
+
+            const projectile = document.createElement('div');
+            projectile.className = 'flick-projectile';
+            projectile.textContent = opt;
+            projectile.style.left = `${x}px`;
+            projectile.style.top = `${y}px`;
+
+            vfxLayer.appendChild(projectile);
+
+            // Remove after animation ends
+            setTimeout(() => {
+                if (projectile.parentNode === vfxLayer) {
+                    vfxLayer.removeChild(projectile);
+                }
+            }, 700);
+        };
+
         const startFlick = (e, opt) => {
             if (answerMode.value !== 'flick' || monsterDead.value || playerDead.value || isFinished.value || hasSubmitted.value) return;
 
@@ -1394,6 +1422,7 @@ createApp({
             flickState.currentX = e.clientX;
             flickState.currentY = e.clientY;
             flickState.isArmed = true;
+            flickState.capturedEl = el;
         };
 
         const moveFlick = (e) => {
@@ -1408,14 +1437,20 @@ createApp({
             const dx = e.clientX - flickState.startX;
             const dy = e.clientY - flickState.startY;
             const opt = flickState.activeOpt;
+            const originEl = flickState.capturedEl; // Use the stored element
 
             // Detection: dy <= -25px (upwards) and limited horizontal deviation
             if (dy <= -25 && Math.abs(dx) < 120) {
+                spawnProjectile(opt, originEl);
                 handleRuneClick(opt);
             }
 
             flickState.isArmed = false;
             flickState.activeOpt = null;
+            if (flickState.capturedEl) {
+                flickState.capturedEl.releasePointerCapture(e.pointerId);
+                flickState.capturedEl = null;
+            }
         };
 
         const runTimerLogic = () => {
@@ -2656,6 +2691,14 @@ createApp({
                 slotFeedbacks.value = {};
                 hasSubmitted.value = false;
                 applyTurnLogic();
+                // Patch 4B: Reset flick state
+                if (answerMode.value === 'flick') {
+                    flickState.isArmed = false;
+                    flickState.activeOpt = null;
+                }
+                const vfxLayer = document.getElementById('flickVfxLayer');
+                if (vfxLayer) vfxLayer.innerHTML = '';
+
                 questionStartTime = Date.now();
                 // DO NOT call startTimer() here, let it run continuously
             } else {
@@ -2665,6 +2708,11 @@ createApp({
                 slotFeedbacks.value = {};
                 hasSubmitted.value = false;
                 applyTurnLogic();
+                // Patch 4B: Reset flick state
+                if (answerMode.value === 'flick') {
+                    flickState.isArmed = false;
+                    flickState.activeOpt = null;
+                }
             }
             voicePlayedForCurrentQuestion.value = false;
         };
