@@ -1,9 +1,192 @@
+// ----- INSERT BEGIN: JPAPP_DEBUG_OVERLAY_V1 -----
+(function () {
+    'use strict';
+
+    const MAX_LINES = 25;
+    const LOG_COLORS = { log: '#7fff7f', warn: '#ffd700', error: '#ff6b6b' };
+    const FOCUS_KEYWORDS = ['[BGM]', '[AZURE]', '[PRAISE]'];
+    window.__DEBUG_OVERLAY_MODE = 'focus';
+    let _lines = [];
+    let _el = null;
+    let _enabled = false;
+
+    function _ts() {
+        const d = new Date();
+        return String(d.getMinutes()).padStart(2, '0') + ':' +
+            String(d.getSeconds()).padStart(2, '0') + '.' +
+            String(d.getMilliseconds()).padStart(3, '0');
+    }
+
+    function _createOverlay() {
+        if (_el) return;
+        _el = document.createElement('div');
+        _el.id = 'debugOverlay';
+        Object.assign(_el.style, {
+            position: 'fixed', top: '8px', right: '8px', zIndex: '9999999',
+            background: 'rgba(0,0,0,0.72)', color: '#7fff7f',
+            font: '11px/1.45 monospace', padding: '6px 8px', borderRadius: '8px',
+            maxHeight: '35vh', width: 'min(90vw, 420px)', overflowY: 'hidden',
+            whiteSpace: 'pre-wrap', wordBreak: 'break-all',
+            pointerEvents: 'none', display: 'none',
+            boxShadow: '0 2px 12px rgba(0,0,0,.5)',
+            opacity: '0.92'
+        });
+        document.body.appendChild(_el);
+    }
+
+    function _render() {
+        if (!_el) return;
+        _el.innerHTML = _lines.slice(-MAX_LINES).join('\n');
+        // auto-scroll: keep bottom visible by adjusting scrollTop
+        _el.scrollTop = _el.scrollHeight;
+    }
+
+    function _push(level, args) {
+        if (!_enabled) return;
+        const msg = args.map(a => {
+            if (typeof a === 'string') return a;
+            try { return JSON.stringify(a); } catch { return String(a); }
+        }).join(' ');
+
+        if (window.__DEBUG_OVERLAY_MODE === 'focus' && level === 'log') {
+            const isFocus = FOCUS_KEYWORDS.some(k => msg.includes(k));
+            if (!isFocus) return;
+        }
+
+        if (!_el) _createOverlay();
+        const color = LOG_COLORS[level] || '#7fff7f';
+        const prefix = level === 'warn' ? '⚠ ' : level === 'error' ? '✖ ' : '';
+        _lines.push(`<span style="color:${color}">[${_ts()}] ${prefix}${_escHtml(msg)}</span>`);
+        if (_lines.length > MAX_LINES * 2) _lines = _lines.slice(-MAX_LINES);
+        _render();
+    }
+
+    function _escHtml(s) {
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // Patch console
+    const _orig = { log: console.log, warn: console.warn, error: console.error };
+    ['log', 'warn', 'error'].forEach(lvl => {
+        console[lvl] = function (...args) {
+            _orig[lvl].apply(console, args);
+            _push(lvl, args);
+        };
+    });
+
+    function _enable() {
+        if (_enabled) return; // guard against re-entry
+        _enabled = true;
+        window.__AUDIO_DEBUG = true;
+        if (!_el) _createOverlay();
+        _el.style.display = 'block';
+        console.log('[DebugOverlay] ON — listening');
+    }
+
+    function _disable() {
+        _enabled = false;
+        if (_el) _el.style.display = 'none';
+        _orig.log.call(console, '[DebugOverlay] OFF');
+    }
+
+    // Public API
+    window.__overlayPush = (tag, msg) => {
+        if (!_enabled) return;
+        if (window.__DEBUG_OVERLAY_MODE === 'focus') {
+            const isFocus = FOCUS_KEYWORDS.some(k => tag.includes(k) || msg.includes(k));
+            if (!isFocus) return;
+        }
+        if (!_el) _createOverlay();
+        const color = LOG_COLORS['log'] || '#7fff7f';
+        _lines.push(`<span style="color:${color}">[${_ts()}] ${_escHtml(tag + ' ' + msg)}</span>`);
+        if (_lines.length > MAX_LINES * 2) _lines = _lines.slice(-MAX_LINES);
+        _render();
+    };
+
+    window.__debugOverlayOn = _enable;
+    window.__debugOverlayOff = _disable;
+    Object.defineProperty(window, '__DEBUG_OVERLAY', {
+        get() { return _enabled; },
+        set(v) { v ? _enable() : _disable(); },
+        configurable: true
+    });
+
+    // Auto-enable from URL hash  →  http://localhost:8001/#debug
+    if (location.hash === '#debug' || new URLSearchParams(location.search).has('debug')) {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', _enable, { once: true });
+        } else {
+            // DOM already ready (script loaded after DOMContentLoaded)
+            _enable();
+        }
+    }
+
+    // Long-press ☰ (any element with id="menuBtn" or aria-label containing "menu"/"系統") 2s to toggle
+    let _lpTimer = null;
+    let _lpTimer4s = null;
+    document.addEventListener('pointerdown', function (e) {
+        const t = e.target.closest('#menuBtn, [data-debug-toggle], button');
+        if (!t) return;
+        // Only trigger on the system/menu button area (bottom bar)
+        // Check if it looks like a menu button by checking id or text content
+        const txt = (t.id + ' ' + t.textContent + ' ' + (t.getAttribute('aria-label') || '')).toLowerCase();
+        if (!txt.includes('menu') && !txt.includes('系統') && !txt.includes('system') && t.id !== 'menuBtn') return;
+
+        _lpTimer = setTimeout(() => {
+            _enabled ? _disable() : _enable();
+            // Brief visual flash
+            t.style.outline = '2px solid #0f0';
+            setTimeout(() => { t.style.outline = ''; }, 600);
+        }, 2000);
+
+        _lpTimer4s = setTimeout(() => {
+            window.__DEBUG_OVERLAY_MODE = window.__DEBUG_OVERLAY_MODE === 'focus' ? 'all' : 'focus';
+            t.style.outline = '2px solid #f0f';
+            setTimeout(() => { t.style.outline = ''; }, 600);
+            _orig.log.call(console, `[Overlay] mode=${window.__DEBUG_OVERLAY_MODE}`);
+            _push('log', [`[Overlay] mode=${window.__DEBUG_OVERLAY_MODE}`]);
+        }, 4000);
+    }, true);
+
+    const _clearLp = () => {
+        if (_lpTimer) { clearTimeout(_lpTimer); _lpTimer = null; }
+        if (_lpTimer4s) { clearTimeout(_lpTimer4s); _lpTimer4s = null; }
+    };
+    document.addEventListener('pointerup', _clearLp, true);
+    document.addEventListener('pointerleave', _clearLp, true);
+    document.addEventListener('pointermove', _clearLp, true);
+})();
+// ----- INSERT END: JPAPP_DEBUG_OVERLAY_V1 -----
+
 const { createApp, ref, reactive, computed, watch, onMounted, nextTick } = Vue;
 
 // ----- INSERT BEGIN: JPAPP_TTS_AUDIO_V1 -----
 const TTS_AUDIO_BASE = "assets/audio/tts/";
 const ttsExistCache = new Map(); // url -> boolean
 let currentTtsAudio = null;
+const sharedTtsAudio = new Audio();
+let isTtsPrimed = false;
+
+window.primeVoiceOnGesture = () => {
+    try {
+        const a = sharedTtsAudio;
+        if (!a.src || a.src === window.location.href) {
+            a.src = "data:audio/mp3;base64,//OlkAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAFAAAH8AADBQQOExUaHh8lJygqMTIzNzo9P0JFREQv";
+        }
+        a.volume = 0;
+        const p = a.play();
+        if (p !== undefined) {
+            p.then(() => {
+                a.pause();
+                a.volume = 1;
+                if (!isTtsPrimed) {
+                    isTtsPrimed = true;
+                    console.log('[PRAISE] flick-gesture prime ok');
+                }
+            }).catch(() => { });
+        }
+    } catch (e) { }
+};
 
 function ttsKeyToFile(key) {
     return key.replace(/\./g, "_") + ".mp3";
@@ -46,13 +229,17 @@ async function playTtsKey(key, fallbackText, azureVoiceName = "ja-JP-NanamiNeura
 
     // 1) mp3 first
     if (await audioFileExists(url)) {
-        const a = new Audio(url);
+        console.log(`[FALLBACK] audio file exists: ${url}`);
+        const a = sharedTtsAudio;
+        a.src = url;
         a.preload = "auto";
         currentTtsAudio = a;
         try {
             await a.play();
+            console.log(`[FALLBACK] audio play ok`);
             return { used: "audio", key, url };
         } catch (e) {
+            console.warn(`[FALLBACK] audio play error:`, e?.message || e);
             // autoplay blocked -> fall through
         }
     }
@@ -67,16 +254,24 @@ async function playTtsKey(key, fallbackText, azureVoiceName = "ja-JP-NanamiNeura
 
     // 3) fallback WebSpeech
     if (fallbackText && "speechSynthesis" in window) {
+        console.log('[SPEECH] start (WebSpeech fallback)', fallbackText.slice(0, 20));
         try {
             const u = new SpeechSynthesisUtterance(fallbackText);
             u.lang = "ja-JP";
             u.rate = 1.0;
             u.pitch = 1.0;
+
+            u.onend = () => console.log('[SPEECH] end');
+            u.onerror = (e) => console.warn('[SPEECH] error', e?.error || "unknown");
+
             window.speechSynthesis.speak(u);
             return { used: "webspeech", key };
-        } catch { }
+        } catch (e) {
+            console.warn('[SPEECH] error', e?.message || e);
+        }
     }
 
+    console.warn('[FALLBACK] All methods failed for:', key);
     return { used: "none", key };
 }
 // ----- INSERT END: JPAPP_TTS_AUDIO_V1 -----
@@ -104,12 +299,24 @@ function getAzureSpeechRegion() {
 async function speakAzure(text, voiceShortName = "ja-JP-NanamiNeural") {
     const key = getAzureSpeechKey();
     const region = getAzureSpeechRegion();
-    if (!key || !text) return false;
+    const endpoint = region ? `https://${region}.tts.speech.microsoft.com/cognitiveservices/v1` : null;
+
+    console.log('[AZURE] config', {
+        hasKey: !!key,
+        hasRegion: !!region,
+        hasEndpoint: !!endpoint,
+        source: window.__AZURE_SPEECH_KEY ? 'config.local' : (document.querySelector('meta[name="azure-speech-key"]') ? 'inline' : 'none')
+    });
+
+    if (!key || !text) {
+        console.warn('[AZURE] missing config, fallback=none', { key: !!key, textLen: text?.length });
+        return false;
+    }
+
+    console.log('[AZURE] start', text.length);
 
     stopWebSpeech();
     stopTtsAudio();
-
-    const endpoint = `https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`;
 
     const ssml =
         `<speak version="1.0" xml:lang="ja-JP">
@@ -118,28 +325,43 @@ async function speakAzure(text, voiceShortName = "ja-JP-NanamiNeural") {
             .replaceAll('"', "&quot;").replaceAll("'", "&apos;")}</voice>
 </speak>`;
 
-    const res = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-            "Ocp-Apim-Subscription-Key": key,
-            "Content-Type": "application/ssml+xml",
-            // 低容量：16k/32kbps mono mp3（比 24k/48kbps 小很多）
-            "X-Microsoft-OutputFormat": "audio-16khz-32kbitrate-mono-mp3"
-        },
-        body: ssml
-    });
+    let res;
+    try {
+        res = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+                "Ocp-Apim-Subscription-Key": key,
+                "Content-Type": "application/ssml+xml",
+                "X-Microsoft-OutputFormat": "audio-16khz-32kbitrate-mono-mp3"
+            },
+            body: ssml
+        });
+    } catch (e) {
+        console.warn('[AZURE] request fail', e?.message || e);
+        return false;
+    }
 
-    if (!res.ok) return false;
+    if (!res.ok) {
+        console.warn('[AZURE] request fail', res.status);
+        return false;
+    }
+    console.log('[AZURE] request ok', res.status);
 
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
-    const a = new Audio(url);
+    console.log('[AZURE] audio src ready', url.slice(0, 30) + '...', blob.size);
+
+    const a = sharedTtsAudio;
+    a.src = url;
     currentTtsAudio = a;
     try {
+        console.log('[AZURE] play starting');
         await a.play();
+        console.log('[AZURE] play ok');
         a.onended = () => { try { URL.revokeObjectURL(url); } catch { } };
         return true;
-    } catch {
+    } catch (e) {
+        console.warn('[AZURE] play failed', e?.message ?? String(e));
         try { URL.revokeObjectURL(url); } catch { }
         return false;
     }
@@ -394,6 +616,16 @@ console.log('Vue版本:', Vue);
 console.log('開始創建應用...');
 createApp({
     setup() {
+        // [AZURE] Dynamic config loading for Debug Overlay visibility
+        onMounted(() => {
+            const path = 'config.local.js';
+            const script = document.createElement('script');
+            script.src = path;
+            script.onload = () => console.log(`[AZURE] setup() dynamic load OK: ${path}`);
+            script.onerror = () => console.warn(`[AZURE] setup() load FAIL: ${path} (might be expected on Pages)`);
+            document.head.appendChild(script);
+        });
+
         const db = {
             places: [{ j: "部屋", r: "へや", t: "房間" }, { j: "学校", r: "がっこう", t: "學校" }, { j: "図書館", r: "としょかん", t: "圖書館" }, { j: "庭", r: "にわ", t: "院子" }, { j: "教室", r: "きょうしつ", t: "教室" }],
             objects: [
@@ -426,9 +658,43 @@ createApp({
         const SKILLS = ref([]);
         const VOCAB = ref(null);
 
-        const APP_VERSION = "26030300";
+        const APP_VERSION = "26030301";
         const appVersion = ref(APP_VERSION);
+
+        // --- INSERT BEGIN: JPAPP_SETTINGS_CORE_V1 ---
+        const SETTINGS_KEY = 'jpRpgSettingsV1';
+        const settings = reactive({
+            autoReadOnWrong: true,          // Whether to auto-read question after wrong answer
+            correctAdvanceDelayMs: null,    // null = use mode default (1000). Set number to override.
+            wrongAdvanceDelayMs: null,      // null = use mode default (3000). Set number to override.
+            enemyAttackMode: 'atb',         // 'atb' | 'turn' — TODO: implement turn mode
+            feedbackStyle: 'combat'         // 'combat' | 'oneesan'
+        });
+        const _settingsDefaults = { autoReadOnWrong: true, correctAdvanceDelayMs: null, wrongAdvanceDelayMs: null, enemyAttackMode: 'atb', feedbackStyle: 'combat' };
+        const loadSettings = () => {
+            try {
+                const raw = localStorage.getItem(SETTINGS_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    Object.keys(_settingsDefaults).forEach(k => {
+                        if (parsed[k] !== undefined) settings[k] = parsed[k];
+                    });
+                }
+            } catch (e) { console.warn('[Settings] load error', e); }
+        };
+        const saveSettings = () => {
+            try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...settings })); } catch (e) { }
+        };
+        loadSettings();
+        watch(settings, saveSettings, { deep: true });
+        window.__settingsDebug = {
+            get: () => ({ ...settings }),
+            set: (key, val) => { if (key in settings) { settings[key] = val; saveSettings(); console.log('[Settings]', key, '=', val); } else { console.warn('[Settings] unknown key:', key); } },
+            reset: () => { Object.assign(settings, _settingsDefaults); saveSettings(); console.log('[Settings] reset'); },
+        };
+        // --- INSERT END: JPAPP_SETTINGS_CORE_V1 ---
         const isChangelogOpen = ref(false);
+        const uiMenuOpen = ref(false);
         // --- FLICK MODE STATE (Patch 2 & 3) ---
         const answerMode = ref('tap');
         const flickState = reactive({
@@ -637,7 +903,9 @@ createApp({
             }
 
             // Play specific audio for skill — use preloaded assets from audioPool
-            const playSkillSfx = (url) => {
+            // Play specific audio for skill — use preloaded assets from audioPool
+            // JPAPP_IOS_AUDIO_PIPELINE
+            const playSkillSfx = async (url) => {
                 let a = audioPool.get(url);
                 if (!a) {
                     a = new Audio(url);
@@ -651,9 +919,55 @@ createApp({
                         a._connected = true;
                     } catch (e) { /* already connected */ }
                 }
+
+                // E) Anti-overlap
                 a.pause();
                 a.currentTime = 0;
-                a.play().catch(e => console.warn('[SkillSfx] play failed:', e));
+
+                const isMobileOrIOS = /iPad|iPhone|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+
+                try {
+                    // D) Silence Prime (Warm up) for iOS
+                    if (isMobileOrIOS) {
+                        if (!window._sharedPrimeAudio) {
+                            window._sharedPrimeAudio = new Audio("data:audio/mp3;base64,//OlkAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAFAAAH8AADBQQOExUaHh8lJygqMTIzNzo9P0JFREQv");
+                            window._sharedPrimeAudio.preload = 'auto';
+                        }
+                        window._sharedPrimeAudio.pause();
+                        window._sharedPrimeAudio.currentTime = 0;
+                        await window._sharedPrimeAudio.play().catch(() => { });
+                        // Wait briefly for the prime to engage the audio session
+                        await new Promise(r => setTimeout(r, 80));
+                    }
+
+                    // B) Ensure playable before play
+                    if (a.readyState >= 3) {
+                        // C) Next microtask await before play
+                        a.currentTime = 0;
+                        await new Promise(r => requestAnimationFrame(() => r()));
+                        await a.play();
+                    } else {
+                        await new Promise((resolve) => {
+                            const onCanPlay = () => {
+                                a.removeEventListener('canplay', onCanPlay);
+                                clearTimeout(timeout);
+                                requestAnimationFrame(() => {
+                                    a.currentTime = 0;
+                                    a.play().catch(e => console.warn('[SkillSfx] play failed (after canplay):', e)).finally(resolve);
+                                });
+                            };
+                            const timeout = setTimeout(() => {
+                                a.removeEventListener('canplay', onCanPlay);
+                                a.currentTime = 0;
+                                a.play().catch(e => console.warn('[SkillSfx] play failed (timeout fallback):', e)).finally(resolve);
+                            }, 250);
+                            a.addEventListener('canplay', onCanPlay);
+                            a.load(); // Force load
+                        });
+                    }
+                } catch (e) {
+                    console.warn('[SkillSfx] pipeline failed:', e);
+                }
             };
 
             const sfxBase = `assets/audio/skill/${id.toLowerCase()}`;
@@ -961,9 +1275,28 @@ createApp({
         let questionStartTime = 0;
         let evasionBuffTimerId = null;
 
+        // ── TTS/SFX Ducking ──────────────────────────────────────────────────────────
+        let _sfxDuckTimer = null;
+        let _voiceLockUntil = 0; // ms timestamp; suppresses competing SFX during TTS
+
         // Pause / Resume Logic
         let wasTimerRunning = false;
         let wasPauseTimerRunning = false;
+
+        const startSfxDuck = (durationMs = 1800) => {
+            if (!sfxGain.value || !audioCtx.value) return;
+            if (window.__AUDIO_DEBUG) console.log('[DUCK] start', durationMs + 'ms');
+            clearTimeout(_sfxDuckTimer);
+            sfxGain.value.gain.setTargetAtTime(sfxVolume.value * 0.15, audioCtx.value.currentTime, 0.05);
+            _voiceLockUntil = Date.now() + durationMs;
+            _sfxDuckTimer = setTimeout(() => {
+                if (sfxGain.value && audioCtx.value) {
+                    sfxGain.value.gain.setTargetAtTime(sfxVolume.value, audioCtx.value.currentTime, 0.2);
+                    if (window.__AUDIO_DEBUG) console.log('[DUCK] end');
+                }
+                _voiceLockUntil = 0;
+            }, durationMs);
+        };
 
         const pauseBattle = () => {
             wasTimerRunning = wasTimerRunning || !!timerId;
@@ -1021,6 +1354,22 @@ createApp({
             } catch (_) { }
         };
 
+        const BGM_BASE = 'assets/audio/bgm/';
+        const currentBattleBgmPick = ref(BGM_BASE + 'bgm.mp3');
+
+        const pickBattleBgm = (level) => {
+            const lv = Number(level) || parseInt(level, 10) || 1;
+            if (lv === 2) {
+                currentBattleBgmPick.value = BGM_BASE + 'BGM_2.mp3';
+            } else if (lv === 3) {
+                currentBattleBgmPick.value = BGM_BASE + 'BGM_3.mp3';
+            } else {
+                currentBattleBgmPick.value = BGM_BASE + 'bgm.mp3';
+            }
+            console.log(`[BGM] pickBattleBgm level=${level} lv=${lv} picked=${currentBattleBgmPick.value}`);
+            if (window.__overlayPush) window.__overlayPush('[BGM]', `pickBattleBgm level=${level} picked=${currentBattleBgmPick.value}`);
+        };
+
         const preloadAllAudio = async () => {
             if (isPreloading.value) return;
             isPreloading.value = true;
@@ -1038,7 +1387,7 @@ createApp({
                 gameover: 'assets/audio/sfx_gameover.mp3'
             };
 
-            const criticalAssets = ['assets/audio/bgm.mp3', sfxPaths.click, sfxPaths.pop];
+            const criticalAssets = [BGM_BASE + 'bgm.mp3', BGM_BASE + 'BGM_2.mp3', BGM_BASE + 'BGM_3.mp3', sfxPaths.click, sfxPaths.pop];
             const promises = [];
 
             const loadAsset = (url) => {
@@ -1046,7 +1395,10 @@ createApp({
                 return new Promise((res) => {
                     const a = new Audio();
                     a.addEventListener('canplaythrough', () => res(), { once: true });
-                    a.addEventListener('error', () => res(), { once: true });
+                    a.addEventListener('error', (e) => {
+                        console.warn('[BGM] load failed', url);
+                        res();
+                    }, { once: true });
                     a.src = url;
                     a.load();
                     audioPool.set(url, a);
@@ -1113,12 +1465,11 @@ createApp({
             console.log('[AudioPreload] Finished. Pool size:', audioPool.size);
 
             // Pre-connect HTMLMediaElement SFX (skill vocals, win, gameover, fanfare) to sfxGain.
-            // IMPORTANT: skip bgm.mp3 — it must connect to bgmGain, handled in initAudio.
-            const BGM_URL = 'assets/audio/bgm.mp3';
+            // IMPORTANT: skip bgm files — they must connect to bgmGain, handled in initAudio.
             const tryPreConnect = () => {
                 if (!audioCtx.value || !sfxGain.value) return;
                 audioPool.forEach((a, url) => {
-                    if (url === BGM_URL) return; // must stay on bgmGain
+                    if (url.includes('/bgm')) return; // must stay on bgmGain
                     if (!a._connected) {
                         try {
                             a.crossOrigin = 'anonymous';
@@ -1182,11 +1533,11 @@ createApp({
             audioInited.value = true;
             await initAudioCtx();
             try {
-                let bgm = audioPool.get('assets/audio/bgm.mp3');
+                let bgm = audioPool.get(BGM_BASE + 'bgm.mp3');
                 if (!bgm) {
-                    bgm = new Audio('assets/audio/bgm.mp3');
+                    bgm = new Audio(BGM_BASE + 'bgm.mp3');
                     bgm.crossOrigin = "anonymous";
-                    audioPool.set('assets/audio/bgm.mp3', bgm);
+                    audioPool.set(BGM_BASE + 'bgm.mp3', bgm);
                 }
                 bgmAudio.value = bgm;
                 bgmAudio.value.loop = true;
@@ -1255,9 +1606,42 @@ createApp({
             if (!audioInited.value) await initAudio();
             if (audioCtx.value && audioCtx.value.state === 'suspended') await audioCtx.value.resume();
             updateGainVolumes();
-            if (bgmAudio.value && bgmAudio.value.paused) {
-                bgmAudio.value.play().catch(() => { });
+
+            const expectedUrl = currentBattleBgmPick.value || (BGM_BASE + 'bgm.mp3');
+            const expectedAbs = new URL(expectedUrl, window.location.href).href;
+            const curSrc = bgmAudio.value?.src || '';
+
+            if (bgmAudio.value && curSrc !== expectedAbs) {
+                console.log('[BGM] applied', { level: currentLevel.value, src: expectedAbs });
+                bgmAudio.value.pause();
+                bgmAudio.value.src = expectedAbs;
+                bgmAudio.value.currentTime = 0;
+                bgmAudio.value.load();
             }
+
+            if (bgmAudio.value && bgmAudio.value.paused) {
+                bgmAudio.value.play().catch(e => console.warn('[BGM] play failed', e.name, e.message));
+            }
+        };
+        const ensureBattleBgmApplied = (forcePlay) => {
+            playBgm();
+        };
+
+        const resumeBattleBgm = (resumeAbs) => {
+            if (!bgmEnabled.value || isMuted.value || bgmVolume.value <= 0) return;
+            if (!bgmAudio.value) return;
+            bgmAudio.value.pause();
+            const curSrc = bgmAudio.value.src || '';
+            if (curSrc !== resumeAbs) {
+                bgmAudio.value.src = resumeAbs;
+                bgmAudio.value.load();
+            }
+            bgmAudio.value.currentTime = 0;
+            bgmAudio.value.play().catch(e => {
+                needsUserGestureToResumeBgm.value = true;
+                console.warn('[BGM] resume blocked', e.name, e.message);
+            });
+            console.log('[BGM] resumed after fanfare', resumeAbs);
         };
 
         watch([isMenuOpen, isCodexOpen, isSkillUnlockModalOpen, isMistakesOpen, bgmVolume, masterVolume, isMuted, sfxVolume], () => {
@@ -1287,9 +1671,71 @@ createApp({
         const pauseBgm = () => {
             if (bgmAudio.value && !bgmAudio.value.paused) bgmAudio.value.pause();
         };
+
+        // --- INSERT BEGIN: JPAPP_UI_SFX_HTMLAUDIO_V1 ---
+        // Polyphony pool: 4 HTMLAudioElement per sound, round-robin index.
+        // iOS cannot reliably replay a single Audio element immediately after pause();
+        // rotating through 4 instances avoids the iOS re-use constraint entirely.
+        const _isMobileSfx = /iPad|iPhone|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 2);
+        const POLY = 4; // pool size per sound
+        const _uiSfxSrcMap = {
+            hit: 'assets/audio/sfx_hit.mp3',
+            miss: 'assets/audio/mmiss.mp3',
+            potion: 'assets/audio/sfx_potion.mp3',
+            click: 'assets/audio/sfx_click.mp3',
+            damage: 'assets/audio/damage.mp3',
+            fanfare: 'assets/audio/fanfare.mp3',
+            pop: 'assets/audio/pop.mp3',
+            win: 'assets/audio/win.mp3',
+            gameover: 'assets/audio/sfx_gameover.mp3',
+        };
+        // pool: Map<name, {els: Audio[], idx: number}>
+        const _polyPool = new Map();
+        const _getOrCreatePoly = (name) => {
+            if (_polyPool.has(name)) return _polyPool.get(name);
+            const src = _uiSfxSrcMap[name];
+            if (!src) return null;
+            const els = Array.from({ length: POLY }, () => {
+                const a = new Audio(src);
+                a.preload = 'auto';
+                if ('playsInline' in a) a.playsInline = true;
+                return a;
+            });
+            const entry = { els, idx: 0 };
+            _polyPool.set(name, entry);
+            return entry;
+        };
+        const playUiSfx = (name) => {
+            if (isMuted.value) return;
+            // Suppress competing damage/miss SFX while TTS sentence is reading
+            if (_voiceLockUntil > Date.now() && (name === 'damage' || name === 'miss')) {
+                if (window.__AUDIO_DEBUG) console.log('[DUCK] playUiSfx suppressed:', name);
+                return;
+            }
+            const entry = _getOrCreatePoly(name);
+            if (!entry) return;
+            const a = entry.els[entry.idx % POLY];
+            entry.idx++;
+            a.pause();
+            a.currentTime = 0;
+            a.play().catch(e => console.warn('[SFX] fail', name, e.message));
+        };
+        // Pre-warm hit+miss pools on first touch so iOS audio session is primed
+        const _prewarmUiSfx = () => { _getOrCreatePoly('hit'); _getOrCreatePoly('miss'); };
+        document.addEventListener('pointerdown', _prewarmUiSfx, { once: true, capture: true });
+        document.addEventListener('touchstart', _prewarmUiSfx, { once: true, capture: true, passive: true });
+        // --- INSERT END: JPAPP_UI_SFX_HTMLAUDIO_V1 ---
         const playSfx = (name) => {
-            if (!audioInited.value) return;
-            if (audioCtx.value && audioCtx.value.state === 'suspended') audioCtx.value.resume();
+            if (!audioInited.value) {
+                console.warn('[playSfx] audioInited=false, attempting init for:', name);
+                initAudioCtx().then(() => { initAudio().then(() => playSfx(name)); });
+                return;
+            }
+            // Suppress competing damage/miss SFX while TTS sentence is reading
+            if (_voiceLockUntil > Date.now() && (name === 'damage' || name === 'miss')) {
+                if (window.__AUDIO_DEBUG) console.log('[DUCK] playSfx suppressed:', name);
+                return;
+            }
 
             const srcMap = {
                 hit: 'assets/audio/sfx_hit.mp3',
@@ -1327,26 +1773,34 @@ createApp({
             // ── AudioBuffer path (short SFX) — zero-latency, iOS-safe ─────────────────────
             const rawBuf = bufferPool.get(src);
             if (rawBuf && audioCtx.value) {
-                const playDecoded = (decoded) => {
-                    try {
-                        const bsn = audioCtx.value.createBufferSource();
-                        bsn.buffer = decoded;
-                        // Route through sfxGain so SFX volume slider works
-                        bsn.connect(sfxGain.value || masterGain.value);
-                        bsn.start(0);
-                    } catch (_) { }
+                const doPlay = () => {
+                    const playDecoded = (decoded) => {
+                        try {
+                            const bsn = audioCtx.value.createBufferSource();
+                            bsn.buffer = decoded;
+                            bsn.connect(sfxGain.value || masterGain.value);
+                            bsn.start(0);
+                        } catch (e) {
+                            console.warn('[playSfx] bsn.start failed:', e.message);
+                        }
+                    };
+                    if (rawBuf instanceof AudioBuffer) {
+                        playDecoded(rawBuf);
+                    } else {
+                        audioCtx.value.decodeAudioData(rawBuf.slice(0)).then(decoded => {
+                            bufferPool.set(src, decoded);
+                            playDecoded(decoded);
+                        }).catch(e => { console.warn('[playSfx] decode failed:', e); });
+                    }
                 };
-                if (rawBuf instanceof AudioBuffer) {
-                    // Already decoded from a previous call
-                    playDecoded(rawBuf);
+
+                // CRITICAL: must await resume before starting BufferSourceNode on iOS
+                if (audioCtx.value.state !== 'running') {
+                    audioCtx.value.resume().then(doPlay).catch(doPlay);
                 } else {
-                    // First time: decode ArrayBuffer then store the AudioBuffer for reuse
-                    audioCtx.value.decodeAudioData(rawBuf.slice(0)).then(decoded => {
-                        bufferPool.set(src, decoded); // replace ArrayBuffer with AudioBuffer
-                        playDecoded(decoded);
-                    }).catch(() => { });
+                    doPlay();
                 }
-                return; // done, no need for HTMLMediaElement path
+                return;
             }
 
             // ── HTMLMediaElement fallback (longer audio: gameover, win, fanfare) ───────────
@@ -1365,8 +1819,9 @@ createApp({
                 }
 
                 a.currentTime = 0;
-                a.play().catch(() => { });
-            } catch (_) { }
+                a.play().catch(e => { console.warn('[playSfx] HTMLMedia play failed:', e.message); });
+                return a;
+            } catch (e) { console.warn('[playSfx] HTMLMedia error:', e); return null; }
         };
 
         const clearTimer = () => {
@@ -1531,6 +1986,10 @@ createApp({
         const startFlick = (e, opt) => {
             if (answerMode.value !== 'flick' || monsterDead.value || playerDead.value || isFinished.value || hasSubmitted.value) return;
 
+            // Wake the audio context via user gesture before the flick lands
+            initAudioCtx();
+            if (!audioInited.value) initAudio();
+
             const el = e.currentTarget;
             el.setPointerCapture(e.pointerId);
 
@@ -1551,6 +2010,7 @@ createApp({
 
         const endFlick = (e) => {
             if (!flickState.isArmed) return;
+            if (window.primeVoiceOnGesture) window.primeVoiceOnGesture();
 
             const dx = e.clientX - flickState.startX;
             const dy = e.clientY - flickState.startY;
@@ -1593,7 +2053,7 @@ createApp({
         };
 
         const runTimerLogic = () => {
-            if (isFinished.value || monsterDead.value || playerDead.value || (hasSubmitted.value && !isCurrentCorrect.value) || showLevelSelect.value) {
+            if (isFinished.value || monsterDead.value || playerDead.value || showLevelSelect.value) {
                 if (showLevelSelect.value || isFinished.value) {
                     clearTimer();
                 }
@@ -1667,16 +2127,8 @@ createApp({
                 //     return;
                 // }
 
-                // Correcting the snippet's syntax and placing it as shown:
                 if (showLevelSelect.value || isFinished.value) {
                     clearTimer();
-                }
-                if (!isFinished.value && !playerDead.value) { // This condition will only be true if the outer condition is met by monsterDead, hasSubmitted, or showLevelSelect, but NOT isFinished or playerDead.
-                    // This is the code from the user's snippet.
-                    // It's logically problematic given the outer `if` condition.
-                    // However, I must apply the change faithfully.
-                    applyTurnLogic(); // Advance SP buffs/debuffs duration
-                    startTimer();
                 }
                 return;
             }
@@ -1772,17 +2224,38 @@ createApp({
         };
         const addMistake = () => {
             const q = currentQuestion.value;
+            // Build text for TTS playback later
+            let azureTextBuilder = '';
+            (q.segments || []).forEach(s => {
+                if (s.isBlank) {
+                    let ans = q.answers[s.blankIndex];
+                    if (Array.isArray(ans)) ans = ans[0];
+                    azureTextBuilder += ans;
+                } else {
+                    azureTextBuilder += s.text;
+                }
+            });
+            let cleanQuestionText = azureTextBuilder.replace(/[_ ]/g, '').replace(/（[^）]*）|\([^)]*\)/g, '');
+            if (!cleanQuestionText) cleanQuestionText = azureTextBuilder.replace(/[_ ]/g, '') || '';
+
             const entry = {
                 prompt: q.chinese,
                 correct: q.answers,
                 choices: q.choices || null,
                 grammarTip: q.grammarTip || null,
                 timestamp: new Date().toISOString(),
-                levelId: currentLevel.value
+                levelId: currentLevel.value,
+                sentenceText: cleanQuestionText
             };
             mistakes.value.unshift(entry);
             if (mistakes.value.length > 20) mistakes.value.length = 20;
             saveMistakes();
+        };
+
+        const playMistakeVoice = async (m) => {
+            if (!m.sentenceText) return;
+            initAudio(); // Ensure audio context if needed
+            await speakAzure(m.sentenceText, "ja-JP-NanamiNeural");
         };
         const clearMistakes = () => { mistakes.value = []; saveMistakes(); };
 
@@ -1808,16 +2281,27 @@ createApp({
                         silentSrc.start(0);
                     } catch (_) { }
 
+                    if (!window._audioWarmedUp) {
+                        window._audioWarmedUp = true;
+                        try {
+                            const dummyAudio = new Audio("data:audio/mp3;base64,//OlkAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAFAAAH8AADBQQOExUaHh8lJygqMTIzNzo9P0JFREQv");
+                            dummyAudio.muted = true;
+                            dummyAudio.play().then(() => {
+                                dummyAudio.pause();
+                                dummyAudio.muted = false;
+                            }).catch(() => { });
+                        } catch (e) { }
+                    }
+
                     // Pre-connect any pool items that loaded before AudioContext existed.
-                    // IMPORTANT: skip bgm.mp3 — it connects to bgmGain in initAudio.
-                    const BGM_URL = 'assets/audio/bgm.mp3';
+                    // IMPORTANT: skip bgm files — they connect to bgmGain in initAudio.
                     if (window._preConnectRetry) {
                         clearTimeout(window._preConnectRetry);
                         window._preConnectRetry = null;
                     }
                     if (sfxGain.value) {
                         audioPool.forEach((a, url) => {
-                            if (url === BGM_URL) return;
+                            if (url.includes('/bgm')) return;
                             if (!a._connected) {
                                 try {
                                     a.crossOrigin = 'anonymous';
@@ -1860,17 +2344,37 @@ createApp({
         const playCorrectBeep = () => { playBeep(523, 0.15); playBeep(659, 0.15, 'sine'); };
         const playWrongBeep = () => { playBeep(200, 0.25, 'sawtooth'); };
 
+        const applyBattleBgmNow = (lv) => {
+            const srcRel = currentBattleBgmPick.value || (BGM_BASE + 'bgm.mp3');
+            const srcAbs = new URL(srcRel, window.location.href).href;
+            if (!bgmAudio.value) return;
+            bgmAudio.value.pause();
+            bgmAudio.value.src = srcAbs;
+            bgmAudio.value.load();
+            bgmAudio.value.play().catch(e => {
+                needsUserGestureToResumeBgm.value = true;
+                console.warn('[BGM] play blocked', e.name);
+                window.__overlayPush?.('[BGM]', `play blocked: ${e.message}`);
+            });
+            console.log('[BGM] set src', { lv, src: srcAbs });
+            window.__overlayPush?.('[BGM]', `apply src=${srcAbs}`);
+        };
+
         const startLevel = async (level) => {
+            console.log('[BGM] startLevel entered', level, typeof level);
+            window.__overlayPush?.('[BGM]', `startLevel level=${level} type=${typeof level}`);
+            const lv = Number(level) || parseInt(level, 10) || 1;
             initAudioCtx(); // JPAPP_IOS_GESTURE: Run immediately on click
             stopAllAudio();
+            pickBattleBgm(lv); // JPAPP_RANDOM_BGM
             await preloadAllAudio(); // JPAPP_AUDIO_PRELOAD
             await initAudio();
+            applyBattleBgmNow(lv);
             playSfx('click');
             showLevelSelect.value = false;
-            currentLevel.value = level;
-            initGame(level);
+            currentLevel.value = lv;
+            initGame(lv);
             needsUserGestureToResumeBgm.value = false;
-            ensureBgmPlaying('startLevel');
         };
         const usePotion = () => {
             initAudioCtx(); // Capture gesture
@@ -2647,8 +3151,10 @@ createApp({
                     text += s.text;
                 }
             });
-            // Clean up underscores, spaces, and anything inside brackets (e.g. annotations)
-            return text.replace(/[_ ]/g, '').replace(/（.*?）|\(.*?\)/g, '');
+            // Clean underscores/spaces and bracket annotations — use char-class to avoid over-stripping
+            let clean = text.replace(/[_ ]/g, '').replace(/（[^）]*）|\([^)]*\)/g, '');
+            if (!clean) clean = text.replace(/[_ ]/g, ''); // fallback: keep raw if regex nuked everything
+            return clean;
         };
 
         let JA_VOICE = null;
@@ -2685,7 +3191,11 @@ createApp({
                     azureTextBuilder += s.text;
                 }
             });
-            const cleanQuestionText = azureTextBuilder.replace(/[_ ]/g, '').replace(/（.*?）|\(.*?\)/g, '');
+            let cleanQuestionText = azureTextBuilder.replace(/[_ ]/g, '').replace(/（[^）]*）|\([^)]*\)/g, '');
+            if (!cleanQuestionText) {
+                console.warn('[playQuestionVoice] empty after clean, falling back to raw:', azureTextBuilder);
+                cleanQuestionText = azureTextBuilder.replace(/[_ ]/g, '') || '';
+            }
             if (!cleanQuestionText) return;
 
             voicePlayedForCurrentQuestion.value = true;
@@ -2698,6 +3208,56 @@ createApp({
             }
             return Array.isArray(ans) ? ans : [ans];
         };
+        let lastPraiseTime = 0;
+        let lastPraiseText = '';
+        const ONEESAN_PRAISES = ['せいかい！', 'ナイス！', 'いいね！', 'すごい！', 'えぐっ！', 'まじか！', '天才か！'];
+
+        const praiseToast = ref({ show: false, text: '' });
+        let praiseToastTimer = null;
+        const showPraiseToast = (text, ms = 900) => {
+            praiseToast.value.text = text;
+            praiseToast.value.show = true;
+            if (praiseToastTimer) clearTimeout(praiseToastTimer);
+            praiseToastTimer = setTimeout(() => { praiseToast.value.show = false; }, ms);
+        };
+
+        const playCorrectFeedback = (combo) => {
+            initAudio();
+            const style = settings.feedbackStyle || 'combat';
+
+            // Ensure Flick has immediate audio feedback if TTS fails to play rapidly
+            if (answerMode.value === 'flick') {
+                if (_isMobileSfx) playUiSfx('hit'); else playSfx('hit');
+            }
+
+            if (style === 'combat') {
+                if ([3, 5, 7, 10, 15, 20].includes(combo)) {
+                    if (_isMobileSfx) playUiSfx('pop'); else playSfx('pop');
+                }
+            } else if (style === 'oneesan') {
+                let praiseIndex = 0;
+                if (combo >= 20) praiseIndex = 6;
+                else if (combo >= 15) praiseIndex = 5;
+                else if (combo >= 10) praiseIndex = 4;
+                else if (combo >= 7) praiseIndex = 3;
+                else if (combo >= 5) praiseIndex = 2;
+                else if (combo >= 3) praiseIndex = 1;
+
+                const text = ONEESAN_PRAISES[praiseIndex];
+                showPraiseToast(text);
+
+                const milestones = [3, 5, 7, 10, 15, 20];
+                if (milestones.includes(combo)) {
+                    const now = Date.now();
+                    if (now - lastPraiseTime >= 1500 && lastPraiseText !== text) {
+                        lastPraiseTime = now;
+                        lastPraiseText = text;
+                        playTtsKey(`ui.praise_${praiseIndex}`, text);
+                    }
+                }
+            }
+        };
+
         const checkAnswer = () => {
             if (hasSubmitted.value) return;
             hasSubmitted.value = true;
@@ -2732,17 +3292,17 @@ createApp({
 
             if (isCurrentCorrect.value) {
                 correctAnswersAmount.value++;
-                initAudio();
-                playTtsKey("ui.correct", "せいかい！");
+                playCorrectFeedback(comboCount.value + 1);
 
                 const isPlayerMiss = Math.random() < 0.05;
                 if (isPlayerMiss) {
-                    playSfx('miss');
+                    // Use HTMLAudio on mobile for guaranteed playback; WebAudio on desktop
+                    if (_isMobileSfx) { playUiSfx('miss'); } else { playSfx('miss'); }
                     pushBattleLog(`攻擊被閃避了！沒造成傷害！`, 'info');
                 } else {
                     monsterHit.value = true;
                     setTimeout(() => { monsterHit.value = false; }, 250);
-                    playSfx('hit');
+                    if (_isMobileSfx) { playUiSfx('hit'); } else { playSfx('hit'); }
 
                     comboCount.value++;
                     if (comboCount.value > maxComboCount.value) maxComboCount.value = comboCount.value;
@@ -2779,52 +3339,94 @@ createApp({
                     }
                 }
 
-                // Immediate next for correct answer
-                setTimeout(() => { nextQuestion(); }, 600);
+                // Action logic handled; unified auto-advance happens at end of checkAnswer
             } else {
-                initAudio();
-                playSfx('miss');
+                // === WRONG ANSWER BRANCH ===
                 comboCount.value = 0;
                 addMistake();
+
+                // B) SFX FIRST — wrong sfx before any voice/TTS
+                initAudio();
+                // Use polyphony HTMLAudio pool on mobile for guaranteed playback
+                if (_isMobileSfx) { playUiSfx('miss'); } else { playSfx('miss'); }
                 pushBattleLog(`攻擊失敗！`, 'info');
-                // Play voice only on wrong answer per request
-                // Auto-show grammar detail on mistake
-                stopTtsAudio();
-                stopWebSpeech();
-                playTtsKey("ui.wrong", "ちがう…！");
 
-                // Build prompt text inserting correct answer into the blanks
-                let azureTextBuilder = '';
-                currentQuestion.value.segments.forEach(s => {
-                    if (s.isBlank) {
-                        let ans = currentQuestion.value.answers[s.blankIndex];
-                        if (Array.isArray(ans)) ans = ans[0];
-                        azureTextBuilder += ans;
-                    } else {
-                        azureTextBuilder += s.text;
-                    }
-                });
-                const cleanQuestionText = azureTextBuilder.replace(/[_ ]/g, '').replace(/（.*?）|\(.*?\)/g, '');
+                // Wrong answer: monster does NOT get hit (monsterHit stays false).
+                // The player is the one who failed; no monster VFX here.
 
-                // Play corrected question text 2 seconds after ui.wrong
-                setTimeout(() => {
-                    if (isFinished.value) return;
-                    speakAzure(cleanQuestionText, "ja-JP-NanamiNeural");
-                }, 2000);
+                // Wrong-answer feedback voice (disabled to allow sentence reading without overlap)
+                // setTimeout(() => { playTtsKey("ui.wrong", "ちがう…！"); }, 150);
 
-                // Stay on this question for manual 'Next' for tap mode, auto-advance for flick mode
-                if (answerMode.value === 'flick') {
-                    setTimeout(() => {
-                        if (!isFinished.value && !monsterDead.value && !playerDead.value) {
-                            nextQuestion();
+                // --- WRONG BRANCH TIMERS ---
+                // Clear any pending wrong-answer timers from previous question
+                if (window.__TTS_ON_WRONG_TIMEOUT) { clearTimeout(window.__TTS_ON_WRONG_TIMEOUT); window.__TTS_ON_WRONG_TIMEOUT = null; }
+                if (window.__FLICK_ADVANCE_TIMEOUT) { clearTimeout(window.__FLICK_ADVANCE_TIMEOUT); window.__FLICK_ADVANCE_TIMEOUT = null; }
+
+                // D) Auto-read question text (if setting enabled), fires at 350ms
+                if (settings.autoReadOnWrong) {
+                    // Build correct sentence text from segments
+                    let azureTextBuilder = '';
+                    currentQuestion.value.segments.forEach(s => {
+                        if (s.isBlank) {
+                            let ans = currentQuestion.value.answers[s.blankIndex];
+                            if (Array.isArray(ans)) ans = ans[0];
+                            azureTextBuilder += ans;
+                        } else {
+                            azureTextBuilder += s.text;
                         }
-                    }, 3500); // Allow time for the ui.wrong and corrected Japanese phrase to play
+                    });
+                    let cleanQuestionText = azureTextBuilder.replace(/[_ ]/g, '').replace(/（[^）]*）|\([^)]*\)/g, '');
+                    if (!cleanQuestionText) {
+                        console.warn('[TTS_ON_WRONG] empty after clean, falling back to raw:', azureTextBuilder);
+                        cleanQuestionText = azureTextBuilder.replace(/[_ ]/g, '') || '';
+                    }
+                    const ttsQuestionIdx = currentIndex.value; // question-key guard
+
+                    if (!cleanQuestionText) {
+                        console.warn('[TTS_ON_WRONG] raw also empty, skipping TTS.');
+                    } else {
+                        // Duck SFX immediately so monster damage won't compete when TTS fires
+                        startSfxDuck(1800);
+                        if (window.__AUDIO_DEBUG) console.log('[TTS] scheduled idx=', ttsQuestionIdx);
+                        window.__TTS_ON_WRONG_TIMEOUT = setTimeout(() => {
+                            // Guard: only read if SAME question, game alive
+                            if (currentIndex.value === ttsQuestionIdx && hasSubmitted.value && !isCurrentCorrect.value && !monsterDead.value && !playerDead.value && !isFinished.value && !showLevelSelect.value) {
+                                if (window.__AUDIO_DEBUG) console.log('[TTS] fired idx=', ttsQuestionIdx);
+                                speakAzure(cleanQuestionText, "ja-JP-NanamiNeural");
+                            } else {
+                                if (window.__AUDIO_DEBUG) console.warn('[TTS] cancelled idx=', currentIndex.value, 'scheduled=', ttsQuestionIdx);
+                            }
+                        }, 220);
+                    }
                 }
+
+                // C) Wrong path handles specific TTS logic above
+            }
+
+            // === AUTO-ADVANCE FOR BOTH CORRECT AND WRONG ===
+            if (window.__AUTO_ADVANCE_TIMEOUT) { clearTimeout(window.__AUTO_ADVANCE_TIMEOUT); window.__AUTO_ADVANCE_TIMEOUT = null; }
+
+            let delayMs = isCurrentCorrect.value
+                ? (settings.correctAdvanceDelayMs !== null && typeof settings.correctAdvanceDelayMs === 'number' ? settings.correctAdvanceDelayMs : 1000)
+                : (settings.wrongAdvanceDelayMs !== null && typeof settings.wrongAdvanceDelayMs === 'number' ? settings.wrongAdvanceDelayMs : 3000);
+
+            if (delayMs > 0) {
+                window.__AUTO_ADVANCE_TIMEOUT = setTimeout(() => {
+                    if (!isFinished.value && !monsterDead.value && !playerDead.value && !showLevelSelect.value) {
+                        // Cancel pending TTS before advancing
+                        if (window.__TTS_ON_WRONG_TIMEOUT) { clearTimeout(window.__TTS_ON_WRONG_TIMEOUT); window.__TTS_ON_WRONG_TIMEOUT = null; }
+                        nextQuestion();
+                    }
+                }, delayMs);
             }
         };
 
         const nextQuestion = () => {
             showGrammarDetail.value = false;
+            // Cancel any pending wrong-answer timers from previous question
+            if (window.__TTS_ON_WRONG_TIMEOUT) { clearTimeout(window.__TTS_ON_WRONG_TIMEOUT); window.__TTS_ON_WRONG_TIMEOUT = null; }
+            if (window.__FLICK_ADVANCE_TIMEOUT) { clearTimeout(window.__FLICK_ADVANCE_TIMEOUT); window.__FLICK_ADVANCE_TIMEOUT = null; }
+            if (window.__AUTO_ADVANCE_TIMEOUT) { clearTimeout(window.__AUTO_ADVANCE_TIMEOUT); window.__AUTO_ADVANCE_TIMEOUT = null; }
             initAudio();
             if (needsUserGestureToResumeBgm.value) { ensureBgmPlaying('nextQuestion'); needsUserGestureToResumeBgm.value = false; }
             playSfx('click');
@@ -3038,8 +3640,195 @@ createApp({
             window.location.reload();
         };
 
+        // --- INSERT BEGIN: JPAPP_MOBILE_CORNER_MENU_V1 ---
+        onMounted(() => {
+            window.__overlayPush?.('[BGM]', 'BOOT ' + Date.now());
+            // --- GLOBAL ONE-SHOT AUDIO UNLOCK ---
+            // Ensures AudioContext is ready on ANY first user touch/click,
+            // so flick and tap modes are both covered before any answer happens.
+            const unlockAudioOnce = () => {
+                initAudioCtx().then(() => {
+                    if (!audioInited.value) initAudio();
+                });
+            };
+            document.addEventListener('pointerdown', unlockAudioOnce, { once: true, capture: true });
+            document.addEventListener('touchstart', unlockAudioOnce, { once: true, capture: true, passive: true });
+            // --- END GLOBAL AUDIO UNLOCK ---
+
+            // --- INSERT: JPAPP_TAP_CHOICES_CLASS_INJECT_V1 ---
+            // Add .jp-tap-choices to the tap mode choices div so CSS can select it reliably.
+            // The div re-renders when hasSubmitted/answerMode changes, so we watch for it.
+            const injectTapChoicesClass = () => {
+                // The tap choices div sibling of #question-area: has class "flex flex-wrap justify-center gap-3 w-full"
+                // but NOT class "flex-col" (that's its parent). Select by its unique gap-3 + w-full combination.
+                const el = document.querySelector('#question-area ~ .flex.flex-wrap.justify-center.gap-3');
+                if (el && !el.classList.contains('jp-tap-choices')) {
+                    el.classList.add('jp-tap-choices');
+                }
+            };
+            const tapChoicesObserver = new MutationObserver(injectTapChoicesClass);
+            tapChoicesObserver.observe(document.body, { childList: true, subtree: true });
+            watch([answerMode, hasSubmitted], () => {
+                nextTick(injectTapChoicesClass);
+            });
+            injectTapChoicesClass();
+            // --- END TAP_CHOICES_CLASS_INJECT ---
+
+            if (!document.getElementById('cornerMenu')) {
+                const cornerMenu = document.createElement('div');
+                cornerMenu.id = 'cornerMenu';
+                cornerMenu.innerHTML = `
+                    <div class="corner-menu-items">
+                        <button class="corner-menu-btn" data-target="技能">
+                            <span style="font-size:18px;">📖</span><span>技能</span>
+                        </button>
+                        <button class="corner-menu-btn" data-target="回復藥水">
+                            <span style="font-size:18px;">🧪</span><span>道具</span>
+                        </button>
+                        <button class="corner-menu-btn" data-target="背包">
+                            <span style="font-size:18px;">🎒</span><span>背包</span>
+                        </button>
+                        <button class="corner-menu-btn" data-target="系統">
+                            <span style="font-size:18px;">⚙️</span><span>系統</span>
+                        </button>
+                    </div>
+                    <button id="cornerMenuToggle" class="corner-menu-toggle">☰</button>
+                `;
+                document.body.appendChild(cornerMenu);
+
+                const toggleBtn = cornerMenu.querySelector('#cornerMenuToggle');
+
+                toggleBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    cornerMenu.classList.toggle('open');
+                    toggleBtn.innerHTML = cornerMenu.classList.contains('open') ? '▼' : '☰';
+                });
+
+                const btns = cornerMenu.querySelectorAll('.corner-menu-items button');
+                btns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const targetTitle = btn.dataset.target;
+                        const originalBtn = document.querySelector(`.left-actionbar button[title="${targetTitle}"]`);
+                        if (originalBtn) {
+                            // If it's potion, only click if it's not disabled
+                            if (!originalBtn.disabled) {
+                                originalBtn.click();
+                            } else {
+                                // optional: shake or visual feedback
+                            }
+                        }
+                        cornerMenu.classList.remove('open');
+                        toggleBtn.innerHTML = '☰';
+                    });
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (cornerMenu.classList.contains('open') && !cornerMenu.contains(e.target)) {
+                        cornerMenu.classList.remove('open');
+                        toggleBtn.innerHTML = '☰';
+                    }
+                });
+
+                watch([showLevelSelect, isFinished], ([showLvl, finished]) => {
+                    if (!showLvl && !finished) {
+                        cornerMenu.style.display = 'flex';
+                    } else {
+                        cornerMenu.style.display = 'none';
+                        cornerMenu.classList.remove('open');
+                        toggleBtn.innerHTML = '☰';
+                    }
+                }, { immediate: true });
+            }
+
+            // --- INSERT BEGIN: JPAPP_MOBILE_SCROLL_LOCK_V1 ---
+            const isMobileOrIOS = /iPad|iPhone|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+            let scrollYPos = 0;
+            let touchStartY = 0;
+
+            const handleTouchStart = (e) => {
+                touchStartY = e.touches[0].clientY;
+            };
+
+            const handleTouchMove = (e) => {
+                // If not locked, or if multiple touches, allow default
+                if (!document.body.classList.contains('lock-scroll') || e.touches.length > 1) return;
+
+                const currentY = e.touches[0].clientY;
+                // Only intercept downward drags (pull-to-refresh normally triggers when dragging down from top)
+                if (currentY - touchStartY > 0) {
+                    const t = e.target;
+                    // Provide escape hatches for elements that need their own interactions
+                    const excluded = t.closest('button, input, textarea, select, a, #cornerMenu, #runeBar, #flickLayer');
+                    if (excluded) {
+                        return;
+                    }
+                    e.preventDefault();
+                }
+            };
+
+            const lockPageScroll = () => {
+                if (document.body.classList.contains('lock-scroll')) return;
+                scrollYPos = window.scrollY;
+                document.body.style.top = `-${scrollYPos}px`;
+                document.body.classList.add('lock-scroll');
+
+                document.addEventListener('touchstart', handleTouchStart, { passive: false });
+                document.addEventListener('touchmove', handleTouchMove, { passive: false });
+            };
+            const unlockPageScroll = () => {
+                if (!document.body.classList.contains('lock-scroll')) return;
+                document.body.classList.remove('lock-scroll');
+                document.body.style.top = '';
+                window.scrollTo(0, scrollYPos);
+
+                document.removeEventListener('touchstart', handleTouchStart);
+                document.removeEventListener('touchmove', handleTouchMove);
+            };
+
+            if (isMobileOrIOS) {
+                watch(showLevelSelect, (showLvl) => {
+                    if (showLvl) {
+                        unlockPageScroll();
+                    } else {
+                        lockPageScroll();
+                    }
+                }, { immediate: true });
+            }
+            // --- INSERT END: JPAPP_MOBILE_SCROLL_LOCK_V1 ---
+
+            // Viewport meta dynamic adjustment for iOS safe area & anti-zoom
+            let meta = document.querySelector('meta[name="viewport"]');
+            if (!meta) {
+                meta = document.createElement('meta');
+                meta.name = "viewport";
+                document.head.appendChild(meta);
+            }
+            meta.content = "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover";
+
+            // Double tap guard to prevent iOS Safari zoom on buttons
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', (e) => {
+                const now = Date.now();
+                if (now - lastTouchEnd <= 300) {
+                    if (e.target.closest('button') || e.target.closest('.action-btn')) {
+                        e.preventDefault();
+                    }
+                }
+                lastTouchEnd = now;
+            }, { passive: false });
+        });
+        // --- INSERT END: JPAPP_MOBILE_CORNER_MENU_V1 ---
+
+        const shouldShowNextButton = computed(() => {
+            if (!hasSubmitted.value) return false;
+            if (isCurrentCorrect.value && settings.correctAdvanceDelayMs === 0) return true;
+            if (!isCurrentCorrect.value && settings.wrongAdvanceDelayMs === 0) return true;
+            return false;
+        });
+
         loadAudioSettings();
-        return { answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay, skillList, castAbility, spState, showL2DebugPanel, l2DebugQuestions, generateL2Debug, copyL2Debug, handleReload };
+        return { uiMenuOpen, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, playMistakeVoice, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay, skillList, castAbility, spState, showL2DebugPanel, l2DebugQuestions, generateL2Debug, copyL2Debug, handleReload, settings, shouldShowNextButton, praiseToast };
     }
 }).mount('#app');
 console.log('應用已掛載！');
