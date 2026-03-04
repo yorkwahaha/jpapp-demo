@@ -649,7 +649,9 @@ createApp({
 
         // [AZURE] Dynamic config loading for Debug Overlay visibility
         onMounted(() => {
-            if (location.hostname.includes('github.io') || location.pathname.includes('/jpapp')) return;
+            const isPages = location.hostname.endsWith('github.io') || location.pathname.startsWith('/jpapp-demo/');
+            if (isPages) return;
+
             const path = 'config.local.js';
             const script = document.createElement('script');
             script.src = path;
