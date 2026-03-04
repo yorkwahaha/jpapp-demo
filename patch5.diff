@@ -1,0 +1,159 @@
+diff --git a/assets/js/game.js b/assets/js/game.js
+index fd33877..b768e5e 100644
+--- a/assets/js/game.js
++++ b/assets/js/game.js
+@@ -617,6 +617,11 @@ console.log('Vue版本:', Vue);
+ console.log('開始創建應用...');
+ createApp({
+     setup() {
++        // [JPAPP] Build marker (gated by debug flag)
++        if (window.DEBUG_INPUT || window.DEBUG_AUDIO) {
++            console.log("[JPAPP] game.js build: fix-ios-ui-v5");
++        }
++
+         // [AZURE] Dynamic config loading for Debug Overlay visibility
+         onMounted(() => {
+             const path = 'config.local.js';
+@@ -1152,40 +1157,66 @@ createApp({
+         onMounted(() => {
+             loadGameData();
+ 
+-            // --- INSERT BEGIN: JPAPP_L2_DEBUG_V1 Hotkey ---
+-            window.addEventListener("keydown", (e) => {
+-                if ((e.shiftKey || e.ctrlKey) && e.key === "2") {
+-                    showL2DebugPanel.value = !showL2DebugPanel.value;
+-                    if (showL2DebugPanel.value && l2DebugQuestions.value.length === 0) {
+-                        generateL2Debug();
++            if (!window.__GAME_ONMOUNTED_EVENTS_BOUND) {
++                window.__GAME_ONMOUNTED_EVENTS_BOUND = true;
++
++                // iOS start button fallback (pointerup/touchend) scoped tightly
++                const handleStartFallback = (e) => {
++                    if (!showLevelSelect.value) return; // Only process when in level select screen
++                    const btn = e.target.closest('button');
++                    if (btn && btn.textContent.includes('開始戰鬥')) {
++                        if (!window.__startBtnFired || Date.now() - window.__startBtnFired > 1000) {
++                            window.__startBtnFired = Date.now();
++                            if (window.DEBUG_INPUT) console.log('[DEBUG_INPUT] start button fallback triggered via', e.type);
++                            startLevel(1);
++                        }
+                     }
+-                }
+-            });
+-            // --- INSERT END: JPAPP_L2_DEBUG_V1 Hotkey ---
+-
+-            // --- INSERT BEGIN: JPAPP_IOS_AUDIO_FIX_V1 ---
+-            const handleVolumeChange = (e) => {
+-                const el = e.target;
+-                if (el.tagName !== 'INPUT' || el.type !== 'range') return;
+-                const val = parseFloat(el.value);
+-                if (isNaN(val)) return;
+-
+-                const label = el.closest('label');
+-                const labelText = label ? label.textContent.trim() : '';
++                };
++                document.addEventListener('pointerup', handleStartFallback, { passive: true });
++                document.addEventListener('touchend', handleStartFallback, { passive: true });
++
++                // Auto-cleanup fallback when entering game
++                watch(showLevelSelect, (newVal) => {
++                    if (!newVal) {
++                        document.removeEventListener('pointerup', handleStartFallback);
++                        document.removeEventListener('touchend', handleStartFallback);
++                    }
++                });
+ 
+-                if (labelText.startsWith('BGM')) {
+-                    bgmVolume.value = val;
+-                    saveAudioSettings();
+-                    updateGainVolumes();
+-                } else if (labelText.startsWith('SFX')) {
+-                    sfxVolume.value = val;
+-                    saveAudioSettings();
+-                    updateGainVolumes();
+-                }
+-            };
+-            document.addEventListener('input', handleVolumeChange, true);
+-            document.addEventListener('change', handleVolumeChange, true);
+-            // --- INSERT END: JPAPP_IOS_AUDIO_FIX_V1 ---
++                // --- INSERT BEGIN: JPAPP_L2_DEBUG_V1 Hotkey ---
++                window.addEventListener("keydown", (e) => {
++                    if ((e.shiftKey || e.ctrlKey) && e.key === "2") {
++                        showL2DebugPanel.value = !showL2DebugPanel.value;
++                        if (showL2DebugPanel.value && l2DebugQuestions.value.length === 0) {
++                            generateL2Debug();
++                        }
++                    }
++                });
++                // --- INSERT END: JPAPP_L2_DEBUG_V1 Hotkey ---
++
++                // --- INSERT BEGIN: JPAPP_IOS_AUDIO_FIX_V1 ---
++                const handleVolumeChange = (e) => {
++                    const el = e.target;
++                    if (el.tagName !== 'INPUT' || el.type !== 'range') return;
++                    const val = parseFloat(el.value);
++                    if (isNaN(val)) return;
++
++                    const label = el.closest('label');
++                    const labelText = label ? label.textContent.trim() : '';
++
++                    if (labelText.startsWith('BGM')) {
++                        bgmVolume.value = val;
++                        saveAudioSettings();
++                        updateGainVolumes();
++                    } else if (labelText.startsWith('SFX')) {
++                        sfxVolume.value = val;
++                        saveAudioSettings();
++                        updateGainVolumes();
++                    }
++                };
++                document.addEventListener('input', handleVolumeChange, true);
++                // --- INSERT END: JPAPP_IOS_AUDIO_FIX_V1 ---
++            }
+         });
+         const MONSTER_NAMES = { 1: '助詞怪', 2: '助詞妖', 3: '助詞魔王' };
+         const MONSTER_HP = 100;
+@@ -3793,14 +3824,14 @@ createApp({
+                 if (!document.body.classList.contains('lock-scroll') || e.touches.length > 1) return;
+ 
+                 const currentY = e.touches[0].clientY;
++                // [FIX] 嚴格門禁：只允許阻擋 #flickLayer 內部的滑動（防下拉刷新）
++                // 任何其他 UI 區域（包含首頁、選單、秘笈）皆放行
++                if (!e.target.closest('#flickLayer')) {
++                    return;
++                }
++
+                 // Only intercept downward drags (pull-to-refresh normally triggers when dragging down from top)
+                 if (currentY - touchStartY > 0) {
+-                    const t = e.target;
+-                    // Provide escape hatches for elements that need their own interactions
+-                    const excluded = t.closest('button, input, textarea, select, a, #cornerMenu, #runeBar, #flickLayer');
+-                    if (excluded) {
+-                        return;
+-                    }
+                     e.preventDefault();
+                 }
+             };
+@@ -3850,11 +3881,21 @@ createApp({
+                 const now = Date.now();
+                 if (now - lastTouchEnd <= 300) {
+                     if (e.target.closest('button') || e.target.closest('.action-btn')) {
+-                        e.preventDefault();
++                        // [FIX] 嚴格門禁：只允許阻擋 #flickLayer 內部的防抖
++                        if (e.target.closest('#flickLayer')) {
++                            e.preventDefault();
++                        }
+                     }
+                 }
+                 lastTouchEnd = now;
+             }, { passive: false });
++
++            // [FIX] DEBUG 追蹤觸控事件是否正常觸發
++            document.addEventListener('touchstart', (e) => {
++                if (window.DEBUG_INPUT) {
++                    console.log(`[DEBUG_INPUT] touchstart on: <${e.target.tagName.toLowerCase()}> class="${e.target.className}" id="${e.target.id}"`);
++                }
++            }, { passive: true });
+         });
+         // --- INSERT END: JPAPP_MOBILE_CORNER_MENU_V1 ---
+ 
