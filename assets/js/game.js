@@ -297,6 +297,8 @@ function getAzureSpeechRegion() {
     return "japaneast";
 }
 
+const TTS_PROXY_URL = "https://jpapp-tts-proxy.yorkwahaha.workers.dev/tts";
+
 async function speakAzure(text, voiceShortName = "ja-JP-NanamiNeural") {
     const key = getAzureSpeechKey();
     const region = getAzureSpeechRegion();
@@ -309,41 +311,64 @@ async function speakAzure(text, voiceShortName = "ja-JP-NanamiNeural") {
         source: window.__AZURE_SPEECH_KEY ? 'config.local' : (document.querySelector('meta[name="azure-speech-key"]') ? 'inline' : 'none')
     });
 
-    if (!key || !text) {
-        console.warn('[AZURE] missing config, fallback=none', { key: !!key, textLen: text?.length });
+    if (!text) {
+        console.warn('[AZURE] no text provided');
         return false;
     }
 
-    console.log('[AZURE] start', text.length);
+    console.log('[AZURE] start', text.length, key ? 'direct' : 'proxy');
 
     stopWebSpeech();
     stopTtsAudio();
 
-    const ssml =
-        `<speak version="1.0" xml:lang="ja-JP">
-  <voice name="${voiceShortName}">${text
-            .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;").replaceAll("'", "&apos;")}</voice>
-</speak>`;
-
     let res;
-    try {
-        res = await fetch(endpoint, {
-            method: "POST",
-            headers: {
-                "Ocp-Apim-Subscription-Key": key,
-                "Content-Type": "application/ssml+xml",
-                "X-Microsoft-OutputFormat": "audio-16khz-32kbitrate-mono-mp3"
-            },
-            body: ssml
-        });
-    } catch (e) {
-        console.warn('[AZURE] request fail', e?.message || e);
-        return false;
+
+    if (key) {
+        // Direct Azure Mode
+        const ssml =
+            `<speak version="1.0" xml:lang="ja-JP">
+  <voice name="${voiceShortName}">${text
+                .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;").replaceAll("'", "&apos;")}</voice>
+</speak>`;
+        try {
+            res = await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                    "Ocp-Apim-Subscription-Key": key,
+                    "Content-Type": "application/ssml+xml",
+                    "X-Microsoft-OutputFormat": "audio-16khz-32kbitrate-mono-mp3"
+                },
+                body: ssml
+            });
+        } catch (e) {
+            console.warn('[AZURE] request fail', e?.message || e);
+            return false;
+        }
+    } else {
+        // Proxy Mode via Cloudflare Worker
+        try {
+            res = await fetch(TTS_PROXY_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Client-Token": "JPAPP2026!yorkwahaha"
+                },
+                body: JSON.stringify({
+                    text: text,
+                    voice: voiceShortName,
+                    rate: "1.0",
+                    pitch: "1.0"
+                })
+            });
+        } catch (e) {
+            console.warn('[AZURE PROXY] request fail', e?.message || e);
+            return false;
+        }
     }
 
-    if (!res.ok) {
-        console.warn('[AZURE] request fail', res.status);
+    if (!res || !res.ok) {
+        console.warn('[AZURE] request fail', res?.status);
         return false;
     }
     console.log('[AZURE] request ok', res.status);
@@ -624,6 +649,7 @@ createApp({
 
         // [AZURE] Dynamic config loading for Debug Overlay visibility
         onMounted(() => {
+            if (location.hostname.includes('github.io') || location.pathname.includes('/jpapp')) return;
             const path = 'config.local.js';
             const script = document.createElement('script');
             script.src = path;
@@ -664,7 +690,7 @@ createApp({
         const SKILLS = ref([]);
         const VOCAB = ref(null);
 
-        const APP_VERSION = "26030301";
+        const APP_VERSION = "26030500";
         const appVersion = ref(APP_VERSION);
 
         // --- INSERT BEGIN: JPAPP_SETTINGS_CORE_V1 ---
@@ -1579,7 +1605,9 @@ createApp({
                 if (!bgm) {
                     bgm = new Audio(BGM_BASE + 'BGM_1.mp3');
                     bgm.crossOrigin = "anonymous";
+                    bgm.preload = "auto";
                     audioPool.set(BGM_BASE + 'BGM_1.mp3', bgm);
+                    bgm.load();
                 }
                 bgmAudio.value = bgm;
                 bgmAudio.value.loop = true;
@@ -2357,6 +2385,7 @@ createApp({
             return shuffle(picked);
         };
         const onUserGesture = () => {
+            if (!audioInited.value) initAudio(); // Eagerly establish bgmAudio instance and begin loading
             initAudioCtx().then(() => {
                 // iOS audio session warmup: play a short silent buffer through masterGain
                 // to wake the audio engine before the first real SFX needs to play.
