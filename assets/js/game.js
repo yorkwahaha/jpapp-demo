@@ -165,11 +165,12 @@ const TTS_AUDIO_BASE = "assets/audio/tts/";
 const ttsExistCache = new Map(); // url -> boolean
 let currentTtsAudio = null;
 const sharedTtsAudio = new Audio();
+const primeAudio = new Audio();
 let isTtsPrimed = false;
 
 window.primeVoiceOnGesture = () => {
     try {
-        const a = sharedTtsAudio;
+        const a = primeAudio;
         if (!a.src || a.src === window.location.href) {
             a.src = "data:audio/mp3;base64,//OlkAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAFAAAH8AADBQQOExUaHh8lJygqMTIzNzo9P0JFREQv";
         }
@@ -1355,7 +1356,7 @@ createApp({
         };
 
         const BGM_BASE = 'assets/audio/bgm/';
-        const currentBattleBgmPick = ref(BGM_BASE + 'bgm.mp3');
+        const currentBattleBgmPick = ref(BGM_BASE + 'BGM_1.mp3');
 
         const pickBattleBgm = (level) => {
             const lv = Number(level) || parseInt(level, 10) || 1;
@@ -1363,8 +1364,10 @@ createApp({
                 currentBattleBgmPick.value = BGM_BASE + 'BGM_2.mp3';
             } else if (lv === 3) {
                 currentBattleBgmPick.value = BGM_BASE + 'BGM_3.mp3';
+            } else if (lv === 1) {
+                currentBattleBgmPick.value = BGM_BASE + 'BGM_1.mp3';
             } else {
-                currentBattleBgmPick.value = BGM_BASE + 'bgm.mp3';
+                currentBattleBgmPick.value = BGM_BASE + 'BGM_1.mp3';
             }
             console.log(`[BGM] pickBattleBgm level=${level} lv=${lv} picked=${currentBattleBgmPick.value}`);
             if (window.__overlayPush) window.__overlayPush('[BGM]', `pickBattleBgm level=${level} picked=${currentBattleBgmPick.value}`);
@@ -1387,7 +1390,7 @@ createApp({
                 gameover: 'assets/audio/sfx_gameover.mp3'
             };
 
-            const criticalAssets = [BGM_BASE + 'bgm.mp3', BGM_BASE + 'BGM_2.mp3', BGM_BASE + 'BGM_3.mp3', sfxPaths.click, sfxPaths.pop];
+            const criticalAssets = [BGM_BASE + 'BGM_1.mp3', BGM_BASE + 'BGM_2.mp3', BGM_BASE + 'BGM_3.mp3', BGM_BASE + 'BGM_4.mp3', sfxPaths.click, sfxPaths.pop];
             const promises = [];
 
             const loadAsset = (url) => {
@@ -1533,11 +1536,11 @@ createApp({
             audioInited.value = true;
             await initAudioCtx();
             try {
-                let bgm = audioPool.get(BGM_BASE + 'bgm.mp3');
+                let bgm = audioPool.get(BGM_BASE + 'BGM_1.mp3');
                 if (!bgm) {
-                    bgm = new Audio(BGM_BASE + 'bgm.mp3');
+                    bgm = new Audio(BGM_BASE + 'BGM_1.mp3');
                     bgm.crossOrigin = "anonymous";
-                    audioPool.set(BGM_BASE + 'bgm.mp3', bgm);
+                    audioPool.set(BGM_BASE + 'BGM_1.mp3', bgm);
                 }
                 bgmAudio.value = bgm;
                 bgmAudio.value.loop = true;
@@ -1548,18 +1551,26 @@ createApp({
                     source.connect(bgmGain.value);
                     bgm._connected = true;
                 }
-
-                bgmAudio.value.play().catch(() => {
-                    console.log('BGM 無法播放，可能缺少檔案或權限');
-                });
+                // NOTE: Do NOT auto-play here. playBgm() controls playback.
             } catch (_) { console.log('無法建立 BGM'); }
         };
         const stopAllAudio = () => {
             try {
+                // Mute bgmGain immediately for Safari/WebAudio reliability
+                if (bgmGain.value && audioCtx.value) {
+                    bgmGain.value.gain.cancelScheduledValues(audioCtx.value.currentTime);
+                    bgmGain.value.gain.setValueAtTime(0, audioCtx.value.currentTime);
+                }
                 if (bgmAudio.value) {
                     bgmAudio.value.pause();
                     try { bgmAudio.value.currentTime = 0; } catch (_) { }
                 }
+                // Double insurance: pause any BGM in audioPool
+                audioPool.forEach((a, url) => {
+                    if (typeof url === 'string' && url.indexOf(BGM_BASE) === 0) {
+                        try { a.pause(); a.currentTime = 0; } catch (_) { }
+                    }
+                });
             } catch (_) { }
             try {
                 if (gameOverAudio.value) {
@@ -1607,7 +1618,7 @@ createApp({
             if (audioCtx.value && audioCtx.value.state === 'suspended') await audioCtx.value.resume();
             updateGainVolumes();
 
-            const expectedUrl = currentBattleBgmPick.value || (BGM_BASE + 'bgm.mp3');
+            const expectedUrl = currentBattleBgmPick.value || (BGM_BASE + 'BGM_1.mp3');
             const expectedAbs = new URL(expectedUrl, window.location.href).href;
             const curSrc = bgmAudio.value?.src || '';
 
@@ -1663,6 +1674,14 @@ createApp({
             if (!audioInited.value) initAudio();
             if (!bgmEnabled.value || isMuted.value || bgmVolume.value <= 0) return;
             if (bgmAudio.value && bgmAudio.value.paused) {
+                // Ensure correct BGM src before resuming
+                const expectedUrl = currentBattleBgmPick.value || (BGM_BASE + 'BGM_1.mp3');
+                const expectedAbs = new URL(expectedUrl, window.location.href).href;
+                const curSrc = bgmAudio.value.src || '';
+                if (curSrc !== expectedAbs) {
+                    bgmAudio.value.src = expectedAbs;
+                    bgmAudio.value.load();
+                }
                 bgmAudio.value.play().catch(() => {
                     needsUserGestureToResumeBgm.value = true;
                 });
@@ -2344,8 +2363,20 @@ createApp({
         const playCorrectBeep = () => { playBeep(523, 0.15); playBeep(659, 0.15, 'sine'); };
         const playWrongBeep = () => { playBeep(200, 0.25, 'sawtooth'); };
 
+        const ensureBgmElementSync = () => {
+            let bgm = audioPool.get(BGM_BASE + 'BGM_1.mp3');
+            if (!bgm) {
+                bgm = new Audio(BGM_BASE + 'BGM_1.mp3');
+                bgm.crossOrigin = 'anonymous';
+                bgm.loop = true;
+                audioPool.set(BGM_BASE + 'BGM_1.mp3', bgm);
+            }
+            bgmAudio.value = bgm;
+            bgmAudio.value.loop = true;
+        };
+
         const applyBattleBgmNow = (lv) => {
-            const srcRel = currentBattleBgmPick.value || (BGM_BASE + 'bgm.mp3');
+            const srcRel = currentBattleBgmPick.value || (BGM_BASE + 'BGM_1.mp3');
             const srcAbs = new URL(srcRel, window.location.href).href;
             if (!bgmAudio.value) return;
             bgmAudio.value.pause();
@@ -2364,12 +2395,17 @@ createApp({
             console.log('[BGM] startLevel entered', level, typeof level);
             window.__overlayPush?.('[BGM]', `startLevel level=${level} type=${typeof level}`);
             const lv = Number(level) || parseInt(level, 10) || 1;
+
             initAudioCtx(); // JPAPP_IOS_GESTURE: Run immediately on click
             stopAllAudio();
             pickBattleBgm(lv); // JPAPP_RANDOM_BGM
-            await preloadAllAudio(); // JPAPP_AUDIO_PRELOAD
-            await initAudio();
+
+            ensureBgmElementSync();
             applyBattleBgmNow(lv);
+
+            // Fire-and-forget: do not await!
+            preloadAllAudio();
+
             playSfx('click');
             showLevelSelect.value = false;
             currentLevel.value = lv;
@@ -3534,6 +3570,7 @@ createApp({
         const playerDead = computed(() => player.value.hp <= 0);
         const levelPassed = computed(() => monsterDead.value);
         const goNextLevel = () => {
+            needsUserGestureToResumeBgm.value = false; // Prevent gesture from resuming old BGM
             stopAllAudio();
 
             // Difficulty based recovery
@@ -3551,9 +3588,10 @@ createApp({
 
             currentLevel.value++;
             initGame(currentLevel.value);
+            pickBattleBgm(currentLevel.value); // Update BGM pick for new level
             playBgm(); // Restart BGM for the next level
         };
-        const retryLevel = () => { stopAllAudio(); initGame(currentLevel.value); };
+        const retryLevel = () => { needsUserGestureToResumeBgm.value = false; stopAllAudio(); initGame(currentLevel.value); };
         const startOver = () => {
             setHeroAvatar('neutral');
             clearSpeedStatus();
