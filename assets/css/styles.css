@@ -1542,7 +1542,7 @@ rt {
         }
     }
 
-    /* Patch 4C: Projectile VFX */
+    /* Patch 4C: Projectile VFX — METEOR / AIRSOFT FEEL */
     .flick-vfx-layer {
         position: absolute;
         inset: 0;
@@ -1551,35 +1551,376 @@ rt {
         overflow: hidden;
     }
 
+    /* 氣彈本體：小、亮、有硬邊 */
     .flick-projectile {
         position: absolute;
-        width: 60px;
-        height: 60px;
-        background: linear-gradient(to bottom, #f59e0b, #d97706);
-        border: 2px solid #fff;
-        border-radius: 12px;
-        color: #fff;
-        font-weight: 900;
-        font-size: 28px;
+        width: 44px;
+        height: 44px;
+        border-radius: 9999px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 0 20px rgba(245, 158, 11, 0.6);
+
+        /* “氣彈核 + 外圈硬邊” */
+        background:
+            radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.15) 24%, rgba(0, 0, 0, 0) 42%),
+            radial-gradient(circle at 50% 55%, rgba(255, 215, 140, 0.95), rgba(245, 158, 11, 0.85) 55%, rgba(217, 119, 6, 0.65) 72%, rgba(0, 0, 0, 0) 100%);
+        border: 2px solid rgba(255, 255, 255, 0.85);
+
+        color: #fff;
+        font-weight: 900;
+        font-size: 26px;
+        text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+
+        filter: drop-shadow(0 0 10px rgba(255, 205, 130, 0.55)) drop-shadow(0 0 18px rgba(245, 158, 11, 0.35));
         z-index: 1000;
-        animation: flickShootUp 0.6s ease-out forwards;
+
+        /* 原本是 0.6s 上飄淡出，保留但變更為「流星式」 */
+        animation: flickMeteorUp 0.56s cubic-bezier(0.18, 0.78, 0.18, 1) forwards;
     }
 
-    @keyframes flickShootUp {
+    /* 流星尾：不用大量粒子，靠 gradient 就很有感 */
+    .flick-projectile::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 14px;
+        height: 86px;
+        transform: translate(-50%, 18px);
+        border-radius: 999px;
+
+        /* 彗尾：中心亮、邊緣淡、尾端散 */
+        background: linear-gradient(to bottom,
+                rgba(255, 255, 255, 0.00) 0%,
+                rgba(255, 255, 255, 0.18) 12%,
+                rgba(255, 220, 160, 0.60) 32%,
+                rgba(245, 158, 11, 0.55) 58%,
+                rgba(245, 158, 11, 0.10) 88%,
+                rgba(245, 158, 11, 0.00) 100%);
+
+        filter: blur(0.4px) drop-shadow(0 0 10px rgba(245, 158, 11, 0.35));
+        opacity: 0.95;
+        pointer-events: none;
+    }
+
+    /* 這個 keyframes 不改判定，只改視覺：pop + 氣彈加速感 */
+    @keyframes flickMeteorUp {
         0% {
-            transform: translate(-50%, -50%) scale(1);
+            transform: translate(-50%, -50%) scale(0.92);
+            opacity: 1;
+            filter: drop-shadow(0 0 18px rgba(255, 225, 170, 0.65)) drop-shadow(0 0 26px rgba(245, 158, 11, 0.45));
+        }
+
+        12% {
+            transform: translate(-50%, -50%) scale(1.08);
+            filter: drop-shadow(0 0 22px rgba(255, 240, 200, 0.75)) drop-shadow(0 0 30px rgba(245, 158, 11, 0.55));
+        }
+
+        100% {
+            transform: translate(-50%, calc(-50% - 420px)) scale(0.78);
+            opacity: 0;
+            filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.18));
+        }
+    }
+
+    /* --- ENHANCED VFX CLASSES --- */
+
+    /* 出生 pop：注意不能把 translate 干掉，所以 keyframes 必須帶 translate(-50%,-50%) */
+    .vfx-projectile-spawn {
+        animation: vfxProjSpawn 120ms cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    }
+
+    @keyframes vfxProjSpawn {
+        0% {
+            transform: translate(-50%, -50%) scale(0.78);
+            filter: brightness(1.55) drop-shadow(0 0 8px rgba(255, 255, 255, 0.7));
+        }
+
+        70% {
+            transform: translate(-50%, -50%) scale(1.10);
+            filter: brightness(1.18) drop-shadow(0 0 10px rgba(255, 255, 255, 0.45));
+        }
+
+        100% {
+            transform: translate(-50%, -50%) scale(1.00);
+            filter: brightness(1.00) drop-shadow(0 0 0 rgba(0, 0, 0, 0));
+        }
+    }
+
+    /* 拖尾淡出：保留你原本 class，但讓它更像彗尾碎屑 */
+    .vfx-trail-fade {
+        animation: vfxTrailFade var(--fade-dur, 240ms) ease-out forwards;
+    }
+
+    @keyframes vfxTrailFade {
+        0% {
+            opacity: var(--start-opt, 0.7);
+            transform: scale(1);
+            filter: blur(0);
+        }
+
+        100% {
+            opacity: 0;
+            transform: scale(0.25);
+            filter: blur(0.6px);
+        }
+    }
+
+    /* 命中薄環：更像 shockwave，不要厚塑膠圈 */
+    .vfx-hit-ring {
+        position: absolute;
+        width: 84px;
+        height: 84px;
+        border: 2px solid rgba(255, 220, 160, 0.85);
+        border-radius: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        pointer-events: none;
+        z-index: 9999;
+        filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.35));
+        animation: vfxRingExpand 210ms ease-out forwards;
+    }
+
+    @keyframes vfxRingExpand {
+        0% {
+            transform: translate(-50%, -50%) scale(0.25);
             opacity: 1;
         }
 
         100% {
-            transform: translate(-50%, calc(-50% - 400px)) scale(0.8);
+            transform: translate(-50%, -50%) scale(1.75);
             opacity: 0;
         }
     }
+
+    /* 火花：更像短噴射（細長、帶漸層） */
+    .vfx-hit-spark {
+        position: absolute;
+        width: 4px;
+        height: 16px;
+        border-radius: 999px;
+        background: linear-gradient(to top, rgba(255, 255, 255, 0.98), rgba(255, 210, 120, 0.85), rgba(245, 158, 11, 0.15));
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.55);
+        transform-origin: center bottom;
+        pointer-events: none;
+        z-index: 10000;
+    }
+
+    /* 浮字：更快 pop、更乾淨淡出 */
+    .vfx-dmg-text {
+        position: absolute;
+        font-weight: 900;
+        font-size: 28px;
+        color: #fff;
+        text-shadow:
+            0 3px 0 rgba(0, 0, 0, 0.35),
+            0 0 10px rgba(245, 158, 11, 0.55);
+        pointer-events: none;
+        z-index: 10001;
+        transform: translate(-50%, -50%);
+        animation: vfxDmgPopFade 720ms cubic-bezier(0.2, 0.85, 0.2, 1) forwards;
+    }
+
+    @keyframes vfxDmgPopFade {
+        0% {
+            transform: translate(-50%, -20%) scale(0.55);
+            opacity: 0;
+            filter: brightness(1.5);
+        }
+
+        16% {
+            transform: translate(-50%, -90%) scale(1.18);
+            opacity: 1;
+        }
+
+        32% {
+            transform: translate(-50%, -110%) scale(1.00);
+            opacity: 1;
+        }
+
+        78% {
+            transform: translate(-50%, -150%) scale(0.96);
+            opacity: 0.85;
+        }
+
+        100% {
+            transform: translate(-50%, -185%) scale(0.92);
+            opacity: 0;
+        }
+    }
+
+    /* 輕微震動：保留 */
+    .shake-mild {
+        animation: shakeMild 200ms cubic-bezier(.36, .07, .19, .97) both;
+    }
+
+    /* --- ENHANCED VFX CLASSES END --- */
+    .vfx-projectile-spawn {
+        animation: vfxProjSpawn 120ms cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes vfxProjSpawn {
+        0% {
+            transform: scale(0.7);
+            filter: brightness(1.5) drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+        }
+
+        70% {
+            transform: scale(1.06);
+            filter: brightness(1.2) drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+        }
+
+        100% {
+            transform: scale(1);
+            filter: brightness(1) drop-shadow(0 0 0px transparent);
+        }
+    }
+
+    .vfx-trail-fade {
+        animation: vfxTrailFade var(--fade-dur, 250ms) ease-out forwards;
+    }
+
+    @keyframes vfxTrailFade {
+        0% {
+            opacity: var(--start-opt, 0.8);
+            transform: scale(1);
+        }
+
+        100% {
+            opacity: 0;
+            transform: scale(0.3);
+        }
+    }
+
+    .vfx-hit-ring {
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        border: 4px solid rgba(255, 200, 100, 0.8);
+        border-radius: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        pointer-events: none;
+        z-index: 9999;
+        animation: vfxRingExpand 240ms ease-out forwards;
+    }
+
+    @keyframes vfxRingExpand {
+        0% {
+            transform: translate(-50%, -50%) scale(0.2);
+            opacity: 1;
+            border-width: 8px;
+        }
+
+        100% {
+            transform: translate(-50%, -50%) scale(1.8);
+            opacity: 0;
+            border-width: 1px;
+        }
+    }
+
+    .vfx-hit-spark {
+        position: absolute;
+        width: 6px;
+        height: 16px;
+        background: #fff;
+        border-radius: 3px;
+        box-shadow: 0 0 8px #fbbf24, 0 0 16px #f59e0b;
+        transform-origin: center bottom;
+        pointer-events: none;
+        z-index: 10000;
+        /* Animation applied via JS due to dynamic translation */
+    }
+
+    .vfx-dmg-text {
+        position: absolute;
+        font-weight: 900;
+        font-size: 28px;
+        color: #fff;
+        text-shadow: 0px 3px 0px #b45309, 0px 0px 8px rgba(245, 158, 11, 0.8), 2px 2px 2px rgba(0, 0, 0, 0.8);
+        pointer-events: none;
+        z-index: 10001;
+        transform: translate(-50%, -50%);
+        animation: vfxDmgPopFade 700ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    @keyframes vfxDmgPopFade {
+        0% {
+            transform: translate(-50%, -30%) scale(0.5);
+            opacity: 0;
+        }
+
+        15% {
+            transform: translate(-50%, -100%) scale(1.2);
+            opacity: 1;
+        }
+
+        30% {
+            transform: translate(-50%, -120%) scale(1);
+            opacity: 1;
+        }
+
+        70% {
+            transform: translate(-50%, -160%) scale(0.95);
+            opacity: 0.9;
+        }
+
+        100% {
+            transform: translate(-50%, -200%) scale(0.9);
+            opacity: 0;
+        }
+    }
+
+    @keyframes shakeMild {
+        0% {
+            transform: translate(1px, 1px) rotate(0deg);
+        }
+
+        10% {
+            transform: translate(-1px, -2px) rotate(-1deg);
+        }
+
+        20% {
+            transform: translate(-3px, 0px) rotate(1deg);
+        }
+
+        30% {
+            transform: translate(3px, 2px) rotate(0deg);
+        }
+
+        40% {
+            transform: translate(1px, -1px) rotate(1deg);
+        }
+
+        50% {
+            transform: translate(-1px, 2px) rotate(-1deg);
+        }
+
+        60% {
+            transform: translate(-3px, 1px) rotate(0deg);
+        }
+
+        70% {
+            transform: translate(3px, 1px) rotate(-1deg);
+        }
+
+        80% {
+            transform: translate(-1px, -1px) rotate(1deg);
+        }
+
+        90% {
+            transform: translate(1px, 2px) rotate(0deg);
+        }
+
+        100% {
+            transform: translate(1px, -2px) rotate(-1deg);
+        }
+    }
+
+    .shake-mild {
+        animation: shakeMild 200ms cubic-bezier(.36, .07, .19, .97) both;
+    }
+
+    /* --- ENHANCED VFX CLASSES END --- */
 
     .rune-btn-placeholder:active {
         transform: translateY(2px);
