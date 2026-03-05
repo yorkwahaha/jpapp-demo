@@ -647,16 +647,18 @@ createApp({
             console.log("[JPAPP] game.js build: fix-ios-ui-v5");
         }
 
-        // [AZURE] Dynamic config loading for Debug Overlay visibility
+        // [AZURE] Dynamic config loading — local dev only, never on GitHub Pages or remote hosts
         onMounted(() => {
-            const isPages = location.hostname.endsWith('github.io') || location.pathname.startsWith('/jpapp-demo/');
-            if (isPages) return;
+            const h = location.hostname;
+            const isLocal = h === 'localhost' || h === '127.0.0.1' || h === '0.0.0.0'
+                || /^192\.168\./.test(h) || /^10\./.test(h) || /^172\.(1[6-9]|2\d|3[01])\./.test(h);
+            if (!isLocal) return;
 
             const path = 'config.local.js';
             const script = document.createElement('script');
             script.src = path;
-            script.onload = () => console.log(`[AZURE] setup() dynamic load OK: ${path}`);
-            script.onerror = () => console.warn(`[AZURE] setup() load FAIL: ${path} (might be expected on Pages)`);
+            script.onload = () => console.log(`[AZURE] config.local.js loaded`);
+            script.onerror = () => { /* not found locally — OK, use defaults */ };
             document.head.appendChild(script);
         });
 
