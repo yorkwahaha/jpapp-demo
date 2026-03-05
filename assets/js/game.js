@@ -298,6 +298,29 @@ function getAzureSpeechRegion() {
 }
 
 const TTS_PROXY_URL = "https://jpapp-tts-proxy.yorkwahaha.workers.dev/tts";
+const TTS_SESSION_URL = "https://jpapp-tts-proxy.yorkwahaha.workers.dev/session";
+
+let sessionTokenData = null;
+
+async function getSessionToken() {
+    if (sessionTokenData && sessionTokenData.exp > Date.now() + 5000) {
+        return sessionTokenData.token;
+    }
+
+    try {
+        const res = await fetch(TTS_SESSION_URL);
+        if (!res.ok) {
+            console.warn('[SESSION] fetch fail', res.status);
+            return null;
+        }
+        const data = await res.json();
+        sessionTokenData = data;
+        return data.token;
+    } catch (e) {
+        console.warn('[SESSION] fetch error', e?.message || e);
+        return null;
+    }
+}
 
 async function speakAzure(text, voiceShortName = "ja-JP-NanamiNeural") {
     const key = getAzureSpeechKey();
@@ -347,23 +370,43 @@ async function speakAzure(text, voiceShortName = "ja-JP-NanamiNeural") {
         }
     } else {
         // Proxy Mode via Cloudflare Worker
-        try {
-            res = await fetch(TTS_PROXY_URL, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Client-Token": "JPAPP2026!yorkwahaha"
-                },
-                body: JSON.stringify({
-                    text: text,
-                    voice: voiceShortName,
-                    rate: "1.0",
-                    pitch: "1.0"
-                })
-            });
-        } catch (e) {
-            console.warn('[AZURE PROXY] request fail', e?.message || e);
-            return false;
+        let retryCount = 0;
+        let success = false;
+
+        while (retryCount < 2 && !success) {
+            const token = await getSessionToken();
+            if (!token) {
+                console.warn('[AZURE PROXY] failed to get session token');
+                return false;
+            }
+
+            try {
+                res = await fetch(TTS_PROXY_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Session-Token": token
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        voice: voiceShortName,
+                        rate: "1.0",
+                        pitch: "1.0"
+                    })
+                });
+
+                if (res.status === 401) {
+                    console.warn('[AZURE PROXY] Session token expired/invalid, retrying...');
+                    sessionTokenData = null; // Clear cached token
+                    retryCount++;
+                    continue;
+                }
+
+                success = true;
+            } catch (e) {
+                console.warn('[AZURE PROXY] request fail', e?.message || e);
+                return false;
+            }
         }
     }
 
