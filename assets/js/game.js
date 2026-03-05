@@ -222,7 +222,21 @@ function stopWebSpeech() {
     }
 }
 
-async function playTtsKey(key, fallbackText, azureVoiceName = "ja-JP-NanamiNeural") {
+function getPreferredTtsVoice() {
+    try {
+        const raw = localStorage.getItem('jpRpgSettingsV1');
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed.ttsVoice && ['ja-JP-NanamiNeural', 'ja-JP-MayuNeural', 'ja-JP-NaokiNeural'].includes(parsed.ttsVoice)) {
+                return parsed.ttsVoice;
+            }
+        }
+    } catch (e) { }
+    return "ja-JP-MayuNeural"; // Default to Sister
+}
+
+async function playTtsKey(key, fallbackText, azureVoiceName = null) {
+    if (!azureVoiceName) azureVoiceName = getPreferredTtsVoice();
     stopWebSpeech();
     stopTtsAudio();
 
@@ -322,7 +336,8 @@ async function getSessionToken() {
     }
 }
 
-async function speakAzure(text, voiceShortName = "ja-JP-NanamiNeural") {
+async function speakAzure(text, voiceShortName = null) {
+    if (!voiceShortName) voiceShortName = getPreferredTtsVoice();
     const key = getAzureSpeechKey();
     const region = getAzureSpeechRegion();
     const endpoint = region ? `https://${region}.tts.speech.microsoft.com/cognitiveservices/v1` : null;
