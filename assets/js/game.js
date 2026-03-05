@@ -2433,7 +2433,7 @@ createApp({
         const playMistakeVoice = async (m) => {
             if (!m.sentenceText) return;
             initAudio(); // Ensure audio context if needed
-            await speakAzure(m.sentenceText, settings.ttsVoice || DEFAULT_TTS_VOICE);
+            await speakAzure(m.sentenceText);
         };
         const clearMistakes = () => { mistakes.value = []; saveMistakes(); };
 
@@ -3395,7 +3395,7 @@ createApp({
             if (!cleanQuestionText) return;
 
             voicePlayedForCurrentQuestion.value = true;
-            await speakAzure(cleanQuestionText, settings.ttsVoice || DEFAULT_TTS_VOICE);
+            await speakAzure(cleanQuestionText);
         };
 
         const parseAcceptableAnswers = (ans) => {
@@ -3588,7 +3588,7 @@ createApp({
                             // Guard: only read if SAME question, game alive
                             if (currentIndex.value === ttsQuestionIdx && hasSubmitted.value && !isCurrentCorrect.value && !monsterDead.value && !playerDead.value && !isFinished.value && !showLevelSelect.value) {
                                 if (window.__AUDIO_DEBUG) console.log('[TTS] fired idx=', ttsQuestionIdx);
-                                speakAzure(cleanQuestionText, "ja-JP-NanamiNeural");
+                                speakAzure(cleanQuestionText);
                             } else {
                                 if (window.__AUDIO_DEBUG) console.warn('[TTS] cancelled idx=', currentIndex.value, 'scheduled=', ttsQuestionIdx);
                             }
@@ -4062,7 +4062,7 @@ window.addEventListener("keydown", (e) => {
     if (e.key && e.key.toLowerCase() === "p") {
         const currentQuestionNode = document.querySelector('#question-area');
         const cqt = currentQuestionNode ? currentQuestionNode.textContent.trim().replace(/[_ ]/g, '').replace(/（.*?）|\(.*?\)/g, '') : "質問が見つかりません";
-        speakAzure(cqt, "ja-JP-NanamiNeural");
+        speakAzure(cqt);
     }
     if (e.key && e.key.toLowerCase() === "o") {
         playTtsKey("narration.support_001", "だいじょうぶ。落ち着いて、もう一度行こう。", "ja-JP-MayuNeural");
