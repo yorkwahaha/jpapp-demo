@@ -958,7 +958,15 @@
 
     </div>
 
-    <script src="assets/js/game.js?v=26030106" defer></script>
+    <script>
+        (function () {
+            const v = new URLSearchParams(location.search).get('v');
+            const s = document.createElement('script');
+            s.src = 'assets/js/game.js' + (v ? ('?v=' + encodeURIComponent(v)) : '');
+            s.defer = true;
+            document.head.appendChild(s);
+        })();
+    </script>
 </body>
 
 </html>
