@@ -317,37 +317,41 @@ async function getSessionToken() {
     }
 }
 
+// 🌟 解鎖語速與語調控制的 speakAzure
 async function speakAzure(text, voiceShortName = null) {
+    // 讀取自訂語速與語調 (預設為 1.0)
+    let customRate = "1.0";
+    let customPitch = "default";
+    try {
+        const raw = localStorage.getItem('jpRpgSettingsV1');
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed.ttsVoice && !voiceShortName) voiceShortName = parsed.ttsVoice;
+            if (parsed.ttsRate) customRate = String(parsed.ttsRate);
+            if (parsed.ttsPitch) customPitch = String(parsed.ttsPitch);
+        }
+    } catch (e) { }
     if (!voiceShortName) voiceShortName = getPreferredTtsVoice();
+
     const key = getAzureSpeechKey();
     const region = getAzureSpeechRegion();
     const endpoint = region ? `https://${region}.tts.speech.microsoft.com/cognitiveservices/v1` : null;
 
-    console.log('[AZURE] config', {
-        hasKey: !!key,
-        hasRegion: !!region,
-        hasEndpoint: !!endpoint,
-        source: window.__AZURE_SPEECH_KEY ? 'config.local' : (document.querySelector('meta[name="azure-speech-key"]') ? 'inline' : 'none')
-    });
-
-    if (!text) {
-        console.warn('[AZURE] no text provided');
-        return false;
-    }
-
-    console.log('[AZURE] start', text.length, key ? 'direct' : 'proxy');
-
+    if (!text) return false;
     stopWebSpeech();
     stopTtsAudio();
 
     let res;
 
     if (key) {
+        // 使用 prosody 標籤將語速與音調注入
         const ssml =
             `<speak version="1.0" xml:lang="ja-JP">
-  <voice name="${voiceShortName}">${text
-                .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
-                .replaceAll('"', "&quot;").replaceAll("'", "&apos;")}</voice>
+  <voice name="${voiceShortName}">
+    <prosody rate="${customRate}" pitch="${customPitch}">
+      ${text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&apos;")}
+    </prosody>
+  </voice>
 </speak>`;
         try {
             res = await fetch(endpoint, {
@@ -359,21 +363,13 @@ async function speakAzure(text, voiceShortName = null) {
                 },
                 body: ssml
             });
-        } catch (e) {
-            console.warn('[AZURE] request fail', e?.message || e);
-            return false;
-        }
+        } catch (e) { return false; }
     } else {
         let retryCount = 0;
         let success = false;
-
         while (retryCount < 2 && !success) {
             const token = await getSessionToken();
-            if (!token) {
-                console.warn('[AZURE PROXY] failed to get session token');
-                return false;
-            }
-
+            if (!token) return false;
             try {
                 res = await fetch(TTS_PROXY_URL, {
                     method: "POST",
@@ -384,47 +380,28 @@ async function speakAzure(text, voiceShortName = null) {
                     body: JSON.stringify({
                         text: text,
                         voice: voiceShortName,
-                        rate: "1.0",
-                        pitch: "1.0"
+                        rate: customRate,   // 🌟 傳遞自訂語速
+                        pitch: customPitch  // 🌟 傳遞自訂語調
                     })
                 });
-
-                if (res.status === 401) {
-                    console.warn('[AZURE PROXY] Session token expired/invalid, retrying...');
-                    sessionTokenData = null;
-                    retryCount++;
-                    continue;
-                }
-
+                if (res.status === 401) { sessionTokenData = null; retryCount++; continue; }
                 success = true;
-            } catch (e) {
-                console.warn('[AZURE PROXY] request fail', e?.message || e);
-                return false;
-            }
+            } catch (e) { return false; }
         }
     }
 
-    if (!res || !res.ok) {
-        console.warn('[AZURE] request fail', res?.status);
-        return false;
-    }
-    console.log('[AZURE] request ok', res.status);
+    if (!res || !res.ok) return false;
 
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
-    console.log('[AZURE] audio src ready', url.slice(0, 30) + '...', blob.size);
-
     const a = sharedTtsAudio;
     a.src = url;
     currentTtsAudio = a;
     try {
-        console.log('[AZURE] play starting');
         await a.play();
-        console.log('[AZURE] play ok');
         a.onended = () => { try { URL.revokeObjectURL(url); } catch { } };
         return true;
     } catch (e) {
-        console.warn('[AZURE] play failed', e?.message ?? String(e));
         try { URL.revokeObjectURL(url); } catch { }
         return false;
     }
