@@ -1,0 +1,9 @@
+name = "jpapp-tts-proxy"
+main = "azure-tts.js"
+compatibility_date = "2026-03-05"
+preview_urls = false
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "79138047540a434c84132753f4e1b2df"
+

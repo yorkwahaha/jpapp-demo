@@ -1,23 +1,6 @@
 [
   {
-    "id": "NO_POSSESS",
-    "particle": "の",
-    "rank": 1,
-    "name": "の・第一式：連接",
-    "meaning": "A的B／名詞修飾",
-    "rule": "AのB",
-    "examples": [
-      "川のそば",
-      "男の子"
-    ],
-    "choiceSet": [
-      "の",
-      "は",
-      "が"
-    ]
-  },
-  {
-    "id": "WA_TOPIC",
+    "id": "WA_TOPIC_BASIC",
     "particle": "は",
     "rank": 1,
     "name": "は・第一式：主題",
@@ -34,16 +17,33 @@
     ]
   },
   {
-    "id": "GA_EXIST",
+    "id": "NO_POSSESSIVE",
+    "particle": "の",
+    "rank": 1,
+    "name": "の・第一式：所屬",
+    "meaning": "A的B／名詞修飾",
+    "rule": "AのB",
+    "examples": [
+      "私の本",
+      "日本の料理"
+    ],
+    "choiceSet": [
+      "の",
+      "は",
+      "が"
+    ]
+  },
+  {
+    "id": "GA_INTRANSITIVE",
     "particle": "が",
     "rank": 1,
-    "name": "が・第一式：現象/狀態",
+    "name": "が・第一式：自然發生",
     "meaning": "自然現象／狀態發生",
-    "rule": "Xがいる／ある／自動詞",
+    "rule": "Xが自動詞",
     "examples": [
-      "猫がいる",
       "雨が降る",
-      "音がする"
+      "問題が起きる",
+      "ドアが開く"
     ],
     "choiceSet": [
       "が",
@@ -52,15 +52,15 @@
     ]
   },
   {
-    "id": "WO_OBJECT",
+    "id": "WO_OBJECT_BASIC",
     "particle": "を",
     "rank": 1,
     "name": "を・第一式：受詞",
     "meaning": "動作的對象",
     "rule": "XをV",
     "examples": [
-      "ご飯を作る",
-      "本を読む"
+      "本を読む",
+      "ご飯を食べる"
     ],
     "choiceSet": [
       "を",
@@ -77,8 +77,9 @@
     "meaning": "在某個時間點",
     "rule": "TimeにV",
     "examples": [
-      "明日(に)行く",
-      "3時に会う"
+      "3時に会う",
+      "7時に起きる",
+      "日曜日に休む"
     ],
     "choiceSet": [
       "に",
@@ -87,12 +88,12 @@
     ]
   },
   {
-    "id": "HE_DEST",
+    "id": "HE_DIRECTION",
     "particle": "へ",
     "rank": 1,
-    "name": "へ・第一式：方向／目的地",
+    "name": "へ・第一式：方向",
     "meaning": "移動的方向、目的地",
-    "rule": "Placeへ 行く／来る／帰る",
+    "rule": "Placeへ行く／来る／帰る",
     "examples": [
       "学校へ行く",
       "家へ帰る"
@@ -104,15 +105,33 @@
     ]
   },
   {
-    "id": "DE_LOC",
+    "id": "MO_ALSO_BASIC",
+    "particle": "も",
+    "rank": 1,
+    "name": "も・第一式：也",
+    "meaning": "表示「也」，情況與前述相同",
+    "rule": "名詞 + も + 同樣狀態",
+    "examples": [
+      "私も学生です",
+      "雨も降る",
+      "空も曇る"
+    ],
+    "choiceSet": [
+      "も",
+      "は",
+      "が"
+    ]
+  },
+  {
+    "id": "DE_ACTION_PLACE",
     "particle": "で",
     "rank": 1,
     "name": "で・第一式：動作場所",
     "meaning": "動作發生的場所",
     "rule": "PlaceでV",
     "examples": [
-      "台所で作る",
-      "教室で勉強する"
+      "教室で勉強する",
+      "家で寝る"
     ],
     "choiceSet": [
       "で",
@@ -125,16 +144,68 @@
     "particle": "と",
     "rank": 1,
     "name": "と・第一式：一起",
-    "meaning": "和…一起／對手",
+    "meaning": "和…一起／共同動作對象",
     "rule": "XとV",
     "examples": [
-      "犬と遊ぶ",
-      "友達と話す"
+      "友達と話す",
+      "犬と遊ぶ"
     ],
     "choiceSet": [
       "と",
       "に",
       "で"
+    ]
+  },
+  {
+    "id": "NI_EXIST_PLACE",
+    "particle": "に",
+    "rank": 1,
+    "name": "に・第二式：存在地點",
+    "meaning": "存在發生的地點",
+    "rule": "PlaceにNがある／いる",
+    "examples": [
+      "部屋に猫がいる",
+      "机の上に本がある"
+    ],
+    "choiceSet": [
+      "に",
+      "で",
+      "へ"
+    ]
+  },
+  {
+    "id": "GA_EXIST_SUBJECT",
+    "particle": "が",
+    "rank": 1,
+    "name": "が・第二式：存在主體",
+    "meaning": "指出存在的主體",
+    "rule": "Nがある／いる",
+    "examples": [
+      "猫がいる",
+      "本がある"
+    ],
+    "choiceSet": [
+      "が",
+      "は",
+      "に"
+    ]
+  },
+  {
+    "id": "KARA_FROM",
+    "particle": "から",
+    "rank": 1,
+    "name": "から・第一式：起點",
+    "meaning": "表示從哪裡、從什麼時候開始",
+    "rule": "Xから…",
+    "examples": [
+      "家から学校へ行く",
+      "9時から始まる",
+      "台湾から来る"
+    ],
+    "choiceSet": [
+      "から",
+      "まで",
+      "へ"
     ]
   }
 ]

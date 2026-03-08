@@ -497,7 +497,7 @@ function flashHeroHit(hpPct = 1.0, ms = 1000) {
 }
 
 const heroStatusTimers = { speedUntil: 0, evadeUntil: 0 };
-const heroBuffs = { enemyAtbMult: 1.0, enemyDmgMult: 1.0, odoodoTurns: 0, wakuwakuTurns: 0, monsterSleep: false };
+const heroBuffs = { enemyAtbMult: 1.0, enemyDmgMult: 1.0, odoodoTurns: 0, gachigachiTurns: 0, monsterSleep: false };
 
 function setSpeedStatus(ms) {
     heroStatusTimers.speedUntil = Date.now() + ms;
@@ -558,16 +558,33 @@ function updateHeroStatusBar() {
     if (!bar) return;
 
     const hasSpeed = hasSpeedOrEvadeBuffBestEffort();
+    const wantGachigachi = heroBuffs.gachigachiTurns > 0;
 
-    const existing = bar.querySelector('.pill-speed');
-    if (hasSpeed && !existing) {
+    const pillSpeed = bar.querySelector('.pill-speed');
+    const pillGachigachi = bar.querySelector('.pill-gachigachi');
+
+    if (hasSpeed && !pillSpeed) {
         const span = document.createElement('span');
         span.className = 'hero-status-pill speed pill-speed';
         span.title = '加速／閃避';
         span.textContent = '速';
         bar.appendChild(span);
-    } else if (!hasSpeed && existing) {
-        existing.remove();
+    } else if (hasSpeed && pillSpeed) {
+        pillSpeed.title = '加速／閃避';
+    } else if (!hasSpeed && pillSpeed) {
+        pillSpeed.remove();
+    }
+
+    if (wantGachigachi && !pillGachigachi) {
+        const span = document.createElement('span');
+        span.className = 'hero-status-pill speed pill-gachigachi';
+        span.title = `硬化／減傷 (${heroBuffs.gachigachiTurns} 回合)`;
+        span.textContent = '硬';
+        bar.appendChild(span);
+    } else if (wantGachigachi && pillGachigachi) {
+        pillGachigachi.title = `硬化／減傷 (${heroBuffs.gachigachiTurns} 回合)`;
+    } else if (!wantGachigachi && pillGachigachi) {
+        pillGachigachi.remove();
     }
 
     if (window.updateSpUI) window.updateSpUI();
@@ -578,11 +595,9 @@ function updateMonsterStatusBar() {
     if (!bar) return;
 
     const wantOdoodo = heroBuffs.odoodoTurns > 0;
-    const wantWakuwaku = heroBuffs.wakuwakuTurns > 0;
     const wantSleep = !!heroBuffs.monsterSleep;
 
     const pillOdoodo = bar.querySelector('.pill-ododo');
-    const pillWakuwaku = bar.querySelector('.pill-wakuwaku');
     const pillSleep = bar.querySelector('.pill-sleep');
 
     if (wantOdoodo && !pillOdoodo) {
@@ -597,24 +612,14 @@ function updateMonsterStatusBar() {
         pillOdoodo.remove();
     }
 
-    if (wantWakuwaku && !pillWakuwaku) {
-        const span = document.createElement('span');
-        span.className = 'hero-status-pill speed pill-wakuwaku';
-        span.title = `減傷 (${heroBuffs.wakuwakuTurns} 回合)`;
-        span.textContent = '衰';
-        bar.appendChild(span);
-    } else if (wantWakuwaku && pillWakuwaku) {
-        pillWakuwaku.title = `減傷 (${heroBuffs.wakuwakuTurns} 回合)`;
-    } else if (!wantWakuwaku && pillWakuwaku) {
-        pillWakuwaku.remove();
-    }
-
     if (wantSleep && !pillSleep) {
         const span = document.createElement('span');
         span.className = 'hero-status-pill speed pill-sleep';
         span.title = '睡眠';
         span.textContent = '眠';
         bar.appendChild(span);
+    } else if (wantSleep && pillSleep) {
+        pillSleep.title = '睡眠';
     } else if (!wantSleep && pillSleep) {
         pillSleep.remove();
     }
@@ -636,6 +641,354 @@ console.log('Vue版本:', Vue);
 console.log('開始創建應用...');
 createApp({
     setup() {
+        /* =========================
+   DEBUG / DEV SHORTCUTS
+   可在 console 使用：
+   goLevel(4)
+   jpDebug.goLevel(4)
+   jpDebug.retry()
+   jpDebug.next()
+   jpDebug.state()
+   jpDebug.skill('MO_ALSO')
+   jpDebug.home()
+   jpDebug.levels()
+========================= */
+        (function attachDebugTools() {
+            function safeMaxLevel() {
+                try {
+                    if (typeof maxLevel !== "undefined") {
+                        const v = Number(
+                            typeof maxLevel?.value !== "undefined" ? maxLevel.value : maxLevel
+                        );
+                        if (Number.isFinite(v) && v > 0) return v;
+                    }
+
+                    if (typeof LEVEL_CONFIG !== "undefined" && LEVEL_CONFIG?.value) {
+                        const keys = Object.keys(LEVEL_CONFIG.value)
+                            .map(Number)
+                            .filter(Number.isFinite);
+                        if (keys.length) return Math.max(...keys);
+                    }
+                } catch (err) {
+                    console.warn("[jpDebug.safeMaxLevel] failed:", err);
+                }
+                return 1;
+            }
+
+            function clampLevel(level) {
+                const lv = Number(level);
+                const max = safeMaxLevel();
+                if (!Number.isFinite(lv)) return 1;
+                if (lv < 1) return 1;
+                if (lv > max) return max;
+                return lv;
+            }
+
+            function ensureStartedToLevel(level) {
+                const lv = clampLevel(level);
+                try {
+                    if (typeof startLevel === "function") {
+                        startLevel(lv);
+                    } else {
+                        currentLevel.value = lv;
+                        showLevelSelect.value = false;
+                        showHome.value = false;
+                        isFinished.value = false;
+                        if (typeof initGame === "function") initGame(lv);
+                    }
+                    console.log(`[jpDebug] jumped to level ${lv}`);
+                    return lv;
+                } catch (err) {
+                    console.error("[jpDebug.goLevel] failed:", err);
+                    throw err;
+                }
+            }
+
+            function makeOneSkillQuestion(skillId) {
+                if (!skillId) {
+                    console.warn("[jpDebug.skill] missing skillId");
+                    return null;
+                }
+                if (typeof generateQuestionBySkill !== "function") {
+                    console.warn("[jpDebug.skill] generateQuestionBySkill not found");
+                    return null;
+                }
+
+                try {
+                    const debugBlanks =
+                        (typeof levelConfig !== "undefined" && levelConfig?.value?.blanks != null)
+                            ? levelConfig.value.blanks
+                            : ((typeof LEVEL_CONFIG !== "undefined" && LEVEL_CONFIG?.value?.[currentLevel?.value]?.blanks != null)
+                                ? LEVEL_CONFIG.value[currentLevel.value].blanks
+                                : 1);
+
+                    const q = generateQuestionBySkill(skillId, debugBlanks, db?.value || db, VOCAB?.value || VOCAB);
+                    if (!q) {
+                        console.warn("[jpDebug.skill] no question generated for:", skillId);
+                        return null;
+                    }
+
+                    // 盡量只重置與當前題目相關的狀態，不強制重開整關
+                    if (typeof questions !== "undefined") questions.value = [q];
+                    if (typeof currentQuestionIndex !== "undefined") currentQuestionIndex.value = 0;
+                    if (typeof questionIndex !== "undefined") questionIndex.value = 0;
+                    if (typeof userAnswers !== "undefined") userAnswers.value = [];
+                    if (typeof selectedAnswers !== "undefined") selectedAnswers.value = [];
+                    if (typeof hasSubmitted !== "undefined") hasSubmitted.value = false;
+                    if (typeof isCorrect !== "undefined") isCorrect.value = null;
+                    if (typeof showResult !== "undefined") showResult.value = false;
+                    if (typeof showLevelSelect !== "undefined") showLevelSelect.value = false;
+                    if (typeof showHome !== "undefined") showHome.value = false;
+                    if (typeof isFinished !== "undefined") isFinished.value = false;
+
+                    console.log(`[jpDebug] generated skill question: ${skillId}`, q);
+                    return q;
+                } catch (err) {
+                    console.error("[jpDebug.skill] failed:", err);
+                    throw err;
+                }
+            }
+
+            function getState() {
+                return {
+                    currentLevel:
+                        typeof currentLevel !== "undefined" ? currentLevel.value : undefined,
+                    maxLevel: safeMaxLevel(),
+                    showHome:
+                        typeof showHome !== "undefined" ? showHome.value : undefined,
+                    showLevelSelect:
+                        typeof showLevelSelect !== "undefined"
+                            ? showLevelSelect.value
+                            : undefined,
+                    isFinished:
+                        typeof isFinished !== "undefined" ? isFinished.value : undefined,
+                    levelTitle:
+                        typeof levelTitle !== "undefined" ? levelTitle.value : undefined,
+                    playerHp:
+                        typeof player !== "undefined" ? player?.value?.hp : undefined,
+                    monsterHp:
+                        typeof monster !== "undefined" ? monster?.value?.hp : undefined,
+                    currentQuestion:
+                        typeof currentQuestion !== "undefined"
+                            ? currentQuestion.value
+                            : undefined,
+                    questionCount:
+                        typeof questions !== "undefined" && Array.isArray(questions?.value)
+                            ? questions.value.length
+                            : undefined
+                };
+            }
+
+            function listLevels() {
+                try {
+                    if (typeof LEVEL_CONFIG === "undefined" || !LEVEL_CONFIG?.value) {
+                        console.warn("[jpDebug.levels] LEVEL_CONFIG not ready");
+                        return [];
+                    }
+                    const rows = Object.entries(LEVEL_CONFIG.value)
+                        .map(([k, v]) => ({
+                            level: Number(k),
+                            title: v?.title || "",
+                            skillId: v?.skillId || "",
+                            skillIds: v?.skillIds || [],
+                            questionCount: v?.questionCount ?? v?.questions ?? undefined
+                        }))
+                        .sort((a, b) => a.level - b.level);
+
+                    console.table(rows);
+                    return rows;
+                } catch (err) {
+                    console.error("[jpDebug.levels] failed:", err);
+                    return [];
+                }
+            }
+
+            const debugApi = {
+                goLevel(level) {
+                    return ensureStartedToLevel(level);
+                },
+
+                retry() {
+                    try {
+                        if (typeof retryLevel === "function") {
+                            retryLevel();
+                            console.log("[jpDebug] retry current level");
+                        } else if (typeof initGame === "function") {
+                            initGame(currentLevel.value);
+                            console.log("[jpDebug] retry current level via initGame");
+                        } else {
+                            console.warn("[jpDebug.retry] retryLevel/initGame not found");
+                        }
+                    } catch (err) {
+                        console.error("[jpDebug.retry] failed:", err);
+                        throw err;
+                    }
+                },
+
+                next() {
+                    try {
+                        const nextLevel = clampLevel(
+                            (typeof currentLevel !== "undefined" ? currentLevel.value : 1) + 1
+                        );
+                        return ensureStartedToLevel(nextLevel);
+                    } catch (err) {
+                        console.error("[jpDebug.next] failed:", err);
+                        throw err;
+                    }
+                },
+
+                prev() {
+                    try {
+                        const prevLevel = clampLevel(
+                            (typeof currentLevel !== "undefined" ? currentLevel.value : 1) - 1
+                        );
+                        return ensureStartedToLevel(prevLevel);
+                    } catch (err) {
+                        console.error("[jpDebug.prev] failed:", err);
+                        throw err;
+                    }
+                },
+
+                skill(skillId) {
+                    return makeOneSkillQuestion(skillId);
+                },
+
+                skillMany(skillId, n = 20) {
+                    const results = [];
+                    const stats = { uniqueCount: 0, duplicateCount: 0, freq: {} };
+                    let lastSig = null;
+
+                    for (let i = 0; i < n; i++) {
+                        let q = null;
+                        let retry = 0;
+                        while (retry < 10) {
+                            q = this.skill(skillId);
+                            if (!q) break;
+                            const sig = `${q.chinese}|${q.leftText}|${(q.answers?.[0]?.[0] || q.answer)}|${q.rightText}`;
+                            if (sig !== lastSig) {
+                                lastSig = sig;
+                                break;
+                            }
+                            retry++;
+                        }
+                        if (q) {
+                            const ansStr = q.answers?.[0]?.join('/') || q.answer || '';
+                            results.push({
+                                i: i + 1,
+                                skill: q.skillId,
+                                chinese: q.chinese,
+                                left: q.leftText,
+                                answer: ansStr,
+                                right: q.rightText,
+                                choices: q.choices?.join(', ')
+                            });
+                            stats.freq[q.chinese] = (stats.freq[q.chinese] || 0) + 1;
+                        }
+                    }
+
+                    if (results.length > 0) {
+                        console.table(results);
+                        const uniqueKeys = Object.keys(stats.freq);
+                        stats.uniqueCount = uniqueKeys.length;
+                        stats.duplicateCount = n - stats.uniqueCount;
+                        console.log(`[jpDebug.skillMany] Results for ${skillId}:`, {
+                            total: results.length,
+                            unique: stats.uniqueCount,
+                            duplicates: stats.duplicateCount,
+                            frequency: stats.freq
+                        });
+                    }
+                    return results;
+                },
+
+                skillLines(skillId, n = 20) {
+                    let lastSig = null;
+                    const lines = [];
+                    for (let i = 0; i < n; i++) {
+                        let q = null;
+                        let retry = 0;
+                        while (retry < 10) {
+                            q = this.skill(skillId);
+                            if (!q) break;
+                            const sig = `${q.chinese}|${q.leftText}|${(q.answers?.[0]?.[0] || q.answer)}|${q.rightText}`;
+                            if (sig !== lastSig) {
+                                lastSig = sig;
+                                break;
+                            }
+                            retry++;
+                        }
+                        if (q) {
+                            const ansStr = q.answers?.[0]?.join('/') || q.answer || '';
+                            const num = String(i + 1).padStart(2, '0');
+                            lines.push(`${num}. ${q.leftText}【${ansStr}】${q.rightText} ｜ ${q.chinese}`);
+                        }
+                    }
+                    if (lines.length > 0) {
+                        console.log(`[jpDebug.skillLines] ${skillId} (${n} questions):\n` + lines.join('\n'));
+                    }
+                    return lines;
+                },
+
+                state() {
+                    const s = getState();
+                    console.log("[jpDebug.state]", s);
+                    return s;
+                },
+
+                home() {
+                    try {
+                        if (typeof goHome === "function") {
+                            goHome();
+                        } else {
+                            if (typeof showHome !== "undefined") showHome.value = true;
+                            if (typeof showLevelSelect !== "undefined") showLevelSelect.value = false;
+                            if (typeof isFinished !== "undefined") isFinished.value = false;
+                        }
+                        console.log("[jpDebug] go home");
+                    } catch (err) {
+                        console.error("[jpDebug.home] failed:", err);
+                        throw err;
+                    }
+                },
+
+                levels() {
+                    return listLevels();
+                },
+
+                help() {
+                    const msg = `
+jpDebug commands:
+- goLevel(4)
+- jpDebug.goLevel(4)
+- jpDebug.retry()
+- jpDebug.next()
+- jpDebug.prev()
+- jpDebug.skill('MO_ALSO')
+- jpDebug.skillMany('MO_ALSO', 20)
+- jpDebug.skillLines('MO_ALSO', 20)
+- jpDebug.state()
+- jpDebug.home()
+- jpDebug.levels()
+      `.trim();
+                    console.log(msg);
+                    return msg;
+                }
+            };
+
+            // 正式命名空間
+            window.jpDebug = debugApi;
+
+            // 短版捷徑
+            window.goLevel = (lv) => debugApi.goLevel(lv);
+            window.retryLevelDebug = () => debugApi.retry();
+            window.nextLevelDebug = () => debugApi.next();
+            window.prevLevelDebug = () => debugApi.prev();
+            window.testSkill = (skillId) => debugApi.skill(skillId);
+            window.testSkillMany = (skillId, n) => debugApi.skillMany(skillId, n);
+            window.testSkillLines = (skillId, n) => debugApi.skillLines(skillId, n);
+
+            console.log("[jpDebug] ready. Try: goLevel(4), jpDebug.help()");
+        })();
         onMounted(() => {
             const h = location.hostname;
             const isLocal = h === 'localhost' || h === '127.0.0.1' || h === '0.0.0.0'
@@ -650,39 +1003,16 @@ createApp({
             document.head.appendChild(script);
         });
 
-        const db = {
-            places: [{ j: "部屋", r: "へや", t: "房間" }, { j: "学校", r: "がっこう", t: "學校" }, { j: "図書館", r: "としょかん", t: "圖書館" }, { j: "庭", r: "にわ", t: "院子" }, { j: "教室", r: "きょうしつ", t: "教室" }],
-            objects: [
-                { j: "本", r: "ほん", t: "書", type: "read", exists: true },
-                { j: "料理", r: "りょうり", t: "料理", type: "eat", exists: true },
-                { j: "音楽", r: "おんがく", t: "音樂", type: "hear", exists: false },
-                { j: "手紙", r: "てがみ", t: "信", type: "write", exists: true },
-                { j: "日記", r: "にっき", t: "日記", type: "write", exists: true },
-                { j: "パン", r: "ぱん", t: "麵包", type: "eat", exists: true },
-                { j: "プレゼント", r: "ぷれぜんと", t: "禮物", type: "give", exists: true }
-            ],
-            people: [{ j: "友達", r: "ともだち", t: "朋友" }, { j: "先生", r: "せんせい", t: "老師" }, { j: "母", r: "はは", t: "媽媽" }],
-            tools: [{ j: "ペン", r: "ぺん", t: "筆" }, { j: "スマホ", r: "すまほ", t: "手機" }, { j: "はし", r: "はし", t: "筷子" }],
-            grammarTips: {
-                move: "「へ」或「に」表示移動的目標、方向，接在場所後表示「往～去」。",
-                placeAction: "「で」表示動作發生的場所；「を」表示動作的受詞（讀什麼、吃什麼）。",
-                existence: "「に」表示物品存在的場所；「が」表示主語（有什麼）。",
-                accompany: "「と」表示一起做事的對象（和誰）；「を」表示動作的受詞。",
-                tool: "「で」表示使用的工具或手段（用什麼）；「を」表示動作的受詞。",
-                give: "「に」表示給予的對象（給誰）；「を」表示給予的物品。"
-            }
-        };
-
-        const fallbackLevels = {
-            1: { blanks: 1, types: [0, 1, 2], title: '森林' },
-            2: { blanks: 1, types: [0, 1, 2, 3, 4, 5], title: '洞窟' },
-            3: { blanks: 2, types: [0, 1, 2, 3, 4, 5], title: '魔王城' }
-        };
+        // --- 資料抽離：讀取全域早期關卡資料庫 ---
+        const pool = window.EARLY_GAME_POOLS || { config: {}, legacyDb: {}, skills: {} };
+        const db = pool.legacyDb || {};
+        const fallbackLevels = pool.config?.fallbackLevels || {};
         const LEVEL_CONFIG = ref(fallbackLevels);
         const SKILLS = ref([]);
         const VOCAB = ref(null);
+        const maxLevel = ref(35);
 
-        const APP_VERSION = "26030702"
+        const APP_VERSION = "26030900"
         const appVersion = ref(APP_VERSION);
         const VFX_ENHANCED = true;
 
@@ -815,6 +1145,7 @@ createApp({
                         };
                     });
                     LEVEL_CONFIG.value = mappedLevels;
+                    maxLevel.value = data.length;
 
                     const tempMap = {};
                     Object.keys(LEVEL_CONFIG.value).forEach(lvStr => {
@@ -836,39 +1167,68 @@ createApp({
             } catch (e) { }
         };
 
-        const skillList = ref([]);
+        const unlockedAbilityIds = ref([]);
+        const allAbilities = ref([]);
+        const skillList = computed(() =>
+            allAbilities.value.filter(a => unlockedAbilityIds.value.includes(a.id))
+        );
         const isSkillOpen = ref(false);
+        const pendingLevelUpAbility = ref(null);
+        const isAbilityUnlockModalOpen = ref(false);
+        const queuedNextLevel = ref(null);
         const abilitiesMap = {};
 
         fetch(`assets/data/abilities.v1.json?v=${appVersion.value}&t=${Date.now()}`)
             .then(res => res.json())
             .then(data => {
-                skillList.value = data;
+                allAbilities.value = data;
                 data.forEach(s => abilitiesMap[s.id] = s);
             })
-            .catch(err => console.error("Failed to load skills", err));
+            .catch(err => console.error("Failed to load abilities", err));
 
         function openSkillOverlay() { isSkillOpen.value = true; }
         function closeSkillOverlay() { isSkillOpen.value = false; }
 
         const applyTurnLogic = () => {
+            // ODODO：怪物減速
             if (heroBuffs.odoodoTurns > 0) {
                 heroBuffs.odoodoTurns--;
+
                 if (heroBuffs.odoodoTurns <= 0) {
+                    heroBuffs.odoodoTurns = 0;
                     heroBuffs.enemyAtbMult = 1.0;
-                    pushBattleLog("オドオド 效果結束（怪物速度恢復）", 'info');
+
+                    if (typeof pushBattleLog === 'function') {
+                        pushBattleLog("オドオド 效果結束（怪物速度恢復）", 'info');
+                    }
                 }
             }
-            if (heroBuffs.wakuwakuTurns > 0) {
-                heroBuffs.wakuwakuTurns--;
-                if (heroBuffs.wakuwakuTurns <= 0) {
+
+            // GACHIGACHI：玩家硬化減傷
+            if (heroBuffs.gachigachiTurns > 0) {
+                heroBuffs.gachigachiTurns--;
+
+                if (heroBuffs.gachigachiTurns <= 0) {
+                    heroBuffs.gachigachiTurns = 0;
                     heroBuffs.enemyDmgMult = 1.0;
-                    pushBattleLog("ワクワク 效果結束（怪物攻擊力恢復）", 'info');
+
+                    if (typeof pushBattleLog === 'function') {
+                        pushBattleLog("ガチガチ 效果結束（你的硬化狀態解除）", 'info');
+                    }
                 }
             }
 
             updateHeroStatusBar();
             if (typeof updateMonsterStatusBar === 'function') updateMonsterStatusBar();
+        };
+
+        const grantAbilityReward = (abilityId) => {
+            if (!abilityId) return null;
+            if (!abilitiesMap[abilityId]) return null;
+            if (unlockedAbilityIds.value.includes(abilityId)) return null;
+
+            unlockedAbilityIds.value.push(abilityId);
+            return abilitiesMap[abilityId];
         };
 
         // 1. 補回遺失的「技能專屬音效播放器」
@@ -911,25 +1271,37 @@ createApp({
             if (id === 'ODOODO') {
                 heroBuffs.enemyAtbMult = 1.3;
                 heroBuffs.odoodoTurns = 3;
-                showStatusToast('🐌 怪物遲緩！×3回合', { bg: 'rgba(163,230,53,0.92)', border: '#84cc16', color: '#1a2e05' });
-                if (typeof pushBattleLog !== 'undefined') {
+                showStatusToast('🐌 怪物遲緩！×3回合', {
+                    bg: 'rgba(163,230,53,0.92)',
+                    border: '#84cc16',
+                    color: '#1a2e05'
+                });
+                if (typeof pushBattleLog === 'function') {
                     pushBattleLog(`使用了技能：${skill.name}！怪物減速三回合！`, 'buff');
                 }
-            } else if (id === 'WAKUWAKU') {
+            } else if (id === 'GACHIGACHI') {
                 heroBuffs.enemyDmgMult = 0.6;
-                heroBuffs.wakuwakuTurns = 2;
-                showStatusToast('🛡️ 怪物衰弱！×2回合', { bg: 'rgba(251,146,60,0.92)', border: '#f97316', color: '#431407' });
-                if (typeof pushBattleLog !== 'undefined') {
-                    pushBattleLog(`使用了技能：${skill.name}！怪物攻擊減傷兩回合！`, 'buff');
+                heroBuffs.gachigachiTurns = 2;
+                showStatusToast('🛡️ 身體硬化！×2回合', {
+                    bg: 'rgba(148,163,184,0.92)',
+                    border: '#94a3b8',
+                    color: '#0f172a'
+                });
+                if (typeof pushBattleLog === 'function') {
+                    pushBattleLog(`使用了技能：${skill.name}！你進入硬化狀態，受到的傷害減少兩回合！`, 'buff');
                 }
             } else if (id === 'UTOUTO') {
                 heroBuffs.monsterSleep = true;
-                showStatusToast('💤 怪物睡著了！', { bg: 'rgba(168,85,247,0.92)', border: '#c084fc', color: '#1e0a2e' });
-                if (typeof pushBattleLog !== 'undefined') {
+                showStatusToast('💤 怪物睡著了！', {
+                    bg: 'rgba(168,85,247,0.92)',
+                    border: '#c084fc',
+                    color: '#1e0a2e'
+                });
+                if (typeof pushBattleLog === 'function') {
                     pushBattleLog(`使用了技能：${skill.name}！怪物睡著了！`, 'buff');
                 }
             } else {
-                if (typeof pushBattleLog !== 'undefined') {
+                if (typeof pushBattleLog === 'function') {
                     pushBattleLog(`使用了技能：${skill.name}！`, 'buff');
                 }
             }
@@ -937,8 +1309,9 @@ createApp({
             // 更新畫面狀態
             updateHeroStatusBar();
             if (typeof updateMonsterStatusBar === 'function') updateMonsterStatusBar();
-            closeSkillOverlay();
-            if (typeof resumeBattle !== 'undefined') resumeBattle();
+
+            if (typeof closeSkillOverlay === 'function') closeSkillOverlay();
+            if (typeof resumeBattle === 'function') resumeBattle();
         };
 
         onMounted(() => {
@@ -998,23 +1371,11 @@ createApp({
             }
         });
 
-        const MONSTER_NAMES = { 1: '助詞怪', 2: '助詞妖', 3: '助詞魔王' };
-        const MONSTER_HP = 100;
-        const GOLD_PER_HIT = 10;
-        const EXP_PER_HIT = 15;
-        const POTION_HP = 30;
-        const INITIAL_POTIONS = 3;
-        const COMBO_PERFECT = 3;
-        const PASS_SCORE = 0;
-
-        const MONSTERS = [
-            { id: 1, name: '助詞怪', sprite: 'assets/images/monsters/slime.png', hpMax: 100, attack: 20, trait: '普通型' },
-            { id: 2, name: '助詞妖', sprite: 'assets/images/monsters/slime.png', hpMax: 120, attack: 25, trait: '會閃避' },
-            { id: 3, name: '助詞魔', sprite: 'assets/images/monsters/slime.png', hpMax: 140, attack: 30, trait: '攻擊高' },
-            { id: 4, name: '助詞龍', sprite: 'assets/images/monsters/slime.png', hpMax: 160, attack: 35, trait: '火焰吐息' },
-            { id: 5, name: '助詞鬼', sprite: 'assets/images/monsters/slime.png', hpMax: 180, attack: 40, trait: '無形' },
-            { id: 6, name: '助詞王', sprite: 'assets/images/monsters/slime.png', hpMax: 200, attack: 50, trait: '王者氣息' }
-        ];
+        // --- 抽離遊戲常數 ---
+        const {
+            MONSTER_NAMES, MONSTER_HP, GOLD_PER_HIT, EXP_PER_HIT,
+            POTION_HP, INITIAL_POTIONS, COMBO_PERFECT, PASS_SCORE, MONSTERS
+        } = pool.config || {};
 
         const showLevelSelect = ref(true);
         const showGrammarDetail = ref(false);
@@ -1217,7 +1578,7 @@ createApp({
                 }
             } catch (e) { }
 
-            const abilityIds = ['ODOODO', 'WAKUWAKU', 'UTOUTO'];
+            const abilityIds = ['ODOODO', 'GACHIGACHI', 'UTOUTO', 'WAKUWAKU'];
             for (const sid of abilityIds) {
                 promises.push(loadAsset(`assets/audio/skill/${sid.toLowerCase()}.mp3`));
                 promises.push(loadAsset(`assets/audio/skill/${sid.toLowerCase()}2.mp3`));
@@ -2204,269 +2565,510 @@ createApp({
             const tipText = (skillDef.meaning || '') + (skillDef.rule ? ' / ' + skillDef.rule : '');
             const safeVocab = vocab || {};
 
+            const zhOf = (obj) => obj?.zh || obj?.t || obj?.label || '…';
+
+            const seg = (text, ruby = '') => ({
+                text,
+                ruby,
+                isBlank: false
+            });
+
+            const combineDesu = (text, ruby) => ({
+                text: `${text}です`,
+                ruby: `${ruby}です`
+            });
+
+            const buildIntransitiveChinese = (noun, verb) => {
+                const nounZh = zhOf(noun);
+                const kind = noun?.kind || '';
+                const verbJ = verb?.j || '';
+
+                if (kind === 'precip') {
+                    if (noun?.j === '雨') return '下雨';
+                    if (noun?.j === '雪') return '下雪';
+                    return `${nounZh}下`;
+                }
+
+                if (kind === 'sky') {
+                    if (verbJ === '曇る') return `${nounZh}轉陰`;
+                    return `${nounZh}${zhOf(verb)}`;
+                }
+
+                if (kind === 'wind') {
+                    if (verbJ === '吹く') return `${nounZh}吹`;
+                    return `${nounZh}${zhOf(verb)}`;
+                }
+
+                if (kind === 'flower') {
+                    if (verbJ === '咲く') return `${nounZh}開了`;
+                    return `${nounZh}${zhOf(verb)}`;
+                }
+
+                if (kind === 'door') {
+                    if (verbJ === '開く') return `${nounZh}開了`;
+                    if (verbJ === '閉まる') return `${nounZh}關了`;
+                }
+
+                if (kind === 'light') {
+                    if (verbJ === '消える') return `${nounZh}熄了`;
+                }
+
+                if (kind === 'event' || (noun?.tags || []).includes('event')) {
+                    if (verbJ === '起きる') return `${nounZh}發生`;
+                }
+
+                return `${nounZh}${zhOf(verb)}`;
+            };
+
+            const makeParticleQuestion = ({
+                chinese,
+                leftText,
+                leftRuby,
+                rightText,
+                rightRuby,
+                answer,
+                skillId,
+                grammarTip,
+                choices
+            }) => ({
+                chinese,
+                segments: [
+                    seg(leftText, leftRuby),
+                    { isBlank: true, blankIndex: 0 },
+                    seg(rightText, rightRuby)
+                ],
+                answers: [[answer]],
+                grammarTip,
+                skillId,
+                choices
+            });
+
             const getChoices = (defaultChoices) => {
                 const arr = [...(skillDef.choiceSet || defaultChoices)];
                 return arr.sort(() => Math.random() - 0.5).slice(0, 4);
             };
 
             let q = null;
-            if (skillDef.id === 'NO_POSSESS') {
-                const isPersonA = Math.random() < 0.5;
-                let personPool = [...(db?.people || []), ...(safeVocab.people || [])];
-                let placePool = [...(db?.places || []), ...(safeVocab.places || []), ...(safeVocab.nature || []).filter(x => x.kind === 'landform')];
-                let objPool = [...(db?.objects || []), ...(safeVocab.objects || [])];
+            if (skillDef.id === 'NO_POSSESS' || skillDef.id === 'NO_POSSESSIVE') {
+                const lv = Number(currentLevel.value || 1);
 
-                let ownableObjPool = objPool.filter(o => o.ownable !== false);
-                let placeableObjPool = objPool.filter(o => o.placeable !== false);
+                const skillPool = (pool.skills?.NO_POSSESSIVE) || {};
+                const safePeople = skillPool.safePeople || [];
+                const safePlaces = skillPool.safePlaces || [];
+                const safeOwnedObjects = skillPool.safeOwnedObjects || [];
+                const safePlacedObjects = skillPool.safePlacedObjects || [];
+                const safeTemplates = skillPool.safeTemplates || [];
 
-                if (currentLevel.value === 1) {
-                    const l1People = ["母", "友達", "私", "あなた", "先生"];
-                    personPool = personPool.filter(p => l1People.includes(p.j));
+                if (lv <= 2) {
+                    const personTemplates = [
+                        { a: safePeople[0], b: safeOwnedObjects[0] },
+                        { a: safePeople[1], b: safeOwnedObjects[4] },
+                        { a: safePeople[2], b: safeOwnedObjects[1] },
+                        { a: safePeople[3], b: safeOwnedObjects[2] },
+                        { a: safePeople[4], b: safeOwnedObjects[3] }
+                    ];
 
-                    const l1Places = ["家", "学校", "教室", "図書館", "病院", "駅", "公園", "庭", "部屋", "会社", "デパート"];
-                    placePool = placePool.filter(p => l1Places.includes(p.j));
+                    const placeTemplates = [
+                        { a: safePlaces[0], b: safePlacedObjects[0] },
+                        { a: safePlaces[2], b: safePlacedObjects[1] },
+                        { a: safePlaces[4], b: safePlacedObjects[2] },
+                        { a: safePlaces[1], b: safePlacedObjects[3] },
+                        { a: safePlaces[3], b: safePlacedObjects[0] }
+                    ];
 
-                    ownableObjPool = objPool.filter(o => {
-                        const hasTag = o.tags ? o.tags.some(t => ['food', 'drink', 'media'].includes(t)) : false;
-                        return ((o.tags && o.tags.includes('owned')) || o.ownable === true) && !hasTag;
+                    const tpl = Math.random() < 0.5 ? pickOne(personTemplates) : pickOne(placeTemplates);
+                    const finalTpl = tpl || safeTemplates[0];
+
+                    q = makeParticleQuestion({
+                        chinese: `${zhOf(finalTpl.a)}的${zhOf(finalTpl.b)}`,
+                        leftText: finalTpl.a.j,
+                        leftRuby: finalTpl.a.r,
+                        rightText: finalTpl.b.j,
+                        rightRuby: finalTpl.b.r,
+                        answer: 'の',
+                        skillId: skillDef.id,
+                        grammarTip: tipText,
+                        choices: (Number(blanks ?? 1) === 1) ? getChoices(["の", "は", "が", "を"]) : undefined
                     });
-                    placeableObjPool = objPool.filter(o => {
-                        const hasTag = o.tags ? o.tags.some(t => ['food', 'drink', 'media'].includes(t)) : false;
-                        return ((o.tags && o.tags.includes('inplace')) || o.placeable === true) && !hasTag;
-                    });
-                }
+                } else {
+                    let personPool = [...(db?.people || []), ...(safeVocab.people || []), ...safePeople];
+                    let placePool = [...(db?.places || []), ...(safeVocab.places || []), ...safePlaces];
+                    let objPool = [...(db?.objects || []), ...(safeVocab.objects || []), ...safeOwnedObjects, ...safePlacedObjects];
 
-                let a, b, validObj = false, attempts = 0;
+                    let ownableObjPool = objPool.filter(o => o && o.ownable !== false);
+                    let placeableObjPool = objPool.filter(o => o && o.placeable !== false);
 
-                while (!validObj && attempts < 20) {
-                    if (isPersonA) {
-                        a = pickOne(personPool);
-                        b = pickOne(ownableObjPool);
-                        if (!a || !b) { validObj = false; break; }
-                        validObj = true;
-                        if (currentLevel.value > 1 && b.ownable === false) validObj = false;
-                    } else {
-                        a = pickOne(placePool);
-                        b = pickOne(placeableObjPool);
-                        if (!a || !b) { validObj = false; break; }
-                        validObj = true;
-                        if (currentLevel.value > 1 && b.placeable === false) validObj = false;
-                        else if (b.domain && !b.domain.includes(a.id) && !b.domain.includes("general")) validObj = false;
-                    }
-                    attempts++;
-                }
+                    if (!personPool.length) personPool = safePeople;
+                    if (!placePool.length) placePool = safePlaces;
+                    if (!ownableObjPool.length) ownableObjPool = safeOwnedObjects;
+                    if (!placeableObjPool.length) placeableObjPool = safePlacedObjects;
 
-                if (!validObj || !a || !b) return safeFallbackQuestion(skillDef.id);
+                    const isPersonA = Math.random() < 0.5;
+                    let a, b, validObj = false, attempts = 0;
 
-                q = {
-                    chinese: `${a.t || a.zh || '…'}的${b.t || b.zh || '…'}`,
-                    segments: [
-                        { text: a.j, ruby: a.r, isBlank: false },
-                        { isBlank: true, blankIndex: 0 },
-                        { text: b.j, ruby: b.r, isBlank: false }
-                    ],
-                    answers: [["の"]],
-                    grammarTip: tipText,
-                    skillId: skillDef.id
-                };
-                if (blanks === 1) q.choices = getChoices(["の", "は", "が", "を"]);
-            }
-            else if (skillDef.id === 'WA_TOPIC') {
-                const isIdentity = Math.random() < 0.5;
-                let x, y, validObj = false, attempts = 0;
+                    while (!validObj && attempts < 20) {
+                        if (isPersonA) {
+                            a = pickOne(personPool);
+                            b = pickOne(ownableObjPool);
+                            validObj = !!(a && b);
+                        } else {
+                            a = pickOne(placePool);
+                            b = pickOne(placeableObjPool);
+                            validObj = !!(a && b);
 
-                const peoplePool = [...(safeVocab.people || []), { j: "私", r: "わたし", t: "我", tags: ["person"] }, { j: "あなた", r: "あなた", t: "你", tags: ["person"] }];
-                const timePool = [{ j: "今日", r: "きょう", t: "今天", tags: ["time"] }, { j: "明日", r: "あした", t: "明天", tags: ["time"] }, { j: "週末", r: "しゅうまつ", t: "週末", tags: ["time"] }];
-                const identityPool = [...(safeVocab.people || []).filter(p => (p.tags || []).includes("role")), { j: "学生", r: "がくせい", t: "學生", tags: ["role"] }, { j: "医者", r: "いしゃ", t: "醫生", tags: ["role"] }, { j: "先生", r: "せんせい", t: "老師", tags: ["role"] }];
-                const statePool = [{ j: "休み", r: "やすみ", t: "休息", tags: ["state"] }, { j: "雨", r: "あめ", t: "雨", tags: ["state"] }, { j: "いい天気", r: "いいてんき", t: "好天氣", tags: ["state"] }];
-
-                if (isIdentity) {
-                    while (attempts < 20 && !validObj) {
-                        x = pickOne(peoplePool);
-                        y = pickOne(identityPool);
-                        const xIsRole = x && x.tags && x.tags.includes("role");
-                        const _xIsTeacher = x && x.j === "先生";
-                        if (x && y && x.j !== y.j) {
-                            if (xIsRole && !_xIsTeacher) validObj = false;
-                            else validObj = true;
+                            if (validObj && Array.isArray(b.domain) && b.domain.length > 0) {
+                                const placeKey = a?.id || a?.key || a?.slug || a?.j || null;
+                                if (placeKey && !b.domain.includes(placeKey) && !b.domain.includes("general")) {
+                                    validObj = false;
+                                }
+                            }
                         }
                         attempts++;
                     }
+
+                    if (!validObj || !a || !b) {
+                        const tpl = pickOne(safeTemplates);
+                        a = tpl.a;
+                        b = tpl.b;
+                    }
+
+                    q = makeParticleQuestion({
+                        chinese: `${zhOf(a)}的${zhOf(b)}`,
+                        leftText: a.j,
+                        leftRuby: a.r,
+                        rightText: b.j,
+                        rightRuby: b.r,
+                        answer: 'の',
+                        skillId: skillDef.id,
+                        grammarTip: tipText,
+                        choices: (Number(blanks ?? 1) === 1) ? getChoices(["の", "は", "が", "を"]) : undefined
+                    });
+                }
+            }
+            else if (skillDef.id === 'WA_TOPIC' || skillDef.id === 'WA_TOPIC_BASIC') {
+                const lv = Number(currentLevel.value || 1);
+
+                const skillPool = (pool.skills?.WA_TOPIC_BASIC) || {};
+                const safePeople = skillPool.safePeople || [];
+                const timePool = skillPool.timePool || [];
+                const identityPool = skillPool.identityPool || [];
+                const statePool = skillPool.statePool || [];
+
+                // 前幾關偏向時間/狀態句（例如：今天是晴天），較自然
+                const useIdentity = lv >= 3 ? Math.random() < 0.45 : Math.random() < 0.15;
+
+                let x, y, zhPrompt;
+                if (useIdentity) {
+                    x = pickOne(safePeople);
+                    y = pickOne(identityPool.filter(r => r.j !== x.j)) || identityPool[0];
+                    zhPrompt = `${zhOf(x)}是${zhOf(y)}`;
                 } else {
                     x = pickOne(timePool);
                     y = pickOne(statePool);
-                    validObj = true;
+                    zhPrompt = `${zhOf(x)}是${zhOf(y)}`;
                 }
 
-                if (!validObj) return safeFallbackQuestion(skillDef.id);
-
-                q = {
-                    chinese: `${x.t || x.zh || '…'}是${y.t || y.zh || '…'}`,
-                    segments: [
-                        { text: x.j, ruby: x.r, isBlank: false },
-                        { isBlank: true, blankIndex: 0 },
-                        { text: y.j + "です", ruby: y.r + "です", isBlank: false }
-                    ],
-                    answers: [["は"]],
+                const right = combineDesu(y.j, y.r);
+                q = makeParticleQuestion({
+                    chinese: zhPrompt,
+                    leftText: x.j,
+                    leftRuby: x.r,
+                    rightText: right.text,
+                    rightRuby: right.ruby,
+                    answer: 'は',
+                    skillId: skillDef.id,
                     grammarTip: tipText,
-                    skillId: skillDef.id
-                };
-                if (blanks === 1) q.choices = getChoices(["は", "が", "を", "に"]);
+                    choices: (Number(blanks ?? 1) === 1) ? getChoices(["は", "が", "を", "に"]) : undefined
+                });
             }
-            else if (skillDef.id === 'GA_EXIST') {
-                const poolNature = safeVocab.nature || [{ j: "雨", r: "あめ", t: "雨", kind: "precip" }];
-                const poolVerbsNature = safeVocab.verbs_nature || [{ j: "降る", r: "ふる", t: "下（雨雪）", kinds: ["precip"] }];
-                const poolPhenomena = safeVocab.phenomena || [];
-                const poolVerbsPhenomena = safeVocab.verbs_phenomena || [];
+            else if (skillDef.id === 'GA_EXIST' || skillDef.id === 'GA_INTRANSITIVE') {
+                const lv = Number(currentLevel.value || 1);
 
-                const allNouns = [...poolNature, ...poolPhenomena];
-                const allVerbs = [...poolVerbsNature, ...poolVerbsPhenomena];
+                const skillPool = (pool.skills?.GA_INTRANSITIVE) || {};
+                const safeCombos = skillPool.safeCombos || [];
 
-                const catNature = allNouns.filter(n => n.kind === 'precip' || n.kind === 'wind' || n.kind === 'sky' || n.kind === 'flower' || (n.tags && n.tags.includes('phenomenon')));
-                const catState = allNouns.filter(n => n.tags && (n.tags.includes('state') || n.tags.includes('feeling')));
-                const catEvent = allNouns.filter(n => n.tags && n.tags.includes('event'));
+                let picked = null;
 
-                let n = null, v = null, attempt = 0, valid = false;
+                // 前 1~4 關直接用自然安全句
+                if (lv <= 4) {
+                    picked = pickOne(safeCombos);
+                } else {
+                    const poolNature = safeVocab.nature || [];
+                    const poolVerbsNature = safeVocab.verbs_nature || [];
+                    const poolPhenomena = safeVocab.phenomena || [];
+                    const poolVerbsPhenomena = safeVocab.verbs_phenomena || [];
 
-                while (!valid && attempt < 50) {
-                    let targetCategory = 'nature';
-                    let roll = Math.random() * 100;
-                    let wNature = 40, wState = 35, wEvent = 25;
+                    const allNouns = [...poolNature, ...poolPhenomena];
+                    const allVerbs = [...poolVerbsNature, ...poolVerbsPhenomena];
 
-                    if (gaExistRecentCategories.length >= 2) {
-                        const last1 = gaExistRecentCategories[gaExistRecentCategories.length - 1];
-                        const last2 = gaExistRecentCategories[gaExistRecentCategories.length - 2];
-                        if (last1 === last2) {
-                            if (last1 === 'nature') { wNature = 0; roll = Math.random() * 60; }
-                            else if (last1 === 'state') { wState = 0; roll = Math.random() * 65; }
-                            else if (last1 === 'event') { wEvent = 0; roll = Math.random() * 75; }
-                        }
+                    let n = null, v = null, attempt = 0, valid = false;
+                    while (!valid && attempt < 30) {
+                        n = pickOne(allNouns);
+                        if (!n) { attempt++; continue; }
+                        const candidates = allVerbs.filter(verb => (verb.kinds || []).includes(n.kind));
+                        if (!candidates.length) { attempt++; continue; }
+                        v = pickOne(candidates);
+                        if (n && v) valid = true;
+                        attempt++;
                     }
 
-                    if (roll < wNature) targetCategory = 'nature';
-                    else if (roll < wNature + wState) targetCategory = 'state';
-                    else targetCategory = 'event';
-
-                    let selectedPool;
-                    if (targetCategory === 'nature' && catNature.length > 0) selectedPool = catNature;
-                    else if (targetCategory === 'state' && catState.length > 0) selectedPool = catState;
-                    else if (targetCategory === 'event' && catEvent.length > 0) selectedPool = catEvent;
-                    else selectedPool = allNouns;
-
-                    n = pickOne(selectedPool);
-                    let candidates = allVerbs.filter(verb => (verb.kinds || []).includes(n.kind));
-
-                    if (candidates.length === 0) { attempt++; continue; }
-
-                    v = pickOne(candidates);
-                    const sentenceKey = `${n.j}_${v.j}`;
-                    const templateKey = n.kind;
-
-                    if (gaExistRecentSentences.includes(sentenceKey) || gaExistRecentTemplates.includes(templateKey)) {
-                        attempt++; continue;
-                    }
-
-                    valid = true;
-                    gaExistRecentCategories.push(targetCategory);
-                    if (gaExistRecentCategories.length > 3) gaExistRecentCategories.shift();
-                    gaExistRecentSentences.push(sentenceKey);
-                    if (gaExistRecentSentences.length > 5) gaExistRecentSentences.shift();
-                    gaExistRecentTemplates.push(templateKey);
-                    if (gaExistRecentTemplates.length > 3) gaExistRecentTemplates.shift();
+                    picked = valid ? { n, v } : pickOne(safeCombos);
                 }
 
-                if (!valid) {
-                    const fallbackCombos = [
-                        { n: { j: "雨", r: "あめ", t: "雨", kind: "precip" }, v: { j: "降る", r: "ふる", t: "下（雨雪）", kinds: ["precip"] } },
-                        { n: { j: "雪", r: "ゆき", t: "雪", kind: "precip" }, v: { j: "降る", r: "ふる", t: "下（雨雪）", kinds: ["precip"] } }
-                    ];
-                    const safe = pickOne(fallbackCombos);
-                    n = safe.n; v = safe.v;
-                }
-
-                q = {
-                    chinese: `${v.t || v.zh || '…'}${n.t || n.zh || '…'}`,
-                    segments: [
-                        { text: n.j, ruby: n.r, isBlank: false },
-                        { isBlank: true, blankIndex: 0 },
-                        { text: v.j, ruby: v.r, isBlank: false }
-                    ],
-                    answers: [["が"]],
+                q = makeParticleQuestion({
+                    chinese: buildIntransitiveChinese(picked.n, picked.v),
+                    leftText: picked.n.j,
+                    leftRuby: picked.n.r,
+                    rightText: picked.v.j,
+                    rightRuby: picked.v.r,
+                    answer: 'が',
+                    skillId: skillDef.id,
                     grammarTip: tipText,
-                    skillId: skillDef.id
-                };
-                if (blanks === 1) q.choices = getChoices(["が", "を", "に", "で", "は", "へ", "と", "の"]);
+                    choices: (Number(blanks ?? 1) === 1) ? getChoices(["が", "を", "に", "で", "は", "へ", "と", "の"]) : undefined
+                });
             }
-            else if (skillDef.id === 'WO_OBJECT') {
-                const vList = (safeVocab.verbs_do || []).filter(v => v.vt === true);
-                const v = pickOne(vList) || { j: "読む", r: "よむ", t: "讀", kind: "read" };
+            else if (skillDef.id === 'WO_OBJECT' || skillDef.id === 'WO_OBJECT_BASIC') {
+                const skillPool = (pool.skills?.WO_OBJECT_BASIC) || {};
+                const basicCombos = skillPool.basicCombos || [];
 
-                let oPool = safeVocab.objects || db?.objects || [];
-                if (v.kind === "eat") oPool = oPool.filter(o => ["ご飯", "りんご", "肉", "魚", "野菜", "パン", "料理"].includes(o.j));
-                else if (v.kind === "drink") oPool = oPool.filter(o => ["水", "牛乳", "お茶", "コーヒー"].includes(o.j));
-                else if (v.kind === "listen") oPool = oPool.filter(o => ["音楽", "ラジオ"].includes(o.j));
-                else if (v.kind === "read") oPool = oPool.filter(o => ["本", "新聞", "雑誌", "手紙"].includes(o.j));
+                // BASIC 直接走安全自然搭配，避免 verbs_do 偏科
+                const picked = pickOne(basicCombos);
 
-                if (!oPool || oPool.length === 0) oPool = safeVocab.objects || db?.objects || [];
-                const o = pickOne(oPool) || { j: "本", r: "ほん", t: "書" };
-
-                q = {
-                    chinese: `${v.t || v.zh || '…'}${o.t || o.zh || '…'}`,
-                    segments: [
-                        { text: o.j, ruby: o.r, isBlank: false },
-                        { isBlank: true, blankIndex: 0 },
-                        { text: v.j, ruby: v.r, isBlank: false }
-                    ],
-                    answers: [["を"]],
+                q = makeParticleQuestion({
+                    chinese: `${zhOf(picked.v)}${zhOf(picked.o)}`,
+                    leftText: picked.o.j,
+                    leftRuby: picked.o.r,
+                    rightText: picked.v.j,
+                    rightRuby: picked.v.r,
+                    answer: 'を',
+                    skillId: skillDef.id,
                     grammarTip: tipText,
-                    skillId: skillDef.id
-                };
-                if (blanks === 1) q.choices = getChoices(["を", "に", "が", "で", "は", "へ", "と", "の"]);
+                    choices: (Number(blanks ?? 1) === 1) ? getChoices(["を", "に", "が", "で"]) : undefined
+                });
             }
             else if (skillDef.id === 'NI_TIME') {
-                const tList = safeVocab.times || [{ j: "明日", r: "あした", t: "明天" }, { j: "今日", r: "きょう", t: "今天" }];
+                const skillPool = (pool.skills?.NI_TIME) || {};
+                const tList = skillPool.timePool || [{ j: "明日", r: "あした", zh: "明天" }];
+                const vList = skillPool.movePool || [{ j: "行く", r: "いく", zh: "去" }];
+
                 const time = pickOne(tList);
-                const vList = safeVocab.verbs_move || [{ j: "行く", r: "いく", t: "去" }];
                 const v = pickOne(vList);
-                let vj = v.j, vr = v.r;
-                if (vj === "行きます") { vj = "行く"; vr = "い"; }
-                else if (vj === "帰ります") { vj = "帰る"; vr = "かえ"; }
-                else if (vj === "来ます") { vj = "来る"; vr = "く"; }
+
+                q = makeParticleQuestion({
+                    chinese: `${zhOf(time)}${zhOf(v)}`,
+                    leftText: time.j,
+                    leftRuby: time.r,
+                    rightText: v.j,
+                    rightRuby: v.r,
+                    answer: 'に',
+                    skillId: skillDef.id,
+                    grammarTip: tipText,
+                    choices: getChoices(["に", "で", "へ", "を"])
+                });
+            }
+            else if (skillDef.id === 'HE_DEST' || skillDef.id === 'HE_DIRECTION') {
+                const skillPool = (pool.skills?.HE_DIRECTION) || {};
+                const pList = skillPool.placePool || [{ j: "学校", r: "がっこう", zh: "學校" }];
+                const vList = skillPool.movePool || [{ j: "行く", r: "いく", zh: "去" }];
+                const p = pickOne(pList);
+                const v = pickOne(vList);
+
+                // Fix: 確保中文翻譯自然，避免 "回家銀行"
+                const vZh = zhOf(v);
+                let chinese = `${vZh}${zhOf(p)}`;
+                if (vZh === '回' && zhOf(p) === '家') chinese = "回家";
+
+                q = makeParticleQuestion({
+                    chinese: chinese,
+                    leftText: p.j,
+                    leftRuby: p.r,
+                    rightText: v.j,
+                    rightRuby: v.r,
+                    answer: 'へ',
+                    skillId: skillDef.id,
+                    grammarTip: tipText,
+                    choices: getChoices(["へ", "を", "は", "が"]) // 移除 "に" 以免與 "へ" 產生歧義
+                });
+            }
+            else if (skillDef.id === 'MO_ALSO' || skillDef.id === 'MO_ALSO_BASIC') {
+                const skillPool = (pool.skills?.MO_ALSO_BASIC) || {};
+                const personPool = skillPool.personPool || [{ j: "私", r: "わたし", zh: "我", tags: ["person"] }];
+                const statePool = skillPool.statePool || [{ j: "雨", r: "あめ", zh: "雨", kind: "precip" }];
+
+                const x = Math.random() < 0.5 ? pickOne(personPool) : pickOne(statePool);
+                const nounZh = zhOf(x);
+
+                let yj = '';
+                let yr = '';
+                let zhTail = '';
+
+                const isPerson = (x.tags && x.tags.includes("person")) || x.kind === "person";
+
+                if (isPerson) {
+                    yj = "学生です";
+                    yr = "がくせいです";
+                    zhTail = "也是學生";
+                } else {
+                    const kind = x.kind || '';
+                    if (kind === "sky") {
+                        yj = "曇る"; yr = "くもる"; zhTail = "也轉陰";
+                    } else if (kind === "wind") {
+                        yj = "吹く"; yr = "ふく"; zhTail = "也吹";
+                    } else if (kind === "flower") {
+                        yj = "咲く"; yr = "さく"; zhTail = "也開";
+                    } else if (kind === "precip") {
+                        yj = "降る"; yr = "ふる"; zhTail = "也下";
+                    } else {
+                        yj = "ある"; yr = "ある"; zhTail = "也存在";
+                    }
+                }
+
+                q = makeParticleQuestion({
+                    chinese: `${nounZh}${zhTail}`,
+                    leftText: x.j,
+                    leftRuby: x.r,
+                    rightText: yj,
+                    rightRuby: yr,
+                    answer: 'も',
+                    skillId: skillDef.id,
+                    grammarTip: tipText,
+                    choices: getChoices(["も", "は", "が", "の"])
+                });
+            }
+            else if (skillDef.id === 'DE_LOC' || skillDef.id === 'DE_ACTION_PLACE') {
+                const skillPool = (pool.skills?.DE_ACTION_PLACE) || {};
+                const pList = skillPool.placePool || [{ j: "教室", r: "きょうしつ", zh: "教室" }];
+                const actionPool = skillPool.actionPool || [{ j: "勉強する", r: "べんきょうする", zh: "讀書" }];
+
+                const p = pickOne(pList);
+                const v = pickOne(actionPool);
+
+                q = makeParticleQuestion({
+                    chinese: `在${zhOf(p)}${zhOf(v)}`,
+                    leftText: p.j,
+                    leftRuby: p.r,
+                    rightText: v.j,
+                    rightRuby: v.r,
+                    answer: 'で',
+                    skillId: skillDef.id,
+                    grammarTip: tipText,
+                    choices: getChoices(["で", "に", "へ", "を"])
+                });
+            }
+            else if (skillDef.id === 'TO_WITH') {
+                const skillPool = (pool.skills?.TO_WITH) || {};
+                const xList = skillPool.people || [{ j: "友達", r: "ともだち", zh: "朋友" }];
+                const vList = skillPool.actions || [{ j: "話す", r: "はなす", zh: "說話" }];
+
+                const x = pickOne(xList);
+                const v = pickOne(vList);
+
+                q = makeParticleQuestion({
+                    chinese: `和${zhOf(x)}${zhOf(v)}`,
+                    leftText: x.j,
+                    leftRuby: x.r,
+                    rightText: v.j,
+                    rightRuby: v.r,
+                    answer: 'と',
+                    skillId: skillDef.id,
+                    grammarTip: tipText,
+                    choices: getChoices(["と", "に", "で", "へ"])
+                });
+            }
+            else if (skillDef.id === 'NI_EXIST_PLACE') {
+                const skillPool = (pool.skills?.NI_EXIST_PLACE) || {};
+                const safeCombos = skillPool.safeCombos || [
+                    { p: { j: "部屋", r: "へや", zh: "房間" }, n: { j: "猫", r: "ねこ", zh: "貓", existType: 'person' } }
+                ];
+
+                const combo = pickOne(safeCombos);
+                const p = combo.p;
+                const n = combo.n;
+
+                const verb = n.existType === 'person'
+                    ? { j: "いる", r: "いる", zh: "有" }
+                    : { j: "ある", r: "ある", zh: "有" };
 
                 q = {
-                    chinese: `${time.t || time.zh || '…'}${v.t || v.zh || '…'}`,
+                    chinese: `${zhOf(p)}裡有${zhOf(n)}`,
                     segments: [
-                        { text: time.j, ruby: time.r, isBlank: false },
+                        seg(p.j, p.r),
                         { isBlank: true, blankIndex: 0 },
-                        { text: vj, ruby: vr, isBlank: false }
+                        seg("が", "が"), // Fix: 補上原本漏掉的「が」
+                        seg(`${n.j}${verb.j}`, `${n.r}${verb.r}`)
                     ],
                     answers: [["に"]],
                     grammarTip: tipText,
-                    skillId: skillDef.id
+                    skillId: skillDef.id,
+                    choices: getChoices(["に", "で", "へ", "が"])
                 };
-                if (blanks === 1) q.choices = getChoices(["に", "で", "へ", "を", "は", "が", "と", "の"]);
             }
-            else if (skillDef.id === 'HE_DEST') {
-                const pList = safeVocab.places || [{ j: "学校", r: "がっこう", t: "學校" }];
-                const vList = safeVocab.verbs_move || [{ j: "行く", r: "いく", t: "去" }];
-                const p = pickOne(pList);
-                const v = pickOne(vList);
-                let vj = v.j, vr = v.r;
-                if (vj === "行きます") { vj = "行く"; vr = "い"; }
-                else if (vj === "帰ります") { vj = "帰る"; vr = "かえ"; }
-                else if (vj === "来ます") { vj = "来る"; vr = "く"; }
-                q = {
-                    chinese: `${v.t || v.zh || '…'}${p.t || p.zh || '…'}`,
-                    segments: [
-                        { text: p.j, ruby: p.r, isBlank: false },
-                        { isBlank: true, blankIndex: 0 },
-                        { text: vj, ruby: vr, isBlank: false }
-                    ],
-                    answers: [["へ"]],
+            else if (skillDef.id === 'GA_EXIST_SUBJECT') {
+                const skillPool = (pool.skills?.GA_EXIST_SUBJECT) || {};
+                const nounList = skillPool.nouns || [{ j: "猫", r: "ねこ", zh: "貓", existType: 'person' }];
+
+                let n = pickOne(nounList);
+                const verb = n.existType === 'person'
+                    ? { j: "いる", r: "いる", zh: "有" }
+                    : { j: "ある", r: "ある", zh: "有" };
+
+                q = makeParticleQuestion({
+                    chinese: `有${zhOf(n)}`,
+                    leftText: n.j,
+                    leftRuby: n.r,
+                    rightText: verb.j,
+                    rightRuby: verb.r,
+                    answer: 'が',
+                    skillId: skillDef.id,
                     grammarTip: tipText,
-                    skillId: skillDef.id
-                };
-                if (blanks === 1) q.choices = getChoices(["へ", "に", "で", "を", "は", "が", "と", "の"]);
+                    choices: getChoices(["が", "は", "に", "で"])
+                });
+            }
+            else if (skillDef.id === 'KARA_FROM') {
+                const skillPool = (pool.skills?.KARA_FROM) || {};
+                const useTime = Math.random() < 0.5;
+
+                if (useTime) {
+                    const tList = skillPool.timePool || [{ j: "明日", r: "あした", zh: "明天" }];
+                    const time = pickOne(tList);
+                    const vList = [
+                        { j: "始まる", r: "はじまる", zh: "開始" },
+                        { j: "終わる", r: "おわる", zh: "結束" }
+                    ];
+                    const v = pickOne(vList);
+
+                    q = makeParticleQuestion({
+                        chinese: `從${zhOf(time)}${zhOf(v)}`,
+                        leftText: time.j,
+                        leftRuby: time.r,
+                        rightText: v.j,
+                        rightRuby: v.r,
+                        answer: 'から',
+                        skillId: skillDef.id,
+                        grammarTip: tipText,
+                        choices: getChoices(["から", "まで", "へ", "に"])
+                    });
+                } else {
+                    const pList = skillPool.placePool || [{ j: "家", r: "いえ", zh: "家" }];
+                    const p = pickOne(pList);
+                    const moveList = skillPool.movePool || [
+                        { j: "来る", r: "くる", zh: "來" },
+                        { j: "行く", r: "いく", zh: "去" }
+                    ];
+                    const v = pickOne(moveList);
+
+                    q = makeParticleQuestion({
+                        chinese: `從${zhOf(p)}${zhOf(v)}`,
+                        leftText: p.j,
+                        leftRuby: p.r,
+                        rightText: v.j,
+                        rightRuby: v.r,
+                        answer: 'から',
+                        skillId: skillDef.id,
+                        grammarTip: tipText,
+                        choices: getChoices(["から", "まで", "へ", "に"])
+                    });
+                }
             }
             return q;
         };
@@ -2485,7 +3087,7 @@ createApp({
             heroBuffs.enemyAtbMult = 1.0;
             heroBuffs.enemyDmgMult = 1.0;
             heroBuffs.odoodoTurns = 0;
-            heroBuffs.wakuwakuTurns = 0;
+            heroBuffs.gachigachiTurns = 0;
             heroBuffs.monsterSleep = false;
             evasionBuffAttacksLeft.value = 0;
             updateHeroStatusBar();
@@ -2514,7 +3116,7 @@ createApp({
             const blanks = config.blanks;
             const qList = [];
             let reviewCycle = { remainingReview: 1, remainingL2: 3, lastWasReview: false };
-            const allowSkills = ['WA_TOPIC', 'NO_POSSESS'];
+            const allowSkills = ['WA_TOPIC_BASIC', 'NO_POSSESSIVE'];
 
             for (let i = 0; i < 100; i++) {
                 let q = null;
@@ -2562,12 +3164,16 @@ createApp({
                     if (q) {
                         const ansStr = Array.isArray(q.answers[0]) ? q.answers[0][0] : q.answers[0];
                         let valid = true;
-                        if (skillId === 'NO_POSSESS' && ansStr !== 'の') valid = false;
-                        if (skillId === 'WA_TOPIC' && ansStr !== 'は') valid = false;
-                        if (skillId === 'GA_EXIST' && ansStr !== 'が') valid = false;
-                        if (skillId === 'WO_OBJECT' && ansStr !== 'を') valid = false;
-                        if (skillId === 'NI_TIME' && ansStr !== 'に') valid = false;
-                        if (skillId === 'HE_DEST' && ansStr !== 'へ') valid = false;
+                        if ((skillId === 'NO_POSSESS' || skillId === 'NO_POSSESSIVE') && ansStr !== 'の') valid = false;
+                        if ((skillId === 'WA_TOPIC' || skillId === 'WA_TOPIC_BASIC') && ansStr !== 'は') valid = false;
+                        if ((skillId === 'GA_EXIST' || skillId === 'GA_INTRANSITIVE' || skillId === 'GA_EXIST_SUBJECT') && ansStr !== 'が') valid = false;
+                        if ((skillId === 'WO_OBJECT' || skillId === 'WO_OBJECT_BASIC') && ansStr !== 'を') valid = false;
+                        if ((skillId === 'NI_TIME' || skillId === 'NI_EXIST_PLACE') && ansStr !== 'に') valid = false;
+                        if ((skillId === 'HE_DEST' || skillId === 'HE_DIRECTION') && ansStr !== 'へ') valid = false;
+                        if ((skillId === 'MO_ALSO' || skillId === 'MO_ALSO_BASIC') && ansStr !== 'も') valid = false;
+                        if ((skillId === 'DE_LOC' || skillId === 'DE_ACTION_PLACE') && ansStr !== 'で') valid = false;
+                        if (skillId === 'TO_WITH' && ansStr !== 'と') valid = false;
+                        if (skillId === 'KARA_FROM' && ansStr !== 'から') valid = false;
 
                         if (valid) generatedFromSkill = true;
                         else q = null;
@@ -3019,6 +3625,25 @@ createApp({
             needsUserGestureToResumeBgm.value = false;
             stopAllAudio();
 
+            // 檢查本關 Boss 獎勵
+            const clearedLevelConfig = LEVEL_CONFIG.value[currentLevel.value];
+            if (clearedLevelConfig?.rewardAbilityId) {
+                const rewardedSkill = grantAbilityReward(clearedLevelConfig.rewardAbilityId);
+                if (rewardedSkill) {
+                    // 如果是新習得，則跳出 Modal
+                    pendingLevelUpAbility.value = rewardedSkill;
+                    isAbilityUnlockModalOpen.value = true;
+                    // 暫存下一關資訊，等玩家按確認
+                    queuedNextLevel.value = currentLevel.value + 1;
+                    pauseBattle(); // 確保計時器等狀態暫停
+                    return; // 中斷原本的 goNextLevel 流程
+                }
+            }
+
+            proceedToNextLevel();
+        };
+
+        const proceedToNextLevel = () => {
             if (difficulty.value === 'easy') {
                 player.value.hp = 100;
                 inventory.value.potions = INITIAL_POTIONS;
@@ -3033,6 +3658,18 @@ createApp({
             initGame(currentLevel.value);
             pickBattleBgm(currentLevel.value);
             playBgm();
+        };
+
+        const confirmAbilityUnlockAndContinue = () => {
+            isAbilityUnlockModalOpen.value = false;
+            pendingLevelUpAbility.value = null;
+            if (queuedNextLevel.value !== null) {
+                // 原本 goNextLevel 流程已經把 currentLevel.value++ 放在 proceedToNextLevel 裡了
+                // 這裡我們直接呼叫 proceedToNextLevel 即可
+                proceedToNextLevel();
+                queuedNextLevel.value = null;
+            }
+            resumeBattle();
         };
 
         const retryLevel = () => { needsUserGestureToResumeBgm.value = false; stopAllAudio(); initGame(currentLevel.value); };
@@ -3294,8 +3931,11 @@ createApp({
 
         loadAudioSettings();
 
-        // 這裡將被刪除的變數加回 return 中
-        return { uiMenuOpen, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, playMistakeVoice, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay, skillList, castAbility, spState, showL2DebugPanel, l2DebugQuestions, generateL2Debug, copyL2Debug, handleReload, settings, shouldShowNextButton, praiseToast };
+        return {
+            uiMenuOpen, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, maxLevel, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, playMistakeVoice, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
+            allAbilities, unlockedAbilityIds, skillList, castAbility, spState, showL2DebugPanel, l2DebugQuestions, generateL2Debug, copyL2Debug, handleReload, settings, shouldShowNextButton, praiseToast,
+            pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue
+        };
     }
 }).mount('#app');
 

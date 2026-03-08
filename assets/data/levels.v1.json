@@ -1,42 +1,190 @@
 [
   {
     "id": "L1",
-    "name": "新手村：連接與主題",
-    "unlockSkills": ["NO_POSSESS", "WA_TOPIC"],
-    "skillMix": { "newSkillWeight": 0.75, "oldSkillWeight": 0.25 },
+    "name": "新手村：主題",
+    "unlockSkills": [
+      "WA_TOPIC_BASIC"
+    ],
+    "skillMix": {
+      "newSkillWeight": 0.8,
+      "oldSkillWeight": 0.2
+    },
     "questionCount": 10,
     "boss": null
   },
   {
     "id": "L2",
-    "name": "森林1：存在（が）",
-    "unlockSkills": ["GA_EXIST"],
-    "skillMix": { "newSkillWeight": 0.75, "oldSkillWeight": 0.25 },
+    "name": "新手村外圍：所屬",
+    "unlockSkills": [
+      "NO_POSSESSIVE"
+    ],
+    "skillMix": {
+      "newSkillWeight": 0.7,
+      "oldSkillWeight": 0.3
+    },
     "questionCount": 10,
     "boss": null
   },
   {
     "id": "L3",
-    "name": "森林2：受詞（を）",
-    "unlockSkills": ["WO_OBJECT"],
-    "skillMix": { "newSkillWeight": 0.75, "oldSkillWeight": 0.25 },
+    "name": "森林入口：自然發生",
+    "unlockSkills": [
+      "GA_INTRANSITIVE"
+    ],
+    "skillMix": {
+      "newSkillWeight": 0.7,
+      "oldSkillWeight": 0.3
+    },
     "questionCount": 10,
     "boss": null
   },
   {
     "id": "L4",
-    "name": "森林3：時間（に）",
-    "unlockSkills": ["NI_TIME"],
-    "skillMix": { "newSkillWeight": 0.75, "oldSkillWeight": 0.25 },
+    "name": "森林深處：受詞",
+    "unlockSkills": [
+      "WO_OBJECT_BASIC"
+    ],
+    "skillMix": {
+      "newSkillWeight": 0.7,
+      "oldSkillWeight": 0.3
+    },
     "questionCount": 10,
     "boss": null
   },
   {
     "id": "L5_BOSS",
-    "name": "森林Boss：綜合考",
-    "unlockSkills": ["HE_DEST"],
-    "skillMix": { "newSkillWeight": 0.75, "oldSkillWeight": 0.25 },
+    "name": "魔王關：語感守門人",
+    "unlockSkills": [],
     "questionCount": 15,
+    "rewardAbilityId": "ODOODO",
+    "boss": {
+      "everyNLevels": 5,
+      "mode": "all_unlocked",
+      "sampling": "balanced"
+    }
+  },
+  {
+    "id": "L6",
+    "name": "鐘塔：時間點",
+    "unlockSkills": [
+      "NI_TIME"
+    ],
+    "skillMix": {
+      "newSkillWeight": 0.7,
+      "oldSkillWeight": 0.3
+    },
+    "questionCount": 10,
+    "boss": null
+  },
+  {
+    "id": "L7",
+    "name": "通往城鎮的路：方向",
+    "unlockSkills": [
+      "HE_DIRECTION"
+    ],
+    "skillMix": {
+      "newSkillWeight": 0.7,
+      "oldSkillWeight": 0.3
+    },
+    "questionCount": 10,
+    "boss": null
+  },
+  {
+    "id": "L8",
+    "name": "回聲峽谷：也",
+    "unlockSkills": [
+      "MO_ALSO_BASIC"
+    ],
+    "skillMix": {
+      "newSkillWeight": 0.7,
+      "oldSkillWeight": 0.3
+    },
+    "questionCount": 10,
+    "boss": null
+  },
+  {
+    "id": "L9",
+    "name": "城鎮廣場：動作場所",
+    "unlockSkills": [
+      "DE_ACTION_PLACE"
+    ],
+    "skillMix": {
+      "newSkillWeight": 0.7,
+      "oldSkillWeight": 0.3
+    },
+    "questionCount": 10,
+    "boss": null
+  },
+  {
+    "id": "L10_BOSS",
+    "name": "魔王關：硬殼巨像",
+    "unlockSkills": [],
+    "questionCount": 15,
+    "rewardAbilityId": "GACHIGACHI",
+    "boss": {
+      "everyNLevels": 5,
+      "mode": "all_unlocked",
+      "sampling": "balanced"
+    }
+  },
+  {
+    "id": "L11",
+    "name": "夥伴小徑：一起",
+    "unlockSkills": [
+      "TO_WITH"
+    ],
+    "skillMix": {
+      "newSkillWeight": 0.7,
+      "oldSkillWeight": 0.3
+    },
+    "questionCount": 10,
+    "boss": null
+  },
+  {
+    "id": "L12",
+    "name": "古老房間：存在地點",
+    "unlockSkills": [
+      "NI_EXIST_PLACE"
+    ],
+    "skillMix": {
+      "newSkillWeight": 0.7,
+      "oldSkillWeight": 0.3
+    },
+    "questionCount": 10,
+    "boss": null
+  },
+  {
+    "id": "L13",
+    "name": "存在之森：存在主體",
+    "unlockSkills": [
+      "GA_EXIST_SUBJECT"
+    ],
+    "skillMix": {
+      "newSkillWeight": 0.7,
+      "oldSkillWeight": 0.3
+    },
+    "questionCount": 10,
+    "boss": null
+  },
+  {
+    "id": "L14",
+    "name": "起點之橋：從",
+    "unlockSkills": [
+      "KARA_FROM"
+    ],
+    "skillMix": {
+      "newSkillWeight": 0.7,
+      "oldSkillWeight": 0.3
+    },
+    "questionCount": 10,
+    "boss": null
+  },
+  {
+    "id": "L15_BOSS",
+    "name": "魔王關：沉眠獸",
+    "unlockSkills": [],
+    "questionCount": 15,
+    "rewardAbilityId": "UTOUTO",
     "boss": {
       "everyNLevels": 5,
       "mode": "all_unlocked",

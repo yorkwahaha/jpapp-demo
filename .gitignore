@@ -4,6 +4,7 @@ node_modules/
 dist/
 *.log
 config.local.js
+config.secret.local.js
 *.local.js
 .env
 .env.*
