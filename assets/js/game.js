@@ -849,6 +849,29 @@ createApp({
                     }
                 },
 
+                resetMentorTutorials() {
+                    mentorTutorialSeen.value = [];
+                    saveMentorState();
+                    console.log("[jpDebug] Mentor tutorials reset.");
+                },
+
+                replayMentor(skillId) {
+                    const skill = skillsAll.value[skillId];
+                    if (!skill) {
+                        console.warn(`[jpDebug] Skill ID "${skillId}" not found.`);
+                        return;
+                    }
+                    if (!skill.mentorDialogue) {
+                        console.warn(`[jpDebug] Skill "${skillId}" has no mentor dialogue.`);
+                        return;
+                    }
+                    currentMentorSkill.value = skill;
+                    mentorDialogueIndex.value = 0;
+                    isMentorModalOpen.value = true;
+                    pauseBattle();
+                    console.log(`[jpDebug] Replaying mentor dialogue for: ${skillId}`);
+                },
+
                 skill(skillId) {
                     return makeOneSkillQuestion(skillId);
                 },
@@ -969,6 +992,8 @@ jpDebug commands:
 - jpDebug.state()
 - jpDebug.home()
 - jpDebug.levels()
+- jpDebug.resetMentorTutorials()
+- jpDebug.replayMentor('WA_TOPIC_BASIC')
       `.trim();
                     console.log(msg);
                     return msg;
@@ -1087,6 +1112,67 @@ jpDebug commands:
         const isSkillUnlockModalOpen = ref(false);
         const isCodexOpen = ref(false);
         const expandedSkillId = ref(null);
+        const MENTOR_SEEN_KEY = 'jpRpgMentorSeenV1';
+        const mentorTutorialSeen = ref([]);
+        const isMentorModalOpen = ref(false);
+        const currentMentorSkill = ref(null);
+        const mentorDialogueIndex = ref(0);
+
+        const currentMentorLine = computed(() => {
+            if (!currentMentorSkill.value || !currentMentorSkill.value.mentorDialogue) return null;
+            return currentMentorSkill.value.mentorDialogue[mentorDialogueIndex.value];
+        });
+
+        const isLastMentorLine = computed(() => {
+            if (!currentMentorSkill.value || !currentMentorSkill.value.mentorDialogue) return true;
+            return mentorDialogueIndex.value >= currentMentorSkill.value.mentorDialogue.length - 1;
+        });
+
+        const loadMentorState = () => {
+            try {
+                const raw = localStorage.getItem(MENTOR_SEEN_KEY);
+                if (raw) mentorTutorialSeen.value = JSON.parse(raw);
+            } catch (e) { }
+        };
+        const saveMentorState = () => {
+            try { localStorage.setItem(MENTOR_SEEN_KEY, JSON.stringify(mentorTutorialSeen.value)); } catch (e) { }
+        };
+        loadMentorState();
+
+        const triggerMentorDialogue = (skillId) => {
+            const skill = skillsAll.value[skillId];
+            if (!skill || !skill.mentorDialogue || mentorTutorialSeen.value.includes(skillId)) {
+                return false;
+            }
+            currentMentorSkill.value = skill;
+            mentorDialogueIndex.value = 0;
+            isMentorModalOpen.value = true;
+            return true;
+        };
+
+        const nextMentorLine = () => {
+            if (isLastMentorLine.value) {
+                if (currentMentorSkill.value) {
+                    if (!mentorTutorialSeen.value.includes(currentMentorSkill.value.id)) {
+                        mentorTutorialSeen.value.push(currentMentorSkill.value.id);
+                        saveMentorState();
+                    }
+                }
+                isMentorModalOpen.value = false;
+                // Continue to skill unlock modal if we just unlocked it, 
+                // or resume level start
+                if (window._resumeAfterMentor) {
+                    window._resumeAfterMentor();
+                    window._resumeAfterMentor = null;
+                }
+            } else {
+                mentorDialogueIndex.value++;
+                // 預留語音接入點
+                if (typeof playDialogueVoice === 'function') {
+                    playDialogueVoice(currentMentorLine.value);
+                }
+            }
+        };
 
         const skillsWithUnlockLevel = computed(() => {
             const unlocked = [];
@@ -1472,7 +1558,20 @@ jpDebug commands:
         };
 
         const resumeBattle = () => {
-            if (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value || isInventoryOpen.value) return;
+            if (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMentorModalOpen.value || isMistakesOpen.value || isInventoryOpen.value) return;
+
+            // NEW: Ensure battle starts if logically in battle but timer not running (e.g. after mentor/skill tutorial)
+            const inBattle = !showLevelSelect.value && !isFinished.value && currentLevel.value > 0;
+            if (inBattle && !timerId && !wrongAnswerPause.value && !playerDead.value && !monsterDead.value) {
+                // Play pop exactly once when battle formally starts
+                if (!window._battlePopPlayed) {
+                    playSfx('pop');
+                    window._battlePopPlayed = true;
+                }
+                timerId = setInterval(runTimerLogic, 100);
+                wasTimerRunning = false;
+            }
+
             if (wasTimerRunning && !timerId) timerId = setInterval(runTimerLogic, 100);
             if (wasPauseTimerRunning && !pauseTimerId) pauseTimerId = setInterval(runPauseTimerLogic, 1000);
             wasTimerRunning = false;
@@ -1651,7 +1750,7 @@ jpDebug commands:
             masterGain.value.gain.setTargetAtTime(m, audioCtx.value.currentTime, 0.1);
 
             const b = bgmVolume.value;
-            const bScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
+            const bScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMentorModalOpen.value || isMistakesOpen.value) ? 0.35 : 1.0;
             bgmGain.value.gain.setTargetAtTime(b * bScale, audioCtx.value.currentTime, 0.1);
             sfxGain.value.gain.setTargetAtTime(sfxVolume.value, audioCtx.value.currentTime, 0.1);
         };
@@ -1778,7 +1877,7 @@ jpDebug commands:
             });
         };
 
-        watch([isMenuOpen, isCodexOpen, isSkillUnlockModalOpen, isMistakesOpen, bgmVolume, masterVolume, isMuted, sfxVolume], () => {
+        watch([isMenuOpen, isCodexOpen, isSkillUnlockModalOpen, isMentorModalOpen, isInventoryOpen, isMistakesOpen, bgmVolume, masterVolume, isMuted, sfxVolume], () => {
             updateGainVolumes();
         });
 
@@ -1890,14 +1989,14 @@ jpDebug commands:
 
             if (bgmGain.value && !isMuted.value && name !== 'click' && name !== 'pop') {
                 const b = bgmVolume.value;
-                const bScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
+                const bScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMentorModalOpen.value || isMistakesOpen.value) ? 0.35 : 1.0;
                 clearTimeout(window._bgmDuckTimer);
                 window._bgmDuckTimer = setTimeout(() => {
                     if (bgmGain.value && !isMuted.value) {
                         bgmGain.value.gain.setTargetAtTime(b * bScale * 0.3, audioCtx.value.currentTime, 0.15);
                         setTimeout(() => {
                             if (bgmGain.value && !isMuted.value) {
-                                const vs = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMistakesOpen.value) ? 0.5 : 1.0;
+                                const vs = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMentorModalOpen.value || isMistakesOpen.value) ? 0.35 : 1.0;
                                 bgmGain.value.gain.setTargetAtTime(b * vs, audioCtx.value.currentTime, 0.4);
                             }
                         }, 1200);
@@ -2191,6 +2290,7 @@ jpDebug commands:
         };
 
         const runTimerLogic = () => {
+            if (isMentorModalOpen.value) return;
             if (isFinished.value || monsterDead.value || playerDead.value || showLevelSelect.value) {
                 if (showLevelSelect.value || isFinished.value) {
                     clearTimer();
@@ -3074,6 +3174,8 @@ jpDebug commands:
         };
 
         const initGame = (level) => {
+            window._battlePopPlayed = false;
+            let triggeredMentor = false;
             const ratio = player.value.hp / player.value.maxHp;
             let startState = 'neutral';
             if (ratio <= 0.4) startState = 'scary';
@@ -3092,6 +3194,17 @@ jpDebug commands:
             evasionBuffAttacksLeft.value = 0;
             updateHeroStatusBar();
 
+            // Comprehensive Reset for Battle/Timer State (Fix ATB Carryover)
+            timeLeft.value = 10;
+            timeUp.value = false;
+            wrongAnswerPause.value = false;
+            wrongAnswerPauseCountdown.value = 0;
+            wasTimerRunning = false;
+            wasPauseTimerRunning = false;
+            _voiceLockUntil = 0;
+            if (timerId) { clearInterval(timerId); timerId = null; }
+            if (pauseTimerId) { clearInterval(pauseTimerId); pauseTimerId = null; }
+
             isMistakesOpen.value = false;
             isMenuOpen.value = false;
             const lv = level ?? currentLevel.value;
@@ -3108,7 +3221,18 @@ jpDebug commands:
                 });
                 if (newUnlocks.length > 0) {
                     newlyUnlocked.value = newUnlocks.map(id => skillsAll.value[id]).filter(Boolean);
-                    isSkillUnlockModalOpen.value = true;
+
+                    // NEW: Intercept with Mentor NPC Dialogue if needed
+                    const firstNewSkillId = newUnlocks[0];
+                    if (triggerMentorDialogue(firstNewSkillId)) {
+                        triggeredMentor = true;
+                        // Pause and wait for mentor to finish
+                        window._resumeAfterMentor = () => {
+                            isSkillUnlockModalOpen.value = true;
+                        };
+                    } else {
+                        isSkillUnlockModalOpen.value = true;
+                    }
                 }
             }
 
@@ -3287,9 +3411,13 @@ jpDebug commands:
             currentBg.value = `assets/images/bg_0${bgIdx}.jpg`;
             pushBattleLog(monster.value.name + ' 出現了！', 'info');
             hpBarDanger.value = false;
-            clearTimer();
-            startTimer();
-            playSfx('pop');
+            if (!triggeredMentor) {
+                if (!window._battlePopPlayed) {
+                    playSfx('pop');
+                    window._battlePopPlayed = true;
+                }
+                startTimer();
+            }
 
             voicePlayedForCurrentQuestion.value = false;
             window.skillId = currentQuestion.value?.skillId;
@@ -3934,7 +4062,8 @@ jpDebug commands:
         return {
             uiMenuOpen, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, maxLevel, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, playMistakeVoice, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             allAbilities, unlockedAbilityIds, skillList, castAbility, spState, showL2DebugPanel, l2DebugQuestions, generateL2Debug, copyL2Debug, handleReload, settings, shouldShowNextButton, praiseToast,
-            pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue
+            pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
+            isMentorModalOpen, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine
         };
     }
 }).mount('#app');

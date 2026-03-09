@@ -380,6 +380,23 @@
             </div>
         </div>
 
+        <div v-if="isMentorModalOpen" class="mentor-overlay" style="z-index: 5000;">
+            <div class="mentor-panel shadow-2xl">
+                <div class="mentor-header">
+                    <div class="mentor-avatar-mini">🧙‍♂️</div>
+                    <span class="mentor-name">傳說中的導師</span>
+                </div>
+                <div class="mentor-body">
+                    <div class="mentor-text">{{ currentMentorLine?.text }}</div>
+                </div>
+                <div class="mentor-footer">
+                    <button @click="nextMentorLine" class="mentor-btn">
+                        {{ isLastMentorLine ? '繼承意志（開始戰鬥）' : '下一句' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div v-if="isSkillUnlockModalOpen" class="modal-overlay" @click.self="isSkillUnlockModalOpen = false"
             style="z-index: 100;">
             <div
@@ -486,7 +503,8 @@
                         class="absolute top-6 right-6 text-amber-600 hover:text-amber-400 transition-colors">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"></path>
+                                d="M6 18L18 6M6 6l12 12">
+                            </path>
                         </svg>
                     </button>
                 </div>
