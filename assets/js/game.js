@@ -1032,10 +1032,12 @@ jpDebug commands:
         const fallbackLevels = pool.config?.fallbackLevels || {};
         const LEVEL_CONFIG = ref(fallbackLevels);
         const SKILLS = ref([]);
+        const ENEMIES = ref([]);
+        const isMonsterImageError = ref(false);
         const VOCAB = ref(null);
         const maxLevel = ref(35);
 
-        const APP_VERSION = "26031000"
+        const APP_VERSION = "26031001"
         const appVersion = ref(APP_VERSION);
         const VFX_ENHANCED = true;
 
@@ -1120,6 +1122,7 @@ jpDebug commands:
         const isTypingMentor = ref(false);
         const isMentorPortraitError = ref(false);
         let typingTimerMentor = null;
+        let currentMentorAudio = null;
 
         // 分頁輔助：將多行對話切碎
         const fragmentMentorDialogue = (dialogues) => {
@@ -1176,6 +1179,7 @@ jpDebug commands:
             isMentorModalOpen.value = true;
             isMentorPortraitError.value = false;
             startMentorTyping(currentMentorLine.value || "");
+            playMentorAudioForCurrentPage();
         };
 
         const triggerMentorDialogue = (skillId) => {
@@ -1205,6 +1209,37 @@ jpDebug commands:
             type();
         };
 
+        const getMentorAudioPath = (skillId, pageIndex) => {
+            if (skillId !== 'WA_TOPIC_BASIC') return null;
+            const pNum = String(pageIndex + 1).padStart(2, '0');
+            return `assets/audio/mentor/wa-topic-basic-p${pNum}.mp3`;
+        };
+
+        const stopMentorAudio = () => {
+            if (currentMentorAudio) {
+                try {
+                    currentMentorAudio.pause();
+                    currentMentorAudio.currentTime = 0;
+                } catch (e) { }
+                currentMentorAudio = null;
+            }
+        };
+
+        const playMentorAudioForCurrentPage = () => {
+            stopMentorAudio();
+            if (!currentMentorSkill.value) return;
+            const path = getMentorAudioPath(currentMentorSkill.value.id, mentorDialogueIndex.value);
+            if (!path) return;
+
+            const audio = new Audio(path);
+            audio.volume = masterVolume.value * bgmVolume.value; // Mentor audio follows BGM/Master volume
+            currentMentorAudio = audio;
+            audio.play().catch(err => {
+                console.warn("[MentorAudio] Play failed or file missing:", path);
+                currentMentorAudio = null;
+            });
+        };
+
         const completeMentorLine = () => {
             if (typingTimerMentor) {
                 clearTimeout(typingTimerMentor);
@@ -1217,6 +1252,7 @@ jpDebug commands:
         const restartMentorDialogue = () => {
             mentorDialogueIndex.value = 0;
             startMentorTyping(currentMentorLine.value || "");
+            playMentorAudioForCurrentPage();
         };
 
         const nextMentorLine = () => {
@@ -1230,7 +1266,7 @@ jpDebug commands:
             } else {
                 mentorDialogueIndex.value++;
                 startMentorTyping(currentMentorLine.value || "");
-                // 預留語音接入點 (分頁後暫不變動)
+                playMentorAudioForCurrentPage();
             }
         };
 
@@ -1245,6 +1281,7 @@ jpDebug commands:
                     saveMentorState();
                 }
             }
+            stopMentorAudio();
             isMentorModalOpen.value = false;
             // Continue to skill unlock modal if we just unlocked it, 
             // or resume level start
@@ -1331,7 +1368,15 @@ jpDebug commands:
                     VOCAB.value = await res.json();
                 }
             } catch (e) { }
+
+            try {
+                const res = await fetch(`assets/data/enemies.v1.json?v=${appVersion.value}`);
+                if (res.ok) {
+                    ENEMIES.value = await res.json();
+                }
+            } catch (e) { }
         };
+        loadGameData();
 
         const unlockedAbilityIds = ref([]);
         const allAbilities = ref([]);
@@ -3285,6 +3330,7 @@ jpDebug commands:
             if (timerId) { clearInterval(timerId); timerId = null; }
             if (pauseTimerId) { clearInterval(pauseTimerId); pauseTimerId = null; }
 
+            isMonsterImageError.value = false;
             isMistakesOpen.value = false;
             isMenuOpen.value = false;
             const lv = level ?? currentLevel.value;
@@ -3486,7 +3532,22 @@ jpDebug commands:
             timeUp.value = false;
 
             const mdef = MONSTERS[(lv - 1) % MONSTERS.length] || MONSTERS[0];
-            monster.value = { hp: mdef.hpMax, maxHp: mdef.hpMax, name: mdef.name, sprite: mdef.sprite, trait: mdef.trait };
+
+            // 挑選符合目前關卡的怪物資料 (從 enemies.v1.json)
+            const enemyMatch = (ENEMIES.value || []).find(e => e.spawnLevels && e.spawnLevels.includes(lv));
+
+            if (enemyMatch) {
+                // 最小替換：只換顯示用的名稱、圖片、稱號
+                monster.value = {
+                    hp: mdef.hpMax,
+                    maxHp: mdef.hpMax,
+                    name: enemyMatch.name,
+                    sprite: enemyMatch.image,
+                    trait: enemyMatch.trait
+                };
+            } else {
+                monster.value = { hp: mdef.hpMax, maxHp: mdef.hpMax, name: mdef.name, sprite: mdef.sprite, trait: mdef.trait };
+            }
             const bgIdx = Math.floor(Math.random() * 6) + 1;
             currentBg.value = `assets/images/bg_0${bgIdx}.jpg`;
             pushBattleLog(monster.value.name + ' 出現了！', 'info');
@@ -3797,6 +3858,10 @@ jpDebug commands:
                 return { ...seg, showInput: seg.blankIndex < blanks };
             });
         });
+
+        const handleMonsterImageError = () => {
+            isMonsterImageError.value = true;
+        };
 
         const getAnswerForDisplay = (blankIndex) => {
             const ans = currentQuestion.value.answers[blankIndex];
@@ -4144,7 +4209,8 @@ jpDebug commands:
             allAbilities, unlockedAbilityIds, skillList, castAbility, spState, showL2DebugPanel, l2DebugQuestions, generateL2Debug, copyL2Debug, handleReload, settings, shouldShowNextButton, praiseToast,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
             isMentorModalOpen, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
-            displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages
+            displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,
+            isMonsterImageError, handleMonsterImageError
         };
     }
 }).mount('#app');

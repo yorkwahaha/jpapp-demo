@@ -1,0 +1,152 @@
+[
+  {
+    "id": "glow-slime",
+    "name": "微光史萊姆",
+    "image": "assets/images/monsters/glow-slime.png",
+    "trait": "身體散著淡淡藍光，靠近時會發出啵啵聲。",
+    "spawnLevels": [
+      1
+    ],
+    "hpMax": 28
+  },
+  {
+    "id": "moss-boar",
+    "name": "苔牙野豬",
+    "image": "assets/images/monsters/moss-boar.png",
+    "trait": "背上沾滿濕苔與落葉，衝撞前會低聲噴氣。",
+    "spawnLevels": [
+      2
+    ],
+    "hpMax": 34
+  },
+  {
+    "id": "rune-moth",
+    "name": "符紋蛾",
+    "image": "assets/images/monsters/rune-moth.png",
+    "trait": "翅面浮著像文字碎片般的紋路，飛行時會灑下淡金粉末。",
+    "spawnLevels": [
+      3
+    ],
+    "hpMax": 30
+  },
+  {
+    "id": "mist-bat",
+    "name": "霧羽蝠",
+    "image": "assets/images/monsters/mist-bat.png",
+    "trait": "總在薄霧裡忽隱忽現，翅膀一振就像夜風掠過耳邊。",
+    "spawnLevels": [
+      4
+    ],
+    "hpMax": 32
+  },
+  {
+    "id": "man-eater-bloom",
+    "name": "食人花之母",
+    "image": "assets/images/monsters/man-eater-bloom.png",
+    "trait": "巨大的花瓣一張一合，甜膩香氣裡藏著會把獵物慢慢吞下去的耐心。",
+    "spawnLevels": [
+      5
+    ],
+    "hpMax": 58
+  },
+  {
+    "id": "ash-goblin",
+    "name": "灰枝小鬼",
+    "image": "assets/images/monsters/ash-goblin.png",
+    "trait": "披著破布與枯枝，眼神鬼祟，最愛躲在陰影裡偷襲。",
+    "spawnLevels": [
+      6
+    ],
+    "hpMax": 38
+  },
+  {
+    "id": "shell-sprout",
+    "name": "殼芽獸",
+    "image": "assets/images/monsters/shell-sprout.png",
+    "trait": "背甲像剛長出的樹芽，移動慢，但意外地很耐打。",
+    "spawnLevels": [
+      7
+    ],
+    "hpMax": 42
+  },
+  {
+    "id": "forest-cat",
+    "name": "林影妖貓",
+    "image": "assets/images/monsters/forest-cat.png",
+    "trait": "步伐輕得像沒踩到地面，尾巴一甩就不見蹤影。",
+    "spawnLevels": [
+      8
+    ],
+    "hpMax": 36
+  },
+  {
+    "id": "stone-mimic",
+    "name": "岩殼擬怪",
+    "image": "assets/images/monsters/stone-mimic.png",
+    "trait": "蜷起身子時像一塊不起眼的石頭，張眼後才知道被盯上了。",
+    "spawnLevels": [
+      9
+    ],
+    "hpMax": 48
+  },
+  {
+    "id": "frost-roc",
+    "name": "冰原巨鳥",
+    "image": "assets/images/monsters/frost-roc.png",
+    "trait": "展翼時像暴風雪壓過天空，羽尖會抖落寒霜，連呼吸都像被凍住。",
+    "spawnLevels": [
+      10
+    ],
+    "hpMax": 70
+  },
+  {
+    "id": "ember-imp",
+    "name": "燼火小惡魔",
+    "image": "assets/images/monsters/ember-imp.png",
+    "trait": "耳尖與尾端閃著火星，脾氣暴躁，笑聲比火還惱人。",
+    "spawnLevels": [
+      11
+    ],
+    "hpMax": 44
+  },
+  {
+    "id": "shore-wisp",
+    "name": "潮燈幼靈",
+    "image": "assets/images/monsters/shore-wisp.png",
+    "trait": "像漂在岸邊的微弱燈火，忽遠忽近，讓人很難抓準距離。",
+    "spawnLevels": [
+      12
+    ],
+    "hpMax": 40
+  },
+  {
+    "id": "thorn-wolf",
+    "name": "棘原狼",
+    "image": "assets/images/monsters/thorn-wolf.png",
+    "trait": "毛皮間夾著細刺，奔跑時像一團貼地掠過的灰影。",
+    "spawnLevels": [
+      13
+    ],
+    "hpMax": 50
+  },
+  {
+    "id": "moon-jelly",
+    "name": "月沫水母",
+    "image": "assets/images/monsters/moon-jelly.png",
+    "trait": "半透明的身體像月光融進水裡，安靜時反而更讓人發毛。",
+    "spawnLevels": [
+      14
+    ],
+    "hpMax": 46
+  },
+  {
+    "id": "orc-warlord",
+    "name": "半獸人之王",
+    "image": "assets/images/monsters/orc-warlord.png",
+    "trait": "披著沉重戰甲，目光像鐵鎚一樣砸下來，光站在那裡就有王者般的壓迫感。",
+    "spawnLevels": [
+      15
+    ],
+    "hpMax": 88
+  }
+]

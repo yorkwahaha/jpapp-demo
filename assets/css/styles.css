@@ -2283,6 +2283,7 @@ body.lock-scroll {
     font-weight: 700;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     white-space: pre-wrap;
+    text-align: left;
     /* 桌面版固定高度預留 */
     min-height: 120px;
 }
@@ -2360,7 +2361,7 @@ body.lock-scroll {
 
     .mentor-text {
         font-size: 1.15rem;
-        text-align: center;
+        text-align: left;
         /* 手機版固定約 4 行高度 */
         height: 7.5rem;
         overflow-y: auto;
@@ -2399,6 +2400,7 @@ body.lock-scroll {
         justify-content: flex-end !important;
         padding-bottom: 20px !important;
     }
+
     /* 點選模式專用：縮小攻擊鈕與間距，避免擠壓 */
     .tap-mode-controls {
         gap: 0.75rem !important;
