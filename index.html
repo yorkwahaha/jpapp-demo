@@ -28,7 +28,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/styles.css?v=26030900">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26031000">
 </head>
 
 <body class="p-4 md:p-8">
@@ -258,7 +258,7 @@
                                 <div class="w-full flex flex-col items-center justify-end shrink-0 z-10 pb-4 sm:pb-6">
 
                                     <div v-if="answerMode === 'tap' && !hasSubmitted"
-                                        class="w-full flex flex-col items-center gap-5 sm:gap-6">
+                                        class="tap-mode-controls w-full flex flex-col items-center gap-5 sm:gap-6">
                                         <div class="flex flex-wrap justify-center gap-4 sm:gap-6 px-2 w-full">
                                             <button v-for="(opt, i) in currentQuestion.choices" :key="i"
                                                 @click="selectChoice(opt)" class="rune-btn"
@@ -269,7 +269,7 @@
 
                                         <button @click="checkAnswer"
                                             :disabled="hasSubmitted || (isChoiceMode && !userAnswers[0])"
-                                            class="w-[60%] sm:w-[50%] max-w-[200px] py-2.5 sm:py-3 rounded-full bg-gradient-to-b from-amber-500 to-amber-700 border-2 border-amber-400 shadow-[0_4px_10px_rgba(0,0,0,0.5)] text-white text-lg font-black tracking-widest transition-transform active:scale-95 disabled:opacity-50 disabled:grayscale hover:brightness-110 flex justify-center items-center"
+                                            class="tap-attack-btn w-[60%] sm:w-[50%] max-w-[200px] py-1.5 sm:py-3 rounded-full bg-gradient-to-b from-amber-500 to-amber-700 border-2 border-amber-400 shadow-[0_4px_10px_rgba(0,0,0,0.5)] text-white text-base sm:text-lg font-black tracking-widest transition-transform active:scale-95 disabled:opacity-50 disabled:grayscale hover:brightness-110 flex justify-center items-center"
                                             :class="(isChoiceMode && !userAnswers[0]) ? 'cursor-not-allowed opacity-50' : ''">
                                             攻擊
                                         </button>
@@ -386,12 +386,32 @@
                     <div class="mentor-avatar-mini">🧙‍♂️</div>
                     <span class="mentor-name">傳說中的導師</span>
                 </div>
-                <div class="mentor-body">
-                    <div class="mentor-text">{{ currentMentorLine?.text }}</div>
+                <div class="mentor-body flex gap-6">
+                    <!-- 預留角色立繪區塊 -->
+                    <div class="mentor-portrait-container">
+                        <img v-if="!isMentorPortraitError" src="assets/images/ui/mentor/mentor-neutral.png"
+                            @error="isMentorPortraitError = true" class="mentor-portrait-img">
+                        <div v-else class="mentor-portrait-placeholder">
+                            <span class="text-4xl">👤</span>
+                        </div>
+                    </div>
+                    <div class="mentor-text flex-1">{{ displayedMentorText }}</div>
                 </div>
                 <div class="mentor-footer">
-                    <button @click="nextMentorLine" class="mentor-btn">
-                        {{ isLastMentorLine ? '繼承意志（開始戰鬥）' : '下一句' }}
+                    <div class="mentor-page-indicator" v-if="mentorPages.length > 1">
+                        {{ mentorDialogueIndex + 1 }} / {{ mentorPages.length }}
+                    </div>
+                    <div v-if="isLastMentorLine && !isTypingMentor" class="flex gap-4">
+                        <button @click="restartMentorDialogue"
+                            class="mentor-btn btn-secondary text-sm sm:text-base px-4 sm:px-10">
+                            再看一次
+                        </button>
+                        <button @click="nextMentorLine" class="mentor-btn text-sm sm:text-base px-4 sm:px-10">
+                            開始戰鬥
+                        </button>
+                    </div>
+                    <button v-else @click="nextMentorLine" class="mentor-btn">
+                        {{ isTypingMentor ? '▶ 快進' : '下一句' }}
                     </button>
                 </div>
             </div>

@@ -865,9 +865,7 @@ createApp({
                         console.warn(`[jpDebug] Skill "${skillId}" has no mentor dialogue.`);
                         return;
                     }
-                    currentMentorSkill.value = skill;
-                    mentorDialogueIndex.value = 0;
-                    isMentorModalOpen.value = true;
+                    setupMentorDialogue(skill);
                     pauseBattle();
                     console.log(`[jpDebug] Replaying mentor dialogue for: ${skillId}`);
                 },
@@ -1037,7 +1035,7 @@ jpDebug commands:
         const VOCAB = ref(null);
         const maxLevel = ref(35);
 
-        const APP_VERSION = "26030900"
+        const APP_VERSION = "26031000"
         const appVersion = ref(APP_VERSION);
         const VFX_ENHANCED = true;
 
@@ -1116,16 +1114,48 @@ jpDebug commands:
         const mentorTutorialSeen = ref([]);
         const isMentorModalOpen = ref(false);
         const currentMentorSkill = ref(null);
-        const mentorDialogueIndex = ref(0);
+        const mentorPages = ref([]); // 平鋪後的文字分頁
+        const mentorDialogueIndex = ref(0); // 指向目前的 Page
+        const displayedMentorText = ref("");
+        const isTypingMentor = ref(false);
+        const isMentorPortraitError = ref(false);
+        let typingTimerMentor = null;
+
+        // 分頁輔助：將多行對話切碎
+        const fragmentMentorDialogue = (dialogues) => {
+            const pages = [];
+            dialogues.forEach(item => {
+                const text = item.text || "";
+                // 以標點符號初步斷句
+                const sentences = text.match(/[^。！？]+[。！？]?/g) || [text];
+
+                let currentPage = "";
+                let sentenceCount = 0;
+
+                sentences.forEach(s => {
+                    // 若加進去會超過 2 句，或單句極長，就強迫入下一頁
+                    if (sentenceCount >= 2 || (currentPage.length + s.length > 60)) {
+                        if (currentPage) pages.push(currentPage.trim());
+                        currentPage = s;
+                        sentenceCount = 1;
+                    } else {
+                        currentPage += s;
+                        sentenceCount++;
+                    }
+                });
+                if (currentPage) pages.push(currentPage.trim());
+            });
+            return pages;
+        };
 
         const currentMentorLine = computed(() => {
-            if (!currentMentorSkill.value || !currentMentorSkill.value.mentorDialogue) return null;
-            return currentMentorSkill.value.mentorDialogue[mentorDialogueIndex.value];
+            if (mentorPages.value.length === 0) return null;
+            return mentorPages.value[mentorDialogueIndex.value];
         });
 
         const isLastMentorLine = computed(() => {
-            if (!currentMentorSkill.value || !currentMentorSkill.value.mentorDialogue) return true;
-            return mentorDialogueIndex.value >= currentMentorSkill.value.mentorDialogue.length - 1;
+            if (mentorPages.value.length === 0) return true;
+            return mentorDialogueIndex.value >= mentorPages.value.length - 1;
         });
 
         const loadMentorState = () => {
@@ -1139,38 +1169,88 @@ jpDebug commands:
         };
         loadMentorState();
 
+        const setupMentorDialogue = (skill) => {
+            currentMentorSkill.value = skill;
+            mentorPages.value = fragmentMentorDialogue(skill.mentorDialogue);
+            mentorDialogueIndex.value = 0;
+            isMentorModalOpen.value = true;
+            isMentorPortraitError.value = false;
+            startMentorTyping(currentMentorLine.value || "");
+        };
+
         const triggerMentorDialogue = (skillId) => {
             const skill = skillsAll.value[skillId];
             if (!skill || !skill.mentorDialogue || mentorTutorialSeen.value.includes(skillId)) {
                 return false;
             }
-            currentMentorSkill.value = skill;
-            mentorDialogueIndex.value = 0;
-            isMentorModalOpen.value = true;
+            setupMentorDialogue(skill);
             return true;
         };
 
+        const startMentorTyping = (text) => {
+            if (typingTimerMentor) clearTimeout(typingTimerMentor);
+            displayedMentorText.value = "";
+            isTypingMentor.value = true;
+            let i = 0;
+            const type = () => {
+                if (i < text.length) {
+                    displayedMentorText.value += text.charAt(i);
+                    i++;
+                    typingTimerMentor = setTimeout(type, 50);
+                } else {
+                    isTypingMentor.value = false;
+                    typingTimerMentor = null;
+                }
+            };
+            type();
+        };
+
+        const completeMentorLine = () => {
+            if (typingTimerMentor) {
+                clearTimeout(typingTimerMentor);
+                typingTimerMentor = null;
+            }
+            displayedMentorText.value = currentMentorLine.value || "";
+            isTypingMentor.value = false;
+        };
+
+        const restartMentorDialogue = () => {
+            mentorDialogueIndex.value = 0;
+            startMentorTyping(currentMentorLine.value || "");
+        };
+
         const nextMentorLine = () => {
+            if (isTypingMentor.value) {
+                completeMentorLine();
+                return;
+            }
+
             if (isLastMentorLine.value) {
-                if (currentMentorSkill.value) {
-                    if (!mentorTutorialSeen.value.includes(currentMentorSkill.value.id)) {
-                        mentorTutorialSeen.value.push(currentMentorSkill.value.id);
-                        saveMentorState();
-                    }
-                }
-                isMentorModalOpen.value = false;
-                // Continue to skill unlock modal if we just unlocked it, 
-                // or resume level start
-                if (window._resumeAfterMentor) {
-                    window._resumeAfterMentor();
-                    window._resumeAfterMentor = null;
-                }
+                finishMentorDialogue();
             } else {
                 mentorDialogueIndex.value++;
-                // 預留語音接入點
-                if (typeof playDialogueVoice === 'function') {
-                    playDialogueVoice(currentMentorLine.value);
+                startMentorTyping(currentMentorLine.value || "");
+                // 預留語音接入點 (分頁後暫不變動)
+            }
+        };
+
+        const finishMentorDialogue = () => {
+            if (typingTimerMentor) {
+                clearTimeout(typingTimerMentor);
+                typingTimerMentor = null;
+            }
+            if (currentMentorSkill.value) {
+                if (!mentorTutorialSeen.value.includes(currentMentorSkill.value.id)) {
+                    mentorTutorialSeen.value.push(currentMentorSkill.value.id);
+                    saveMentorState();
                 }
+            }
+            isMentorModalOpen.value = false;
+            // Continue to skill unlock modal if we just unlocked it, 
+            // or resume level start
+            if (window._resumeAfterMentor) {
+                window._resumeAfterMentor();
+                window._resumeAfterMentor = null;
             }
         };
 
@@ -4063,7 +4143,8 @@ jpDebug commands:
             uiMenuOpen, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, maxLevel, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, playMistakeVoice, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             allAbilities, unlockedAbilityIds, skillList, castAbility, spState, showL2DebugPanel, l2DebugQuestions, generateL2Debug, copyL2Debug, handleReload, settings, shouldShowNextButton, praiseToast,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
-            isMentorModalOpen, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine
+            isMentorModalOpen, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
+            displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages
         };
     }
 }).mount('#app');

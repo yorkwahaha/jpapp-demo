@@ -6,7 +6,12 @@ body {
     font-family: 'Noto Sans TC', 'Noto Sans JP', sans-serif;
     background: linear-gradient(180deg, #1e293b 0%, #0f172a 50%, #1e1b4b 100%);
     min-height: 100vh;
+    min-height: 100dvh;
+    /* Dynamic Viewport Height */
     color: #e2e8f0;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-sizing: border-box;
 }
 
 rt {
@@ -269,7 +274,8 @@ rt {
     align-items: center;
     justify-content: flex-start;
     position: relative;
-    padding: 1rem;
+    padding: 1.5rem 1rem 1rem 1rem;
+    padding-top: calc(1rem + env(safe-area-inset-top, 0px));
     border-bottom: 1px solid rgba(148, 163, 184, 0.2);
     overflow: hidden;
     background-size: cover;
@@ -560,7 +566,7 @@ rt {
 
 .battle-log {
     position: absolute;
-    top: 10px;
+    top: calc(10px + env(safe-area-inset-top, 0px));
     left: 50%;
     transform: translateX(-50%);
     width: min(680px, 92vw);
@@ -1648,6 +1654,10 @@ rt {
     }
 
     #stage {
+        height: auto !important;
+        min-height: 80dvh !important;
+        aspect-ratio: auto !important;
+        border-radius: 1.5rem 1.5rem 0 0 !important;
         padding-bottom: 20px;
     }
 
@@ -2165,6 +2175,7 @@ body.lock-scroll {
     box-shadow: 0 0 20px rgba(251, 191, 36, 0.8), inset 2px 2px 4px rgba(255, 255, 255, 0.4) !important;
     transform: scale(1.1) !important;
 }
+
 /* Mentor NPC Tutorial Overlay */
 .mentor-overlay {
     position: fixed;
@@ -2191,8 +2202,15 @@ body.lock-scroll {
 }
 
 @keyframes mentorPop {
-    0% { transform: scale(0.8) translateY(30px); opacity: 0; }
-    100% { transform: scale(1) translateY(0); opacity: 1; }
+    0% {
+        transform: scale(0.8) translateY(30px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
 }
 
 .mentor-header {
@@ -2225,21 +2243,67 @@ body.lock-scroll {
 .mentor-body {
     padding: 2rem 2.5rem;
     min-height: 180px;
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
+.mentor-portrait-container {
+    width: 120px;
+    height: 120px;
+    flex-shrink: 0;
+    background: rgba(30, 41, 59, 0.5);
+    border: 2px solid rgba(245, 158, 11, 0.4);
+    border-radius: 1rem;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
+}
+
+.mentor-portrait-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.mentor-portrait-placeholder {
+    color: rgba(245, 158, 11, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .mentor-text {
     font-size: 1.35rem;
-    line-height: 1.7;
+    line-height: 1.6;
     color: #e2e8f0;
     font-weight: 700;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     white-space: pre-wrap;
+    /* 桌面版固定高度預留 */
+    min-height: 120px;
+}
+
+.mentor-page-indicator {
+    color: #f59e0b;
+    font-weight: 800;
+    font-size: 0.9rem;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 2px 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    margin-right: auto;
 }
 
 .mentor-footer {
-    padding: 0 2.5rem;
+    padding: 1.5rem 2.5rem;
     display: flex;
     justify-content: flex-end;
+    align-items: center;
+    border-top: 1px solid rgba(245, 158, 11, 0.1);
 }
 
 .mentor-btn {
@@ -2265,3 +2329,85 @@ body.lock-scroll {
     box-shadow: 0 2px 0 #92400e;
 }
 
+.mentor-btn.btn-secondary {
+    background: #475569;
+    color: #e2e8f0;
+    box-shadow: 0 6px 0 #1e293b;
+}
+
+.mentor-btn.btn-secondary:hover {
+    background: #64748b;
+    box-shadow: 0 8px 0 #1e293b;
+}
+
+.mentor-btn.btn-secondary:active {
+    box-shadow: 0 2px 0 #1e293b;
+}
+
+@media (max-width: 640px) {
+    .mentor-body {
+        flex-direction: column;
+        padding: 1.25rem 1.5rem;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .mentor-portrait-container {
+        width: 140px;
+        /* 從 80px 放大 */
+        height: 140px;
+    }
+
+    .mentor-text {
+        font-size: 1.15rem;
+        text-align: center;
+        /* 手機版固定約 4 行高度 */
+        height: 7.5rem;
+        overflow-y: auto;
+        width: 100%;
+    }
+
+    .mentor-footer {
+        padding: 1rem;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: center;
+    }
+
+    .mentor-page-indicator {
+        margin-right: 0;
+        width: 100%;
+        text-align: center;
+        order: -1;
+    }
+
+    .mentor-btn {
+        padding: 0.75rem 1.25rem !important;
+        font-size: 1rem !important;
+    }
+
+    /* 戰鬥畫面作答區下移 */
+    #hud {
+        padding-top: 30px !important;
+        padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)) !important;
+        flex-direction: column !important;
+        min-height: 380px !important;
+    }
+
+    #question-area {
+        min-height: 120px !important;
+        justify-content: flex-end !important;
+        padding-bottom: 20px !important;
+    }
+    /* 點選模式專用：縮小攻擊鈕與間距，避免擠壓 */
+    .tap-mode-controls {
+        gap: 0.75rem !important;
+    }
+
+    .tap-attack-btn {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+        margin-top: -0.15rem !important;
+        font-size: 1rem !important;
+    }
+}
