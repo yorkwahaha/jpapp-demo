@@ -20,6 +20,7 @@
         })();
     </script>
     <script>
+        window.APP_VERSION = '26031002'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
         document.addEventListener('gesturechange', function (e) { e.preventDefault(); });
     </script>
@@ -66,7 +67,8 @@
         </div>
 
         <div v-else id="stageWrap" class="w-full flex justify-center">
-            <div id="stage" class="rounded-3xl shadow-2xl overflow-hidden border border-white/50">
+            <div id="stage" class="rounded-3xl shadow-2xl overflow-hidden border border-white/50"
+                :class="{ 'boss-vfx-shake': bossScreenShake }">
                 <div id="battleScene" class="transition-all duration-300"
                     :style="{ backgroundImage: 'url(' + currentBg + ')' }" :class="{'bg-dodge': isPlayerDodging}">
                     <div id="battleLog" class="battle-log" aria-live="polite"></div>
@@ -283,7 +285,7 @@
                                     </div>
 
                                     <div v-show="answerMode === 'flick' && !hasSubmitted" id="flickLayer"
-                                        class="w-full flex justify-center items-center gap-4 sm:gap-6 px-2 select-none touch-none z-10 pt-2 pb-6 sm:pb-8"
+                                        class="w-full flex flex-wrap justify-center items-center gap-4 sm:gap-6 px-2 select-none touch-none z-10 pt-2 pb-6 sm:pb-8"
                                         @pointermove="moveFlick" @pointerup="endFlick" @pointercancel="endFlick"
                                         @pointerleave="endFlick">
                                         <button v-for="(opt, i) in currentQuestion.choices" :key="i"
@@ -587,72 +589,12 @@
                         </label>
                     </div>
 
-                    <div class="border-b border-slate-600 pb-3 space-y-3 mt-3">
-                        <label class="flex items-center justify-between text-sm text-slate-200">
-                            <span>答錯時自動朗讀句子</span>
-                            <input type="checkbox" v-model="settings.autoReadOnWrong"
-                                class="w-5 h-5 rounded accent-blue-500">
-                        </label>
-                        <div
-                            class="text-sm text-slate-300 flex flex-col gap-1.5 px-2 bg-slate-900/30 rounded py-2 border border-slate-700/50">
-                            <span class="font-bold mb-1">答對後自動前進：</span>
-                            <div class="flex gap-4">
-                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                        v-model="settings.correctAdvanceDelayMs" :value="0"
-                                        class="accent-amber-500">手動</label>
-                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                        v-model="settings.correctAdvanceDelayMs" :value="1000"
-                                        class="accent-amber-500">1s</label>
-                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                        v-model="settings.correctAdvanceDelayMs" :value="2000"
-                                        class="accent-amber-500">2s</label>
-                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                        v-model="settings.correctAdvanceDelayMs" :value="3000"
-                                        class="accent-amber-500">3s</label>
-                            </div>
-                        </div>
-                        <div
-                            class="text-sm text-slate-300 flex flex-col gap-1.5 px-2 bg-slate-900/30 rounded py-2 border border-slate-700/50">
-                            <span class="font-bold mb-1">答錯後自動前進：</span>
-                            <div class="flex gap-4">
-                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                        v-model="settings.wrongAdvanceDelayMs" :value="0"
-                                        class="accent-amber-500">手動</label>
-                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                        v-model="settings.wrongAdvanceDelayMs" :value="2000"
-                                        class="accent-amber-500">2s</label>
-                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                        v-model="settings.wrongAdvanceDelayMs" :value="3000"
-                                        class="accent-amber-500">3s</label>
-                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                        v-model="settings.wrongAdvanceDelayMs" :value="5000"
-                                        class="accent-amber-500">5s</label>
-                            </div>
-                        </div>
-                        <div
-                            class="text-sm text-slate-300 flex flex-col gap-1.5 px-2 bg-slate-900/30 rounded py-2 border border-slate-700/50">
-                            <span class="font-bold mb-1">回饋風格：</span>
-                            <div class="flex gap-4">
-                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                        v-model="settings.feedbackStyle" value="oneesan"
-                                        class="accent-amber-500">播報姊姊</label>
-                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                        v-model="settings.feedbackStyle" value="combat"
-                                        class="accent-amber-500">爽快戰鬥</label>
-                            </div>
-                        </div>
-                        <div
-                            class="text-sm text-slate-300 flex flex-col gap-1.5 px-2 bg-slate-900/30 rounded py-2 border border-slate-700/50">
-                            <span class="font-bold mb-1">戰鬥模式：</span>
-                            <div class="flex gap-4">
-                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                        v-model="settings.enemyAttackMode" value="atb"
-                                        class="accent-rose-500">ATB(即時)</label>
-                                <label class="flex items-center gap-1 cursor-pointer opacity-50" title="即將推出"><input
-                                        type="radio" v-model="settings.enemyAttackMode" value="turn"
-                                        class="accent-rose-500" disabled>回合制(TODO)</label>
-                            </div>
-                        </div>
+                    <div class="border-b border-slate-600 pb-3 mt-3">
+                        <button
+                            @click="isAdvancedSettingsOpen = true; isMenuOpen = false; isLevelJumpOpen = false; isMentorReplayOpen = false; isMistakesOpen = false; isInventoryOpen = false; isSkillUnlockModalOpen = false;"
+                            class="w-full px-4 py-2 rounded-lg bg-slate-800/80 border border-slate-600 hover:bg-slate-700 text-slate-200 text-sm font-bold shadow transition-all">
+                            ⚙️ 進階設定
+                        </button>
                     </div>
 
                     <button @pointerdown="startRunAwayPress" @pointerup="cancelRunAwayPress"
@@ -662,21 +604,148 @@
                         <div class="absolute left-0 top-0 bottom-0 bg-rose-500 pointer-events-none"
                             :style="{ width: isRunAwayPressing ? '100%' : '0%', transition: isRunAwayPressing ? 'width 3s linear' : 'width 0.2s ease-out' }">
                         </div>
-                        <span class="relative z-10 drop-shadow-md">🏃 長按 3 秒逃回首頁</span>
+                        <span class="relative z-10 drop-shadow-md">🏃 長按 3 秒重新整理最新版</span>
                     </button>
+
+                    <div class="flex gap-2">
+                        <button @click="isMentorReplayOpen = true; isMenuOpen = false;"
+                            class="flex-1 px-4 py-3 rounded-lg bg-blue-900/60 border border-blue-500/50 hover:border-blue-400 text-white text-sm font-bold shadow-lg transition-all">
+                            🧙‍♂️ 回顧教學
+                        </button>
+                        <button @click="isLevelJumpOpen = true; isMenuOpen = false;"
+                            class="flex-1 px-4 py-3 rounded-lg bg-purple-900/60 border border-purple-500/50 hover:border-purple-400 text-white text-sm font-bold shadow-lg transition-all">
+                            ⏭️ 關卡選擇
+                        </button>
+                    </div>
 
                     <button @click="openChangelog();"
                         class="w-full px-4 py-3 rounded-lg bg-indigo-900/60 border border-indigo-500/50 hover:border-indigo-400 text-white text-sm font-bold shadow-lg transition-all">
                         📋 更新日誌
                     </button>
-
-                    <button @click="handleReload();"
-                        class="w-full px-4 py-3 rounded-lg bg-emerald-900/60 border border-emerald-500/50 hover:border-emerald-400 text-white text-sm font-bold shadow-lg transition-all">
-                        🔄 重新載入 (Reload)
-                    </button>
                 </div>
                 <button @click="isMenuOpen = false; resumeBattle();"
                     class="mt-4 w-full px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold">關閉</button>
+            </div>
+        </div>
+
+        <div v-if="isAdvancedSettingsOpen" class="modal-overlay"
+            @click.self="isAdvancedSettingsOpen = false; resumeBattle();" style="z-index: 5000;">
+            <div class="modal-panel w-[400px]">
+                <h2 class="text-2xl font-black text-amber-400 mb-4">⚙️ 進階設定</h2>
+                <div class="space-y-3">
+                    <label class="flex items-center justify-between text-sm text-slate-200">
+                        <span>答錯時自動朗讀句子</span>
+                        <input type="checkbox" v-model="settings.autoReadOnWrong"
+                            class="w-5 h-5 rounded accent-blue-500">
+                    </label>
+                    <div
+                        class="text-sm text-slate-300 flex flex-col gap-1.5 px-2 bg-slate-900/30 rounded py-2 border border-slate-700/50">
+                        <span class="font-bold mb-1">答對後自動前進：</span>
+                        <div class="flex gap-4">
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
+                                    v-model="settings.correctAdvanceDelayMs" :value="0"
+                                    class="accent-amber-500">手動</label>
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
+                                    v-model="settings.correctAdvanceDelayMs" :value="1000"
+                                    class="accent-amber-500">1s</label>
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
+                                    v-model="settings.correctAdvanceDelayMs" :value="2000"
+                                    class="accent-amber-500">2s</label>
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
+                                    v-model="settings.correctAdvanceDelayMs" :value="3000"
+                                    class="accent-amber-500">3s</label>
+                        </div>
+                    </div>
+                    <div
+                        class="text-sm text-slate-300 flex flex-col gap-1.5 px-2 bg-slate-900/30 rounded py-2 border border-slate-700/50">
+                        <span class="font-bold mb-1">答錯後自動前進：</span>
+                        <div class="flex gap-4">
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
+                                    v-model="settings.wrongAdvanceDelayMs" :value="0"
+                                    class="accent-amber-500">手動</label>
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
+                                    v-model="settings.wrongAdvanceDelayMs" :value="2000"
+                                    class="accent-amber-500">2s</label>
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
+                                    v-model="settings.wrongAdvanceDelayMs" :value="3000"
+                                    class="accent-amber-500">3s</label>
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
+                                    v-model="settings.wrongAdvanceDelayMs" :value="5000"
+                                    class="accent-amber-500">5s</label>
+                        </div>
+                    </div>
+                    <div
+                        class="text-sm text-slate-300 flex flex-col gap-1.5 px-2 bg-slate-900/30 rounded py-2 border border-slate-700/50">
+                        <span class="font-bold mb-1">回饋風格：</span>
+                        <div class="flex gap-4">
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
+                                    v-model="settings.feedbackStyle" value="oneesan"
+                                    class="accent-amber-500">播報姊姊</label>
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
+                                    v-model="settings.feedbackStyle" value="combat"
+                                    class="accent-amber-500">爽快戰鬥</label>
+                        </div>
+                    </div>
+                    <div
+                        class="text-sm text-slate-300 flex flex-col gap-1.5 px-2 bg-slate-900/30 rounded py-2 border border-slate-700/50">
+                        <span class="font-bold mb-1">戰鬥模式：</span>
+                        <div class="flex gap-4">
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
+                                    v-model="settings.enemyAttackMode" value="atb"
+                                    class="accent-rose-500">ATB(即時)</label>
+                            <label class="flex items-center gap-1 cursor-pointer opacity-50" title="即將推出"><input
+                                    type="radio" v-model="settings.enemyAttackMode" value="turn" class="accent-rose-500"
+                                    disabled>回合制(TODO)</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex gap-2 mt-4 mt-4">
+                    <button @click="isAdvancedSettingsOpen = false; isMenuOpen = true;"
+                        class="flex-1 px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-bold">返回主選單</button>
+                    <button @click="isAdvancedSettingsOpen = false; resumeBattle();"
+                        class="flex-1 px-4 py-2 rounded-lg bg-slate-600 hover:bg-slate-500 text-white text-xs font-bold">關閉全部</button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="isMentorReplayOpen" class="modal-overlay" @click.self="isMentorReplayOpen = false; resumeBattle();"
+            style="z-index: 5000;">
+            <div class="modal-panel w-[500px] h-[70vh] flex flex-col">
+                <h2 class="text-2xl font-black text-blue-400 mb-4 flex-shrink-0">🧙‍♂️ 回顧教學</h2>
+                <div class="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-2 pb-4">
+                    <div v-for="skillId in unlockedSkillIds" :key="'mentor-'+skillId">
+                        <button v-if="skillsAll[skillId] && skillsAll[skillId].mentorDialogue"
+                            @click="replaySpecificMentor(skillId)"
+                            class="w-full text-left px-4 py-3 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-slate-600 shadow-md transition-colors">
+                            <span class="font-bold text-amber-400 text-lg">{{ skillsAll[skillId].name || skillId
+                                }}</span>
+                            <div class="text-xs text-slate-300 mt-1">{{ skillsAll[skillId].meaning || '' }}</div>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex justify-end pt-4 mt-auto border-t border-slate-700 shrink-0">
+                    <button @click="isMentorReplayOpen = false; resumeBattle()"
+                        class="px-6 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold shadow-md">關閉</button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="isLevelJumpOpen" class="modal-overlay" @click.self="isLevelJumpOpen = false; resumeBattle();"
+            style="z-index: 5000;">
+            <div class="modal-panel w-[500px] h-[70vh] flex flex-col">
+                <h2 class="text-2xl font-black text-purple-400 mb-4 flex-shrink-0">⏭️ 關卡選擇</h2>
+                <div
+                    class="flex-1 overflow-y-auto custom-scrollbar grid grid-cols-4 sm:grid-cols-5 gap-2 pr-2 pb-4 content-start">
+                    <button v-for="l in maxLevel" :key="'jump_'+l" @click="isLevelJumpOpen = false; debugJumpToLevel(l)"
+                        class="py-3 rounded-lg bg-slate-800/80 hover:bg-slate-700 border shadow-md text-center font-bold text-lg transition-colors"
+                        :class="currentLevel === l ? 'border-amber-500 text-amber-400 bg-amber-900/30' : 'border-slate-600 text-slate-200'">
+                        {{ l }}
+                    </button>
+                </div>
+                <div class="flex justify-end pt-4 mt-auto border-t border-slate-700 shrink-0">
+                    <button @click="isLevelJumpOpen = false; resumeBattle()"
+                        class="px-6 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold shadow-md">關閉</button>
+                </div>
             </div>
         </div>
 
@@ -784,8 +853,8 @@
 
     <script>
         (function () {
-            // 老闆專業的破快取機制
-            const v = new URLSearchParams(location.search).get('v') || Date.now();
+            // 老闆專業的破快取機制 - 使用全域單一版本號
+            const v = window.APP_VERSION || '26031001';
 
             // 1. 載入資料檔
             const s1 = document.createElement('script');

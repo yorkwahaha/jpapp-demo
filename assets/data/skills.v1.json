@@ -13,7 +13,8 @@
     "choiceSet": [
       "は",
       "が",
-      "も"
+      "も",
+      "を"
     ],
     "mentorDialogue": [
       {
@@ -67,7 +68,8 @@
     "choiceSet": [
       "の",
       "は",
-      "が"
+      "が",
+      "に"
     ],
     "mentorDialogue": [
       {
@@ -117,7 +119,8 @@
     "choiceSet": [
       "が",
       "は",
-      "に"
+      "に",
+      "を"
     ],
     "mentorDialogue": [
       {
@@ -207,7 +210,8 @@
     "choiceSet": [
       "に",
       "で",
-      "へ"
+      "へ",
+      "を"
     ],
     "mentorDialogue": [
       {
@@ -251,7 +255,8 @@
     "choiceSet": [
       "へ",
       "に",
-      "で"
+      "で",
+      "を"
     ],
     "mentorDialogue": [
       {
@@ -296,7 +301,8 @@
     "choiceSet": [
       "も",
       "は",
-      "が"
+      "が",
+      "の"
     ],
     "mentorDialogue": [
       {
@@ -340,7 +346,8 @@
     "choiceSet": [
       "で",
       "に",
-      "へ"
+      "へ",
+      "を"
     ],
     "mentorDialogue": [
       {
@@ -384,7 +391,8 @@
     "choiceSet": [
       "と",
       "に",
-      "で"
+      "で",
+      "へ"
     ],
     "mentorDialogue": [
       {
@@ -428,7 +436,8 @@
     "choiceSet": [
       "に",
       "で",
-      "へ"
+      "へ",
+      "が"
     ],
     "mentorDialogue": [
       {
@@ -472,7 +481,8 @@
     "choiceSet": [
       "が",
       "は",
-      "に"
+      "に",
+      "で"
     ],
     "mentorDialogue": [
       {
@@ -517,7 +527,8 @@
     "choiceSet": [
       "から",
       "まで",
-      "へ"
+      "へ",
+      "に"
     ],
     "mentorDialogue": [
       {

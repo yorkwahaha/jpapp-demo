@@ -984,9 +984,9 @@ jpDebug commands:
 - jpDebug.retry()
 - jpDebug.next()
 - jpDebug.prev()
-- jpDebug.skill('MO_ALSO')
-- jpDebug.skillMany('MO_ALSO', 20)
-- jpDebug.skillLines('MO_ALSO', 20)
+- jpDebug.skill('MO_ALSO_BASIC')
+- jpDebug.skillMany('MO_ALSO_BASIC', 20)
+- jpDebug.skillLines('MO_ALSO_BASIC', 20)
 - jpDebug.state()
 - jpDebug.home()
 - jpDebug.levels()
@@ -1037,7 +1037,7 @@ jpDebug commands:
         const VOCAB = ref(null);
         const maxLevel = ref(35);
 
-        const APP_VERSION = "26031001"
+        const APP_VERSION = window.APP_VERSION || "26031002";
         const appVersion = ref(APP_VERSION);
         const VFX_ENHANCED = true;
 
@@ -1115,6 +1115,8 @@ jpDebug commands:
         const MENTOR_SEEN_KEY = 'jpRpgMentorSeenV1';
         const mentorTutorialSeen = ref([]);
         const isMentorModalOpen = ref(false);
+        const isMentorReplayOpen = ref(false);
+        const isLevelJumpOpen = ref(false);
         const currentMentorSkill = ref(null);
         const mentorPages = ref([]); // 平鋪後的文字分頁
         const mentorDialogueIndex = ref(0); // 指向目前的 Page
@@ -1283,11 +1285,16 @@ jpDebug commands:
             }
             stopMentorAudio();
             isMentorModalOpen.value = false;
+
+            // 立即刷新音量 (因 isMentorModalOpen 已設為 false)
+            updateGainVolumes();
+
             // Continue to skill unlock modal if we just unlocked it, 
             // or resume level start
             if (window._resumeAfterMentor) {
-                window._resumeAfterMentor();
-                window._resumeAfterMentor = null;
+                const callback = window._resumeAfterMentor;
+                window._resumeAfterMentor = null; // 執行前清空，避免遞迴或殘留
+                callback();
             }
         };
 
@@ -1593,6 +1600,7 @@ jpDebug commands:
         const runAwayPressTimer = ref(null);
         const isRunAwayPressing = ref(false);
         const isMenuOpen = ref(false);
+        const isAdvancedSettingsOpen = ref(false);
         const isMistakesOpen = ref(false);
         const isInventoryOpen = ref(false);
         const player = ref({ hp: 100, maxHp: 100, gold: 0, exp: 0 });
@@ -1629,6 +1637,7 @@ jpDebug commands:
         const earnedGold = ref(0);
         const monsterHit = ref(false);
         const screenShake = ref(false);
+        const bossScreenShake = ref(false);
         const flashOverlay = ref(false);
         const isPlayerDodging = ref(false);
         const voicePlayedForCurrentQuestion = ref(false);
@@ -1747,12 +1756,20 @@ jpDebug commands:
 
         const BGM_BASE = 'assets/audio/bgm/';
         const currentBattleBgmPick = ref(BGM_BASE + 'BGM_1.mp3');
+        let lastNormalBgm = null;
 
         const pickBattleBgm = (level) => {
             const lv = Number(level) || parseInt(level, 10) || 1;
-            if (lv === 2) currentBattleBgmPick.value = BGM_BASE + 'BGM_2.mp3';
-            else if (lv === 3) currentBattleBgmPick.value = BGM_BASE + 'BGM_3.mp3';
-            else currentBattleBgmPick.value = BGM_BASE + 'BGM_1.mp3';
+            if (lv % 5 === 0) {
+                currentBattleBgmPick.value = BGM_BASE + 'BGM_boss.mp3';
+                lastNormalBgm = null;
+            } else {
+                const normalBgms = ['BGM_1.mp3', 'BGM_2.mp3', 'BGM_3.mp3', 'BGM_4.mp3'];
+                const pool = lastNormalBgm ? normalBgms.filter(b => b !== lastNormalBgm) : normalBgms;
+                const pick = pool[Math.floor(Math.random() * pool.length)];
+                lastNormalBgm = pick;
+                currentBattleBgmPick.value = BGM_BASE + pick;
+            }
         };
 
         const preloadAllAudio = async () => {
@@ -1771,7 +1788,7 @@ jpDebug commands:
                 gameover: 'assets/audio/sfx_gameover.mp3'
             };
 
-            const criticalAssets = [BGM_BASE + 'BGM_1.mp3', BGM_BASE + 'BGM_2.mp3', BGM_BASE + 'BGM_3.mp3', BGM_BASE + 'BGM_4.mp3', sfxPaths.click, sfxPaths.pop];
+            const criticalAssets = [BGM_BASE + 'BGM_1.mp3', BGM_BASE + 'BGM_2.mp3', BGM_BASE + 'BGM_3.mp3', BGM_BASE + 'BGM_4.mp3', BGM_BASE + 'BGM_boss.mp3', sfxPaths.click, sfxPaths.pop];
             const promises = [];
 
             const loadAsset = (url) => {
@@ -1953,7 +1970,7 @@ jpDebug commands:
         const startRunAwayPress = () => {
             if (hasSubmitted.value) return;
             isRunAwayPressing.value = true;
-            runAwayPressTimer.value = setTimeout(() => { playSfx('click'); runAway(); }, 3000);
+            runAwayPressTimer.value = setTimeout(() => { playSfx('click'); handleReload(); }, 3000);
         };
         const cancelRunAwayPress = () => {
             isRunAwayPressing.value = false;
@@ -2066,6 +2083,7 @@ jpDebug commands:
             potion: 'assets/audio/sfx_potion.mp3',
             click: 'assets/audio/sfx_click.mp3',
             damage: 'assets/audio/damage.mp3',
+            damage2: 'assets/audio/damage2.mp3',
             fanfare: 'assets/audio/fanfare.mp3',
             pop: 'assets/audio/pop.mp3',
             win: 'assets/audio/win.mp3',
@@ -2446,6 +2464,62 @@ jpDebug commands:
             }
         };
 
+        // 預防 Boss claw 重複播出的鎖定狀態
+        let _isBossClawPlaying = false;
+
+        const playMonsterClawAttackVfx = () => {
+            if (_isBossClawPlaying) return;
+            _isBossClawPlaying = true;
+
+            bossScreenShake.value = true;
+            setTimeout(() => { bossScreenShake.value = false; }, 400);
+
+            const vfxLayer = getVfxLayer();
+            if (!vfxLayer) {
+                _isBossClawPlaying = false;
+                return;
+            }
+
+            // 1. 背景分量：亮紅閃光與衝擊白閃
+            const flash = document.createElement('div');
+            flash.className = 'boss-vfx-flash';
+            vfxLayer.appendChild(flash);
+
+            const impact = document.createElement('div');
+            impact.className = 'boss-vfx-impact-flash';
+            vfxLayer.appendChild(impact);
+
+            // 2. 1.2 版核心：建立統一的「爪痕群組」容器
+            const group = document.createElement('div');
+            group.className = 'boss-claw-group';
+
+            // 三道爪痕的相對配置 (中間為主，左右各偏移)
+            const clawConfigs = [
+                { offset: -65, scale: 0.85, type: 'is-side' },
+                { offset: 0, scale: 1.0, type: 'is-middle' },
+                { offset: 65, scale: 0.85, type: 'is-side' }
+            ];
+
+            clawConfigs.forEach(cfg => {
+                const slash = document.createElement('div');
+                slash.className = `boss-vfx-slash-mark ${cfg.type}`;
+                // 使用相對位移，不再隨機，維持群組整齊感
+                slash.style.left = `calc(50% + ${cfg.offset}px)`;
+                slash.style.transform = `scale(${cfg.scale})`;
+                group.appendChild(slash);
+            });
+
+            vfxLayer.appendChild(group);
+
+            // 3. 清理：1.2 版動畫時間約 0.4s，保留一點 buffer
+            setTimeout(() => {
+                if (vfxLayer.contains(flash)) vfxLayer.removeChild(flash);
+                if (vfxLayer.contains(impact)) vfxLayer.removeChild(impact);
+                if (vfxLayer.contains(group)) vfxLayer.removeChild(group);
+                _isBossClawPlaying = false;
+            }, 1000);
+        };
+
         const runPauseTimerLogic = () => {
             wrongAnswerPauseCountdown.value--;
             if (wrongAnswerPauseCountdown.value <= 0) {
@@ -2477,12 +2551,18 @@ jpDebug commands:
                 playSfx('miss');
                 pushBattleLog(`怪物攻擊失誤！勇者閃開了！`, 'info');
             } else {
-                playerBlink.value = true;
-                flashOverlay.value = true;
-                setTimeout(() => { playerBlink.value = false; }, 500);
-                setTimeout(() => { flashOverlay.value = false; }, 300);
+                const isBoss = (currentLevel.value % 5 === 0);
+                if (isBoss) {
+                    playMonsterClawAttackVfx();
+                    playSfx('damage2');
+                } else {
+                    playerBlink.value = true;
+                    setTimeout(() => { playerBlink.value = false; }, 500);
+                    playSfx('damage');
+                }
 
-                playSfx('damage');
+                flashOverlay.value = true;
+                setTimeout(() => { flashOverlay.value = false; }, 300);
                 let dmg = Math.floor(Math.random() * 11) + 10;
                 dmg = Math.max(1, Math.floor(dmg * heroBuffs.enemyDmgMult));
                 player.value.hp = Math.max(0, player.value.hp - dmg);
@@ -2555,10 +2635,14 @@ jpDebug commands:
         const ALL_PARTICLES = ['は', 'が', 'を', 'に', 'で', 'へ', 'と'];
         const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
         const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
+
+        const getChoiceCountForLevel = (lv) => (lv % 5 === 0) ? 4 : 3;
+
         const makeChoices = (correct) => {
+            const targetCount = getChoiceCountForLevel(currentLevel.value);
             const correctArr = Array.isArray(correct) ? correct : [correct];
             const wrong = ALL_PARTICLES.filter(p => !correctArr.includes(p));
-            const picked = [correctArr[0], ...shuffle(wrong).slice(0, 3)];
+            const picked = [correctArr[0], ...shuffle(wrong).slice(0, targetCount - 1)];
             return shuffle(picked);
         };
 
@@ -2654,6 +2738,8 @@ jpDebug commands:
             bgmAudio.value.pause();
             bgmAudio.value.src = srcAbs;
             bgmAudio.value.load();
+            bgmAudio.value.currentTime = 0;
+            updateGainVolumes();
             bgmAudio.value.play().catch(e => {
                 needsUserGestureToResumeBgm.value = true;
             });
@@ -2672,7 +2758,6 @@ jpDebug commands:
             showLevelSelect.value = false;
             currentLevel.value = lv;
             initGame(lv);
-            needsUserGestureToResumeBgm.value = false;
         };
 
         const usePotion = () => {
@@ -2728,7 +2813,21 @@ jpDebug commands:
 
         let bossSkillQueue = [];
         const startBossQueue = (unlockedIds) => {
-            bossSkillQueue = [...unlockedIds].sort(() => Math.random() - 0.5);
+            const lv = currentLevel.value;
+            // 第五關固定複習池：は / の / が / を
+            const level5Pool = ['WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE', 'WO_OBJECT_BASIC'];
+
+            if (lv === 5) {
+                let fullQueue = [];
+                // 每 4 題為一組，確保各出現一次，重複 5 次共 20 題 (覆蓋 15 題需求)
+                for (let i = 0; i < 5; i++) {
+                    const block = [...level5Pool].sort(() => Math.random() - 0.5);
+                    fullQueue = fullQueue.concat(block);
+                }
+                bossSkillQueue = fullQueue;
+            } else {
+                bossSkillQueue = [...unlockedIds].sort(() => Math.random() - 0.5);
+            }
         };
 
         const pickSkillForBoss = () => {
@@ -2784,6 +2883,9 @@ jpDebug commands:
         const gaExistRecentCategories = [];
 
         const generateQuestionBySkill = (skillId, blanks, db, vocab) => {
+            // 向下相容 MO_ALSO_BASIC
+            if (skillId === 'MO_ALSO') skillId = 'MO_ALSO_BASIC';
+
             const skillDef = skillsAll.value[skillId];
             if (!skillDef || !skillDef.id) return null;
 
@@ -2868,9 +2970,30 @@ jpDebug commands:
                 choices
             });
 
-            const getChoices = (defaultChoices) => {
-                const arr = [...(skillDef.choiceSet || defaultChoices)];
-                return arr.sort(() => Math.random() - 0.5).slice(0, 4);
+            const getChoices = (defaultChoices, correctAns) => {
+                const targetCount = getChoiceCountForLevel(currentLevel.value);
+                let safePool = [...(skillDef.choiceSet || defaultChoices)];
+
+                if (correctAns && !safePool.includes(correctAns)) {
+                    safePool.push(correctAns);
+                }
+
+                safePool = safePool.sort(() => Math.random() - 0.5);
+                let selected = [];
+
+                if (correctAns) {
+                    selected.push(correctAns);
+                    safePool = safePool.filter(x => x !== correctAns);
+                }
+
+                const needed = targetCount - selected.length;
+                if (safePool.length >= needed) {
+                    selected = selected.concat(safePool.slice(0, needed));
+                } else {
+                    selected = selected.concat(safePool);
+                }
+
+                return selected.sort(() => Math.random() - 0.5);
             };
 
             let q = null;
@@ -2913,7 +3036,7 @@ jpDebug commands:
                         answer: 'の',
                         skillId: skillDef.id,
                         grammarTip: tipText,
-                        choices: (Number(blanks ?? 1) === 1) ? getChoices(["の", "は", "が", "を"]) : undefined
+                        choices: (Number(blanks ?? 1) === 1) ? getChoices(["の", "は", "が", "を"], 'の') : undefined
                     });
                 } else {
                     let personPool = [...(db?.people || []), ...(safeVocab.people || []), ...safePeople];
@@ -2966,7 +3089,7 @@ jpDebug commands:
                         answer: 'の',
                         skillId: skillDef.id,
                         grammarTip: tipText,
-                        choices: (Number(blanks ?? 1) === 1) ? getChoices(["の", "は", "が", "を"]) : undefined
+                        choices: (Number(blanks ?? 1) === 1) ? getChoices(["の", "は", "が", "を"], 'の') : undefined
                     });
                 }
             }
@@ -3003,7 +3126,7 @@ jpDebug commands:
                     answer: 'は',
                     skillId: skillDef.id,
                     grammarTip: tipText,
-                    choices: (Number(blanks ?? 1) === 1) ? getChoices(["は", "が", "を", "に"]) : undefined
+                    choices: (Number(blanks ?? 1) === 1) ? getChoices(["は", "が", "を", "に"], 'は') : undefined
                 });
             }
             else if (skillDef.id === 'GA_EXIST' || skillDef.id === 'GA_INTRANSITIVE') {
@@ -3049,7 +3172,7 @@ jpDebug commands:
                     answer: 'が',
                     skillId: skillDef.id,
                     grammarTip: tipText,
-                    choices: (Number(blanks ?? 1) === 1) ? getChoices(["が", "を", "に", "で", "は", "へ", "と", "の"]) : undefined
+                    choices: (Number(blanks ?? 1) === 1) ? getChoices(["が", "を", "に", "で", "は", "へ", "と", "の"], 'が') : undefined
                 });
             }
             else if (skillDef.id === 'WO_OBJECT' || skillDef.id === 'WO_OBJECT_BASIC') {
@@ -3068,7 +3191,7 @@ jpDebug commands:
                     answer: 'を',
                     skillId: skillDef.id,
                     grammarTip: tipText,
-                    choices: (Number(blanks ?? 1) === 1) ? getChoices(["を", "に", "が", "で"]) : undefined
+                    choices: (Number(blanks ?? 1) === 1) ? getChoices(["を", "に", "が", "で"], 'を') : undefined
                 });
             }
             else if (skillDef.id === 'NI_TIME') {
@@ -3088,7 +3211,7 @@ jpDebug commands:
                     answer: 'に',
                     skillId: skillDef.id,
                     grammarTip: tipText,
-                    choices: getChoices(["に", "で", "へ", "を"])
+                    choices: getChoices(["に", "で", "へ", "を"], 'に')
                 });
             }
             else if (skillDef.id === 'HE_DEST' || skillDef.id === 'HE_DIRECTION') {
@@ -3100,8 +3223,11 @@ jpDebug commands:
 
                 // Fix: 確保中文翻譯自然，避免 "回家銀行"
                 const vZh = zhOf(v);
-                let chinese = `${vZh}${zhOf(p)}`;
-                if (vZh === '回' && zhOf(p) === '家') chinese = "回家";
+                const pZh = zhOf(p);
+                let chinese = `${vZh}${pZh}`;
+                if (vZh === '回' && pZh === '家') chinese = "回家";
+                else if (vZh === '去' || vZh === '來') chinese = `${vZh}${pZh}`;
+                else chinese = `${vZh}往${pZh}`; // 備選語感
 
                 q = makeParticleQuestion({
                     chinese: chinese,
@@ -3112,7 +3238,7 @@ jpDebug commands:
                     answer: 'へ',
                     skillId: skillDef.id,
                     grammarTip: tipText,
-                    choices: getChoices(["へ", "を", "は", "が"]) // 移除 "に" 以免與 "へ" 產生歧義
+                    choices: getChoices(["へ", "を", "は", "が"], 'へ') // 移除 "に" 以免與 "へ" 產生歧義
                 });
             }
             else if (skillDef.id === 'MO_ALSO' || skillDef.id === 'MO_ALSO_BASIC') {
@@ -3120,20 +3246,25 @@ jpDebug commands:
                 const personPool = skillPool.personPool || [{ j: "私", r: "わたし", zh: "我", tags: ["person"] }];
                 const statePool = skillPool.statePool || [{ j: "雨", r: "あめ", zh: "雨", kind: "precip" }];
 
-                const x = Math.random() < 0.5 ? pickOne(personPool) : pickOne(statePool);
-                const nounZh = zhOf(x);
-
-                let yj = '';
-                let yr = '';
-                let zhTail = '';
-
-                const isPerson = (x.tags && x.tags.includes("person")) || x.kind === "person";
+                const isPerson = Math.random() < 0.5;
+                let x, yj, yr, zhTail;
 
                 if (isPerson) {
-                    yj = "学生です";
-                    yr = "がくせいです";
-                    zhTail = "也是學生";
+                    x = pickOne(personPool);
+                    const personStates = statePool.filter(s => s.kind === "person");
+                    const state = personStates.length > 0 ? pickOne(personStates) : { j: "学生", r: "がくせい", zh: "學生" };
+                    yj = state.j + "です";
+                    yr = state.r + "です";
+                    if (state.kind === "adjective") {
+                        zhTail = "也" + zhOf(state);
+                    } else if (state.j === "風邪") {
+                        zhTail = "也感冒";
+                    } else {
+                        zhTail = "也是" + zhOf(state);
+                    }
                 } else {
+                    const nonPersonStates = statePool.filter(s => s.kind !== "person");
+                    x = nonPersonStates.length > 0 ? pickOne(nonPersonStates) : pickOne(statePool);
                     const kind = x.kind || '';
                     if (kind === "sky") {
                         yj = "曇る"; yr = "くもる"; zhTail = "也轉陰";
@@ -3148,6 +3279,8 @@ jpDebug commands:
                     }
                 }
 
+                const nounZh = zhOf(x);
+
                 q = makeParticleQuestion({
                     chinese: `${nounZh}${zhTail}`,
                     leftText: x.j,
@@ -3157,16 +3290,18 @@ jpDebug commands:
                     answer: 'も',
                     skillId: skillDef.id,
                     grammarTip: tipText,
-                    choices: getChoices(["も", "は", "が", "の"])
+                    choices: getChoices(["も", "は", "が", "の"], 'も')
                 });
             }
             else if (skillDef.id === 'DE_LOC' || skillDef.id === 'DE_ACTION_PLACE') {
                 const skillPool = (pool.skills?.DE_ACTION_PLACE) || {};
-                const pList = skillPool.placePool || [{ j: "教室", r: "きょうしつ", zh: "教室" }];
-                const actionPool = skillPool.actionPool || [{ j: "勉強する", r: "べんきょうする", zh: "讀書" }];
+                const safeCombos = skillPool.safeCombos || [
+                    { p: { j: "教室", r: "きょうしつ", zh: "教室" }, v: { j: "勉強する", r: "べんきょうする", zh: "讀書" } }
+                ];
 
-                const p = pickOne(pList);
-                const v = pickOne(actionPool);
+                const combo = pickOne(safeCombos);
+                const p = combo.p;
+                const v = combo.v;
 
                 q = makeParticleQuestion({
                     chinese: `在${zhOf(p)}${zhOf(v)}`,
@@ -3177,7 +3312,7 @@ jpDebug commands:
                     answer: 'で',
                     skillId: skillDef.id,
                     grammarTip: tipText,
-                    choices: getChoices(["で", "に", "へ", "を"])
+                    choices: getChoices(["で", "に", "へ", "を"], 'で')
                 });
             }
             else if (skillDef.id === 'TO_WITH') {
@@ -3197,7 +3332,7 @@ jpDebug commands:
                     answer: 'と',
                     skillId: skillDef.id,
                     grammarTip: tipText,
-                    choices: getChoices(["と", "に", "で", "へ"])
+                    choices: getChoices(["と", "に", "で", "へ"], 'と')
                 });
             }
             else if (skillDef.id === 'NI_EXIST_PLACE') {
@@ -3219,13 +3354,12 @@ jpDebug commands:
                     segments: [
                         seg(p.j, p.r),
                         { isBlank: true, blankIndex: 0 },
-                        seg("が", "が"), // Fix: 補上原本漏掉的「が」
-                        seg(`${n.j}${verb.j}`, `${n.r}${verb.r}`)
+                        seg(`${n.j}が${verb.j}`, `${n.r}が${verb.r}`)
                     ],
                     answers: [["に"]],
                     grammarTip: tipText,
                     skillId: skillDef.id,
-                    choices: getChoices(["に", "で", "へ", "が"])
+                    choices: getChoices(["に", "で", "へ", "が"], 'に')
                 };
             }
             else if (skillDef.id === 'GA_EXIST_SUBJECT') {
@@ -3246,7 +3380,7 @@ jpDebug commands:
                     answer: 'が',
                     skillId: skillDef.id,
                     grammarTip: tipText,
-                    choices: getChoices(["が", "は", "に", "で"])
+                    choices: getChoices(["が", "は", "に", "で"], 'が')
                 });
             }
             else if (skillDef.id === 'KARA_FROM') {
@@ -3271,7 +3405,7 @@ jpDebug commands:
                         answer: 'から',
                         skillId: skillDef.id,
                         grammarTip: tipText,
-                        choices: getChoices(["から", "まで", "へ", "に"])
+                        choices: getChoices(["から", "まで", "へ", "に"], 'から')
                     });
                 } else {
                     const pList = skillPool.placePool || [{ j: "家", r: "いえ", zh: "家" }];
@@ -3291,7 +3425,7 @@ jpDebug commands:
                         answer: 'から',
                         skillId: skillDef.id,
                         grammarTip: tipText,
-                        choices: getChoices(["から", "まで", "へ", "に"])
+                        choices: getChoices(["から", "まで", "へ", "に"], 'から')
                     });
                 }
             }
@@ -3348,16 +3482,19 @@ jpDebug commands:
                 if (newUnlocks.length > 0) {
                     newlyUnlocked.value = newUnlocks.map(id => skillsAll.value[id]).filter(Boolean);
 
-                    // NEW: Intercept with Mentor NPC Dialogue if needed
-                    const firstNewSkillId = newUnlocks[0];
-                    if (triggerMentorDialogue(firstNewSkillId)) {
-                        triggeredMentor = true;
-                        // Pause and wait for mentor to finish
-                        window._resumeAfterMentor = () => {
-                            isSkillUnlockModalOpen.value = true;
-                        };
+                    if (window._disableMentorAutoTrigger) {
+                        // Skip mentor and popup for debug jump
                     } else {
-                        isSkillUnlockModalOpen.value = true;
+                        const firstNewSkillId = newUnlocks[0];
+                        if (triggerMentorDialogue(firstNewSkillId)) {
+                            triggeredMentor = true;
+                            // Pause and wait for mentor to finish
+                            window._resumeAfterMentor = () => {
+                                isSkillUnlockModalOpen.value = true;
+                            };
+                        } else {
+                            isSkillUnlockModalOpen.value = true;
+                        }
                     }
                 }
             }
@@ -3368,6 +3505,17 @@ jpDebug commands:
             let reviewCycle = { remainingReview: 1, remainingL2: 3, lastWasReview: false };
             const allowSkills = ['WA_TOPIC_BASIC', 'NO_POSSESSIVE'];
 
+            // L5 固定 review pool（不依賴 unlockedSkillIds，確保 refresh/skip level 時仍完整）
+            const L5_REVIEW_POOL = ['WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE', 'WO_OBJECT_BASIC'];
+            // 預先為 L5 建立 review 排程 queue：每 4 題一組，各 skill 各出一次再 shuffle
+            const l5Queue = [];
+            if (lv === 5) {
+                for (let b = 0; b < Math.ceil(100 / 4); b++) {
+                    const block = [...L5_REVIEW_POOL].sort(() => Math.random() - 0.5);
+                    l5Queue.push(...block);
+                }
+            }
+
             for (let i = 0; i < 100; i++) {
                 let q = null;
                 let skillId = null;
@@ -3375,6 +3523,10 @@ jpDebug commands:
 
                 if (lv === 1) {
                     skillId = Math.random() < 0.5 ? allowSkills[0] : allowSkills[1];
+                } else if (lv === 5) {
+                    // L5 Boss Review：從預排 queue 依序取，保證平均分布
+                    skillId = l5Queue[i % l5Queue.length];
+                    isReview = false; // L5 自身就是 review 關，不需要額外的 isReview 旗標
                 } else if (unlockedSkillIds.value.length > 0) {
                     if (lv === 2) {
                         if (reviewCycle.remainingReview === 0 && reviewCycle.remainingL2 === 0) {
@@ -3401,6 +3553,8 @@ jpDebug commands:
 
                 let generatedFromSkill = false;
                 let attempts = 0;
+                let originalSkillId = skillId;
+                let isFallback = false;
 
                 while (attempts < 10 && skillId && !generatedFromSkill) {
                     const originalLevel = currentLevel.value;
@@ -3425,10 +3579,70 @@ jpDebug commands:
                         if (skillId === 'TO_WITH' && ansStr !== 'と') valid = false;
                         if (skillId === 'KARA_FROM' && ansStr !== 'から') valid = false;
 
-                        if (valid) generatedFromSkill = true;
-                        else q = null;
+                        if (valid && lv <= 15) {
+                            let fullText = "";
+                            let blankIndexChar = -1;
+                            q.segments.forEach(s => {
+                                if (s.isBlank) {
+                                    blankIndexChar = fullText.length;
+                                    fullText += "___";
+                                } else {
+                                    fullText += s.text;
+                                }
+                            });
+                            const particles = ['は', 'が', 'を', 'に', 'で', 'へ', 'と', 'も', 'の', 'や'];
+                            let failReason = null;
+                            if (blankIndexChar > 0) {
+                                const prevChar = fullText.substring(blankIndexChar - 1, blankIndexChar);
+                                if (particles.includes(prevChar)) failReason = `連續助詞(前): ${prevChar}`;
+                            }
+                            if (blankIndexChar !== -1 && blankIndexChar + 3 < fullText.length) {
+                                const nextChar = fullText.substring(blankIndexChar + 3, blankIndexChar + 4);
+                                if (particles.includes(nextChar)) failReason = `連續助詞(後): ${nextChar}`;
+                            }
+                            if (failReason) {
+                                valid = false;
+                                if (window.DEBUG_Q_GEN) {
+                                    console.warn(`[Q-GEN FAIL] ${skillId} | ${q.chinese} | ${fullText} | ${failReason}`);
+                                }
+                            } else {
+                                if (window.DEBUG_Q_GEN) {
+                                    console.log(`[Q-GEN OK] ${skillId} | ${q.chinese} | ${fullText} | Ans: ${ansStr} | Choices: ${q.choices ? q.choices.join(',') : ''}`);
+                                }
+                            }
+                        }
+
+                        if (valid) {
+                            generatedFromSkill = true;
+                        } else {
+                            q = null;
+                        }
                     }
-                    attempts++;
+
+                    if (!generatedFromSkill) {
+                        attempts++;
+                        // Level 5 特殊重試與補位邏輯
+                        if (lv === 5) {
+                            if (attempts % 3 === 0 && attempts < 10) {
+                                isFallback = true;
+                                const level5Pool = ['WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE', 'WO_OBJECT_BASIC'];
+                                const blockStart = Math.floor(qList.length / 4) * 4;
+                                const usedInBlock = qList.slice(blockStart).map(qq => qq.skillId);
+                                const candidates = level5Pool.filter(s => s !== originalSkillId && !usedInBlock.includes(s));
+
+                                // 優先換成缺少的，若都沒缺就隨機換一個
+                                if (candidates.length > 0) {
+                                    skillId = candidates[0];
+                                } else {
+                                    skillId = level5Pool.filter(s => s !== skillId)[0] || level5Pool[0];
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (lv === 5) {
+                    console.log(`[L5-DIST] Index: ${qList.length} | 原定: ${originalSkillId} | 最終: ${skillId} | 重試: ${attempts > 1} | Fallback: ${isFallback} | 成功: ${generatedFromSkill}`);
                 }
 
                 if (!generatedFromSkill && skillId) {
@@ -3436,8 +3650,16 @@ jpDebug commands:
                     if (q) generatedFromSkill = true;
                 }
 
-                if (!generatedFromSkill) {
-                    const type = typePool[Math.floor(Math.random() * typePool.length)];
+                if (!generatedFromSkill && lv === 5) {
+                    // L5 完全封閉在 review pool，禁止進入全域 fallback switch
+                    // 最後嘗試從 review pool 中任意取一個 safeFallback（emergency only）
+                    const fallbackSkillId = L5_REVIEW_POOL.find(s => s !== skillId) || L5_REVIEW_POOL[0];
+                    console.warn(`[L5 FALLBACK BLOCKED] Index: ${qList.length} | originalSkill: ${originalSkillId} | attemptedSkill: ${skillId} | emergencyFallback: ${fallbackSkillId} | 禁止漏入全域 switch`);
+                    q = safeFallbackQuestion(fallbackSkillId) || safeFallbackQuestion(L5_REVIEW_POOL[0]);
+                    if (q) {
+                        q.skillId = fallbackSkillId;
+                    }
+                } else if (!generatedFromSkill) {
                     switch (type) {
                         case 0:
                             const p0 = rand(db.places);
@@ -3513,7 +3735,17 @@ jpDebug commands:
                         }
                     }
                     q.skillId = 'FALLBACK';
+                } // end of else (non-L5 global fallback)
+
+                if (q) {
+                    const isBoss = (currentLevel.value % 5 === 0);
+                    const targetCount = getChoiceCountForLevel(currentLevel.value);
+                    const actualCount = q.choices ? q.choices.length : 0;
+                    if (isBoss || window.DEBUG_Q_GEN) {
+                        console.log(`[Boss 4-Choice Fix Debug] Level: ${currentLevel.value} | isBoss: ${isBoss} | targetCount: ${targetCount} | actualChoices: ${actualCount} | skill: ${q.skillId}`);
+                    }
                 }
+
                 qList.push(q);
             }
 
@@ -4030,10 +4262,25 @@ jpDebug commands:
         }
 
         const handleReload = () => {
-            window.location.reload();
+            isMenuOpen.value = false;
+            setTimeout(() => {
+                localStorage.removeItem('jpRpgAppVersion');
+                window.location.reload(true);
+            }, 100); // 確保選單已關閉後再執行
         };
 
         onMounted(() => {
+            const savedVersion = localStorage.getItem('jpRpgAppVersion');
+            if (!savedVersion) {
+                // First load -> initialize safely
+                localStorage.setItem('jpRpgAppVersion', APP_VERSION);
+            } else if (savedVersion !== APP_VERSION) {
+                // Update detected -> set and reload
+                localStorage.setItem('jpRpgAppVersion', APP_VERSION);
+                alert('遊戲已更新，將重新載入最新版');
+                window.location.reload(true);
+            }
+
             const unlockAudioOnce = () => {
                 initAudioCtx().then(() => {
                     if (!audioInited.value) initAudio();
@@ -4202,13 +4449,75 @@ jpDebug commands:
         const generateL2Debug = () => { };
         const copyL2Debug = () => { };
 
+        const replaySpecificMentor = (skillId) => {
+            isMenuOpen.value = false;
+            isMentorReplayOpen.value = false;
+            const skill = skillsAll.value[skillId];
+            if (!skill || !skill.mentorDialogue) return;
+
+            // 暫停戰鬥
+            pauseBattle();
+
+            // 設定關閉後的回呼：僅恢復戰鬥，不誤走首進流程 (如 Reveal Modal)
+            window._resumeAfterMentor = () => {
+                resumeBattle();
+            };
+
+            stopMentorAudio();
+            setupMentorDialogue(skill);
+        };
+
+        const debugJumpToLevel = (level) => {
+            const lv = Math.max(1, Math.min(level, maxLevel.value || 99));
+
+            initAudioCtx();
+            if (audioCtx.value && audioCtx.value.state === 'suspended') {
+                audioCtx.value.resume().catch(() => { });
+            }
+
+            if (window._bgmDuckTimer) clearTimeout(window._bgmDuckTimer);
+            if (typingTimerMentor) clearTimeout(typingTimerMentor);
+            stopMentorAudio();
+
+            const vfxLayer = document.getElementById('global-vfx-layer');
+            if (vfxLayer) vfxLayer.innerHTML = '';
+
+            flickState.isArmed = false;
+            flickState.activeOpt = null;
+            if (flickState.capturedEl) {
+                try { flickState.capturedEl.releasePointerCapture(1); } catch (e) { }
+                flickState.capturedEl = null;
+            }
+
+            isMenuOpen.value = false;
+            isMentorModalOpen.value = false;
+            isMentorReplayOpen.value = false;
+            isLevelJumpOpen.value = false;
+            praiseToast.value.show = false;
+            window._disableMentorAutoTrigger = true;
+
+            startLevel(lv).then(() => {
+                window._disableMentorAutoTrigger = false;
+            });
+        };
+        window.debugJumpToLevel = debugJumpToLevel;
+
+        setTimeout(() => {
+            const params = new URLSearchParams(window.location.search);
+            const forceLv = parseInt(params.get('level'), 10);
+            if (forceLv && forceLv >= 1 && (maxLevel.value ? forceLv <= maxLevel.value : true)) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+                debugJumpToLevel(forceLv);
+            }
+        }, 100);
+
         loadAudioSettings();
 
         return {
-            uiMenuOpen, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, maxLevel, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, playMistakeVoice, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
+            uiMenuOpen, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, maxLevel, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, playMistakeVoice, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             allAbilities, unlockedAbilityIds, skillList, castAbility, spState, showL2DebugPanel, l2DebugQuestions, generateL2Debug, copyL2Debug, handleReload, settings, shouldShowNextButton, praiseToast,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
-            isMentorModalOpen, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
+            isMentorModalOpen, isMentorReplayOpen, isLevelJumpOpen, isAdvancedSettingsOpen, replaySpecificMentor, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
             displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,
             isMonsterImageError, handleMonsterImageError
         };
