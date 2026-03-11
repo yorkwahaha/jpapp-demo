@@ -469,13 +469,15 @@ function formatBattleMsg({ actor, action, value, extra }) {
 function setHeroAvatar(state) {
     const el = document.getElementById('heroAvatar');
     if (!el) return;
+    const img = el.querySelector('img');
+    if (!img) return;
     el.dataset.state = state;
-    if (state === 'neutral') el.src = 'assets/images/hero/hero_neutral.png';
-    else if (state === 'hit') el.src = 'assets/images/hero/hero_hit.png';
-    else if (state === 'lose') el.src = 'assets/images/hero/hero_lose.png';
-    else if (state === 'win') el.src = 'assets/images/hero/hero_win.png';
-    else if (state === 'scary') el.src = 'assets/images/hero/hero_scary.png';
-    else if (state === 'ase') el.src = 'assets/images/hero/hero_ase.png';
+    if (state === 'neutral') img.src = 'assets/images/hero/hero_neutral.png';
+    else if (state === 'hit') img.src = 'assets/images/hero/hero_hit.png';
+    else if (state === 'lose') img.src = 'assets/images/hero/hero_lose.png';
+    else if (state === 'win') img.src = 'assets/images/hero/hero_win.png';
+    else if (state === 'scary') img.src = 'assets/images/hero/hero_scary.png';
+    else if (state === 'ase') img.src = 'assets/images/hero/hero_ase.png';
 }
 
 function flashHeroHit(hpPct = 1.0, ms = 1000) {
