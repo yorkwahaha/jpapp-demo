@@ -67,72 +67,81 @@
         </div>
 
         <!-- V3.0 Battle UI -->
-        <div v-else id="stageWrap" class="fixed inset-0 bg-slate-900 overflow-hidden font-sans select-none" :class="{ 'boss-vfx-shake': bossScreenShake }">
-            
+        <div v-else id="stageWrap" class="fixed inset-0 bg-slate-900 overflow-hidden font-sans select-none"
+            :class="{ 'boss-vfx-shake': bossScreenShake }">
+
             <!-- [L0, L1] Scene & Arena Layer -->
-            <div class="absolute inset-0 z-0 h-[100dvh] w-full" >
-                <div id="battleScene" class="absolute inset-0 transition-all duration-300 bg-cover bg-center bg-no-repeat"
-                    :style="{ backgroundImage: 'url(' + currentBg + ')' }" :class="{'bg-dodge': isPlayerDodging}">
-                </div>
-                <!-- Monster Container (Centered in the upper 70% of screen to avoid HUD overlap) -->
-                <div class="absolute top-[15dvh] left-0 w-full h-[55dvh] flex items-center justify-center z-10 pointer-events-none">
-                    <div v-if="!monsterDead"
-                        class="flex flex-col items-center relative transition-all duration-300 pointer-events-auto"
-                        :class="{ hit: monsterHit }">
-                        <!-- Monster Image -->
-                        <div class="rounded-full bg-rose-900/40 flex items-center justify-center text-5xl mb-3 shadow-[0_0_30px_rgba(225,29,72,0.3)] ring-2 ring-rose-500/20"
-                            :class="currentLevel % 5 === 0 ? 'monster-container-boss' : 'monster-container-normal'">
-                            <img v-if="monster.sprite && monster.sprite.includes('/') && !isMonsterImageError"
-                                :src="monster.sprite" @error="handleMonsterImageError" alt="monster"
-                                class="object-contain drop-shadow-2xl monster-breath"
-                                :class="currentLevel % 5 === 0 ? 'monster-img-boss' : 'monster-img-normal'">
-                            <img v-else-if="monster.sprite && monster.sprite.includes('/') && isMonsterImageError"
-                                src="assets/images/monsters/slime.png" alt="monster fallback"
-                                class="object-contain drop-shadow-2xl monster-breath"
-                                :class="currentLevel % 5 === 0 ? 'monster-img-boss' : 'monster-img-normal'">
-                            <span v-else class="monster-breath inline-block">{{ monster.sprite || '👹' }}</span>
-                        </div>
-                        <!-- Monster Info -->
-                        <span class="text-xl font-black text-white drop-shadow-md mb-0.5">{{ monster.name }}</span>
-                        <span class="text-sm font-bold text-amber-300 drop-shadow-md mb-2">{{ monster.trait }}</span>
-                        <!-- Monster HP -->
-                        <div class="w-full h-2.5 bg-slate-950/80 rounded-full overflow-hidden mb-1 border border-white/20 shadow-lg"
-                            style="width: 160px;">
-                            <div class="h-full bg-gradient-to-r from-rose-600 to-rose-400 shadow-[0_0_10px_rgba(225,29,72,0.6)] transition-all duration-500"
-                                :style="{ width: (monster.hp / monster.maxHp * 100) + '%' }"></div>
-                        </div>
-                        <div id="monsterStatusBar" class="w-full flex justify-center gap-1 mt-1 min-h-[22px]"></div>
-                        <!-- Timer Ring (Boss/Hard Mode) -->
-                        <div v-if="!isFinished && !monsterDead && !playerDead"
-                            class="absolute -right-12 top-10 w-10 h-10 z-10 opacity-80 mix-blend-screen">
-                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 40 40">
-                                <circle cx="20" cy="20" r="16" stroke="currentColor" stroke-width="4" fill="transparent" class="text-slate-900/50" />
-                                <circle cx="20" cy="20" r="16" stroke="currentColor" stroke-width="4" fill="transparent"
-                                    :stroke-dasharray="100.5" :stroke-dashoffset="100.5 * (1 - timeLeft / 10)"
-                                    class="text-amber-400 drop-shadow-[0_0_5px_rgba(251,191,36,0.8)] transition-all duration-100 ease-linear" />
-                            </svg>
+            <div class="absolute inset-0 z-0 h-[100dvh] w-full">
+                <div id="battleScene"
+                    class="absolute inset-0 transition-all duration-300 bg-cover bg-center bg-no-repeat"
+                    :style="{ backgroundImage: 'url(' + currentBg + ')' }"
+                    :class="{ 'bg-dodge': isPlayerDodging }">
+
+                    <!-- Monster Container -->
+                    <div class="absolute top-[15dvh] left-0 w-full h-[55dvh] flex items-center justify-center z-10 pointer-events-none">
+                        <div v-if="!monsterDead"
+                            class="flex flex-col items-center relative transition-all duration-300 pointer-events-auto"
+                            :class="{ hit: monsterHit }">
+
+                            <!-- Monster Image -->
+                            <div class="rounded-full bg-rose-900/40 flex items-center justify-center text-5xl mb-3 shadow-[0_0_30px_rgba(225,29,72,0.3)] ring-2 ring-rose-500/20"
+                                :class="currentLevel % 5 === 0 ? 'monster-container-boss' : 'monster-container-normal'">
+                                <img v-if="monster.sprite && monster.sprite.includes('/') && !isMonsterImageError"
+                                    :src="monster.sprite" @error="handleMonsterImageError" alt="monster"
+                                    class="object-contain drop-shadow-2xl monster-breath"
+                                    :class="currentLevel % 5 === 0 ? 'monster-img-boss' : 'monster-img-normal'">
+                                <img v-else-if="monster.sprite && monster.sprite.includes('/') && isMonsterImageError"
+                                    src="assets/images/monsters/slime.png" alt="monster fallback"
+                                    class="object-contain drop-shadow-2xl monster-breath"
+                                    :class="currentLevel % 5 === 0 ? 'monster-img-boss' : 'monster-img-normal'">
+                                <span v-else class="monster-breath inline-block">{{ monster.sprite || '👹' }}</span>
+                            </div>
+
+                            <!-- Monster Info -->
+                            <span class="text-xl font-black text-white drop-shadow-md mb-0.5">{{ monster.name }}</span>
+                            <span class="text-sm font-bold text-amber-300 drop-shadow-md mb-2">{{ monster.trait }}</span>
+
+                            <!-- Monster HP -->
+                            <div class="w-full h-2.5 bg-slate-950/80 rounded-full overflow-hidden mb-1 border border-white/20 shadow-lg"
+                                style="width: 160px;">
+                                <div class="h-full bg-gradient-to-r from-rose-600 to-rose-400 shadow-[0_0_10px_rgba(225,29,72,0.6)] transition-all duration-500"
+                                    :style="{ width: (monster.hp / monster.maxHp * 100) + '%' }"></div>
+                            </div>
+
+                            <div id="monsterStatusBar" class="w-full flex justify-center gap-1 mt-1 min-h-[22px]"></div>
+
+                            <!-- Timer Ring -->
+                            <div v-if="!isFinished && !monsterDead && !playerDead"
+                                class="absolute -right-12 top-10 w-10 h-10 z-10 opacity-80 mix-blend-screen">
+                                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 40 40">
+                                    <circle cx="20" cy="20" r="16" stroke="currentColor" stroke-width="4" fill="transparent"
+                                        class="text-slate-900/50" />
+                                    <circle cx="20" cy="20" r="16" stroke="currentColor" stroke-width="4" fill="transparent"
+                                        :stroke-dasharray="100.5" :stroke-dashoffset="100.5 * (1 - timeLeft / 10)"
+                                        class="text-amber-400 drop-shadow-[0_0_5px_rgba(251,191,36,0.8)] transition-all duration-100 ease-linear" />
+                                </svg>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- [L2] Cinematic / Skill Close-up Layer (Reserved for future) -->
+            <!-- [L2] Cinematic / Skill Close-up Layer -->
             <div class="absolute inset-0 z-20 pointer-events-none"></div>
 
-            <!-- [L3] Hero Stand Layer / Character Portrait Slot -->
-            <!-- Anchored to bottom-left, sitting exactly on top of the Arena, but strictly BEHIND the HUD -->
-            <div id="heroStandContainer" class="absolute left-0 w-[45%] max-w-[170px] z-[45] pointer-events-none flex items-end justify-start" style="bottom: clamp(150px, 28dvh, 240px); height: min(35dvh, 260px); display: none;">
-                <!-- TODO: Future real transparent hero stand PNG -->
-                <img src="assets/images/hero/hero_neutral.png" class="object-contain object-bottom w-full h-full drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)] opacity-60 mix-blend-screen mask-image-b mask-gradient-b">
-                <!-- Placeholder overlay to show where hero goes -->
+            <!-- [L3] Legacy Hero Stand Slot -->
+            <div id="heroStandContainer"
+                class="absolute left-0 w-[45%] max-w-[170px] z-[45] pointer-events-none flex items-end justify-start"
+                style="bottom: clamp(150px, 28dvh, 240px); height: min(35dvh, 260px); display: none;">
+                <img src="assets/images/hero/hero_neutral.png"
+                    class="object-contain object-bottom w-full h-full drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)] opacity-60 mix-blend-screen mask-image-b mask-gradient-b">
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent z-[-1]"></div>
             </div>
 
-            <!-- [L4] Action VFX Layer (Flick trails, floating text, hit sparks) -->
-            <!-- Vanilla JS directly clears .innerHTML of this element, so it MUST NOT contain Vue-managed elements -->
+            <!-- [L4] Action VFX Layer -->
             <div id="flickVfxLayer" class="absolute inset-0 pointer-events-none z-40"></div>
-            
-            <!-- Praise Toast Layer (Vue Managed) -->
+
+            <!-- Praise Toast Layer -->
             <div class="absolute inset-0 pointer-events-none z-40">
                 <transition name="praise-pop">
                     <div v-if="praiseToast.show"
@@ -143,56 +152,181 @@
                 </transition>
             </div>
 
-            <!-- [L6] Global UI Layer: Notification Bar & Question Bubble -->
-            <div class="absolute top-0 w-full z-60 pt-safe px-4 pointer-events-none flex flex-col items-center gap-3 mt-2">
-                
+            <!-- [L6] Global UI Layer -->
+            <div class="absolute top-0 w-full z-[60] pt-safe px-4 pointer-events-none flex flex-col items-center gap-3 mt-2">
+
                 <!-- Notification / System Bar -->
                 <div class="flex items-center justify-between w-full max-w-lg mb-1 pointer-events-auto">
                     <div class="px-3 py-1 bg-black/40 backdrop-blur-sm rounded-full border border-white/10 text-[11px] font-bold text-slate-300 shadow-lg flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full" :class="difficulty === 'easy' ? 'bg-emerald-400' : 'bg-rose-500 shadow-[0_0_5px_rgba(225,29,72,0.8)]'"></span>
-                        LV.{{ currentLevel }}
+                        <span class="w-2 h-2 rounded-full"
+                            :class="difficulty === 'easy' ? 'bg-emerald-400' : 'bg-rose-500 shadow-[0_0_5px_rgba(225,29,72,0.8)]'"></span>
+                        <span>LV.{{ currentLevel }}</span>
                     </div>
-                    <div id="battleLog" class="flex-1 mx-2 text-center text-xs font-bold text-amber-300 drop-shadow-md truncate" aria-live="polite"></div>
+                    <div id="battleLog" class="flex-1 mx-2 text-center text-xs font-bold text-amber-300 drop-shadow-md truncate"
+                        aria-live="polite"></div>
                     <div class="flex items-center gap-2">
-                        <span v-if="comboCount > 1" class="px-2 py-0.5 bg-rose-900/60 border border-rose-500/50 rounded text-rose-300 font-black text-[10px] animate-pulse">🔥 {{ comboCount }} COMBO</span>
+                        <span v-if="comboCount > 1"
+                            class="px-2 py-0.5 bg-rose-900/60 border border-rose-500/50 rounded text-rose-300 font-black text-[10px] animate-pulse">
+                            🔥 {{ comboCount }} COMBO
+                        </span>
                     </div>
                 </div>
 
                 <!-- Floating Question Bubble -->
                 <div v-if="!monsterDead && !playerDead && !isFinished" class="w-full max-w-md mx-auto pointer-events-auto">
                     <div class="glass-panel rounded-2xl p-2 sm:p-3 shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-white/20 relative">
-                        <!-- Removed hint label from here -->
-                        
                         <div id="question-area" class="w-full flex flex-col items-center justify-center min-h-[50px]">
-                            <!-- Chinese Hint -->
                             <div class="text-amber-100/80 font-bold mb-3 text-sm md:text-base tracking-widest text-shadow-sm text-center">
                                 {{ currentQuestion?.chinese || '' }}
                             </div>
-                            <!-- Japanese Sentence -->
+
                             <div class="flex flex-wrap justify-center items-center gap-2 leading-tight">
-                                <!-- FORCE UNIQUE KEYS: Prevent cross-question patch mismatches -->
-                                <span v-for="(seg, idx) in displaySegments" :key="'seg_' + currentLevel + '_' + currentIndex + '_' + idx" class="inline-flex items-center">
+                                <span v-for="(seg, idx) in displaySegments"
+                                    :key="'seg_' + currentLevel + '_' + currentIndex + '_' + idx"
+                                    class="inline-flex items-center">
                                     <span v-if="!seg.isBlank" class="text-white text-2xl md:text-3xl font-black drop-shadow-md">
-                                        <ruby v-if="seg.ruby">{{ seg.text }}<rt class="text-[10px] md:text-xs text-amber-300 font-bold mb-1">{{ seg.ruby }}</rt></ruby>
+                                        <ruby v-if="seg.ruby">{{ seg.text }}<rt
+                                                class="text-[10px] md:text-xs text-amber-300 font-bold mb-1">{{ seg.ruby }}</rt></ruby>
                                         <span v-else>{{ seg.text }}</span>
                                     </span>
-                                    <!-- Input / Blank Slot -->
                                     <span v-else-if="seg.showInput && isChoiceMode"
                                         class="blank-slot text-2xl md:text-3xl font-black mx-1"
                                         :class="[getInputStyle(seg.blankIndex), { 'is-empty': !hasSubmitted && !userAnswers[seg.blankIndex] }]">
                                         {{ hasSubmitted ? getAnswerForDisplay(seg.blankIndex) : (userAnswers[seg.blankIndex] || '\u00A0') }}
                                     </span>
-                                    <span v-else class="particle-input correct inline-block px-3 py-0.5 text-2xl md:text-3xl mx-1 shadow-inner">{{ getAnswerForDisplay(seg.blankIndex) }}</span>
+                                    <span v-else class="particle-input correct inline-block px-3 py-0.5 text-2xl md:text-3xl mx-1 shadow-inner">
+                                        {{ getAnswerForDisplay(seg.blankIndex) }}
+                                    </span>
                                 </span>
                             </div>
                         </div>
-                 </div>
+                    </div>
                 </div>
-                
-            </div> <!-- [L6] Global UI Layer closes here -->
+            </div>
 
-            <!-- [L7] Modals Layer: Win/Loss / Result Overlays -->
-            <div v-if="monsterDead || playerDead" class="absolute inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm pointer-events-auto px-4">
+            <!-- [L5] Bottom HUD Console -->
+            <div id="hud" v-if="!isFinished" :class="{ 'hud-shake': screenShake }"
+                class="fixed md:absolute bottom-0 left-0 w-full md:w-[35%] md:min-w-[380px] md:max-w-[440px] md:left-1/2 md:-translate-x-1/2 z-50 glass-panel border-t md:border-x border-white/20 shadow-[0_-15px_40px_rgba(0,0,0,0.5)] flex flex-col justify-start !p-0 !min-h-0 h-auto overflow-visible"
+                style="background: rgba(15, 23, 42, 0.15); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-top-left-radius: 20px; border-top-right-radius: 20px; padding-bottom: 2px;">
+
+                <!-- Hint Overlay anchored above HUD -->
+                <div class="absolute left-1/2 -translate-x-1/2 -top-5 z-[60] pointer-events-none text-[11px] font-black tracking-widest text-amber-300 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]">
+                    {{ answerMode === 'flick' ? 'FLICK TO ATTACK' : 'TAP TO ATTACK' }}
+                </div>
+
+                <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none z-[-1]"></div>
+
+                <!-- L5.1 Answer Row -->
+                <div class="w-full px-2 pt-0.5 pb-0" style="height: 60px;">
+                    <div class="h-full relative">
+                        <div v-show="answerMode === 'tap' && !hasSubmitted"
+                            class="tap-mode-controls w-full h-full flex flex-col md:flex-row items-center justify-center gap-0.5 sm:gap-1.5 md:gap-3">
+                            <div class="flex w-full justify-center" :class="currentQuestion?.choices?.length > 3 ? 'gap-1' : 'gap-2'">
+                                <button v-for="(opt, i) in currentQuestion.choices" :key="'tap_' + opt + '_' + i"
+                                    @click="selectChoice(opt)"
+                                    class="flex-1 h-[24px] rounded-full border border-amber-400/30 bg-white/5 outline-none hover:bg-amber-400/20 active:bg-amber-500/50 active:scale-95 transition-all shadow-[inset_0_2px_10px_rgba(255,255,255,0.05)] relative overflow-hidden group"
+                                    :class="getChoiceBtnClass(opt)">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                    <span class="relative z-10 text-[17px] md:text-[18px] font-bold text-amber-50 drop-shadow-md leading-none">{{ opt }}</span>
+                                </button>
+                            </div>
+
+                            <button @click="checkAnswer"
+                                :disabled="hasSubmitted || (isChoiceMode && !userAnswers[0])"
+                                class="tap-attack-btn w-[40%] md:w-32 max-w-[140px] h-[28px] rounded-full bg-gradient-to-r from-amber-600 to-amber-500 border border-amber-300 shadow-[0_4px_10px_rgba(0,0,0,0.4)] text-slate-900 text-[10px] font-black tracking-widest transition-transform active:scale-95 disabled:opacity-50 disabled:grayscale hover:brightness-110 flex justify-center items-center leading-none"
+                                :class="(isChoiceMode && !userAnswers[0]) ? 'cursor-not-allowed opacity-50' : ''">
+                                攻擊 ATTACK
+                            </button>
+                        </div>
+
+                        <div v-show="answerMode === 'flick' && !hasSubmitted" id="flickLayer"
+                            class="w-full h-full flex justify-center items-center select-none touch-none"
+                            :class="currentQuestion?.choices?.length > 3 ? 'gap-1' : 'gap-2'"
+                            @pointermove="moveFlick" @pointerup="endFlick" @pointercancel="endFlick" @pointerleave="endFlick">
+                            <button v-for="(opt, i) in currentQuestion.choices" :key="'flick_' + opt + '_' + i"
+                                class="flex-1 h-[28px] rounded-full border bg-white/5 transition-all shadow-inner relative flex justify-center items-center"
+                                :class="flickState.successOpt === opt ? 'border-emerald-400 bg-emerald-500/30 text-emerald-100' : (flickState.activeOpt === opt ? 'border-amber-400 bg-amber-500/30 text-amber-50 scale-105 shadow-[0_0_15px_rgba(251,191,36,0.4)]' : 'border-amber-400/30 text-amber-50 border-white/10')"
+                                @pointerdown="startFlick($event, opt)">
+                                <span class="text-[17px] md:text-[18px] font-bold drop-shadow-md pointer-events-none leading-none">{{ opt }}</span>
+                            </button>
+                        </div>
+
+                        <!-- Submitted Feedback Overlay -->
+                        <div v-show="hasSubmitted"
+                            class="absolute inset-0 w-full h-full flex items-center justify-center gap-4 z-20 pointer-events-none">
+                            <div class="flex items-center gap-3 px-6 py-2 rounded-full border shadow-[0_0_20px_rgba(0,0,0,0.8)] pointer-events-auto"
+                                :class="isCurrentCorrect ? 'border-emerald-500 bg-emerald-950/80' : 'border-rose-500 bg-rose-950/80'">
+                                <span v-if="isCurrentCorrect" class="text-emerald-400 text-lg font-black flex items-center gap-2">✓ 正確！</span>
+                                <span v-else class="text-rose-400 text-lg font-black flex items-center gap-2">✕ 失敗</span>
+                            </div>
+
+                            <button v-if="shouldShowNextButton" @click="nextQuestion"
+                                class="px-6 py-2 rounded-full bg-amber-500 text-slate-950 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all border border-amber-300 tracking-widest pointer-events-auto">
+                                次へ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- L5.2 Hero Status & Config -->
+                <div class="w-full px-2 pb-0.5 pt-0.5 flex-none flex flex-col justify-center border-t border-white/10">
+                    <div class="flex flex-row md:flex-nowrap items-center gap-1 w-full max-w-lg mx-auto">
+                        <!-- Left -->
+                        <div class="flex-shrink-0 flex flex-col md:flex-row gap-0.5 md:gap-3 items-start md:items-center w-14 md:w-auto md:flex-1 md:justify-start">
+                            <button @click="answerMode = answerMode === 'flick' ? 'tap' : 'flick'"
+                                class="px-1 py-0.5 border border-slate-500/50 bg-slate-800/80 rounded flex items-center justify-center shadow-inner hover:bg-slate-700 transition-colors w-full md:w-16">
+                                <span class="text-[12px] font-bold text-slate-300 tracking-tighter uppercase leading-none">{{ answerMode === 'flick' ? 'FLICK' : 'TAP' }}</span>
+                            </button>
+                            <div class="px-1 py-0 text-[13px] text-amber-400 font-mono text-center w-full md:w-auto leading-none shrink-0"
+                                style="white-space: nowrap;">💰{{ player.gold }}</div>
+                        </div>
+
+                        <!-- Center -->
+                        <div class="flex-1 flex flex-col justify-center gap-0.5 min-w-0 md:max-w-md md:px-4">
+                            <div class="w-full flex items-center gap-1">
+                                <span class="text-[11px] font-black text-emerald-400 w-3 tracking-tighter">HP</span>
+                                <div class="flex-1 h-1 bg-slate-900 rounded-full border border-slate-700/80 overflow-hidden shadow-inner flex items-center">
+                                    <div class="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)] transition-all duration-300"
+                                        :class="[{ 'bg-rose-500 from-rose-600 to-rose-400': hpBarDanger, 'animate-pulse': playerBlink }]"
+                                        :style="{ width: (player.hp / player.maxHp * 100) + '%' }"></div>
+                                </div>
+                                <span class="text-[11px] font-mono font-bold text-slate-400 w-6 text-right">{{ player.hp }}</span>
+                            </div>
+
+                            <div class="w-full flex items-center gap-1">
+                                <span class="text-[11px] font-black text-cyan-400 w-3 tracking-tighter">SP</span>
+                                <div class="flex-1 h-0.5 bg-slate-900 rounded-full border border-slate-700/80 overflow-hidden shadow-inner flex items-center">
+                                    <div class="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.5)] transition-all duration-300"
+                                        style="width: 100%;"></div>
+                                </div>
+                                <span class="text-[11px] font-mono font-bold text-slate-400 w-6 text-right">MAX</span>
+                            </div>
+
+                            <div id="heroStatusBar" class="w-full flex justify-start gap-1 h-2 items-center pl-2"></div>
+                        </div>
+
+                        <!-- Right -->
+                        <div class="flex-shrink-0 flex flex-nowrap items-center justify-end gap-1 w-auto md:flex-1 md:justify-end">
+                            <button @click="isSkillOpen = true; pauseBattle();"
+                                class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-slate-800/80 border border-slate-600 flex items-center justify-center text-slate-300 shadow-[inset_0_2px_4px_rgba(255,255,255,0.05)] hover:bg-amber-600 hover:text-white hover:border-amber-400 transition-all active:scale-95 group relative">
+                                <span class="text-[10px] sm:text-[11px] group-hover:scale-110 transition-transform flex items-center justify-center">📖</span>
+                            </button>
+                            <button @click="isInventoryOpen = true; pauseBattle();"
+                                class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-slate-800/80 border border-slate-600 flex items-center justify-center text-slate-300 shadow-[inset_0_2px_4px_rgba(255,255,255,0.05)] hover:bg-amber-600 hover:text-white hover:border-amber-400 transition-all active:scale-95 group relative">
+                                <span class="text-[10px] sm:text-[11px] group-hover:scale-110 transition-transform">🎒</span>
+                            </button>
+                            <button @click="isMenuOpen = true; pauseBattle();"
+                                class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-slate-800/80 border border-slate-600 flex items-center justify-center text-slate-300 shadow-[inset_0_2px_4px_rgba(255,255,255,0.05)] hover:bg-slate-600 hover:text-white transition-all active:scale-95 group">
+                                <span class="text-[10px] sm:text-[11px] group-hover:scale-110 transition-transform">⚙️</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [L7] Result Overlay -->
+            <div v-if="monsterDead || playerDead"
+                class="absolute inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm pointer-events-auto px-4">
                 <div class="glass-panel p-8 rounded-3xl border border-white/20 shadow-[0_10px_50px_rgba(0,0,0,0.8)] flex flex-col items-center text-center w-full max-w-sm">
                     <div v-if="monsterDead" class="w-full">
                         <div class="text-6xl mb-4 drop-shadow-lg animate-bounce">🏆</div>
@@ -204,608 +338,472 @@
                             <div class="flex justify-between items-center"><span class="text-slate-400 text-xs">獲得經驗值</span><span class="text-blue-400 font-mono font-bold">+{{ earnedExp }}</span></div>
                             <div class="flex justify-between items-center"><span class="text-slate-400 text-xs">獲得金幣</span><span class="text-amber-400 font-mono font-bold">+{{ earnedGold }}</span></div>
                         </div>
-                        <button v-if="currentLevel < maxLevel" @click="goNextLevel" class="w-full py-4 rounded-xl bg-amber-500 text-slate-900 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all mb-3">下一關</button>
-                        <button v-else @click="startOver" class="w-full py-4 rounded-xl bg-amber-500 text-slate-900 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all mb-3">回到首頁</button>
-                        <button @click="isMistakesOpen = true" class="w-full py-3 rounded-xl bg-slate-800 text-slate-300 font-bold text-sm hover:bg-slate-700 transition-colors border border-slate-600">📒 查看錯題</button>
+                        <button v-if="currentLevel < maxLevel" @click="goNextLevel"
+                            class="w-full py-4 rounded-xl bg-amber-500 text-slate-900 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all mb-3">下一關</button>
+                        <button v-else @click="startOver"
+                            class="w-full py-4 rounded-xl bg-amber-500 text-slate-900 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all mb-3">回到首頁</button>
+                        <button @click="isMistakesOpen = true"
+                            class="w-full py-3 rounded-xl bg-slate-800 text-slate-300 font-bold text-sm hover:bg-slate-700 transition-colors border border-slate-600">📒 查看錯題</button>
                     </div>
+
                     <div v-if="playerDead" class="w-full">
                         <div class="text-6xl mb-4 drop-shadow-lg">💀</div>
                         <h2 class="text-2xl font-black text-rose-500 mb-6 tracking-widest">敗北...</h2>
-                        <button @click="revive" class="w-full py-4 rounded-xl bg-emerald-600 text-white font-black text-lg shadow-[0_4px_0_#065f46] active:translate-y-1 active:shadow-none transition-all mb-3">重新開始</button>
-                        <button @click="isMistakesOpen = true" class="w-full py-3 rounded-xl bg-slate-800 text-slate-300 font-bold text-sm hover:bg-slate-700 transition-colors border border-slate-600">📒 查看錯題</button>
+                        <button @click="revive"
+                            class="w-full py-4 rounded-xl bg-emerald-600 text-white font-black text-lg shadow-[0_4px_0_#065f46] active:translate-y-1 active:shadow-none transition-all mb-3">重新開始</button>
+                        <button @click="isMistakesOpen = true"
+                            class="w-full py-3 rounded-xl bg-slate-800 text-slate-300 font-bold text-sm hover:bg-slate-700 transition-colors border border-slate-600">📒 查看錯題</button>
                     </div>
                 </div>
             </div>
 
-            <!-- [L5] Bottom HUD Console: Glassmorphism -->
-            <!-- Compress the HUD as much as possible to create a thin skill panel -->
-            <div id="hud" v-if="!isFinished" :class="{'hud-shake': screenShake}"
-                class="fixed md:absolute bottom-0 left-0 w-full md:w-[35%] md:min-w-[380px] md:max-w-[440px] md:left-1/2 md:-translate-x-1/2 z-50 glass-panel border-t md:border-x border-white/20 shadow-[0_-15px_40px_rgba(0,0,0,0.5)] flex flex-col justify-start !p-0 !min-h-0 h-auto"
-                style="background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top-left-radius: 20px; border-top-right-radius: 20px; padding-bottom: 2px;">
-                
-                <!-- TOP EDGE HINT LABEL -->
-                <div class="absolute -top-3 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-r from-amber-600 to-amber-500 text-slate-900 text-[9px] font-black px-3 py-0.5 rounded-full shadow-md tracking-widest uppercase border border-amber-300/50 whitespace-nowrap">
-                    {{ answerMode === 'flick' ? 'FLICK TO ATTACK' : 'TAP TO ATTACK' }}
-                </div>
+            <!-- Hero Avatar Behind HUD -->
+            <div v-if="!isFinished" id="heroAvatar"
+                class="fixed md:absolute bottom-0 left-4 md:left-1/2 md:-translate-x-1/2 md:ml-[-180px] z-[45] pointer-events-none"
+                style="width: clamp(84px, 5vw, 120px); height: clamp(84px, 5vw, 120px); margin-bottom: clamp(60px, 8dvh, 90px);">
+                <img src="assets/images/hero/hero_neutral.png"
+                    class="w-full h-full object-contain drop-shadow-[0_8px_12px_rgba(0,0,0,0.6)]" data-state="neutral" />
+            </div>
 
-                <!-- Hero Avatar Floating Position -->
-                <div id="heroAvatar" class="absolute left-4 -top-20 z-40 pointer-events-none" 
-                     style="width: clamp(84px, 5vw, 120px); height: clamp(84px, 5vw, 120px);">
-                    <img src="assets/images/hero/hero_neutral.png" 
-                         class="w-full h-full object-contain drop-shadow-[0_8px_12px_rgba(0,0,0,0.6)]"
-                         data-state="neutral" />
-                </div>
-
-                <!-- Top Edge Highlight -->
-                <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none z-[-1]"></div>
-
-                <!-- L5.1 Answer Row (Rune Capsules) -->
-                <div class="w-full px-2 pt-0.5 pb-0 flex-grow-0 flex-shrink-0 relative">
-                    <div v-show="answerMode === 'tap' && !hasSubmitted" class="tap-mode-controls w-full flex flex-col md:flex-row items-center justify-center gap-0.5 sm:gap-1.5 md:gap-3">
-                        <!-- Horizontal Answer Row scaling gap based on 3 or 4 choices -->
-                        <div class="flex w-full justify-center" :class="currentQuestion?.choices?.length > 3 ? 'gap-1' : 'gap-2'">
-                            <!-- FORCE UNIQUE KEYS: Prevent _vei crashes during array replacement -->
-                            <button v-for="(opt, i) in currentQuestion.choices" :key="'tap_' + opt + '_' + i"
-                                @click="selectChoice(opt)" 
-                                class="flex-1 h-[24px] rounded-full border border-amber-400/30 bg-white/5 outline-none hover:bg-amber-400/20 active:bg-amber-500/50 active:scale-95 transition-all shadow-[inset_0_2px_10px_rgba(255,255,255,0.05)] relative overflow-hidden group"
-                                :class="getChoiceBtnClass(opt)">
-                                <!-- Glowing inner core -->
-                                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                <span class="relative z-10 text-[13px] md:text-[14px] font-bold text-amber-50 drop-shadow-md leading-none">{{ opt }}</span>
+            <!-- Mentor Modal -->
+            <template v-if="isMentorModalOpen">
+                <div class="mentor-overlay" style="z-index: 5000;"></div>
+                <div class="mentor-panel shadow-2xl" style="z-index: 5001;">
+                    <div class="mentor-header">
+                        <div class="mentor-avatar-mini">🧙‍♂️</div>
+                        <span class="mentor-name">傳說中的導師</span>
+                    </div>
+                    <div class="mentor-body flex gap-6">
+                        <div class="mentor-portrait-container">
+                            <img v-if="!isMentorPortraitError" src="assets/images/ui/mentor/mentor-neutral.png"
+                                @error="isMentorPortraitError = true" class="mentor-portrait-img">
+                            <div v-else class="mentor-portrait-placeholder">
+                                <span class="text-4xl">👤</span>
+                            </div>
+                        </div>
+                        <div class="mentor-text flex-1">{{ displayedMentorText }}</div>
+                    </div>
+                    <div class="mentor-footer">
+                        <div class="mentor-page-indicator" v-if="mentorPages.length > 1">
+                            {{ mentorDialogueIndex + 1 }} / {{ mentorPages.length }}
+                        </div>
+                        <div v-if="isLastMentorLine && !isTypingMentor" class="flex gap-4">
+                            <button @click="restartMentorDialogue" class="mentor-btn btn-secondary text-sm sm:text-base px-4 sm:px-10">
+                                再看一次
+                            </button>
+                            <button @click="nextMentorLine" class="mentor-btn text-sm sm:text-base px-4 sm:px-10">
+                                開始戰鬥
                             </button>
                         </div>
-                        <!-- Tap Attack Button -->
-                            <button @click="checkAnswer"
-                            :disabled="hasSubmitted || (isChoiceMode && !userAnswers[0])"
-                            class="tap-attack-btn w-[40%] md:w-32 max-w-[140px] h-[24px] rounded-full bg-gradient-to-r from-amber-600 to-amber-500 border border-amber-300 shadow-[0_4px_10px_rgba(0,0,0,0.4)] text-slate-900 text-[9px] font-black tracking-widest transition-transform active:scale-95 disabled:opacity-50 disabled:grayscale hover:brightness-110 flex justify-center items-center leading-none"
-                            :class="(isChoiceMode && !userAnswers[0]) ? 'cursor-not-allowed opacity-50' : ''">
-                            攻擊 ATTACK
-                        </button>
-                    </div>
-
-                    <div v-show="answerMode === 'flick' && !hasSubmitted" id="flickLayer"
-                        class="w-full flex justify-center items-center select-none touch-none h-[24px]" :class="currentQuestion?.choices?.length > 3 ? 'gap-1' : 'gap-2'"
-                        @pointermove="moveFlick" @pointerup="endFlick" @pointercancel="endFlick" @pointerleave="endFlick">
-                        <!-- FORCE UNIQUE KEYS: Prevent _vei crashes during array replacement -->
-                        <button v-for="(opt, i) in currentQuestion.choices" :key="'flick_' + opt + '_' + i"
-                            class="flex-1 h-full rounded-full border bg-white/5 transition-all shadow-inner relative flex justify-center items-center"
-                            :class="flickState.successOpt === opt ? 'border-emerald-400 bg-emerald-500/30 text-emerald-100' : (flickState.activeOpt === opt ? 'border-amber-400 bg-amber-500/30 text-amber-50 scale-105 shadow-[0_0_15px_rgba(251,191,36,0.4)]' : 'border-amber-400/30 text-amber-50 border-white/10')"
-                            @pointerdown="startFlick($event, opt)">
-                            <span class="text-[13px] md:text-[14px] font-bold drop-shadow-md pointer-events-none leading-none">{{ opt }}</span>
-                        </button>
-                    </div>
-
-                    <!-- Submitted Feedback Overlay -->
-                    <div v-show="hasSubmitted" class="absolute inset-0 w-full h-full flex items-center justify-center gap-4 bg-slate-950/80 backdrop-blur-md z-20 rounded-t-3xl border-t border-white/10">
-                        <div class="flex items-center gap-3 px-6 py-2 rounded-full border shadow-[0_0_20px_rgba(0,0,0,0.8)]"
-                            :class="isCurrentCorrect ? 'border-emerald-500 bg-emerald-950/80' : 'border-rose-500 bg-rose-950/80'">
-                            <span v-if="isCurrentCorrect" class="text-emerald-400 text-lg font-black flex items-center gap-2">✓ 正確！</span>
-                            <span v-else class="text-rose-400 text-lg font-black flex items-center gap-2">✕ 失敗</span>
-                        </div>
-                        <button v-if="shouldShowNextButton" @click="nextQuestion"
-                            class="px-6 py-2 rounded-full bg-amber-500 text-slate-950 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all border border-amber-300 tracking-widest">
-                            次へ
+                        <button v-else @click="nextMentorLine" class="mentor-btn">
+                            {{ isTypingMentor ? '▶ 快進' : '下一句' }}
                         </button>
                     </div>
                 </div>
+            </template>
 
-                <!-- L5.2 Hero Status & Config -->
-                <div class="w-full px-2 pb-0.5 pt-0.5 flex-none flex flex-col justify-center border-t border-white/10">
-                    <div class="flex flex-row md:flex-nowrap items-center gap-1 w-full max-w-lg mx-auto">
-                        <!-- Left: Toggle & Mode -->
-                        <div class="flex-shrink-0 flex flex-col md:flex-row gap-0.5 md:gap-3 items-start md:items-center w-14 md:w-auto md:flex-1 md:justify-start">
-                             <button @click="answerMode = answerMode === 'flick' ? 'tap' : 'flick'"
-                                class="px-1 py-0.5 border border-slate-500/50 bg-slate-800/80 rounded flex items-center justify-center shadow-inner hover:bg-slate-700 transition-colors w-full md:w-16">
-                                <span class="text-[8px] font-bold text-slate-300 tracking-tighter uppercase leading-none">{{ answerMode === 'flick' ? 'FLICK' : 'TAP' }}</span>
-                            </button>
-                             <div class="px-1 py-0 text-[9px] text-amber-400 font-mono text-center w-full md:w-auto leading-none shrink-0" style="white-space: nowrap;">💰{{ player.gold }}</div>
+            <!-- Skill Unlock Modal -->
+            <div v-if="isSkillUnlockModalOpen" class="modal-overlay" @click.self="isSkillUnlockModalOpen = false"
+                style="z-index: 100;">
+                <div class="modal-panel max-w-sm rounded-[1rem] border-2 border-amber-600/60 bg-[#1e110a]/95 drop-shadow-[0_0_20px_rgba(217,119,6,0.3)] shadow-2xl overflow-hidden font-serif">
+                    <div class="text-6xl text-center mb-4 animate-bounce mt-4">✨</div>
+                    <h2 class="text-2xl font-black text-amber-500 mb-6 text-center tracking-wider">新招式習得！</h2>
+                    <div class="space-y-3 mb-8 px-2 max-h-64 overflow-y-auto custom-scrollbar">
+                        <div v-for="skill in newlyUnlocked" :key="skill.id"
+                            class="p-4 bg-[#3e2723]/60 rounded border border-amber-700/50 shadow-inner">
+                            <div class="font-bold text-lg text-amber-400 tracking-wide">{{ skill.name }}</div>
+                            <div class="text-sm text-amber-100/90 mt-2 leading-relaxed">{{ skill.meaning }}</div>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 px-2 mb-2">
+                        <button @click="openCodexTo(newlyUnlocked[0]?.id)"
+                            class="flex-1 px-4 py-3 rounded bg-gradient-to-t from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500 text-amber-50 text-base font-bold shadow-lg transition-colors border border-amber-500/50">
+                            📖 立刻翻開秘笈
+                        </button>
+                        <button @click="isSkillUnlockModalOpen = false; resumeBattle();"
+                            class="px-4 py-3 rounded bg-[#2a1c15] hover:bg-[#3e2723] text-amber-600 hover:text-amber-500 text-base font-bold shadow-lg transition-colors border border-amber-900/50">
+                            稍後
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Boss Ability Unlock Modal -->
+            <div v-if="isAbilityUnlockModalOpen" class="modal-overlay" style="z-index: 3000;">
+                <div class="modal-panel max-w-md rounded-2xl border-4 border-amber-500 bg-slate-900 shadow-[0_0_50px_rgba(245,158,11,0.4)] overflow-hidden">
+                    <div class="p-8 text-center">
+                        <div class="text-7xl mb-6 animate-bounce">✨</div>
+                        <h2 class="text-3xl font-black text-amber-400 mb-2 tracking-widest">獲得新能力！</h2>
+                        <p class="text-slate-400 mb-8 uppercase text-xs tracking-[0.2em]">New Ability Unlocked</p>
+
+                        <div v-if="pendingLevelUpAbility"
+                            class="bg-slate-800/80 rounded-2xl p-6 border border-amber-500/30 mb-8 shadow-inner">
+                            <div class="text-5xl mb-4">{{ pendingLevelUpAbility.icon }}</div>
+                            <h3 class="text-2xl font-bold text-amber-300 mb-3">{{ pendingLevelUpAbility.name }}</h3>
+                            <p class="text-slate-300 text-sm leading-relaxed">{{ pendingLevelUpAbility.desc }}</p>
                         </div>
 
-                        <!-- Center: Sleek HP/SP & Buffs Space -->
-                        <div class="flex-1 flex flex-col justify-center gap-0.5 min-w-0 md:max-w-md md:px-4">
-                            <!-- HP Bar -->
-                            <div class="w-full flex items-center gap-1">
-                                <span class="text-[7px] font-black text-emerald-400 w-3 tracking-tighter">HP</span>
-                                <div class="flex-1 h-1 bg-slate-900 rounded-full border border-slate-700/80 overflow-hidden shadow-inner flex items-center">
-                                     <div class="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)] transition-all duration-300"
-                                        :class="[{ 'bg-rose-500 from-rose-600 to-rose-400': hpBarDanger, 'animate-pulse': playerBlink }]"
-                                        :style="{ width: (player.hp / player.maxHp * 100) + '%' }"></div>
+                        <button @click="confirmAbilityUnlockAndContinue"
+                            class="w-full py-4 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-900 font-black text-xl rounded-xl shadow-[0_4px_0_#92400e] active:shadow-none active:translate-y-1 transition-all">
+                            確認並前往下一關
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skill Panel -->
+            <div v-if="isSkillOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+                style="background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);">
+                <div class="bg-slate-800 border-2 border-amber-500/50 rounded-2xl p-6 w-full max-w-lg shadow-[0_0_30px_rgba(0,0,0,0.8)] flex flex-col max-h-[90vh]">
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-3">
+                        <h2 class="text-2xl font-black text-amber-400 tracking-wider">🗡️ 技能</h2>
+                        <div class="flex gap-2">
+                            <button @click="isCodexOpen = true"
+                                class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm font-bold rounded-lg border border-slate-600 transition-colors">圖鑑</button>
+                            <button @click="closeSkillOverlay(); resumeBattle();"
+                                class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold border border-slate-600 transition-colors">✕</button>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+                        <div v-for="skill in skillList" :key="skill.id" @click="castAbility(skill.id)"
+                            class="group relative bg-slate-900/60 border border-slate-700 hover:border-amber-500/50 rounded-xl p-3 flex gap-4 cursor-pointer transition-all hover:bg-slate-800"
+                            :class="{ 'opacity-50 grayscale cursor-not-allowed': spState.cur < skill.cost || playerDead || monsterDead }">
+                            <div class="w-12 h-12 flex-shrink-0 bg-slate-800 rounded-lg flex items-center justify-center text-2xl border border-slate-600 group-hover:border-amber-400">
+                                {{ skill.icon }}
+                            </div>
+                            <div class="flex-1 flex flex-col justify-center">
+                                <div class="flex justify-between items-start mb-1">
+                                    <h3 class="font-bold text-slate-200 group-hover:text-amber-300 transition-colors">{{ skill.name }}</h3>
+                                    <span class="text-xs font-black px-2 py-0.5 rounded-full bg-cyan-900 text-cyan-300 border border-cyan-700">{{ skill.cost }} SP</span>
                                 </div>
-                                <span class="text-[7px] font-mono font-bold text-slate-400 w-6 text-right">{{ player.hp }}</span>
+                                <p class="text-xs text-slate-400 leading-snug">{{ skill.desc }}</p>
                             </div>
-                            <!-- SP Bar -->
-                            <div class="w-full flex items-center gap-1">
-                                <span class="text-[7px] font-black text-cyan-400 w-3 tracking-tighter">SP</span>
-                                <div class="flex-1 h-0.5 w-[80%] bg-slate-900 rounded-full border border-slate-700/80 overflow-hidden shadow-inner flex items-center">
-                                     <div class="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.5)] transition-all duration-300"
-                                        style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Codex -->
+            <div v-if="isCodexOpen" class="fixed inset-0 z-[2000] flex items-center justify-center p-4 md:p-8"
+                @click.self="isCodexOpen = false; if (!isSkillOpen) resumeBattle();">
+                <div class="absolute inset-0 bg-black/80 backdrop-blur-sm pointer-events-none"></div>
+                <div class="relative w-full max-w-4xl h-full max-h-[85vh] bg-[#2a1c15] text-amber-100/90 rounded-sm border-4 border-amber-600/60 shadow-[0_0_40px_rgba(217,119,6,0.5)] flex flex-col font-serif"
+                    style="background-image: radial-gradient(circle at center, #3e2723 0%, #1e110a 100%);">
+                    <div class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-amber-400/80 m-2 pointer-events-none"></div>
+                    <div class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-amber-400/80 m-2 pointer-events-none"></div>
+                    <div class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-amber-400/80 m-2 pointer-events-none"></div>
+                    <div class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-amber-400/80 m-2 pointer-events-none"></div>
+
+                    <div class="text-center py-6 border-b border-amber-900/60 shadow-md relative z-10 bg-[#2a1c15]/50">
+                        <h2 class="text-3xl font-black text-amber-500 tracking-widest"
+                            style="text-shadow: 0 2px 4px rgba(0,0,0,0.8);">📖 招式圖鑑</h2>
+                        <button @click="isCodexOpen = false; if (!isSkillOpen) resumeBattle();"
+                            class="absolute top-6 right-6 text-amber-600 hover:text-amber-400 transition-colors">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar relative z-10 space-y-4">
+                        <div v-for="skill in skillsWithUnlockLevel" :key="skill.id" :id="'skill-card-' + skill.id">
+                            <div v-if="unlockedSkillIds.includes(skill.id)"
+                                class="bg-[#3e2723]/60 border border-amber-700/50 rounded pointer-events-auto transition-all shadow-md">
+                                <button @click="expandedSkillId = expandedSkillId === skill.id ? null : skill.id"
+                                    class="w-full text-left px-4 py-3 flex justify-between items-center hover:bg-[#4e342e]/60 transition-colors rounded">
+                                    <span class="font-bold text-lg text-amber-400 tracking-wide">{{ skill.name }}</span>
+                                    <span class="text-amber-600">{{ expandedSkillId === skill.id ? '▼' : '▶' }}</span>
+                                </button>
+                                <div v-if="expandedSkillId === skill.id"
+                                    class="p-4 pt-2 text-base space-y-3 bg-[#1e110a]/40 border-t border-amber-900/50">
+                                    <div v-if="skill.meaning"><span class="text-emerald-500 font-bold mr-2">含義</span><span class="text-amber-100/90 leading-relaxed">{{ skill.meaning }}</span></div>
+                                    <div v-if="skill.rule"><span class="text-blue-400 font-bold mr-2">句型</span><span class="text-amber-100/90 leading-relaxed">{{ skill.rule }}</span></div>
                                 </div>
-                                <span class="text-[7px] font-mono font-bold text-slate-400 w-6 text-right">MAX</span>
                             </div>
-                            <!-- Buff Slot -->
-                            <div id="heroStatusBar" class="w-full flex justify-start gap-1 h-2 items-center pl-2"></div>
-                        </div>
-                        <!-- Right: Function Bar -->
-                        <div class="flex-shrink-0 flex flex-nowrap items-center justify-end gap-1 w-auto md:flex-1 md:justify-end">
-                            <!-- Codex Button -->
-                            <button @click="isCodexOpen = true; pauseBattle();" class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-slate-800/80 border border-slate-600 flex items-center justify-center text-slate-300 shadow-[inset_0_2px_4px_rgba(255,255,255,0.05)] hover:bg-amber-600 hover:text-white hover:border-amber-400 transition-all active:scale-95 group relative">
-                                <span class="text-[9px] sm:text-[10px] group-hover:scale-110 transition-transform flex items-center justify-center">📖</span>
-                            </button>
-                            <!-- Inventory Button -->
-                            <button @click="isInventoryOpen = true; pauseBattle();" class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-slate-800/80 border border-slate-600 flex items-center justify-center text-slate-300 shadow-[inset_0_2px_4px_rgba(255,255,255,0.05)] hover:bg-amber-600 hover:text-white hover:border-amber-400 transition-all active:scale-95 group relative">
-                                <span class="text-[9px] sm:text-[10px] group-hover:scale-110 transition-transform">🎒</span>
-                            </button>
-                            <!-- System / Settings Button -->
-                            <button @click="isMenuOpen = true; pauseBattle();" class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-slate-800/80 border border-slate-600 flex items-center justify-center text-slate-300 shadow-[inset_0_2px_4px_rgba(255,255,255,0.05)] hover:bg-slate-600 hover:text-white transition-all active:scale-95 group">
-                                <span class="text-[9px] sm:text-[10px] group-hover:scale-110 transition-transform">⚙️</span>
-                            </button>
+                            <div v-else
+                                class="bg-[#1e110a]/80 border border-slate-800/80 rounded p-4 flex items-center justify-between pointer-events-none opacity-60 grayscale filter shadow-inner">
+                                <span class="font-bold text-slate-500 text-lg flex items-center gap-2">🔒 未習得</span>
+                                <span class="text-sm font-bold text-amber-700/50">{{ skill.unlockLevel ? '第 ' + skill.unlockLevel + ' 關習得' : '未安排' }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-        </div>
-            <!-- Note: stageWrap still open - all battle-phase modals follow below -->
+            </div>
 
-
-
-            <div v-if="isMentorModalOpen" class="mentor-overlay" style="z-index: 5000;">
-            <div class="mentor-panel shadow-2xl">
-                <div class="mentor-header">
-                    <div class="mentor-avatar-mini">🧙‍♂️</div>
-                    <span class="mentor-name">傳說中的導師</span>
-                </div>
-                <div class="mentor-body flex gap-6">
-                    <!-- 預留角色立繪區塊 -->
-                    <div class="mentor-portrait-container">
-                        <img v-if="!isMentorPortraitError" src="assets/images/ui/mentor/mentor-neutral.png"
-                            @error="isMentorPortraitError = true" class="mentor-portrait-img">
-                        <div v-else class="mentor-portrait-placeholder">
-                            <span class="text-4xl">👤</span>
+            <!-- Menu -->
+            <div v-if="isMenuOpen" class="modal-overlay" @click.self="isMenuOpen = false; resumeBattle();" style="z-index: 5000;">
+                <div class="modal-panel w-[400px]">
+                    <h2 class="text-2xl font-black text-amber-400 mb-4">⏸ Menu</h2>
+                    <div class="space-y-3">
+                        <div class="border-b border-slate-600 pb-3">
+                            <label class="flex items-center gap-2 text-sm text-slate-200 mb-2">
+                                <span v-if="isMuted" class="text-lg">🔇</span>
+                                <span v-else class="text-lg">🔊</span>
+                                <button @click="isMuted = !isMuted; saveAudioSettings(); playBgm();" class="flex-1 text-left underline">{{ isMuted ? '靜音中' : '已開啟' }}</button>
+                            </label>
+                            <label class="flex items-center gap-2 text-xs text-slate-300 mb-1">
+                                <span>BGM</span>
+                                <input type="range" min="0" max="1" step="0.01" v-model.number="bgmVolume"
+                                    @input="playBgm(); saveAudioSettings()" class="flex-1">
+                            </label>
+                            <label class="flex items-center gap-2 text-xs text-slate-300">
+                                <span>SFX</span>
+                                <input type="range" min="0" max="1" step="0.01" v-model.number="sfxVolume"
+                                    @input="saveAudioSettings()" class="flex-1">
+                            </label>
                         </div>
-                    </div>
-                    <div class="mentor-text flex-1">{{ displayedMentorText }}</div>
-                </div>
-                <div class="mentor-footer">
-                    <div class="mentor-page-indicator" v-if="mentorPages.length > 1">
-                        {{ mentorDialogueIndex + 1 }} / {{ mentorPages.length }}
-                    </div>
-                    <div v-if="isLastMentorLine && !isTypingMentor" class="flex gap-4">
-                        <button @click="restartMentorDialogue"
-                            class="mentor-btn btn-secondary text-sm sm:text-base px-4 sm:px-10">
-                            再看一次
+
+                        <div class="border-b border-slate-600 pb-3 mt-3">
+                            <button
+                                @click="isAdvancedSettingsOpen = true; isMenuOpen = false; isLevelJumpOpen = false; isMentorReplayOpen = false; isMistakesOpen = false; isInventoryOpen = false; isSkillUnlockModalOpen = false;"
+                                class="w-full px-4 py-2 rounded-lg bg-slate-800/80 border border-slate-600 hover:bg-slate-700 text-slate-200 text-sm font-bold shadow transition-all">
+                                ⚙️ 進階設定
+                            </button>
+                        </div>
+
+                        <button @pointerdown="startRunAwayPress" @pointerup="cancelRunAwayPress"
+                            @pointerleave="cancelRunAwayPress" @pointercancel="cancelRunAwayPress" @contextmenu.prevent
+                            class="relative w-full px-4 py-3 rounded-lg bg-rose-900/60 border border-rose-500/50 hover:border-rose-400 text-white text-sm font-bold shadow-lg transition-all overflow-hidden select-none"
+                            :class="{ 'scale-95': isRunAwayPressing }">
+                            <div class="absolute left-0 top-0 bottom-0 bg-rose-500 pointer-events-none"
+                                :style="{ width: isRunAwayPressing ? '100%' : '0%', transition: isRunAwayPressing ? 'width 3s linear' : 'width 0.2s ease-out' }"></div>
+                            <span class="relative z-10 drop-shadow-md">🏃 長按 3 秒重新整理最新版</span>
                         </button>
-                        <button @click="nextMentorLine" class="mentor-btn text-sm sm:text-base px-4 sm:px-10">
-                            開始戰鬥
+
+                        <div class="flex gap-2">
+                            <button @click="isMentorReplayOpen = true; isMenuOpen = false;"
+                                class="flex-1 px-4 py-3 rounded-lg bg-blue-900/60 border border-blue-500/50 hover:border-blue-400 text-white text-sm font-bold shadow-lg transition-all">
+                                🧙‍♂️ 回顧教學
+                            </button>
+                            <button @click="isLevelJumpOpen = true; isMenuOpen = false;"
+                                class="flex-1 px-4 py-3 rounded-lg bg-purple-900/60 border border-purple-500/50 hover:border-purple-400 text-white text-sm font-bold shadow-lg transition-all">
+                                ⏭️ 關卡選擇
+                            </button>
+                        </div>
+
+                        <button @click="openChangelog();"
+                            class="w-full px-4 py-3 rounded-lg bg-indigo-900/60 border border-indigo-500/50 hover:border-indigo-400 text-white text-sm font-bold shadow-lg transition-all">
+                            📋 更新日誌
+                        </button>
+
+                        <button @click="isMenuOpen = false; resumeBattle();"
+                            class="mt-4 w-full px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold">
+                            關閉
                         </button>
                     </div>
-                    <button v-else @click="nextMentorLine" class="mentor-btn">
-                        {{ isTypingMentor ? '▶ 快進' : '下一句' }}
-                    </button>
                 </div>
             </div>
-        </div>
 
-        <div v-if="isSkillUnlockModalOpen" class="modal-overlay" @click.self="isSkillUnlockModalOpen = false"
-            style="z-index: 100;">
-            <div
-                class="modal-panel max-w-sm rounded-[1rem] border-2 border-amber-600/60 bg-[#1e110a]/95 drop-shadow-[0_0_20px_rgba(217,119,6,0.3)] shadow-2xl overflow-hidden font-serif">
-                <div class="text-6xl text-center mb-4 animate-bounce mt-4">✨</div>
-                <h2 class="text-2xl font-black text-amber-500 mb-6 text-center tracking-wider">新招式習得！</h2>
-                <div class="space-y-3 mb-8 px-2 max-h-64 overflow-y-auto custom-scrollbar">
-                    <div v-for="skill in newlyUnlocked" :key="skill.id"
-                        class="p-4 bg-[#3e2723]/60 rounded border border-amber-700/50 shadow-inner">
-                        <div class="font-bold text-lg text-amber-400 tracking-wide">{{ skill.name }}</div>
-                        <div class="text-sm text-amber-100/90 mt-2 leading-relaxed">{{ skill.meaning }}</div>
+            <!-- Advanced Settings -->
+            <div v-if="isAdvancedSettingsOpen" class="modal-overlay"
+                @click.self="isAdvancedSettingsOpen = false; resumeBattle();" style="z-index: 5000;">
+                <div class="modal-panel w-[400px]">
+                    <h2 class="text-2xl font-black text-amber-400 mb-4">⚙️ 進階設定</h2>
+                    <div class="space-y-3">
+                        <label class="flex items-center justify-between text-sm text-slate-200">
+                            <span>答錯時自動朗讀句子</span>
+                            <input type="checkbox" v-model="settings.autoReadOnWrong" class="w-5 h-5 rounded accent-blue-500">
+                        </label>
+
+                        <div class="text-sm text-slate-300 flex flex-col gap-1.5 px-2 bg-slate-900/30 rounded py-2 border border-slate-700/50">
+                            <span class="font-bold mb-1">答對後自動前進：</span>
+                            <div class="flex gap-4">
+                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio" v-model="settings.correctAdvanceDelayMs" :value="0" class="accent-amber-500">手動</label>
+                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio" v-model="settings.correctAdvanceDelayMs" :value="1000" class="accent-amber-500">1s</label>
+                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio" v-model="settings.correctAdvanceDelayMs" :value="2000" class="accent-amber-500">2s</label>
+                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio" v-model="settings.correctAdvanceDelayMs" :value="3000" class="accent-amber-500">3s</label>
+                            </div>
+                        </div>
+
+                        <div class="text-sm text-slate-300 flex flex-col gap-1.5 px-2 bg-slate-900/30 rounded py-2 border border-slate-700/50">
+                            <span class="font-bold mb-1">答錯後自動前進：</span>
+                            <div class="flex gap-4">
+                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio" v-model="settings.wrongAdvanceDelayMs" :value="0" class="accent-amber-500">手動</label>
+                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio" v-model="settings.wrongAdvanceDelayMs" :value="2000" class="accent-amber-500">2s</label>
+                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio" v-model="settings.wrongAdvanceDelayMs" :value="3000" class="accent-amber-500">3s</label>
+                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio" v-model="settings.wrongAdvanceDelayMs" :value="5000" class="accent-amber-500">5s</label>
+                            </div>
+                        </div>
+
+                        <div class="text-sm text-slate-300 flex flex-col gap-1.5 px-2 bg-slate-900/30 rounded py-2 border border-slate-700/50">
+                            <span class="font-bold mb-1">回饋風格：</span>
+                            <div class="flex gap-4">
+                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio" v-model="settings.feedbackStyle" value="oneesan" class="accent-amber-500">播報姊姊</label>
+                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio" v-model="settings.feedbackStyle" value="combat" class="accent-amber-500">爽快戰鬥</label>
+                            </div>
+                        </div>
+
+                        <div class="text-sm text-slate-300 flex flex-col gap-1.5 px-2 bg-slate-900/30 rounded py-2 border border-slate-700/50">
+                            <span class="font-bold mb-1">戰鬥模式：</span>
+                            <div class="flex gap-4">
+                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio" v-model="settings.enemyAttackMode" value="atb" class="accent-rose-500">ATB(即時)</label>
+                                <label class="flex items-center gap-1 cursor-pointer opacity-50" title="即將推出"><input type="radio" v-model="settings.enemyAttackMode" value="turn" class="accent-rose-500" disabled>回合制(TODO)</label>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2 mt-4">
+                            <button @click="isAdvancedSettingsOpen = false; isMenuOpen = true;"
+                                class="flex-1 px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-bold">返回主選單</button>
+                            <button @click="isAdvancedSettingsOpen = false; resumeBattle();"
+                                class="flex-1 px-4 py-2 rounded-lg bg-slate-600 hover:bg-slate-500 text-white text-xs font-bold">關閉全部</button>
+                        </div>
                     </div>
                 </div>
-                <div class="flex gap-3 px-2 mb-2">
-                    <button @click="openCodexTo(newlyUnlocked[0]?.id)"
-                        class="flex-1 px-4 py-3 rounded bg-gradient-to-t from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500 text-amber-50 text-base font-bold shadow-lg transition-colors border border-amber-500/50">📖
-                        立刻翻開秘笈</button>
-                    <button @click="isSkillUnlockModalOpen = false; resumeBattle();"
-                        class="px-4 py-3 rounded bg-[#2a1c15] hover:bg-[#3e2723] text-amber-600 hover:text-amber-500 text-base font-bold shadow-lg transition-colors border border-amber-900/50">稍後</button>
+            </div>
+
+            <!-- Mentor Replay -->
+            <div v-if="isMentorReplayOpen" class="modal-overlay" @click.self="isMentorReplayOpen = false; resumeBattle();"
+                style="z-index: 5000;">
+                <div class="modal-panel w-[500px] h-[70vh] flex flex-col">
+                    <h2 class="text-2xl font-black text-blue-400 mb-4 flex-shrink-0">🧙‍♂️ 回顧教學</h2>
+                    <div class="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-2 pb-4">
+                        <div v-for="skillId in unlockedSkillIds" :key="'mentor-'+skillId">
+                            <button v-if="skillsAll[skillId] && skillsAll[skillId].mentorDialogue"
+                                @click="replaySpecificMentor(skillId)"
+                                class="w-full text-left px-4 py-3 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-slate-600 shadow-md transition-colors">
+                                <span class="font-bold text-amber-400 text-lg">{{ skillsAll[skillId].name || skillId }}</span>
+                                <div class="text-xs text-slate-300 mt-1">{{ skillsAll[skillId].meaning || '' }}</div>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex justify-end pt-4 mt-auto border-t border-slate-700 shrink-0">
+                        <button @click="isMentorReplayOpen = false; resumeBattle()"
+                            class="px-6 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold shadow-md">關閉</button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Boss Ability Unlock Modal -->
-        <div v-if="isAbilityUnlockModalOpen" class="modal-overlay" style="z-index: 3000;">
-            <div
-                class="modal-panel max-w-md rounded-2xl border-4 border-amber-500 bg-slate-900 shadow-[0_0_50px_rgba(245,158,11,0.4)] overflow-hidden">
-                <div class="p-8 text-center">
-                    <div class="text-7xl mb-6 animate-bounce">✨</div>
-                    <h2 class="text-3xl font-black text-amber-400 mb-2 tracking-widest">獲得新能力！</h2>
-                    <p class="text-slate-400 mb-8 uppercase text-xs tracking-[0.2em]">New Ability Unlocked</p>
+            <!-- Level Jump -->
+            <div v-if="isLevelJumpOpen" class="modal-overlay" @click.self="isLevelJumpOpen = false; resumeBattle();"
+                style="z-index: 5000;">
+                <div class="modal-panel w-[500px] h-[70vh] flex flex-col">
+                    <h2 class="text-2xl font-black text-purple-400 mb-4 flex-shrink-0">⏭️ 關卡選擇</h2>
+                    <div class="flex-1 overflow-y-auto custom-scrollbar grid grid-cols-4 sm:grid-cols-5 gap-2 pr-2 pb-4 content-start">
+                        <button v-for="l in maxLevel" :key="'jump_'+l" @click="isLevelJumpOpen = false; debugJumpToLevel(l)"
+                            class="py-3 rounded-lg bg-slate-800/80 hover:bg-slate-700 border shadow-md text-center font-bold text-lg transition-colors"
+                            :class="currentLevel === l ? 'border-amber-500 text-amber-400 bg-amber-900/30' : 'border-slate-600 text-slate-200'">
+                            {{ l }}
+                        </button>
+                    </div>
+                    <div class="flex justify-end pt-4 mt-auto border-t border-slate-700 shrink-0">
+                        <button @click="isLevelJumpOpen = false; resumeBattle()"
+                            class="px-6 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold shadow-md">關閉</button>
+                    </div>
+                </div>
+            </div>
 
-                    <div v-if="pendingLevelUpAbility"
-                        class="bg-slate-800/80 rounded-2xl p-6 border border-amber-500/30 mb-8 shadow-inner">
-                        <div class="text-5xl mb-4">{{ pendingLevelUpAbility.icon }}</div>
-                        <h3 class="text-2xl font-bold text-amber-300 mb-3">{{ pendingLevelUpAbility.name }}</h3>
-                        <p class="text-slate-300 text-sm leading-relaxed">{{ pendingLevelUpAbility.desc }}</p>
+            <!-- Changelog -->
+            <div v-if="isChangelogOpen" class="modal-overlay" @click.self="isChangelogOpen = false" style="z-index: 6000;">
+                <div class="modal-panel w-[500px] h-[70vh] flex flex-col">
+                    <h2 class="text-2xl font-black text-indigo-400 mb-4 flex-shrink-0">📋 系統更新日誌</h2>
+                    <div v-if="changelogError" class="text-rose-400 text-center py-10 font-bold flex-1">讀取失敗，請重新整理</div>
+                    <div v-else-if="changelogData.length === 0" class="text-slate-400 text-center py-10 flex-1">載入中...</div>
+                    <div v-else class="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-2 pb-4">
+                        <div v-for="(entry, index) in changelogData" :key="index"
+                            class="p-4 bg-slate-800/60 rounded-xl border border-indigo-500/30">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-indigo-300 font-bold text-lg leading-none">v{{ entry.version }}</span>
+                                <span class="text-slate-500 text-xs mt-1">{{ entry.date }}</span>
+                            </div>
+                            <ul class="list-disc list-inside text-slate-300 text-sm space-y-1 ml-1">
+                                <li v-for="(change, cIndex) in entry.changes" :key="cIndex">{{ change }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-2 mt-4 flex-shrink-0 pt-4 border-t border-slate-700">
+                        <button @click="isChangelogOpen = false"
+                            class="px-6 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold shadow-md">關閉</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mistakes -->
+            <div v-if="isMistakesOpen" class="modal-overlay" @click.self="isMistakesOpen = false" style="z-index: 5000;">
+                <div class="modal-panel w-[500px] max-w-[95vw]">
+                    <h2 class="text-2xl font-black text-blue-400 mb-4">📒 錯題本</h2>
+                    <div v-if="mistakes.length === 0" class="text-slate-400 text-center py-6">尚無錯題。</div>
+                    <div v-else class="space-y-3 mb-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
+                        <div v-for="(m, i) in mistakes.slice(0, 20)" :key="i"
+                            class="p-4 bg-slate-800/80 rounded-xl border-l-4 border-blue-500 shadow-md">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="text-slate-100 font-bold text-lg leading-relaxed tracking-wide" v-html="m.displayJp || m.sentenceText"></div>
+                                <button @click="playMistakeVoice(m)"
+                                    class="ml-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg px-2.5 py-1.5 shadow-lg flex-shrink-0 text-sm transition-transform active:scale-95">🔊</button>
+                            </div>
+                            <div class="text-slate-300 text-sm mb-3 font-medium">{{ m.prompt }}</div>
+                            <div class="text-emerald-400 font-bold text-sm mb-2 flex items-center gap-2">
+                                <span class="bg-emerald-900/50 px-2 py-0.5 rounded border border-emerald-700/50 text-xs tracking-widest">正解</span>
+                                <span>{{ formatCorrect(m.correct) }}</span>
+                            </div>
+                            <div v-if="m.grammarTip"
+                                class="text-slate-400 text-xs mt-1 bg-slate-900/60 p-2.5 rounded-lg leading-relaxed border border-slate-700/50">
+                                💡 {{ m.grammarTip }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button @click="clearMistakes"
+                            class="flex-1 px-3 py-3 rounded-xl bg-red-600/80 hover:bg-red-500 text-white text-sm font-bold flex items-center justify-center gap-2 shadow-lg transition-transform active:scale-95">
+                            🗑 清空
+                        </button>
+                        <button @click="isMistakesOpen = false"
+                            class="flex-1 px-3 py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold shadow-lg transition-transform active:scale-95">關閉</button>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="flashOverlay" class="flash-overlay"></div>
+
+            <div v-if="isPreloading"
+                class="fixed inset-0 z-[3000] flex items-center justify-center bg-slate-900/90 backdrop-blur-sm">
+                <div class="flex flex-col items-center">
+                    <div class="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <div class="text-amber-400 font-bold text-xl tracking-widest animate-pulse">音效載入中...</div>
+                </div>
+            </div>
+
+            <!-- Inventory -->
+            <div v-if="isInventoryOpen" class="modal-overlay" @click.self="isInventoryOpen = false; resumeBattle();">
+                <div class="modal-panel w-[400px]">
+                    <h2 class="text-2xl font-black text-emerald-400 mb-4 flex items-center gap-2">🎒 冒險者背包</h2>
+                    <div class="space-y-3 mb-4">
+                        <div class="flex items-center gap-3 bg-slate-700/50 p-3 rounded-xl border border-slate-600/50">
+                            <div class="w-12 h-12 flex-shrink-0 bg-gradient-to-tr from-cyan-900 to-cyan-500 rounded-lg flex items-center justify-center text-2xl shadow-inner border border-cyan-400/30">
+                                💨
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-slate-100 font-bold text-base flex justify-between items-center">
+                                    神速藥水
+                                    <span class="bg-cyan-600/50 text-cyan-200 text-xs px-2 py-0.5 rounded-full border border-cyan-500/30">
+                                        x {{ inventory.speedPotions }}
+                                    </span>
+                                </h3>
+                                <p class="text-slate-400 text-xs mt-1 leading-relaxed">
+                                    飲用後的一分鐘內，面對怪物的接下來 6 次攻擊，自身閃避率提升至
+                                    <span class="text-amber-400 font-bold">50%</span>。
+                                </p>
+                                <div v-if="evasionBuffAttacksLeft > 0"
+                                    class="text-cyan-300 text-xs mt-1 font-bold animate-pulse">
+                                    效果持續中... (剩餘 {{ evasionBuffAttacksLeft }} 次)
+                                </div>
+                            </div>
+
+                            <button @click="useSpeedPotion"
+                                class="shrink-0 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-lg transition-transform active:scale-95 shadow-md disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
+                                :disabled="inventory.speedPotions <= 0 || evasionBuffAttacksLeft > 0 || monsterDead || playerDead">
+                                使用
+                            </button>
+                        </div>
                     </div>
 
-                    <button @click="confirmAbilityUnlockAndContinue"
-                        class="w-full py-4 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-900 font-black text-xl rounded-xl shadow-[0_4px_0_#92400e] active:shadow-none active:translate-y-1 transition-all">
-                        確認並前往下一關
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div v-if="isSkillOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
-            style="background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);">
-            <div
-                class="bg-slate-800 border-2 border-amber-500/50 rounded-2xl p-6 w-full max-w-lg shadow-[0_0_30px_rgba(0,0,0,0.8)] flex flex-col max-h-[90vh]">
-                <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-3">
-                    <h2 class="text-2xl font-black text-amber-400 tracking-wider">🗡️ 技能</h2>
                     <div class="flex gap-2">
-                        <button @click="isCodexOpen = true"
-                            class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm font-bold rounded-lg border border-slate-600 transition-colors">圖鑑</button>
-                        <button @click="closeSkillOverlay(); resumeBattle();"
-                            class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold border border-slate-600 transition-colors">✕</button>
-                    </div>
-                </div>
-                <div class="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
-                    <div v-for="skill in skillList" :key="skill.id" @click="castAbility(skill.id)"
-                        class="group relative bg-slate-900/60 border border-slate-700 hover:border-amber-500/50 rounded-xl p-3 flex gap-4 cursor-pointer transition-all hover:bg-slate-800"
-                        :class="{ 'opacity-50 grayscale cursor-not-allowed': spState.cur < skill.cost || playerDead || monsterDead }">
-                        <div
-                            class="w-12 h-12 flex-shrink-0 bg-slate-800 rounded-lg flex items-center justify-center text-2xl border border-slate-600 group-hover:border-amber-400">
-                            {{ skill.icon }}</div>
-                        <div class="flex-1 flex flex-col justify-center">
-                            <div class="flex justify-between items-start mb-1">
-                                <h3 class="font-bold text-slate-200 group-hover:text-amber-300 transition-colors">{{
-                                    skill.name }}</h3>
-                                <span
-                                    class="text-xs font-black px-2 py-0.5 rounded-full bg-cyan-900 text-cyan-300 border border-cyan-700">{{
-                                    skill.cost }} SP</span>
-                            </div>
-                            <p class="text-xs text-slate-400 leading-snug">{{ skill.desc }}</p>
-                        </div>
+                        <button @click="isInventoryOpen = false; resumeBattle();"
+                            class="w-full px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold shadow-md">關閉</button>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div v-if="isCodexOpen" class="fixed inset-0 z-[2000] flex items-center justify-center p-4 md:p-8"
-            @click.self="isCodexOpen = false; if (!isSkillOpen) resumeBattle();">
-            <div class="absolute inset-0 bg-black/80 backdrop-blur-sm pointer-events-none"></div>
-            <div class="relative w-full max-w-4xl h-full max-h-[85vh] bg-[#2a1c15] text-amber-100/90 rounded-sm border-4 border-amber-600/60 shadow-[0_0_40px_rgba(217,119,6,0.5)] flex flex-col font-serif"
-                style="background-image: radial-gradient(circle at center, #3e2723 0%, #1e110a 100%);">
-                <div
-                    class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-amber-400/80 m-2 pointer-events-none">
-                </div>
-                <div
-                    class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-amber-400/80 m-2 pointer-events-none">
-                </div>
-                <div
-                    class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-amber-400/80 m-2 pointer-events-none">
-                </div>
-                <div
-                    class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-amber-400/80 m-2 pointer-events-none">
-                </div>
-                <div class="text-center py-6 border-b border-amber-900/60 shadow-md relative z-10 bg-[#2a1c15]/50">
-                    <h2 class="text-3xl font-black text-amber-500 tracking-widest"
-                        style="text-shadow: 0 2px 4px rgba(0,0,0,0.8);">📖 招式圖鑑</h2>
-                    <button @click="isCodexOpen = false; if (!isSkillOpen) resumeBattle();"
-                        class="absolute top-6 right-6 text-amber-600 hover:text-amber-400 transition-colors">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12">
-                            </path>
-                        </svg>
-                    </button>
-                </div>
-                <div class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar relative z-10 space-y-4">
-                    <div v-for="skill in skillsWithUnlockLevel" :key="skill.id" :id="'skill-card-' + skill.id">
-                        <div v-if="unlockedSkillIds.includes(skill.id)"
-                            class="bg-[#3e2723]/60 border border-amber-700/50 rounded pointer-events-auto transition-all shadow-md">
-                            <button @click="expandedSkillId = expandedSkillId === skill.id ? null : skill.id"
-                                class="w-full text-left px-4 py-3 flex justify-between items-center hover:bg-[#4e342e]/60 transition-colors rounded">
-                                <span class="font-bold text-lg text-amber-400 tracking-wide">{{ skill.name }}</span>
-                                <span class="text-amber-600">{{ expandedSkillId === skill.id ? '▼' : '▶' }}</span>
-                            </button>
-                            <div v-if="expandedSkillId === skill.id"
-                                class="p-4 pt-2 text-base space-y-3 bg-[#1e110a]/40 border-t border-amber-900/50">
-                                <div v-if="skill.meaning"><span class="text-emerald-500 font-bold mr-2">含義</span><span
-                                        class="text-amber-100/90 leading-relaxed">{{ skill.meaning }}</span></div>
-                                <div v-if="skill.rule"><span class="text-blue-400 font-bold mr-2">句型</span><span
-                                        class="text-amber-100/90 leading-relaxed">{{ skill.rule }}</span></div>
-                            </div>
-                        </div>
-                        <div v-else
-                            class="bg-[#1e110a]/80 border border-slate-800/80 rounded p-4 flex items-center justify-between pointer-events-none opacity-60 grayscale filter shadow-inner">
-                            <span class="font-bold text-slate-500 text-lg flex items-center gap-2">🔒 未習得</span>
-                            <span class="text-sm font-bold text-amber-700/50">{{ skill.unlockLevel ? '第 ' +
-                                skill.unlockLevel + ' 關習得' : '未安排' }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div v-if="isMenuOpen" class="modal-overlay" @click.self="isMenuOpen = false; resumeBattle();"
-            style="z-index: 5000;">
-            <div class="modal-panel w-[400px]">
-                <h2 class="text-2xl font-black text-amber-400 mb-4">⏸ Menu</h2>
-                <div class="space-y-3">
-                    <div class="border-b border-slate-600 pb-3">
-                        <label class="flex items-center gap-2 text-sm text-slate-200 mb-2">
-                            <span v-if="isMuted" class="text-lg">🔇</span>
-                            <span v-else class="text-lg">🔊</span>
-                            <button @click="isMuted = !isMuted; saveAudioSettings(); playBgm();"
-                                class="flex-1 text-left underline">{{ isMuted ? '靜音中' : '已開啟' }}</button>
-                        </label>
-                        <label class="flex items-center gap-2 text-xs text-slate-300 mb-1">
-                            <span>BGM</span>
-                            <input type="range" min="0" max="1" step="0.01" v-model.number="bgmVolume"
-                                @input="playBgm(); saveAudioSettings()" class="flex-1">
-                        </label>
-                        <label class="flex items-center gap-2 text-xs text-slate-300">
-                            <span>SFX</span>
-                            <input type="range" min="0" max="1" step="0.01" v-model.number="sfxVolume"
-                                @input="saveAudioSettings()" class="flex-1">
-                        </label>
-                    </div>
-
-                    <div class="border-b border-slate-600 pb-3 mt-3">
-                        <button
-                            @click="isAdvancedSettingsOpen = true; isMenuOpen = false; isLevelJumpOpen = false; isMentorReplayOpen = false; isMistakesOpen = false; isInventoryOpen = false; isSkillUnlockModalOpen = false;"
-                            class="w-full px-4 py-2 rounded-lg bg-slate-800/80 border border-slate-600 hover:bg-slate-700 text-slate-200 text-sm font-bold shadow transition-all">
-                            ⚙️ 進階設定
-                        </button>
-                    </div>
-
-                    <button @pointerdown="startRunAwayPress" @pointerup="cancelRunAwayPress"
-                        @pointerleave="cancelRunAwayPress" @pointercancel="cancelRunAwayPress" @contextmenu.prevent
-                        class="relative w-full px-4 py-3 rounded-lg bg-rose-900/60 border border-rose-500/50 hover:border-rose-400 text-white text-sm font-bold shadow-lg transition-all overflow-hidden select-none"
-                        :class="{'scale-95': isRunAwayPressing}">
-                        <div class="absolute left-0 top-0 bottom-0 bg-rose-500 pointer-events-none"
-                            :style="{ width: isRunAwayPressing ? '100%' : '0%', transition: isRunAwayPressing ? 'width 3s linear' : 'width 0.2s ease-out' }">
-                        </div>
-                        <span class="relative z-10 drop-shadow-md">🏃 長按 3 秒重新整理最新版</span>
-                    </button>
-
-                    <div class="flex gap-2">
-                        <button @click="isMentorReplayOpen = true; isMenuOpen = false;"
-                            class="flex-1 px-4 py-3 rounded-lg bg-blue-900/60 border border-blue-500/50 hover:border-blue-400 text-white text-sm font-bold shadow-lg transition-all">
-                            🧙‍♂️ 回顧教學
-                        </button>
-                        <button @click="isLevelJumpOpen = true; isMenuOpen = false;"
-                            class="flex-1 px-4 py-3 rounded-lg bg-purple-900/60 border border-purple-500/50 hover:border-purple-400 text-white text-sm font-bold shadow-lg transition-all">
-                            ⏭️ 關卡選擇
-                        </button>
-                    </div>
-
-                    <button @click="openChangelog();"
-                        class="w-full px-4 py-3 rounded-lg bg-indigo-900/60 border border-indigo-500/50 hover:border-indigo-400 text-white text-sm font-bold shadow-lg transition-all">
-                        📋 更新日誌
-                    </button>
-                </div>
-                <button @click="isMenuOpen = false; resumeBattle();"
-                    class="mt-4 w-full px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold">關閉</button>
-            </div>
-        </div>
-
-        <div v-if="isAdvancedSettingsOpen" class="modal-overlay"
-            @click.self="isAdvancedSettingsOpen = false; resumeBattle();" style="z-index: 5000;">
-            <div class="modal-panel w-[400px]">
-                <h2 class="text-2xl font-black text-amber-400 mb-4">⚙️ 進階設定</h2>
-                <div class="space-y-3">
-                    <label class="flex items-center justify-between text-sm text-slate-200">
-                        <span>答錯時自動朗讀句子</span>
-                        <input type="checkbox" v-model="settings.autoReadOnWrong"
-                            class="w-5 h-5 rounded accent-blue-500">
-                    </label>
-                    <div
-                        class="text-sm text-slate-300 flex flex-col gap-1.5 px-2 bg-slate-900/30 rounded py-2 border border-slate-700/50">
-                        <span class="font-bold mb-1">答對後自動前進：</span>
-                        <div class="flex gap-4">
-                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                    v-model="settings.correctAdvanceDelayMs" :value="0"
-                                    class="accent-amber-500">手動</label>
-                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                    v-model="settings.correctAdvanceDelayMs" :value="1000"
-                                    class="accent-amber-500">1s</label>
-                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                    v-model="settings.correctAdvanceDelayMs" :value="2000"
-                                    class="accent-amber-500">2s</label>
-                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                    v-model="settings.correctAdvanceDelayMs" :value="3000"
-                                    class="accent-amber-500">3s</label>
-                        </div>
-                    </div>
-                    <div
-                        class="text-sm text-slate-300 flex flex-col gap-1.5 px-2 bg-slate-900/30 rounded py-2 border border-slate-700/50">
-                        <span class="font-bold mb-1">答錯後自動前進：</span>
-                        <div class="flex gap-4">
-                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                    v-model="settings.wrongAdvanceDelayMs" :value="0"
-                                    class="accent-amber-500">手動</label>
-                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                    v-model="settings.wrongAdvanceDelayMs" :value="2000"
-                                    class="accent-amber-500">2s</label>
-                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                    v-model="settings.wrongAdvanceDelayMs" :value="3000"
-                                    class="accent-amber-500">3s</label>
-                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                    v-model="settings.wrongAdvanceDelayMs" :value="5000"
-                                    class="accent-amber-500">5s</label>
-                        </div>
-                    </div>
-                    <div
-                        class="text-sm text-slate-300 flex flex-col gap-1.5 px-2 bg-slate-900/30 rounded py-2 border border-slate-700/50">
-                        <span class="font-bold mb-1">回饋風格：</span>
-                        <div class="flex gap-4">
-                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                    v-model="settings.feedbackStyle" value="oneesan"
-                                    class="accent-amber-500">播報姊姊</label>
-                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                    v-model="settings.feedbackStyle" value="combat"
-                                    class="accent-amber-500">爽快戰鬥</label>
-                        </div>
-                    </div>
-                    <div
-                        class="text-sm text-slate-300 flex flex-col gap-1.5 px-2 bg-slate-900/30 rounded py-2 border border-slate-700/50">
-                        <span class="font-bold mb-1">戰鬥模式：</span>
-                        <div class="flex gap-4">
-                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio"
-                                    v-model="settings.enemyAttackMode" value="atb"
-                                    class="accent-rose-500">ATB(即時)</label>
-                            <label class="flex items-center gap-1 cursor-pointer opacity-50" title="即將推出"><input
-                                    type="radio" v-model="settings.enemyAttackMode" value="turn" class="accent-rose-500"
-                                    disabled>回合制(TODO)</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex gap-2 mt-4 mt-4">
-                    <button @click="isAdvancedSettingsOpen = false; isMenuOpen = true;"
-                        class="flex-1 px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-bold">返回主選單</button>
-                    <button @click="isAdvancedSettingsOpen = false; resumeBattle();"
-                        class="flex-1 px-4 py-2 rounded-lg bg-slate-600 hover:bg-slate-500 text-white text-xs font-bold">關閉全部</button>
-                </div>
-            </div>
-        </div>
-
-        <div v-if="isMentorReplayOpen" class="modal-overlay" @click.self="isMentorReplayOpen = false; resumeBattle();"
-            style="z-index: 5000;">
-            <div class="modal-panel w-[500px] h-[70vh] flex flex-col">
-                <h2 class="text-2xl font-black text-blue-400 mb-4 flex-shrink-0">🧙‍♂️ 回顧教學</h2>
-                <div class="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-2 pb-4">
-                    <div v-for="skillId in unlockedSkillIds" :key="'mentor-'+skillId">
-                        <button v-if="skillsAll[skillId] && skillsAll[skillId].mentorDialogue"
-                            @click="replaySpecificMentor(skillId)"
-                            class="w-full text-left px-4 py-3 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-slate-600 shadow-md transition-colors">
-                            <span class="font-bold text-amber-400 text-lg">{{ skillsAll[skillId].name || skillId
-                                }}</span>
-                            <div class="text-xs text-slate-300 mt-1">{{ skillsAll[skillId].meaning || '' }}</div>
-                        </button>
-                    </div>
-                </div>
-                <div class="flex justify-end pt-4 mt-auto border-t border-slate-700 shrink-0">
-                    <button @click="isMentorReplayOpen = false; resumeBattle()"
-                        class="px-6 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold shadow-md">關閉</button>
-                </div>
-            </div>
-        </div>
-
-        <div v-if="isLevelJumpOpen" class="modal-overlay" @click.self="isLevelJumpOpen = false; resumeBattle();"
-            style="z-index: 5000;">
-            <div class="modal-panel w-[500px] h-[70vh] flex flex-col">
-                <h2 class="text-2xl font-black text-purple-400 mb-4 flex-shrink-0">⏭️ 關卡選擇</h2>
-                <div
-                    class="flex-1 overflow-y-auto custom-scrollbar grid grid-cols-4 sm:grid-cols-5 gap-2 pr-2 pb-4 content-start">
-                    <button v-for="l in maxLevel" :key="'jump_'+l" @click="isLevelJumpOpen = false; debugJumpToLevel(l)"
-                        class="py-3 rounded-lg bg-slate-800/80 hover:bg-slate-700 border shadow-md text-center font-bold text-lg transition-colors"
-                        :class="currentLevel === l ? 'border-amber-500 text-amber-400 bg-amber-900/30' : 'border-slate-600 text-slate-200'">
-                        {{ l }}
-                    </button>
-                </div>
-                <div class="flex justify-end pt-4 mt-auto border-t border-slate-700 shrink-0">
-                    <button @click="isLevelJumpOpen = false; resumeBattle()"
-                        class="px-6 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold shadow-md">關閉</button>
-                </div>
-            </div>
-        </div>
-
-        <div v-if="isChangelogOpen" class="modal-overlay" @click.self="isChangelogOpen = false" style="z-index: 6000;">
-            <div class="modal-panel w-[500px] h-[70vh] flex flex-col">
-                <h2 class="text-2xl font-black text-indigo-400 mb-4 flex-shrink-0">📋 系統更新日誌</h2>
-                <div v-if="changelogError" class="text-rose-400 text-center py-10 font-bold flex-1">讀取失敗，請重新整理</div>
-                <div v-else-if="changelogData.length === 0" class="text-slate-400 text-center py-10 flex-1">載入中...</div>
-                <div v-else class="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-2 pb-4">
-                    <div v-for="(entry, index) in changelogData" :key="index"
-                        class="p-4 bg-slate-800/60 rounded-xl border border-indigo-500/30">
-                        <div class="flex items-center gap-2 mb-2"><span
-                                class="text-indigo-300 font-bold text-lg leading-none">v{{ entry.version }}</span><span
-                                class="text-slate-500 text-xs mt-1">{{ entry.date }}</span></div>
-                        <ul class="list-disc list-inside text-slate-300 text-sm space-y-1 ml-1">
-                            <li v-for="(change, cIndex) in entry.changes" :key="cIndex">{{ change }}</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="flex justify-end gap-2 mt-4 flex-shrink-0 pt-4 border-t border-slate-700">
-                    <button @click="isChangelogOpen = false"
-                        class="px-6 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold shadow-md">關閉</button>
-                </div>
-            </div>
-        </div>
-
-        <div v-if="isMistakesOpen" class="modal-overlay" @click.self="isMistakesOpen = false" style="z-index: 5000;">
-            <div class="modal-panel w-[500px] max-w-[95vw]">
-                <h2 class="text-2xl font-black text-blue-400 mb-4">📒 錯題本</h2>
-                <div v-if="mistakes.length === 0" class="text-slate-400 text-center py-6">尚無錯題。</div>
-                <div v-else class="space-y-3 mb-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
-                    <div v-for="(m, i) in mistakes.slice(0, 20)" :key="i"
-                        class="p-4 bg-slate-800/80 rounded-xl border-l-4 border-blue-500 shadow-md">
-                        <div class="flex items-start justify-between mb-2">
-                            <div class="text-slate-100 font-bold text-lg leading-relaxed tracking-wide"
-                                v-html="m.displayJp || m.sentenceText"></div>
-                            <button @click="playMistakeVoice(m)"
-                                class="ml-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg px-2.5 py-1.5 shadow-lg flex-shrink-0 text-sm transition-transform active:scale-95">🔊</button>
-                        </div>
-                        <div class="text-slate-300 text-sm mb-3 font-medium">{{ m.prompt }}</div>
-                        <div class="text-emerald-400 font-bold text-sm mb-2 flex items-center gap-2">
-                            <span
-                                class="bg-emerald-900/50 px-2 py-0.5 rounded border border-emerald-700/50 text-xs tracking-widest">正解</span>
-                            <span>{{ formatCorrect(m.correct) }}</span>
-                        </div>
-                        <div v-if="m.grammarTip"
-                            class="text-slate-400 text-xs mt-1 bg-slate-900/60 p-2.5 rounded-lg leading-relaxed border border-slate-700/50">
-                            💡 {{ m.grammarTip }}
-                        </div>
-                    </div>
-                </div>
-                <div class="flex gap-3">
-                    <button @click="clearMistakes"
-                        class="flex-1 px-3 py-3 rounded-xl bg-red-600/80 hover:bg-red-500 text-white text-sm font-bold flex items-center justify-center gap-2 shadow-lg transition-transform active:scale-95">🗑
-                        清空</button>
-                    <button @click="isMistakesOpen = false"
-                        class="flex-1 px-3 py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold shadow-lg transition-transform active:scale-95">關閉</button>
-                </div>
-            </div>
-        </div>
-
-        <div v-if="flashOverlay" class="flash-overlay"></div>
-
-        <div v-if="isPreloading"
-            class="fixed inset-0 z-[3000] flex items-center justify-center bg-slate-900/90 backdrop-blur-sm">
-            <div class="flex flex-col items-center">
-                <div class="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4">
-                </div>
-                <div class="text-amber-400 font-bold text-xl tracking-widest animate-pulse">音效載入中...</div>
-            </div>
-        </div>
-
-        <div v-if="isInventoryOpen" class="modal-overlay" @click.self="isInventoryOpen = false; resumeBattle();">
-            <div class="modal-panel w-[400px]">
-                <h2 class="text-2xl font-black text-emerald-400 mb-4 flex items-center gap-2">🎒 冒險者背包</h2>
-                <div class="space-y-3 mb-4">
-                    <div class="flex items-center gap-3 bg-slate-700/50 p-3 rounded-xl border border-slate-600/50">
-                        <div
-                            class="w-12 h-12 flex-shrink-0 bg-gradient-to-tr from-cyan-900 to-cyan-500 rounded-lg flex items-center justify-center text-2xl shadow-inner border border-cyan-400/30">
-                            💨</div>
-                        <div class="flex-1">
-                            <h3 class="text-slate-100 font-bold text-base flex justify-between items-center">神速藥水 <span
-                                    class="bg-cyan-600/50 text-cyan-200 text-xs px-2 py-0.5 rounded-full border border-cyan-500/30">x
-                                    {{ inventory.speedPotions }}</span></h3>
-                            <p class="text-slate-400 text-xs mt-1 leading-relaxed">飲用後的一分鐘內，面對怪物的接下來 6 次攻擊，自身閃避率提升至
-                                <span class="text-amber-400 font-bold">50%</span>。
-                            </p>
-                            <div v-if="evasionBuffAttacksLeft > 0"
-                                class="text-cyan-300 text-xs mt-1 font-bold animate-pulse">效果持續中... (剩餘 {{
-                                evasionBuffAttacksLeft }} 次)</div>
-                        </div>
-                        <button @click="useSpeedPotion"
-                            class="shrink-0 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-lg transition-transform active:scale-95 shadow-md disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
-                            :disabled="inventory.speedPotions <= 0 || evasionBuffAttacksLeft > 0 || monsterDead || playerDead">使用</button>
-                    </div>
-                </div>
-                <div class="flex gap-2">
-                    <button @click="isInventoryOpen = false; resumeBattle();"
-                        class="w-full px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold shadow-md">關閉</button>
-                </div>
-            </div>
-        </div>
 
         </div> <!-- #stageWrap closes here; ALL battle modals above are inside it -->
 
