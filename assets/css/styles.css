@@ -268,26 +268,8 @@ rt {
 }
 
 #battleScene {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    position: relative;
-    padding: 1.5rem 1rem 1rem 1rem;
-    padding-top: calc(1rem + env(safe-area-inset-top, 0px));
-    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
-    overflow: hidden;
     background-size: cover;
     background-position: center;
-}
-
-#battleScene::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.4);
-    pointer-events: none;
 }
 
 #hud {
@@ -891,58 +873,6 @@ rt {
     #app>div.absolute.top-2.right-4,
     #app>div.absolute.top-2.right-4.pointer-events-none {
         display: none !important;
-    }
-
-    #battleScene {
-        flex: 0 0 28vh !important;
-        max-height: 28vh !important;
-        padding-top: 48px !important;
-        padding-bottom: 0 !important;
-        justify-content: center !important;
-        display: flex !important;
-    }
-
-    #battleScene .flex-col.items-center.p-6 {
-        padding: 0 !important;
-        margin-top: 0 !important;
-        background: transparent !important;
-        border: none !important;
-    }
-
-    #battleScene .w-28.h-28 {
-        width: 60px !important;
-        height: 60px !important;
-        margin-bottom: 2px !important;
-        font-size: 36px !important;
-    }
-
-    #battleScene .text-base.font-bold {
-        font-size: 12px !important;
-    }
-
-    #battleScene .text-xs {
-        font-size: 11px !important;
-        margin-bottom: 4px !important;
-    }
-
-    #battleScene .w-full.h-1\.5 {
-        height: 4px !important;
-        margin-bottom: 2px !important;
-    }
-
-    #hud {
-        flex: 1;
-        display: flex !important;
-        flex-direction: column !important;
-        padding: 8px 12px !important;
-        gap: 8px !important;
-        background: #0f172a !important;
-        padding-bottom: 74px !important;
-        transition: padding-bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    }
-
-    #hud.menu-open {
-        padding-bottom: 132px !important;
     }
 
     #hud>.w-64 {
@@ -2387,18 +2317,20 @@ body.lock-scroll {
         font-size: 1rem !important;
     }
 
-    /* 戰鬥畫面作答區下移 */
     #hud {
-        padding-top: 30px !important;
-        padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)) !important;
+        padding-top: 10px !important;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
         flex-direction: column !important;
-        min-height: 380px !important;
+        min-height: 0 !important;
+        height: auto !important;
     }
 
     #question-area {
-        min-height: 120px !important;
-        justify-content: flex-end !important;
-        padding-bottom: 20px !important;
+        min-height: 0 !important;
+        height: auto !important;
+        justify-content: center !important;
+        padding-bottom: 10px !important;
+        margin-top: 10px !important;
     }
 
     /* 點選模式專用：縮小攻擊鈕與間距，避免擠壓 */
@@ -2458,21 +2390,32 @@ body.lock-scroll {
     z-index: 20;
     transform: rotate(25deg);
     /* 整組固定傾角 */
-    animation: boss-claw-swipe 0.4s cubic-bezier(0.15, 0.85, 0.35, 1) forwards;
+    animation: boss-claw-swipe 1.0s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
 }
 
 @keyframes boss-claw-swipe {
     0% {
-        transform: rotate(25deg) translateY(-50vh) scale(0.8);
+        transform: rotate(25deg) translateY(-30vh) scale(0.8);
         opacity: 0;
     }
 
     15% {
         opacity: 1;
+        transform: rotate(25deg) translateY(-5vh) scale(0.95);
+    }
+
+    30% {
+        opacity: 1;
+        transform: rotate(25deg) translateY(0vh) scale(1.0);
+    }
+
+    70% {
+        opacity: 0.85;
+        transform: rotate(25deg) translateY(8vh) scale(1.02);
     }
 
     100% {
-        transform: rotate(25deg) translateY(60vh) scale(1.1);
+        transform: rotate(25deg) translateY(30vh) scale(1.05);
         opacity: 0;
     }
 }
@@ -2482,7 +2425,7 @@ body.lock-scroll {
     inset: 0;
     background: rgba(220, 38, 38, 0.4);
     mix-blend-mode: overlay;
-    animation: boss-flash 0.3s ease-out forwards;
+    animation: boss-flash 0.8s ease-out forwards;
     pointer-events: none;
     z-index: 10;
 }
@@ -2494,9 +2437,31 @@ body.lock-scroll {
     background: white;
     mix-blend-mode: screen;
     opacity: 0;
-    animation: boss-impact-flash 0.15s ease-out forwards;
+    animation: boss-impact-flash 0.4s ease-out forwards;
     pointer-events: none;
     z-index: 50;
+}
+
+/* --- Monster Sizing Classes --- */
+.monster-container-normal {
+    width: 8rem !important;
+    height: 8rem !important;
+}
+
+.monster-container-boss {
+    width: 10rem !important;
+    height: 10rem !important;
+}
+
+.monster-img-normal {
+    width: 6rem !important;
+    height: 6rem !important;
+}
+
+.monster-img-boss {
+    width: 8.5rem !important;
+    height: 8.5rem !important;
+    max-height: 9.5rem !important;
 }
 
 @keyframes boss-impact-flash {
@@ -2556,4 +2521,28 @@ body.lock-scroll {
     height: 90vh;
     opacity: 0.7;
     z-index: 21;
+}
+/* v3.0 Glass Panel Base */
+.glass-panel {
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+/* Remove pointer events from disabled buttons to allow flicker/tap fallthrough */
+.rune-btn[disabled] {
+    pointer-events: none;
+}
+
+/* =========================================
+   V3.0 Battle UI: Force-hide old corner FAB menu
+   The v3.0 HUD now contains equivalent buttons (📖 skill, 🧪 potion, 🎒 bag).
+   The corner menu is redundant and visually interferes with the new layout.
+========================================= */
+#cornerMenu,
+#cornerMenu.is-in-battle,
+#cornerMenu.is-in-battle.open,
+#cornerMenuToggle {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
 }

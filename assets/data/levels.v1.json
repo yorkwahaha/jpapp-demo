@@ -10,7 +10,12 @@
       "oldSkillWeight": 0.2
     },
     "questionCount": 10,
-    "boss": null
+    "boss": null,
+    "levelNumber": 1,
+    "levelName": "新手村",
+    "focusParticle": "は",
+    "focusLabel": "主題",
+    "bgKey": ""
   },
   {
     "id": "L2",
@@ -19,11 +24,16 @@
       "NO_POSSESSIVE"
     ],
     "skillMix": {
-      "newSkillWeight": 0.7,
-      "oldSkillWeight": 0.3
+      "newSkillWeight": 0.6,
+      "oldSkillWeight": 0.4
     },
     "questionCount": 10,
-    "boss": null
+    "boss": null,
+    "levelNumber": 2,
+    "levelName": "新手村外圍",
+    "focusParticle": "の",
+    "focusLabel": "所屬",
+    "bgKey": ""
   },
   {
     "id": "L3",
@@ -32,11 +42,16 @@
       "GA_INTRANSITIVE"
     ],
     "skillMix": {
-      "newSkillWeight": 0.7,
-      "oldSkillWeight": 0.3
+      "newSkillWeight": 0.6,
+      "oldSkillWeight": 0.4
     },
     "questionCount": 10,
-    "boss": null
+    "boss": null,
+    "levelNumber": 3,
+    "levelName": "森林入口",
+    "focusParticle": "が",
+    "focusLabel": "自然發生",
+    "bgKey": ""
   },
   {
     "id": "L4",
@@ -45,11 +60,16 @@
       "WO_OBJECT_BASIC"
     ],
     "skillMix": {
-      "newSkillWeight": 0.7,
-      "oldSkillWeight": 0.3
+      "newSkillWeight": 0.6,
+      "oldSkillWeight": 0.4
     },
     "questionCount": 10,
-    "boss": null
+    "boss": null,
+    "levelNumber": 4,
+    "levelName": "森林深處",
+    "focusParticle": "を",
+    "focusLabel": "受詞",
+    "bgKey": ""
   },
   {
     "id": "L5_BOSS",
@@ -61,59 +81,88 @@
       "everyNLevels": 5,
       "mode": "all_unlocked",
       "sampling": "balanced"
-    }
+    },
+    "levelNumber": 5,
+    "levelName": "魔王關",
+    "focusParticle": "Boss",
+    "focusLabel": "複習",
+    "bgKey": ""
   },
   {
     "id": "L6",
-    "name": "鐘塔：時間點",
-    "unlockSkills": [
-      "NI_TIME"
-    ],
-    "skillMix": {
-      "newSkillWeight": 0.7,
-      "oldSkillWeight": 0.3
-    },
-    "questionCount": 10,
-    "boss": null
-  },
-  {
-    "id": "L7",
-    "name": "通往城鎮的路：方向",
+    "name": "鐘塔：方向",
+    "skillId": "HE_DIRECTION",
     "unlockSkills": [
       "HE_DIRECTION"
     ],
     "skillMix": {
-      "newSkillWeight": 0.7,
-      "oldSkillWeight": 0.3
+      "newSkillWeight": 0.6,
+      "oldSkillWeight": 0.4
     },
     "questionCount": 10,
-    "boss": null
+    "boss": null,
+    "levelNumber": 6,
+    "levelName": "鐘塔",
+    "focusParticle": "へ",
+    "focusLabel": "方向",
+    "bgKey": ""
   },
   {
-    "id": "L8",
-    "name": "回聲峽谷：也",
+    "id": "L7",
+    "name": "通往城鎮的路：也",
+    "skillId": "MO_ALSO_BASIC",
     "unlockSkills": [
       "MO_ALSO_BASIC"
     ],
     "skillMix": {
-      "newSkillWeight": 0.7,
-      "oldSkillWeight": 0.3
+      "newSkillWeight": 0.6,
+      "oldSkillWeight": 0.4
     },
     "questionCount": 10,
-    "boss": null
+    "boss": null,
+    "levelNumber": 7,
+    "levelName": "通往城鎮的路",
+    "focusParticle": "も",
+    "focusLabel": "也",
+    "bgKey": ""
+  },
+  {
+    "id": "L8",
+    "name": "回聲峽谷：時間",
+    "skillId": "NI_TIME",
+    "unlockSkills": [
+      "NI_TIME"
+    ],
+    "skillMix": {
+      "newSkillWeight": 0.6,
+      "oldSkillWeight": 0.4
+    },
+    "questionCount": 10,
+    "boss": null,
+    "levelNumber": 8,
+    "levelName": "回聲峽谷",
+    "focusParticle": "に",
+    "focusLabel": "時間",
+    "bgKey": ""
   },
   {
     "id": "L9",
-    "name": "城鎮廣場：動作場所",
+    "name": "城鎮廣場：和（並列）",
+    "skillId": "TO_AND",
     "unlockSkills": [
-      "DE_ACTION_PLACE"
+      "TO_AND"
     ],
     "skillMix": {
-      "newSkillWeight": 0.7,
-      "oldSkillWeight": 0.3
+      "newSkillWeight": 0.6,
+      "oldSkillWeight": 0.4
     },
     "questionCount": 10,
-    "boss": null
+    "boss": null,
+    "levelNumber": 9,
+    "levelName": "城鎮廣場",
+    "focusParticle": "と",
+    "focusLabel": "並列",
+    "bgKey": ""
   },
   {
     "id": "L10_BOSS",
@@ -125,70 +174,106 @@
       "everyNLevels": 5,
       "mode": "all_unlocked",
       "sampling": "balanced"
-    }
+    },
+    "levelNumber": 10,
+    "levelName": "魔王關",
+    "focusParticle": "Boss",
+    "focusLabel": "複習",
+    "bgKey": ""
   },
   {
     "id": "L11",
-    "name": "夥伴小徑：一起",
+    "name": "城市：街道一角",
+    "skillId": "DE_ACTION_PLACE",
     "unlockSkills": [
-      "TO_WITH"
+      "DE_ACTION_PLACE"
     ],
     "skillMix": {
-      "newSkillWeight": 0.7,
-      "oldSkillWeight": 0.3
+      "newSkillWeight": 0.6,
+      "oldSkillWeight": 0.4
     },
     "questionCount": 10,
-    "boss": null
+    "boss": null,
+    "levelNumber": 11,
+    "levelName": "城市",
+    "focusParticle": "で",
+    "focusLabel": "動作地點",
+    "bgKey": ""
   },
   {
     "id": "L12",
     "name": "古老房間：存在地點",
+    "skillId": "NI_EXIST_PLACE",
     "unlockSkills": [
       "NI_EXIST_PLACE"
     ],
     "skillMix": {
-      "newSkillWeight": 0.7,
-      "oldSkillWeight": 0.3
+      "newSkillWeight": 0.6,
+      "oldSkillWeight": 0.4
     },
     "questionCount": 10,
-    "boss": null
+    "boss": null,
+    "levelNumber": 12,
+    "levelName": "古老房間",
+    "focusParticle": "に",
+    "focusLabel": "存在地點",
+    "bgKey": ""
   },
   {
     "id": "L13",
     "name": "存在之森：存在主體",
+    "skillId": "GA_EXIST_SUBJECT",
     "unlockSkills": [
       "GA_EXIST_SUBJECT"
     ],
     "skillMix": {
-      "newSkillWeight": 0.7,
-      "oldSkillWeight": 0.3
+      "newSkillWeight": 0.6,
+      "oldSkillWeight": 0.4
     },
     "questionCount": 10,
-    "boss": null
+    "boss": null,
+    "levelNumber": 13,
+    "levelName": "存在之森",
+    "focusParticle": "が",
+    "focusLabel": "存在主體",
+    "bgKey": ""
   },
   {
     "id": "L14",
-    "name": "起點之橋：從",
+    "name": "夥伴小徑：一起",
+    "skillId": "TO_WITH",
     "unlockSkills": [
-      "KARA_FROM"
+      "TO_WITH"
     ],
     "skillMix": {
-      "newSkillWeight": 0.7,
-      "oldSkillWeight": 0.3
+      "newSkillWeight": 0.6,
+      "oldSkillWeight": 0.4
     },
     "questionCount": 10,
-    "boss": null
+    "boss": null,
+    "levelNumber": 14,
+    "levelName": "夥伴小徑",
+    "focusParticle": "と",
+    "focusLabel": "共同動作",
+    "bgKey": ""
   },
   {
     "id": "L15_BOSS",
     "name": "魔王關：沉眠獸",
-    "unlockSkills": [],
+    "unlockSkills": [
+      "BOSS_REVIEW_03"
+    ],
     "questionCount": 15,
     "rewardAbilityId": "UTOUTO",
     "boss": {
       "everyNLevels": 5,
       "mode": "all_unlocked",
       "sampling": "balanced"
-    }
+    },
+    "levelNumber": 15,
+    "levelName": "魔王關",
+    "focusParticle": "Boss",
+    "focusLabel": "複習",
+    "bgKey": ""
   }
 ]

@@ -1047,12 +1047,12 @@ jpDebug commands:
             correctAdvanceDelayMs: null,
             wrongAdvanceDelayMs: null,
             enemyAttackMode: 'atb',
-            feedbackStyle: 'combat',
+            feedbackStyle: 'oneesan',
             ttsVoice: 'ja-JP-MayuNeural'
         });
         const VALID_TTS_VOICES = ['ja-JP-NanamiNeural', 'ja-JP-MayuNeural', 'ja-JP-NaokiNeural'];
         const DEFAULT_TTS_VOICE = 'ja-JP-MayuNeural';
-        const _settingsDefaults = { autoReadOnWrong: true, correctAdvanceDelayMs: null, wrongAdvanceDelayMs: null, enemyAttackMode: 'atb', feedbackStyle: 'combat', ttsVoice: DEFAULT_TTS_VOICE };
+        const _settingsDefaults = { autoReadOnWrong: true, correctAdvanceDelayMs: null, wrongAdvanceDelayMs: null, enemyAttackMode: 'atb', feedbackStyle: 'oneesan', ttsVoice: DEFAULT_TTS_VOICE };
         const loadSettings = () => {
             try {
                 const raw = localStorage.getItem(SETTINGS_KEY);
@@ -1347,12 +1347,19 @@ jpDebug commands:
                     const mappedLevels = {};
                     data.forEach((lvl, idx) => {
                         const lvNum = idx + 1;
-                        mappedLevels[lvNum] = {
+                        const config = {
                             ...lvl,
                             title: lvl.name || fallbackLevels[lvNum]?.title,
                             blanks: fallbackLevels[lvNum]?.blanks || 1,
                             types: fallbackLevels[lvNum]?.types || [0, 1, 2, 3, 4, 5]
                         };
+
+                        // 注入背景圖第一波試裝 (Phase 1)
+                        if (lvNum === 1) config.bgImage = 'assets/images/levels/bg_lv1.png';
+                        if (lvNum === 10) config.bgImage = 'assets/images/levels/bg_lv10.png';
+                        if (lvNum === 13) config.bgImage = 'assets/images/levels/bg_lv13.png';
+
+                        mappedLevels[lvNum] = config;
                     });
                     LEVEL_CONFIG.value = mappedLevels;
                     maxLevel.value = data.length;
@@ -2511,13 +2518,13 @@ jpDebug commands:
 
             vfxLayer.appendChild(group);
 
-            // 3. 清理：1.2 版動畫時間約 0.4s，保留一點 buffer
+            // 3. 清理：1.2 版動畫時間約 1.0s，保留一點 buffer 以確保淡出完全
             setTimeout(() => {
                 if (vfxLayer.contains(flash)) vfxLayer.removeChild(flash);
                 if (vfxLayer.contains(impact)) vfxLayer.removeChild(impact);
                 if (vfxLayer.contains(group)) vfxLayer.removeChild(group);
                 _isBossClawPlaying = false;
-            }, 1000);
+            }, 1200);
         };
 
         const runPauseTimerLogic = () => {
@@ -2633,6 +2640,7 @@ jpDebug commands:
         const clearMistakes = () => { mistakes.value = []; saveMistakes(); };
 
         const ALL_PARTICLES = ['は', 'が', 'を', 'に', 'で', 'へ', 'と'];
+        const DEFAULT_NEW_SKILL_RATIO = 0.6;
         const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
         const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
 
@@ -2794,13 +2802,17 @@ jpDebug commands:
         };
 
         const pickSkillForNormalLevel = (levelId) => {
-            const configUnlock = LEVEL_CONFIG.value[levelId]?.unlockSkills || [];
+            const config = LEVEL_CONFIG.value[levelId] || {};
+            const configUnlock = config.unlockSkills || [];
             const newSkills = configUnlock.filter(id => unlockedSkillIds.value.includes(id));
             const oldSkills = unlockedSkillIds.value.filter(id => !newSkills.includes(id));
 
             let poolToUse = [];
+            // 優先讀取 config 中的比例，若無則使用全域常數
+            const newSkillWeight = config.skillMix?.newSkillWeight ?? DEFAULT_NEW_SKILL_RATIO;
+
             if (newSkills.length > 0 && oldSkills.length > 0) {
-                poolToUse = Math.random() < 0.75 ? newSkills : oldSkills;
+                poolToUse = Math.random() < newSkillWeight ? newSkills : oldSkills;
             } else if (newSkills.length > 0) {
                 poolToUse = newSkills;
             } else if (oldSkills.length > 0) {
@@ -3216,82 +3228,76 @@ jpDebug commands:
             }
             else if (skillDef.id === 'HE_DEST' || skillDef.id === 'HE_DIRECTION') {
                 const skillPool = (pool.skills?.HE_DIRECTION) || {};
-                const pList = skillPool.placePool || [{ j: "学校", r: "がっこう", zh: "學校" }];
-                const vList = skillPool.movePool || [{ j: "行く", r: "いく", zh: "去" }];
-                const p = pickOne(pList);
-                const v = pickOne(vList);
+                const safeCombos = skillPool.safeCombos || [];
+                const picked = pickOne(safeCombos);
 
-                // Fix: 確保中文翻譯自然，避免 "回家銀行"
-                const vZh = zhOf(v);
-                const pZh = zhOf(p);
-                let chinese = `${vZh}${pZh}`;
-                if (vZh === '回' && pZh === '家') chinese = "回家";
-                else if (vZh === '去' || vZh === '來') chinese = `${vZh}${pZh}`;
-                else chinese = `${vZh}往${pZh}`; // 備選語感
+                if (picked) {
+                    // Choice generation: explicitly exclude 'に' but maintain count
+                    const targetCount = getChoiceCountForLevel(currentLevel.value);
+                    const allSafeParticles = ["へ", "を", "は", "が", "の", "も", "と"];
+                    let finalChoices = getChoices(allSafeParticles, 'へ').filter(c => c !== 'に');
 
-                q = makeParticleQuestion({
-                    chinese: chinese,
-                    leftText: p.j,
-                    leftRuby: p.r,
-                    rightText: v.j,
-                    rightRuby: v.r,
-                    answer: 'へ',
-                    skillId: skillDef.id,
-                    grammarTip: tipText,
-                    choices: getChoices(["へ", "を", "は", "が"], 'へ') // 移除 "に" 以免與 "へ" 產生歧義
-                });
+                    // If filtering 'に' made us short, fill back up
+                    if (finalChoices.length < targetCount) {
+                        const currentSet = new Set(finalChoices);
+                        const candidates = allSafeParticles.filter(p => p !== 'に' && !currentSet.has(p));
+                        while (finalChoices.length < targetCount && candidates.length > 0) {
+                            const extra = candidates.splice(Math.floor(Math.random() * candidates.length), 1)[0];
+                            finalChoices.push(extra);
+                        }
+                    }
+
+                    q = makeParticleQuestion({
+                        chinese: picked.zh,
+                        leftText: picked.j,
+                        leftRuby: picked.r,
+                        rightText: picked.v,
+                        rightRuby: picked.vr,
+                        answer: 'へ',
+                        skillId: skillDef.id,
+                        grammarTip: tipText,
+                        choices: finalChoices.sort(() => Math.random() - 0.5)
+                    });
+                }
             }
             else if (skillDef.id === 'MO_ALSO' || skillDef.id === 'MO_ALSO_BASIC') {
                 const skillPool = (pool.skills?.MO_ALSO_BASIC) || {};
-                const personPool = skillPool.personPool || [{ j: "私", r: "わたし", zh: "我", tags: ["person"] }];
-                const statePool = skillPool.statePool || [{ j: "雨", r: "あめ", zh: "雨", kind: "precip" }];
+                const pList = skillPool.personPool || [];
+                const iList = skillPool.identityPool || [];
+                const vList = skillPool.verbPool || [];
 
-                const isPerson = Math.random() < 0.5;
-                let x, yj, yr, zhTail;
+                const p = pickOne(pList);
 
-                if (isPerson) {
-                    x = pickOne(personPool);
-                    const personStates = statePool.filter(s => s.kind === "person");
-                    const state = personStates.length > 0 ? pickOne(personStates) : { j: "学生", r: "がくせい", zh: "學生" };
-                    yj = state.j + "です";
-                    yr = state.r + "です";
-                    if (state.kind === "adjective") {
-                        zhTail = "也" + zhOf(state);
-                    } else if (state.j === "風邪") {
-                        zhTail = "也感冒";
-                    } else {
-                        zhTail = "也是" + zhOf(state);
-                    }
+                // 50/50 branch: Identity (AもBです) vs Action (AもVます)
+                const isAction = vList.length > 0 && Math.random() < 0.5;
+
+                if (isAction) {
+                    const v = pickOne(vList);
+                    q = makeParticleQuestion({
+                        chinese: `${zhOf(p)}也要${v.zh}`,
+                        leftText: p.j,
+                        leftRuby: p.r,
+                        rightText: v.polite,
+                        rightRuby: v.politer || v.polite,
+                        answer: 'も',
+                        skillId: skillDef.id,
+                        grammarTip: tipText,
+                        choices: getChoices(["も", "は", "が", "を"], 'も')
+                    });
                 } else {
-                    const nonPersonStates = statePool.filter(s => s.kind !== "person");
-                    x = nonPersonStates.length > 0 ? pickOne(nonPersonStates) : pickOne(statePool);
-                    const kind = x.kind || '';
-                    if (kind === "sky") {
-                        yj = "曇る"; yr = "くもる"; zhTail = "也轉陰";
-                    } else if (kind === "wind") {
-                        yj = "吹く"; yr = "ふく"; zhTail = "也吹";
-                    } else if (kind === "flower") {
-                        yj = "咲く"; yr = "さく"; zhTail = "也開";
-                    } else if (kind === "precip") {
-                        yj = "降る"; yr = "ふる"; zhTail = "也下";
-                    } else {
-                        yj = "ある"; yr = "ある"; zhTail = "也存在";
-                    }
+                    const i = pickOne(iList);
+                    q = makeParticleQuestion({
+                        chinese: `${zhOf(p)}也是${zhOf(i)}`,
+                        leftText: p.j,
+                        leftRuby: p.r,
+                        rightText: `${i.j}です`,
+                        rightRuby: `${i.r}です`,
+                        answer: 'も',
+                        skillId: skillDef.id,
+                        grammarTip: tipText,
+                        choices: getChoices(["も", "は", "が", "を"], 'も')
+                    });
                 }
-
-                const nounZh = zhOf(x);
-
-                q = makeParticleQuestion({
-                    chinese: `${nounZh}${zhTail}`,
-                    leftText: x.j,
-                    leftRuby: x.r,
-                    rightText: yj,
-                    rightRuby: yr,
-                    answer: 'も',
-                    skillId: skillDef.id,
-                    grammarTip: tipText,
-                    choices: getChoices(["も", "は", "が", "の"], 'も')
-                });
             }
             else if (skillDef.id === 'DE_LOC' || skillDef.id === 'DE_ACTION_PLACE') {
                 const skillPool = (pool.skills?.DE_ACTION_PLACE) || {};
@@ -3313,6 +3319,30 @@ jpDebug commands:
                     skillId: skillDef.id,
                     grammarTip: tipText,
                     choices: getChoices(["で", "に", "へ", "を"], 'で')
+                });
+            }
+            else if (skillDef.id === 'TO_AND') {
+                const skillPool = (pool.skills?.TO_AND) || {};
+                const safeCombos = skillPool.safeCombos || [
+                    { a: { j: "犬", r: "いぬ", zh: "狗" }, b: { j: "猫", r: "ねこ", zh: "貓" } },
+                    { a: { j: "パン", r: "ぱん", zh: "麵包" }, b: { j: "牛乳", r: "ぎゅうにゅう", zh: "牛奶" } },
+                    { a: { j: "本", r: "ほん", zh: "書" }, b: { j: "ペン", r: "ぺん", zh: "筆" } }
+                ];
+
+                const combo = pickOne(safeCombos);
+                const a = combo.a;
+                const b = combo.b;
+
+                q = makeParticleQuestion({
+                    chinese: `${zhOf(a)}和${zhOf(b)}`,
+                    leftText: a.j,
+                    leftRuby: a.r,
+                    rightText: b.j,
+                    rightRuby: b.r,
+                    answer: 'と',
+                    skillId: skillDef.id,
+                    grammarTip: tipText,
+                    choices: getChoices(["と", "は", "が", "の", "へ", "も", "を"], 'と')
                 });
             }
             else if (skillDef.id === 'TO_WITH') {
@@ -3350,7 +3380,7 @@ jpDebug commands:
                     : { j: "ある", r: "ある", zh: "有" };
 
                 q = {
-                    chinese: `${zhOf(p)}裡有${zhOf(n)}`,
+                    chinese: `${zhOf(p)}有${zhOf(n)}`,
                     segments: [
                         seg(p.j, p.r),
                         { isBlank: true, blankIndex: 0 },
@@ -3499,6 +3529,13 @@ jpDebug commands:
                 }
             }
 
+            // 確保「主技能」教學同步：即使技能已解鎖，若未看過教學且本關是該技能的主場 (skillId 匹配)，仍觸發教學
+            if (!triggeredMentor && config.skillId && !window._disableMentorAutoTrigger) {
+                if (triggerMentorDialogue(config.skillId)) {
+                    triggeredMentor = true;
+                }
+            }
+
             const typePool = config.types;
             const blanks = config.blanks;
             const qList = [];
@@ -3507,12 +3544,29 @@ jpDebug commands:
 
             // L5 固定 review pool（不依賴 unlockedSkillIds，確保 refresh/skip level 時仍完整）
             const L5_REVIEW_POOL = ['WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE', 'WO_OBJECT_BASIC'];
-            // 預先為 L5 建立 review 排程 queue：每 4 題一組，各 skill 各出一次再 shuffle
+            // L10 固定 review pool（L6-9 的 skill）
+            const L10_REVIEW_POOL = ['HE_DIRECTION', 'MO_ALSO_BASIC', 'NO_POSSESSIVE', 'TO_AND'];
+            const L15_REVIEW_POOL = ['DE_ACTION_PLACE', 'NI_EXIST_PLACE', 'GA_EXIST_SUBJECT', 'TO_WITH'];
+            // 預先為 L5/L10/L15 建立 review 排程 queue：每 4 題一組，各 skill 各出一次再 shuffle
             const l5Queue = [];
+            const l10Queue = [];
+            const l15Queue = [];
             if (lv === 5) {
                 for (let b = 0; b < Math.ceil(100 / 4); b++) {
                     const block = [...L5_REVIEW_POOL].sort(() => Math.random() - 0.5);
                     l5Queue.push(...block);
+                }
+            }
+            if (lv === 10) {
+                for (let b = 0; b < Math.ceil(100 / 4); b++) {
+                    const block = [...L10_REVIEW_POOL].sort(() => Math.random() - 0.5);
+                    l10Queue.push(...block);
+                }
+            }
+            if (lv === 15) {
+                for (let b = 0; b < Math.ceil(100 / 4); b++) {
+                    const block = [...L15_REVIEW_POOL].sort(() => Math.random() - 0.5);
+                    l15Queue.push(...block);
                 }
             }
 
@@ -3526,7 +3580,15 @@ jpDebug commands:
                 } else if (lv === 5) {
                     // L5 Boss Review：從預排 queue 依序取，保證平均分布
                     skillId = l5Queue[i % l5Queue.length];
-                    isReview = false; // L5 自身就是 review 關，不需要額外的 isReview 旗標
+                    isReview = false;
+                } else if (lv === 10) {
+                    // L10 Boss Review：複習 L6-9 的 4 個 skill，預排 queue 確保平均
+                    skillId = l10Queue[i % l10Queue.length];
+                    isReview = false;
+                } else if (lv === 15) {
+                    // L15 Boss Review：複習 L11-14 的 4 個 skill，預排 queue 確保平均
+                    skillId = l15Queue[i % l15Queue.length];
+                    isReview = false;
                 } else if (unlockedSkillIds.value.length > 0) {
                     if (lv === 2) {
                         if (reviewCycle.remainingReview === 0 && reviewCycle.remainingL2 === 0) {
@@ -3565,6 +3627,12 @@ jpDebug commands:
                         if (q) { q.meta = q.meta || {}; q.meta.review = true; }
                     }
 
+                    // Goal 2: L5 Boss distractor pool restriction
+                    if (q && lv === 5) {
+                        const l5Choices = ["は", "の", "が", "を"].sort(() => Math.random() - 0.5);
+                        q.choices = l5Choices;
+                    }
+
                     if (q) {
                         const ansStr = Array.isArray(q.answers[0]) ? q.answers[0][0] : q.answers[0];
                         let valid = true;
@@ -3576,8 +3644,27 @@ jpDebug commands:
                         if ((skillId === 'HE_DEST' || skillId === 'HE_DIRECTION') && ansStr !== 'へ') valid = false;
                         if ((skillId === 'MO_ALSO' || skillId === 'MO_ALSO_BASIC') && ansStr !== 'も') valid = false;
                         if ((skillId === 'DE_LOC' || skillId === 'DE_ACTION_PLACE') && ansStr !== 'で') valid = false;
-                        if (skillId === 'TO_WITH' && ansStr !== 'と') valid = false;
+                        if ((skillId === 'TO_WITH' || skillId === 'TO_AND') && ansStr !== 'と') valid = false;
                         if (skillId === 'KARA_FROM' && ansStr !== 'から') valid = false;
+
+                        // 最終攔截：HE_DIRECTION 自然度與選項避讓
+                        if (valid && (skillId === 'HE_DEST' || skillId === 'HE_DIRECTION')) {
+                            const left = q.segments[0].text;
+                            const right = q.segments[2].text;
+
+                            // Naturalness guard: 阻攔明顯不自然的搭配
+                            if (left === '外' && right === '曲がる') {
+                                valid = false;
+                                if (window.DEBUG_Q_GEN) console.warn(`[NATURALNESS REJECT] HE_DIRECTION: 拒絕「外 x 曲がる」`);
+                            }
+
+                            // Choice guard: 確保「に」絕對不會作為干擾項出現（避免移動動詞雙解爭議）
+                            if (valid && q.choices && q.choices.includes('に')) {
+                                valid = false;
+                                if (window.DEBUG_Q_GEN) console.warn(`[CHOICE REJECT] HE_DIRECTION: 檢測到干擾項包含「に」，攔截以確保單一正解`);
+                            }
+                        }
+                        // Removed restrictive MO_ALSO_BASIC guard to allow Action branch (AもVます)
 
                         if (valid && lv <= 15) {
                             let fullText = "";
@@ -3643,6 +3730,8 @@ jpDebug commands:
 
                 if (lv === 5) {
                     console.log(`[L5-DIST] Index: ${qList.length} | 原定: ${originalSkillId} | 最終: ${skillId} | 重試: ${attempts > 1} | Fallback: ${isFallback} | 成功: ${generatedFromSkill}`);
+                } else if (lv === 10) {
+                    console.log(`[L10-DIST] Index: ${qList.length} | 原定: ${originalSkillId} | 最終: ${skillId} | 重試: ${attempts > 1} | Fallback: ${isFallback} | 成功: ${generatedFromSkill}`);
                 }
 
                 if (!generatedFromSkill && skillId) {
@@ -3651,14 +3740,17 @@ jpDebug commands:
                 }
 
                 if (!generatedFromSkill && lv === 5) {
-                    // L5 完全封閉在 review pool，禁止進入全域 fallback switch
-                    // 最後嘗試從 review pool 中任意取一個 safeFallback（emergency only）
+                    // L5 完全封閉在 review pool，禁止進入全域 fallback switch（emergency only）
                     const fallbackSkillId = L5_REVIEW_POOL.find(s => s !== skillId) || L5_REVIEW_POOL[0];
                     console.warn(`[L5 FALLBACK BLOCKED] Index: ${qList.length} | originalSkill: ${originalSkillId} | attemptedSkill: ${skillId} | emergencyFallback: ${fallbackSkillId} | 禁止漏入全域 switch`);
                     q = safeFallbackQuestion(fallbackSkillId) || safeFallbackQuestion(L5_REVIEW_POOL[0]);
-                    if (q) {
-                        q.skillId = fallbackSkillId;
-                    }
+                    if (q) { q.skillId = fallbackSkillId; }
+                } else if (!generatedFromSkill && lv === 10) {
+                    // L10 同樣完全封閉在 L6-9 review pool，禁止進入全域 fallback switch（emergency only）
+                    const fallbackSkillId = L10_REVIEW_POOL.find(s => s !== skillId) || L10_REVIEW_POOL[0];
+                    console.warn(`[L10 FALLBACK BLOCKED] Index: ${qList.length} | originalSkill: ${originalSkillId} | attemptedSkill: ${skillId} | emergencyFallback: ${fallbackSkillId} | 禁止漏入全域 switch`);
+                    q = safeFallbackQuestion(fallbackSkillId) || safeFallbackQuestion(L10_REVIEW_POOL[0]);
+                    if (q) { q.skillId = fallbackSkillId; }
                 } else if (!generatedFromSkill) {
                     switch (type) {
                         case 0:
@@ -3859,7 +3951,7 @@ jpDebug commands:
 
         const playCorrectFeedback = (combo) => {
             initAudio();
-            const style = settings.feedbackStyle || 'combat';
+            const style = settings.feedbackStyle || 'oneesan';
 
             // ⚠️ 移除了這裡過早觸發的 playSfx('hit')，將它移到 checkAnswer 裡的延遲區塊中
 
@@ -4514,7 +4606,7 @@ jpDebug commands:
         loadAudioSettings();
 
         return {
-            uiMenuOpen, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, maxLevel, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, playMistakeVoice, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
+            uiMenuOpen, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, playMistakeVoice, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             allAbilities, unlockedAbilityIds, skillList, castAbility, spState, showL2DebugPanel, l2DebugQuestions, generateL2Debug, copyL2Debug, handleReload, settings, shouldShowNextButton, praiseToast,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
             isMentorModalOpen, isMentorReplayOpen, isLevelJumpOpen, isAdvancedSettingsOpen, replaySpecificMentor, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
