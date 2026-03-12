@@ -2528,6 +2528,12 @@ body.lock-scroll {
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
 }
+
+.result-screen-backdrop {
+    background: rgba(15, 23, 42, 0.2) !important; /* Very subtle dark tint */
+    backdrop-filter: blur(14px) brightness(0.55) contrast(0.9) !important; /* Strong blur and dimming */
+    -webkit-backdrop-filter: blur(14px) brightness(0.55) contrast(0.9) !important;
+}
 /* Remove pointer events from disabled buttons to allow flicker/tap fallthrough */
 .rune-btn[disabled] {
     pointer-events: none;
@@ -2545,4 +2551,19 @@ body.lock-scroll {
     display: none !important;
     visibility: hidden !important;
     pointer-events: none !important;
+}
+
+/* --- Monster Animation --- */
+.monster-breath {
+    animation: monster-breath 3s ease-in-out infinite;
+    will-change: transform;
+}
+
+@keyframes monster-breath {
+    0%, 100% {
+        transform: translateY(0) scale(1.0);
+    }
+    50% {
+        transform: translateY(-8px) scale(1.02);
+    }
 }

@@ -47,7 +47,8 @@
     "spawnLevels": [
       5
     ],
-    "hpMax": 58
+    "hpMax": 58,
+    "size": 1.5
   },
   {
     "id": "ash-goblin",
@@ -97,7 +98,8 @@
     "spawnLevels": [
       10
     ],
-    "hpMax": 70
+    "hpMax": 70,
+    "size": 1.6
   },
   {
     "id": "ember-imp",
@@ -147,6 +149,7 @@
     "spawnLevels": [
       15
     ],
-    "hpMax": 88
+    "hpMax": 88,
+    "size": 1.6
   }
 ]

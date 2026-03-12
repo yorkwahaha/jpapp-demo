@@ -1039,7 +1039,7 @@ jpDebug commands:
         const VOCAB = ref(null);
         const maxLevel = ref(35);
 
-        const APP_VERSION = window.APP_VERSION || "26031002";
+        const APP_VERSION = window.APP_VERSION || "26031201";
         const appVersion = ref(APP_VERSION);
         const VFX_ENHANCED = true;
 
@@ -1613,7 +1613,7 @@ jpDebug commands:
         const isMistakesOpen = ref(false);
         const isInventoryOpen = ref(false);
         const player = ref({ hp: 100, maxHp: 100, gold: 0, exp: 0 });
-        const monster = ref({ hp: MONSTER_HP, maxHp: MONSTER_HP, name: '助詞怪' });
+        const monster = ref({ hp: MONSTER_HP, maxHp: MONSTER_HP, name: '助詞怪', size: 1 });
         const inventory = ref({ potions: INITIAL_POTIONS, speedPotions: 3 });
         const spState = window.__sp;
         const evasionBuffAttacksLeft = ref(0);
@@ -1634,16 +1634,20 @@ jpDebug commands:
         const maxComboCount = ref(0);
         const currentLevel = ref(1);
         const isFinished = ref(false);
+        const isNextBtnVisible = ref(false);
         const isCurrentCorrect = ref(false);
         const timeLeft = ref(10);
         const timeUp = ref(false);
         const wrongAnswerPause = ref(false);
         const wrongAnswerPauseCountdown = ref(0);
         const mistakes = ref([]);
+        const stageLog = ref([]);
         const totalQuestionsAnswered = ref(0);
         const correctAnswersAmount = ref(0);
         const earnedExp = ref(0);
         const earnedGold = ref(0);
+        const animatedExp = ref(0);
+        const animatedGold = ref(0);
         const monsterHit = ref(false);
         const screenShake = ref(false);
         const bossScreenShake = ref(false);
@@ -2634,6 +2638,40 @@ jpDebug commands:
             saveMistakes();
         };
 
+        const logStageQuestion = (isCorrect) => {
+            const q = currentQuestion.value;
+            if (!q) return;
+            let displayJp = '';
+            let sentenceTextBuilder = '';
+
+            (q.segments || []).forEach(s => {
+                if (s.isBlank) {
+                    let ans = q.answers[s.blankIndex];
+                    if (Array.isArray(ans)) ans = ans[0];
+                    displayJp += `<span class="text-amber-400 font-bold underline">${ans}</span>`;
+                    sentenceTextBuilder += ans;
+                } else {
+                    displayJp += s.text;
+                    sentenceTextBuilder += s.text;
+                }
+            });
+
+            const cleanSentenceText = sentenceTextBuilder.replace(/[_ ]/g, '').replace(/（[^）]*）|\([^)]*\)/g, '');
+
+            const entry = {
+                displayJp: displayJp,
+                sentenceText: cleanSentenceText,
+                prompt: q.chinese || "",
+                correct: Array.isArray(q.answers[0]) ? q.answers[0][0] : q.answers[0],
+                grammarTip: q.tip || q.grammar || q.grammarTip || "",
+                isCorrect: isCorrect,
+                timestamp: new Date().toISOString(),
+                order: stageLog.value.length + 1
+            };
+
+            stageLog.value.push(entry);
+        };
+
         const playMistakeVoice = async (m) => {
             if (!m.sentenceText) return;
             initAudio();
@@ -3499,6 +3537,7 @@ jpDebug commands:
             isMonsterImageError.value = false;
             isMistakesOpen.value = false;
             isMenuOpen.value = false;
+            stageLog.value = [];
             const lv = level ?? currentLevel.value;
             currentLevel.value = lv;
             const config = LEVEL_CONFIG.value[lv] || LEVEL_CONFIG.value[1] || { types: [0, 1, 2], blanks: 1 };
@@ -3856,23 +3895,35 @@ jpDebug commands:
             slotFeedbacks.value = {};
             hasSubmitted.value = false;
             timeUp.value = false;
+            isNextBtnVisible.value = false;
+            animatedExp.value = 0;
+            animatedGold.value = 0;
 
             const mdef = MONSTERS[(lv - 1) % MONSTERS.length] || MONSTERS[0];
 
             // 挑選符合目前關卡的怪物資料 (從 enemies.v1.json)
             const enemyMatch = (ENEMIES.value || []).find(e => e.spawnLevels && e.spawnLevels.includes(lv));
 
+            const isBossLevel = (lv % 5 === 0);
             if (enemyMatch) {
-                // 最小替換：只換顯示用的名稱、圖片、稱號
+                // 最小替換：只換顯示用的名稱、圖片、稱號、大小
                 monster.value = {
                     hp: mdef.hpMax,
                     maxHp: mdef.hpMax,
                     name: enemyMatch.name,
                     sprite: enemyMatch.image,
-                    trait: enemyMatch.trait
+                    trait: enemyMatch.trait,
+                    size: enemyMatch.size || (isBossLevel ? 1.2 : 1)
                 };
             } else {
-                monster.value = { hp: mdef.hpMax, maxHp: mdef.hpMax, name: mdef.name, sprite: mdef.sprite, trait: mdef.trait };
+                monster.value = { 
+                    hp: mdef.hpMax, 
+                    maxHp: mdef.hpMax, 
+                    name: mdef.name, 
+                    sprite: mdef.sprite, 
+                    trait: mdef.trait,
+                    size: isBossLevel ? 1.2 : 1
+                };
             }
             const bgIdx = Math.floor(Math.random() * 6) + 1;
             currentBg.value = `assets/images/bg_0${bgIdx}.jpg`;
@@ -4014,6 +4065,7 @@ jpDebug commands:
                 }, isCorrect ? 600 : 400);
             });
             isCurrentCorrect.value = allCorrect;
+            logStageQuestion(allCorrect);
 
             // 🌟 判定延遲時間：彈射模式等子彈飛 400ms，點選模式可以同步或無延遲 (此處統一使用 400ms 營造打擊節奏)
             const isFlick = answerMode.value === 'flick';
@@ -4031,6 +4083,16 @@ jpDebug commands:
                     } else {
                         monsterHit.value = true;
                         setTimeout(() => { monsterHit.value = false; }, 250);
+
+                        // 正式版：只有怪物將在 2 秒內出手時，命中才追加 1 秒硬直
+                        if (timeLeft.value < 2.0) {
+                            timeLeft.value += 1.0;
+                        }
+
+                        // 新增邏輯：當敵方速度極快時（enemyAtbMult < 0.2），命中時獲得額外時間獎勵
+                        if (10 * heroBuffs.enemyAtbMult < 2.0) {
+                            timeLeft.value += 1.0 / heroBuffs.enemyAtbMult;
+                        }
 
                         // 🌟 子彈抵達瞬間！完美同步播放打擊音效
                         if (_isMobileSfx) playUiSfx('hit'); else playSfx('hit');
@@ -4169,6 +4231,37 @@ jpDebug commands:
             playSfx('win');
             setHeroAvatar('win');
             setTimeout(() => { playSfx('fanfare'); }, 2000);
+
+            // 延遲顯示「下一關」按鈕
+            setTimeout(() => {
+                isNextBtnVisible.value = true;
+            }, 8000);
+
+            // 數值增加動畫
+            const expTarget = earnedExp.value;
+            const goldTarget = earnedGold.value;
+            
+            // 計算動畫時長：以較大值為基準，目標速度約每秒 30 單位
+            const maxUnits = Math.max(expTarget, goldTarget);
+            let calculatedDuration = (maxUnits / 30) * 1000;
+            // 設定上限 2.0s，下限 0.6s 確保視覺銜接
+            const duration = Math.min(Math.max(calculatedDuration, 600), 2000);
+            
+            const startTime = Date.now();
+
+            const animateRewards = () => {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                animatedExp.value = Math.floor(expTarget * progress);
+                animatedGold.value = Math.floor(goldTarget * progress);
+                if (progress < 1) {
+                    requestAnimationFrame(animateRewards);
+                } else {
+                    animatedExp.value = expTarget;
+                    animatedGold.value = goldTarget;
+                }
+            };
+            requestAnimationFrame(animateRewards);
         };
 
         const getInputStyle = (idx) => {
@@ -4608,7 +4701,9 @@ jpDebug commands:
         loadAudioSettings();
 
         return {
-            uiMenuOpen, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, playMistakeVoice, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
+            isNextBtnVisible,
+            animatedExp, animatedGold,
+            uiMenuOpen, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, stageLog, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, playMistakeVoice, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             allAbilities, unlockedAbilityIds, skillList, castAbility, spState, showL2DebugPanel, l2DebugQuestions, generateL2Debug, copyL2Debug, handleReload, settings, shouldShowNextButton, praiseToast,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
             isMentorModalOpen, isMentorReplayOpen, isLevelJumpOpen, isAdvancedSettingsOpen, replaySpecificMentor, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,

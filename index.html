@@ -20,7 +20,7 @@
         })();
     </script>
     <script>
-        window.APP_VERSION = '26031002'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26031201'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
         document.addEventListener('gesturechange', function (e) { e.preventDefault(); });
     </script>
@@ -85,7 +85,10 @@
 
                             <!-- Monster Image -->
                             <div class="rounded-full flex items-center justify-center text-5xl mb-3 shadow-[0_0_30px_rgba(225,29,72,0.3)] ring-2 ring-rose-500/20"
-                                :style="{ background: 'conic-gradient(rgba(225, 29, 72, 0.6) ' + ((10 - timeLeft) / 10 * 360) + 'deg, rgba(136, 19, 55, 0.2) 0deg)' }"
+                                :style="{ 
+                                    background: 'conic-gradient(rgba(225, 29, 72, 0.6) ' + ((10 - timeLeft) / 10 * 360) + 'deg, rgba(136, 19, 55, 0.2) 0deg)',
+                                    transform: 'scale(' + (monster.size || 1) + ')'
+                                }"
                                 :class="currentLevel % 5 === 0 ? 'monster-container-boss' : 'monster-container-normal'">
                                 <img v-if="monster.sprite && monster.sprite.includes('/') && !isMonsterImageError"
                                     :src="monster.sprite" @error="handleMonsterImageError" alt="monster"
@@ -340,8 +343,7 @@
                             </button>
                             <button @click="usePotion()"
                                 class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-emerald-700/80 border border-emerald-600 flex items-center justify-center text-emerald-200 shadow-[inset_0_2px_4px_rgba(255,255,255,0.05)] hover:bg-emerald-600 hover:text-white hover:border-emerald-400 transition-all active:scale-95 group relative">
-                                <span
-                                    class="text-[10px] sm:text-[11px] group-hover:scale-110 transition-transform">💊{{
+                                <span class="text-[10px] sm:text-[11px] group-hover:scale-110 transition-transform">💊{{
                                     inventory.potions }}</span>
                             </button>
                             <button @click="isMenuOpen = true; pauseBattle();"
@@ -356,7 +358,7 @@
 
             <!-- [L7] Result Overlay -->
             <div v-if="monsterDead || playerDead"
-                class="absolute inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm pointer-events-auto px-4">
+                class="absolute inset-0 z-[100] flex items-center justify-center result-screen-backdrop pointer-events-auto px-4">
                 <div
                     class="glass-panel p-8 rounded-3xl border border-white/20 shadow-[0_10px_50px_rgba(0,0,0,0.8)] flex flex-col items-center text-center w-full max-w-sm">
                     <div v-if="monsterDead" class="w-full">
@@ -375,18 +377,20 @@
                                     }}</span></div>
                             <div class="flex justify-between items-center"><span
                                     class="text-slate-400 text-xs">獲得經驗值</span><span
-                                    class="text-blue-400 font-mono font-bold">+{{ earnedExp }}</span></div>
+                                    class="text-blue-400 font-mono font-bold">+{{ animatedExp }}</span></div>
                             <div class="flex justify-between items-center"><span
                                     class="text-slate-400 text-xs">獲得金幣</span><span
-                                    class="text-amber-400 font-mono font-bold">+{{ earnedGold }}</span></div>
+                                    class="text-amber-400 font-mono font-bold">+{{ animatedGold }}</span></div>
                         </div>
-                        <button v-if="currentLevel < maxLevel" @click="goNextLevel"
-                            class="w-full py-4 rounded-xl bg-amber-500 text-slate-900 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all mb-3">下一關</button>
-                        <button v-else @click="startOver"
-                            class="w-full py-4 rounded-xl bg-amber-500 text-slate-900 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all mb-3">回到首頁</button>
                         <button @click="isMistakesOpen = true"
-                            class="w-full py-3 rounded-xl bg-slate-800 text-slate-300 font-bold text-sm hover:bg-slate-700 transition-colors border border-slate-600">📒
-                            查看錯題</button>
+                            class="w-full py-3 rounded-xl bg-slate-800 text-slate-300 font-bold text-sm hover:bg-slate-700 transition-colors border border-slate-600 mb-3">📒
+                            查看題目</button>
+                        <button v-if="currentLevel < maxLevel" @click="goNextLevel"
+                            class="w-full py-4 rounded-xl bg-amber-500 text-slate-900 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all mb-3"
+                            :class="{ 'opacity-0 pointer-events-none': !isNextBtnVisible }">下一關</button>
+                        <button v-else @click="startOver"
+                            class="w-full py-4 rounded-xl bg-amber-500 text-slate-900 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all mb-3"
+                            :class="{ 'opacity-0 pointer-events-none': !isNextBtnVisible }">回到首頁</button>
                     </div>
 
                     <div v-if="playerDead" class="w-full">
@@ -396,7 +400,7 @@
                             class="w-full py-4 rounded-xl bg-emerald-600 text-white font-black text-lg shadow-[0_4px_0_#065f46] active:translate-y-1 active:shadow-none transition-all mb-3">重新開始</button>
                         <button @click="isMistakesOpen = true"
                             class="w-full py-3 rounded-xl bg-slate-800 text-slate-300 font-bold text-sm hover:bg-slate-700 transition-colors border border-slate-600">📒
-                            查看錯題</button>
+                            查看題目</button>
                     </div>
                 </div>
             </div>
@@ -822,29 +826,35 @@
             </div>
 
             <!-- Mistakes -->
-            <div v-if="isMistakesOpen" class="modal-overlay" @click.self="isMistakesOpen = false"
-                style="z-index: 5000;">
-                <div class="modal-panel w-[500px] max-w-[95vw]">
-                    <h2 class="text-2xl font-black text-blue-400 mb-4">📒 錯題本</h2>
-                    <div v-if="mistakes.length === 0" class="text-slate-400 text-center py-6">尚無錯題。</div>
+            <div v-if="isMistakesOpen" class="modal-overlay backdrop-blur-sm" @click.self="isMistakesOpen = false"
+                style="z-index: 5000; background: rgba(15, 23, 42, 0.1);">
+                <div class="modal-panel w-[500px] max-w-[95vw] !bg-slate-900/30 backdrop-blur-2xl border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
+                    <h2 class="text-2xl font-black text-blue-400 mb-4 tracking-tighter">📒 出題本</h2>
+                    <div v-if="stageLog.length === 0" class="text-slate-400 text-center py-6">本關尚無出題紀錄</div>
                     <div v-else class="space-y-3 mb-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
-                        <div v-for="(m, i) in mistakes.slice(0, 20)" :key="i"
-                            class="p-4 bg-slate-800/80 rounded-xl border-l-4 border-blue-500 shadow-md">
-                            <div class="flex items-start justify-between mb-2">
-                                <div class="text-slate-100 font-bold text-lg leading-relaxed tracking-wide"
-                                    v-html="m.displayJp || m.sentenceText"></div>
+                        <div v-for="(m, i) in stageLog" :key="i"
+                            class="p-4 rounded-2xl border border-white/10 shadow-lg transition-all backdrop-blur-md"
+                            :class="[
+                                m.isCorrect 
+                                    ? 'bg-indigo-900/10 border-l-4 border-l-emerald-500/40 shadow-indigo-900/5' 
+                                    : 'bg-rose-950/10 border-l-4 border-l-rose-500 shadow-[0_0_20px_rgba(225,29,72,0.08)]'
+                            ]">
+                            <div class="flex items-start justify-between mb-1.5">
+                                <div class="flex flex-col gap-1">
+                                    <div class="flex items-center gap-2 mb-0.5">
+                                        <span class="text-[10px] font-mono text-slate-400 bg-white/5 px-2 py-0.5 rounded-full border border-white/5">#{{ m.order }}</span>
+                                        <span v-if="!m.isCorrect" class="text-[10px] font-black text-white bg-rose-600 px-2 py-0.5 rounded shadow-sm tracking-widest scale-90 origin-left">MISS</span>
+                                    </div>
+                                    <div class="text-slate-100 font-bold text-lg leading-relaxed tracking-wide"
+                                        v-html="m.displayJp || m.sentenceText"></div>
+                                </div>
                                 <button @click="playMistakeVoice(m)"
-                                    class="ml-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg px-2.5 py-1.5 shadow-lg flex-shrink-0 text-sm transition-transform active:scale-95">🔊</button>
+                                    class="ml-3 bg-blue-600/80 hover:bg-blue-500 text-white rounded-xl px-3 py-2 shadow-lg flex-shrink-0 text-sm transition-all active:scale-95 backdrop-blur-md border border-white/10">🔊</button>
                             </div>
-                            <div class="text-slate-300 text-sm mb-3 font-medium">{{ m.prompt }}</div>
-                            <div class="text-emerald-400 font-bold text-sm mb-2 flex items-center gap-2">
-                                <span
-                                    class="bg-emerald-900/50 px-2 py-0.5 rounded border border-emerald-700/50 text-xs tracking-widest">正解</span>
-                                <span>{{ formatCorrect(m.correct) }}</span>
-                            </div>
+                            <div class="text-slate-400 text-sm mb-2 font-medium brightness-125">{{ m.prompt }}</div>
                             <div v-if="m.grammarTip"
-                                class="text-slate-400 text-xs mt-1 bg-slate-900/60 p-2.5 rounded-lg leading-relaxed border border-slate-700/50">
-                                💡 {{ m.grammarTip }}
+                                class="text-slate-400 text-xs mt-2 bg-slate-900/40 p-3 rounded-xl leading-relaxed border border-white/5">
+                                <span class="text-amber-400/80 font-bold mr-1">💡</span> {{ m.grammarTip }}
                             </div>
                         </div>
                     </div>
