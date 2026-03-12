@@ -1039,7 +1039,7 @@ jpDebug commands:
         const VOCAB = ref(null);
         const maxLevel = ref(35);
 
-        const APP_VERSION = window.APP_VERSION || "26031201";
+        const APP_VERSION = window.APP_VERSION || "26031300";
         const appVersion = ref(APP_VERSION);
         const VFX_ENHANCED = true;
 
@@ -1125,6 +1125,8 @@ jpDebug commands:
         const displayedMentorText = ref("");
         const isTypingMentor = ref(false);
         const isMentorPortraitError = ref(false);
+        const isMentorSkipPressing = ref(false);
+        const mentorSkipPressTimer = ref(null);
         let typingTimerMentor = null;
         let currentMentorAudio = null;
 
@@ -1297,6 +1299,24 @@ jpDebug commands:
                 const callback = window._resumeAfterMentor;
                 window._resumeAfterMentor = null; // 執行前清空，避免遞迴或殘留
                 callback();
+            }
+        };
+
+        const startMentorSkipPress = () => {
+            isMentorSkipPressing.value = true;
+            if (mentorSkipPressTimer.value) clearTimeout(mentorSkipPressTimer.value);
+            mentorSkipPressTimer.value = setTimeout(() => {
+                isMentorSkipPressing.value = false;
+                playSfx('click'); 
+                finishMentorDialogue();
+            }, 3000);
+        };
+
+        const cancelMentorSkipPress = () => {
+            isMentorSkipPressing.value = false;
+            if (mentorSkipPressTimer.value) {
+                clearTimeout(mentorSkipPressTimer.value);
+                mentorSkipPressTimer.value = null;
             }
         };
 
@@ -4708,6 +4728,7 @@ jpDebug commands:
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
             isMentorModalOpen, isMentorReplayOpen, isLevelJumpOpen, isAdvancedSettingsOpen, replaySpecificMentor, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
             displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,
+            isMentorSkipPressing, startMentorSkipPress, cancelMentorSkipPress,
             isMonsterImageError, handleMonsterImageError
         };
     }
