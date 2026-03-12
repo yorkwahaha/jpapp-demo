@@ -20,7 +20,7 @@
         })();
     </script>
     <script>
-        window.APP_VERSION = '26031300'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26031301'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
         document.addEventListener('gesturechange', function (e) { e.preventDefault(); });
     </script>
@@ -80,9 +80,13 @@
                     <!-- Monster Container -->
                     <div
                         class="absolute top-[20dvh] left-0 w-full h-[50dvh] flex items-center justify-center z-10 pointer-events-none">
-                        <div v-if="!monsterDead"
+                        <div v-if="!monsterTrulyDead"
                             class="flex flex-col items-center relative transition-all duration-300 pointer-events-auto"
-                            :class="{ hit: monsterHit }">
+                            :class="{ 
+                                hit: monsterHit, 
+                                'monster-death-anim': monsterIsDying && currentLevel % 5 !== 0,
+                                'boss-death-anim': monsterIsDying && currentLevel % 5 === 0
+                            }">
 
                             <!-- Monster Image -->
                             <div class="rounded-full flex items-center justify-center text-5xl mb-3 shadow-[0_0_30px_rgba(225,29,72,0.3)] ring-2 ring-rose-500/20"
@@ -91,12 +95,8 @@
                                     transform: 'scale(' + (monster.size || 1) + ')'
                                 }"
                                 :class="currentLevel % 5 === 0 ? 'monster-container-boss' : 'monster-container-normal'">
-                                <img v-if="monster.sprite && monster.sprite.includes('/') && !isMonsterImageError"
-                                    :src="monster.sprite" @error="handleMonsterImageError" alt="monster"
-                                    class="object-contain drop-shadow-2xl monster-breath"
-                                    :class="currentLevel % 5 === 0 ? 'monster-img-boss' : 'monster-img-normal'">
-                                <img v-else-if="monster.sprite && monster.sprite.includes('/') && isMonsterImageError"
-                                    src="assets/images/monsters/slime.png" alt="monster fallback"
+                                <img v-if="monster.sprite && monster.sprite.includes('/')"
+                                    :src="currentMonsterSprite" @error="handleMonsterImageError" alt="monster"
                                     class="object-contain drop-shadow-2xl monster-breath"
                                     :class="currentLevel % 5 === 0 ? 'monster-img-boss' : 'monster-img-normal'">
                                 <span v-else class="monster-breath inline-block">{{ monster.sprite || '👹' }}</span>
@@ -363,7 +363,7 @@
             </div>
 
             <!-- [L7] Result Overlay -->
-            <div v-if="monsterDead || playerDead"
+            <div v-if="monsterResultShown || playerDead"
                 class="absolute inset-0 z-[100] flex items-center justify-center result-screen-backdrop pointer-events-auto px-4">
                 <div
                     class="glass-panel p-8 rounded-3xl border border-white/20 shadow-[0_10px_50px_rgba(0,0,0,0.8)] flex flex-col items-center text-center w-full max-w-sm">
@@ -805,24 +805,46 @@
                 </div>
             </div>
 
-            <!-- Level Jump -->
-            <div v-if="isLevelJumpOpen" class="fixed inset-0 z-[5000] flex items-center justify-center p-4"
+            <!-- Level Jump (Redesigned as Mission Cards) -->
+            <div v-if="isLevelJumpOpen" class="fixed inset-0 z-[5000] flex items-center justify-center p-4 md:p-8"
                 @click.self="isLevelJumpOpen = false; resumeBattle();">
                 <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
-                <div class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[500px] h-full max-h-[70vh] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden">
+                <div class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[600px] h-full max-h-[80vh] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden">
                     <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4 flex-shrink-0">
-                        <h2 class="text-2xl font-black text-purple-400 tracking-[0.1em] drop-shadow-lg">關卡 <span class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2 uppercase">STAGES</span></h2>
+                        <h2 class="text-2xl font-black text-purple-400 tracking-[0.1em] drop-shadow-lg">關卡選擇 <span class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2 uppercase">STAGES</span></h2>
                         <button @click="isLevelJumpOpen = false; resumeBattle();"
                             class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
                     </div>
 
-                    <div class="flex-1 overflow-y-auto custom-scrollbar grid grid-cols-4 sm:grid-cols-5 gap-3 pr-1 pb-4 content-start">
-                        <button v-for="l in maxLevel" :key="'jump_'+l"
+                    <div class="flex-1 overflow-y-auto custom-scrollbar grid grid-cols-2 sm:grid-cols-3 gap-3 pr-1 pb-4 content-start">
+                        <div v-for="l in maxLevel" :key="'jump_'+l"
                             @click="isLevelJumpOpen = false; debugJumpToLevel(l)"
-                            class="aspect-square flex items-center justify-center rounded-2xl border transition-all duration-300 font-black text-xl shadow-md active:scale-90"
-                            :class="currentLevel === l ? 'bg-amber-500 border-amber-300 text-indigo-950 shadow-[0_0_20px_rgba(251,191,36,0.3)]' : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10 hover:border-white/20'">
-                            {{ l }}
-                        </button>
+                            class="relative group cursor-pointer overflow-hidden rounded-2xl border transition-all duration-300 active:scale-95 flex flex-col h-32"
+                            :class="currentLevel === l ? 'bg-amber-500/20 border-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.15)]' : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'">
+                            
+                            <!-- Card Header -->
+                            <div class="p-2.5 flex justify-between items-start border-b border-white/5 bg-black/10">
+                                <span class="text-[10px] font-black tracking-widest leading-none" :class="currentLevel === l ? 'text-amber-400' : 'text-slate-500'">STAGE {{ l }}</span>
+                                <span class="text-[8px] font-bold opacity-20 uppercase tracking-tighter truncate max-w-[60px]">{{ LEVEL_CONFIG[l]?.levelName || '未知區域' }}</span>
+                            </div>
+
+                            <!-- Card Body (Large Particle) -->
+                            <div class="flex-1 flex flex-col items-center justify-center p-2 relative overflow-hidden">
+                                <div class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none">
+                                    <span class="text-7xl font-black italic">{{ l }}</span>
+                                </div>
+                                <div class="text-3xl font-black transition-transform group-hover:scale-110 duration-300 drop-shadow-md"
+                                    :class="currentLevel === l ? 'text-amber-400' : 'text-amber-500/80'">
+                                    {{ LEVEL_CONFIG[l]?.focusParticle || '?' }}
+                                </div>
+                                <div class="text-[10px] font-bold text-slate-300/60 mt-0.5 tracking-wide text-center">
+                                    {{ LEVEL_CONFIG[l]?.focusLabel || '???' }}
+                                </div>
+                            </div>
+                            
+                            <!-- Selection Glow Indicator -->
+                            <div v-if="currentLevel === l" class="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-400"></div>
+                        </div>
                     </div>
 
                     <div class="flex justify-end pt-5 mt-3 border-t border-white/10 shrink-0">

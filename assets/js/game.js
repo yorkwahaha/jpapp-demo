@@ -1039,7 +1039,7 @@ jpDebug commands:
         const VOCAB = ref(null);
         const maxLevel = ref(35);
 
-        const APP_VERSION = window.APP_VERSION || "26031300";
+        const APP_VERSION = window.APP_VERSION || "26031301";
         const appVersion = ref(APP_VERSION);
         const VFX_ENHANCED = true;
 
@@ -1669,6 +1669,10 @@ jpDebug commands:
         const animatedExp = ref(0);
         const animatedGold = ref(0);
         const monsterHit = ref(false);
+        const monsterHitImageFailed = ref(false); // 標記目前怪物是否缺乏 *2 受擊圖
+        const monsterIsDying = ref(false); // 正在播放死亡動畫
+        const monsterTrulyDead = ref(false); // 動畫結束，真正從畫面移除
+        const monsterResultShown = ref(false); // 結算視窗是否顯示
         const screenShake = ref(false);
         const bossScreenShake = ref(false);
         const flashOverlay = ref(false);
@@ -2117,6 +2121,8 @@ jpDebug commands:
             click: 'assets/audio/sfx_click.mp3',
             damage: 'assets/audio/damage.mp3',
             damage2: 'assets/audio/damage2.mp3',
+            damage3: 'assets/audio/damage3.mp3',
+            damage4: 'assets/audio/damage4.mp3',
             fanfare: 'assets/audio/fanfare.mp3',
             pop: 'assets/audio/pop.mp3',
             win: 'assets/audio/win.mp3',
@@ -2497,19 +2503,122 @@ jpDebug commands:
             }
         };
 
-        // 預防 Boss claw 重複播出的鎖定狀態
-        let _isBossClawPlaying = false;
+        // 預防 Boss 特殊攻擊重複播出的鎖定狀態
+        let _isBossSpecialAttackPlaying = false;
+
+        const playBossVineAttackVfx = () => {
+            if (_isBossSpecialAttackPlaying) return;
+            _isBossSpecialAttackPlaying = true;
+
+            const vfxLayer = getVfxLayer();
+            if (!vfxLayer) {
+                _isBossSpecialAttackPlaying = false;
+                return;
+            }
+
+            // 隨機分布藤蔓位置與方向
+            const group = document.createElement('div');
+            group.className = 'boss-vine-group';
+
+            // 垂直藤蔓
+            [20, 40, 60, 80].forEach((pos, i) => {
+                const vine = document.createElement('div');
+                vine.className = `boss-vfx-vine boss-vine-whip-${(i % 3) + 1}`;
+                vine.style.left = `${pos}%`;
+                group.appendChild(vine);
+            });
+
+            // 橫向藤蔓 (左右交錯)
+            [30, 70].forEach((top, i) => {
+                const vine = document.createElement('div');
+                vine.className = `boss-vfx-vine ${i % 2 === 0 ? 'boss-vine-whip-side-left' : 'boss-vine-whip-side-right'}`;
+                vine.style.top = `${top}%`;
+                vine.style.left = i % 2 === 0 ? '-10%' : '110%';
+                group.appendChild(vine);
+            });
+
+            vfxLayer.appendChild(group);
+
+            // 震動與閃光放在藤蔓出現後一點點
+            setTimeout(() => {
+                bossScreenShake.value = true;
+                setTimeout(() => { bossScreenShake.value = false; }, 400);
+                
+                const flash = document.createElement('div');
+                flash.className = 'boss-vfx-flash';
+                vfxLayer.appendChild(flash);
+                setTimeout(() => { if (vfxLayer.contains(flash)) vfxLayer.removeChild(flash); }, 800);
+            }, 100);
+
+            setTimeout(() => {
+                if (vfxLayer.contains(group)) vfxLayer.removeChild(group);
+                _isBossSpecialAttackPlaying = false;
+            }, 1200);
+        };
+
+        const playBossSmashAttackVfx = () => {
+            if (_isBossSpecialAttackPlaying) return;
+            _isBossSpecialAttackPlaying = true;
+
+            const vfxLayer = getVfxLayer();
+            if (!vfxLayer) {
+                _isBossSpecialAttackPlaying = false;
+                return;
+            }
+
+            // 修正：使用 group 容器確保特效置中，而非相對於全螢幕左上角
+            const group = document.createElement('div');
+            group.className = 'boss-smash-group';
+            vfxLayer.appendChild(group);
+
+            // 1. 預備動作 (Anticipation)：畫面變暗
+            const anti = document.createElement('div');
+            anti.className = 'boss-vfx-anticipation';
+            vfxLayer.appendChild(anti);
+
+            // 2. 延遲 400ms 後發動重擊
+            setTimeout(() => {
+                if (vfxLayer.contains(anti)) vfxLayer.removeChild(anti);
+
+                // 強力震動
+                bossScreenShake.value = true;
+                setTimeout(() => { bossScreenShake.value = false; }, 600);
+
+                // 核心視覺特效 - 改為加在 group 內
+                const flash = document.createElement('div');
+                flash.className = 'boss-vfx-flash-heavy';
+                group.appendChild(flash);
+
+                const crack = document.createElement('div');
+                crack.className = 'boss-vfx-crack';
+                group.appendChild(crack);
+
+                const shockwave = document.createElement('div');
+                shockwave.className = 'boss-vfx-shockwave';
+                group.appendChild(shockwave);
+
+                // 3. 餘震 (Aftershock)
+                const residual = document.createElement('div');
+                residual.className = 'boss-vfx-residual';
+                group.appendChild(residual);
+
+                setTimeout(() => {
+                    if (vfxLayer.contains(group)) vfxLayer.removeChild(group);
+                    _isBossSpecialAttackPlaying = false;
+                }, 1000);
+            }, 400);
+        };
 
         const playMonsterClawAttackVfx = () => {
-            if (_isBossClawPlaying) return;
-            _isBossClawPlaying = true;
+            if (_isBossSpecialAttackPlaying) return;
+            _isBossSpecialAttackPlaying = true;
 
             bossScreenShake.value = true;
             setTimeout(() => { bossScreenShake.value = false; }, 400);
 
             const vfxLayer = getVfxLayer();
             if (!vfxLayer) {
-                _isBossClawPlaying = false;
+                _isBossSpecialAttackPlaying = false;
                 return;
             }
 
@@ -2549,7 +2658,7 @@ jpDebug commands:
                 if (vfxLayer.contains(flash)) vfxLayer.removeChild(flash);
                 if (vfxLayer.contains(impact)) vfxLayer.removeChild(impact);
                 if (vfxLayer.contains(group)) vfxLayer.removeChild(group);
-                _isBossClawPlaying = false;
+                _isBossSpecialAttackPlaying = false;
             }, 1200);
         };
 
@@ -2586,8 +2695,17 @@ jpDebug commands:
             } else {
                 const isBoss = (currentLevel.value % 5 === 0);
                 if (isBoss) {
-                    playMonsterClawAttackVfx();
-                    playSfx('damage2');
+                    if (currentLevel.value === 5) {
+                        playBossVineAttackVfx();
+                        playSfx('damage4');
+                    } else if (currentLevel.value === 15) {
+                        playBossSmashAttackVfx();
+                        playSfx('damage3');
+                    } else {
+                        // 預設 (含 L10) 使用爪痕
+                        playMonsterClawAttackVfx();
+                        playSfx('damage2');
+                    }
                 } else {
                     playerBlink.value = true;
                     setTimeout(() => { playerBlink.value = false; }, 500);
@@ -2832,8 +2950,10 @@ jpDebug commands:
             initAudioCtx();
             if (!audioInited.value) initAudio();
             if (needsUserGestureToResumeBgm.value) { ensureBgmPlaying('potion'); needsUserGestureToResumeBgm.value = false; }
-            playSfx('potion');
+            
             if (inventory.value.potions <= 0 || player.value.hp >= player.value.maxHp) return;
+            
+            playSfx('potion');
             inventory.value.potions--;
             player.value.hp = Math.min(player.value.maxHp, player.value.hp + POTION_HP);
             pushBattleLog(`喝了藥水，回復 ${POTION_HP} 點 HP！`, 'heal');
@@ -2843,8 +2963,10 @@ jpDebug commands:
             initAudioCtx();
             if (!audioInited.value) initAudio();
             if (needsUserGestureToResumeBgm.value) { ensureBgmPlaying('potion'); needsUserGestureToResumeBgm.value = false; }
-            playSfx('potion');
+            
             if (inventory.value.speedPotions <= 0 || evasionBuffAttacksLeft.value > 0 || playerDead.value || monsterDead.value) return;
+            
+            playSfx('potion');
             inventory.value.speedPotions--;
             evasionBuffAttacksLeft.value = 6;
             setSpeedStatus(60000);
@@ -3555,6 +3677,10 @@ jpDebug commands:
             if (pauseTimerId) { clearInterval(pauseTimerId); pauseTimerId = null; }
 
             isMonsterImageError.value = false;
+            monsterHitImageFailed.value = false;
+            monsterIsDying.value = false;
+            monsterTrulyDead.value = false;
+            monsterResultShown.value = false;
             isMistakesOpen.value = false;
             isMenuOpen.value = false;
             stageLog.value = [];
@@ -4102,7 +4228,7 @@ jpDebug commands:
                         pushBattleLog(`攻擊被閃避了！沒造成傷害！`, 'info');
                     } else {
                         monsterHit.value = true;
-                        setTimeout(() => { monsterHit.value = false; }, 250);
+                        setTimeout(() => { monsterHit.value = false; }, 500); // 延長至 0.5s
 
                         // 正式版：只有怪物將在 2 秒內出手時，命中才追加 1 秒硬直
                         if (timeLeft.value < 2.0) {
@@ -4247,15 +4373,30 @@ jpDebug commands:
             pushBattleLog(`擊敗怪物！獲得 ${earnedExp.value} EXP 與 ${earnedGold.value} 金幣！`, 'buff');
             clearTimer();
 
-            stopAllAudio();
-            playSfx('win');
-            setHeroAvatar('win');
-            setTimeout(() => { playSfx('fanfare'); }, 2000);
+            const isBoss = currentLevel.value % 5 === 0;
+            const deathDuration = isBoss ? 4000 : 1000;
 
-            // 延遲顯示「下一關」按鈕
+            monsterIsDying.value = true;
             setTimeout(() => {
-                isNextBtnVisible.value = true;
-            }, 8000);
+                monsterTrulyDead.value = true;
+            }, deathDuration);
+
+            // 🌟 延後所有獎勵與結算介面的顯示，直到死亡動畫結束
+            setTimeout(() => {
+                monsterResultShown.value = true;
+                stopAllAudio();
+                playSfx('win');
+                setHeroAvatar('win');
+                setTimeout(() => { playSfx('fanfare'); }, 2000);
+
+                // 延遲顯示「下一關」按鈕
+                setTimeout(() => {
+                    isNextBtnVisible.value = true;
+                }, 2000);
+
+                // 數值增加動畫啟動
+                requestAnimationFrame(animateRewards);
+            }, deathDuration);
 
             // 數值增加動畫
             const expTarget = earnedExp.value;
@@ -4299,6 +4440,11 @@ jpDebug commands:
         });
 
         const handleMonsterImageError = () => {
+            // 如果是在嘗試播放受擊圖 (*2) 時出錯，則標記該怪物不支援受擊圖並恢復原圖
+            if (monsterHit.value && !monsterHitImageFailed.value) {
+                monsterHitImageFailed.value = true;
+                return;
+            }
             isMonsterImageError.value = true;
         };
 
@@ -4306,6 +4452,17 @@ jpDebug commands:
             const ans = currentQuestion.value.answers[blankIndex];
             return Array.isArray(ans) ? ans[0] : ans;
         };
+
+        const currentMonsterSprite = computed(() => {
+            if (!monster.value || !monster.value.sprite) return '👹';
+            if (isMonsterImageError.value) return 'assets/images/monsters/slime.png';
+            
+            // 只有在受擊中、非錯誤狀態、且該怪物尚未被標記為缺乏 *2 圖時，嘗試切換
+            if (monsterHit.value && !monsterHitImageFailed.value && monster.value.sprite.includes('.')) {
+                return monster.value.sprite.replace(/(\.[^.]+)$/, '2$1');
+            }
+            return monster.value.sprite;
+        });
 
         const selectChoice = (opt) => {
             initAudioCtx();
@@ -4729,7 +4886,7 @@ jpDebug commands:
             isMentorModalOpen, isMentorReplayOpen, isLevelJumpOpen, isAdvancedSettingsOpen, replaySpecificMentor, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
             displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,
             isMentorSkipPressing, startMentorSkipPress, cancelMentorSkipPress,
-            isMonsterImageError, handleMonsterImageError
+            isMonsterImageError, handleMonsterImageError, currentMonsterSprite, monsterIsDying, monsterTrulyDead, monsterResultShown
         };
     }
 }).mount('#app');
