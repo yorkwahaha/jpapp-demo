@@ -3117,6 +3117,34 @@ body.lock-scroll {
     }
 }
 
+/* HUD Row Stabilization */
+.hud-interactive-rows {
+    display: flex;
+    flex-direction: column;
+    /* Remove rigid height lock; use min-height for stability */
+    min-height: 50px; 
+    transition: height 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Base Question Card Glassmorphism - Align with Hero HUD */
+.question-card.glass-panel {
+    background: rgba(15, 23, 42, 0.15) !important;
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Match Mode Toggle height/style with other UI elements */
+.hud-inner-wrap .h-7.md\:h-8 {
+    border-radius: 10px;
+    font-size: 10px !important;
+}
+
+/* Ensure Row 1 behaves consistently */
+#hud .w-full.px-2.py-0 {
+    flex-shrink: 0;
+}
+
 /* Base HUD internal for shake abstraction */
 .hud-inner-wrap {
     width: 100%;
@@ -3137,6 +3165,7 @@ body.lock-scroll {
     .hero-status-pill {
         height: 20px !important;
         font-size: 11px !important;
+        flex-shrink: 0 !important;
     }
     
     #heroStatusBar {
@@ -3151,5 +3180,24 @@ body.lock-scroll {
     /* Center zone (HP/SP) gets more breath */
     #hud .md\:max-w-md {
         max-width: 480px !important;
+    }
+
+    /* Ensure center modals on desktops as requested */
+    .modal-overlay {
+        align-items: center !important;
+        padding-top: 0 !important;
+    }
+
+    .modal-panel {
+        margin: auto !important;
+        align-self: center !important;
+    }
+
+    /* 導師面板位置微調：確保開場流程入口清晰 */
+    .mentor-overlay {
+        align-items: center !important; /* 回歸置中或微調 */
+    }
+    .mentor-panel {
+        margin: auto !important;
     }
 }

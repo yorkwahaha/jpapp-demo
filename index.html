@@ -20,7 +20,7 @@
         })();
     </script>
     <script>
-        window.APP_VERSION = '26031301'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26031404'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
         document.addEventListener('gesturechange', function (e) { e.preventDefault(); });
     </script>
@@ -29,12 +29,12 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/styles.css?v=26031301">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26031403">
 
     <script>
         (function () {
             // 老闆專業的破快取機制 - 使用全域單一版本號
-            const v = window.APP_VERSION || '26031301';
+            const v = window.APP_VERSION || '26031404';
 
             // 1. 載入資料檔
             const s1 = document.createElement('script');
@@ -234,12 +234,12 @@
             </div>
 
             <!-- [L5] Bottom HUD Console -->
-            <div id="hud" v-if="!isFinished"
+                        <div id="hud" v-if="!isFinished"
                 class="fixed md:absolute bottom-0 left-0 w-full md:w-[60%] md:min-w-[400px] md:max-w-[700px] md:left-1/2 md:-translate-x-1/2 z-50 glass-panel border-t md:border-x border-white/20 shadow-[0_-15px_40px_rgba(0,0,0,0.5)] flex flex-col justify-start !p-0 !min-h-0 h-auto overflow-visible"
-                style="background: rgba(15, 23, 42, 0.15); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-top-left-radius: 20px; border-top-right-radius: 20px; padding-bottom: 2px;">
+                style="background: rgba(15, 23, 42, 0.15); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-top-left-radius: 20px; border-top-right-radius: 20px; padding-bottom: env(safe-area-inset-bottom, 2px);">
 
                 <div class="hud-inner-wrap" :class="{ 'hud-shake': screenShake }">
-                    <div class="h-full relative overflow-visible">
+                    <div class="h-full relative overflow-visible flex flex-col hud-interactive-rows" :class="{ 'hud-tap-mode': answerMode === 'tap' }">
 
                 <!-- Hint Overlay anchored above HUD -->
                 <div
@@ -247,35 +247,25 @@
                     {{ answerMode === 'flick' ? 'FLICK TO ATTACK' : 'TAP TO ATTACK' }}
                 </div>
 
-                <div
-                    class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none z-[-1]">
-                </div>
-
-                <!-- L5.1 Answer Row -->
-                <div class="w-full px-2 py-0" style="height: 60px;">
+                <!-- Row 1: Answers (Compact height) -->
+                <div class="w-full px-2 py-0 flex-none" style="height: 48px;">
                     <div class="h-full relative overflow-visible">
                         <div v-if="answerMode === 'tap' && !hasSubmitted"
-                            class="tap-mode-controls w-full h-full flex flex-col md:flex-row items-center justify-center gap-1 sm:gap-1.5 md:gap-3 py-1">
+                            class="tap-mode-controls w-full h-full flex items-center justify-center gap-1 sm:gap-2 pt-1">
                             <div class="flex w-full justify-center"
                                 :class="currentQuestion?.choices?.length > 3 ? 'gap-1' : 'gap-2'">
                                 <button v-for="(opt, i) in currentQuestion.choices" :key="'tap_' + opt + '_' + i"
                                     @click="selectChoice(opt)"
-                                    class="flex-1 h-[28px] md:h-[32px] rounded-2xl border border-amber-400/50 bg-slate-800/35 outline-none hover:bg-amber-400/30 active:bg-amber-500/60 active:scale-95 transition-all shadow-[inset_0_2px_10px_rgba(255,255,255,0.1)] relative overflow-hidden group"
+                                    class="flex-1 h-[34px] rounded-xl border border-amber-400/50 bg-slate-800/60 outline-none hover:bg-amber-400/30 active:bg-amber-500/60 active:scale-95 transition-all shadow-lg relative overflow-hidden group"
                                     :class="getChoiceBtnClass(opt)">
                                     <div
-                                        class="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                                        class="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent opacity-30 group-hover:opacity-50 transition-opacity">
                                     </div>
                                     <span
-                                        class="relative z-10 text-[18px] md:text-[20px] font-bold text-amber-100 drop-shadow-lg leading-none">{{
+                                        class="relative z-10 text-[20px] md:text-[22px] font-black text-amber-50 shadow-sm leading-none">{{
                                         opt }}</span>
                                 </button>
                             </div>
-
-                            <button @click="checkAnswer" :disabled="hasSubmitted || (isChoiceMode && !userAnswers[0])"
-                                class="tap-attack-btn w-[40%] md:w-32 max-w-[140px] h-[32px] md:h-[36px] rounded-2xl bg-gradient-to-r from-amber-600 to-amber-500 border border-amber-300 shadow-[0_4px_10px_rgba(0,0,0,0.4)] text-slate-900 text-[11px] font-black tracking-widest transition-transform active:scale-95 disabled:opacity-50 disabled:grayscale hover:brightness-110 flex justify-center items-center leading-none"
-                                :class="(isChoiceMode && !userAnswers[0]) ? 'cursor-not-allowed opacity-50' : ''">
-                                攻擊 ATTACK
-                            </button>
                         </div>
 
                         <div v-if="answerMode === 'flick' && !hasSubmitted" id="flickLayer"
@@ -292,7 +282,7 @@
                             </button>
                         </div>
 
-                        <!-- Submitted Feedback Overlay -->
+                        <!-- Feedback Overlay -->
                         <div v-show="hasSubmitted"
                             class="absolute inset-0 w-full h-full flex items-center justify-center gap-4 z-20 pointer-events-none">
                             <div class="flex items-center gap-3 px-6 py-2 rounded-full border shadow-[0_0_20px_rgba(0,0,0,0.8)] pointer-events-auto"
@@ -311,82 +301,80 @@
                     </div>
                 </div>
 
-                <!-- L5.2 Hero Status & Config -->
-                <div class="w-full px-2 pb-0.5 pt-0.5 flex-none flex flex-col justify-center border-t border-white/10">
-                    <div class="flex flex-row md:flex-nowrap items-center gap-1 w-full max-w-lg mx-auto">
-                        <!-- Left -->
-                        <div
-                            class="flex-shrink-0 flex flex-col md:flex-row gap-0.5 md:gap-3 items-start md:items-center w-14 md:w-auto md:flex-1 md:justify-start">
-                            <button @click="answerMode = answerMode === 'flick' ? 'tap' : 'flick'"
-                                class="px-1 py-0.5 border border-slate-500/50 bg-slate-800/80 rounded flex items-center justify-center shadow-inner hover:bg-slate-700 transition-colors w-full md:w-16">
-                                <span
-                                    class="text-[12px] font-bold text-slate-300 tracking-tighter uppercase leading-none">{{
-                                    answerMode === 'flick' ? 'FLICK' : 'TAP' }}</span>
+                <!-- Row 2: Attack Button (Compacted) -->
+                <div v-if="answerMode === 'tap'" class="w-full px-2 py-0.5 flex justify-center flex-none" style="height: 38px;">
+                    <button v-show="!hasSubmitted" @click="checkAnswer" :disabled="hasSubmitted || (isChoiceMode && !userAnswers[0])"
+                        class="w-[60%] max-w-[320px] h-[32px] md:h-[36px] rounded-2xl bg-gradient-to-r from-amber-600 to-amber-500 border border-amber-300 shadow-xl text-slate-900 text-[12px] font-black tracking-widest transition-transform active:scale-95 disabled:opacity-50 disabled:grayscale hover:brightness-110 flex justify-center items-center leading-none"
+                        :class="(isChoiceMode && !userAnswers[0]) ? 'cursor-not-allowed opacity-50' : ''">
+                        攻擊 ATTACK
+                    </button>
+                </div>
+
+                <!-- Row 3: Status Info -->
+                <div class="w-full px-2 pb-0.5 pt-0.5 flex-none border-t border-white/10 bg-black/5">
+                    <div class="flex flex-row items-center gap-1 w-full max-w-lg md:max-w-2xl mx-auto">
+                        <!-- Left: Mode Toggle (Vertical Dual Switch) -->
+                        <div class="flex-shrink-0 flex flex-col gap-1 items-center w-auto md:flex-none">
+                            <button @click="answerMode = 'flick'"
+                                class="w-14 md:w-16 h-5 md:h-6 rounded-sm flex items-center justify-center transition-all shadow-md border border-white/10"
+                                :class="answerMode === 'flick' ? 'bg-amber-400 text-slate-900 border-amber-200' : 'bg-slate-800 text-slate-500 opacity-60'">
+                                <span class="text-[9px] font-black tracking-tighter uppercase leading-none">FLICK</span>
                             </button>
-                            <div class="px-1 py-0 text-[13px] text-amber-400 font-mono text-center w-full md:w-auto leading-none shrink-0"
-                                style="white-space: nowrap;">💰{{ player.gold }}</div>
+                            <button @click="answerMode = 'tap'"
+                                class="w-14 md:w-16 h-5 md:h-6 rounded-sm flex items-center justify-center transition-all shadow-md border border-white/10"
+                                :class="answerMode === 'tap' ? 'bg-amber-400 text-slate-900 border-amber-200' : 'bg-slate-800 text-slate-500 opacity-60'">
+                                <span class="text-[9px] font-black tracking-tighter uppercase leading-none">TAP</span>
+                            </button>
                         </div>
 
-                        <!-- Center -->
-                        <div class="flex-1 flex flex-col justify-center gap-1 min-w-0 md:max-w-md md:px-4">
-                            <div class="w-full flex items-center gap-1.5">
-                                <span
-                                    class="text-[13px] font-black text-emerald-400 w-5 tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">HP</span>
-                                <div
-                                    class="flex-1 h-1.5 bg-slate-900 rounded-full border border-slate-700/80 overflow-hidden shadow-inner">
-                                    <div class="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)] transition-all duration-300"
+                        <!-- Center: HP/SP (Compacted) -->
+                        <div class="flex-1 flex flex-col justify-center gap-0.5 md:gap-1 max-w-[160px] md:max-w-xs mx-auto">
+                            <div class="w-full flex items-center gap-1">
+                                <span class="text-[10px] md:text-[11px] font-black text-emerald-400 w-5 tracking-tighter drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">HP</span>
+                                <div class="flex-1 h-1 bg-slate-950 rounded-full border border-slate-700/60 overflow-hidden shadow-inner">
+                                    <div class="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-300"
                                         :class="[{ 'bg-rose-500 from-rose-600 to-rose-400': hpBarDanger, 'animate-pulse': playerBlink }]"
                                         :style="{ width: (player.hp / player.maxHp * 100) + '%' }"></div>
                                 </div>
-                                <span
-                                    class="text-[13px] font-mono font-bold text-slate-200 w-8 text-right drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+                                <span class="text-[10px] font-mono font-bold text-slate-200 w-6 text-right drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
                                     {{ player.hp }}
                                 </span>
                             </div>
-
-                            <div class="w-full flex items-center gap-1.5">
-                                <span
-                                    class="text-[13px] font-black text-cyan-400 w-5 tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">SP</span>
-                                <div
-                                    class="flex-1 h-1.5 bg-slate-900 rounded-full border border-slate-700/80 overflow-hidden shadow-inner">
-                                    <div class="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.5)] transition-all duration-300"
+                            <div class="w-full flex items-center gap-1">
+                                <span class="text-[10px] md:text-[11px] font-black text-cyan-400 w-5 tracking-tighter drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">SP</span>
+                                <div class="flex-1 h-1 bg-slate-950 rounded-full border border-slate-700/60 overflow-hidden shadow-inner">
+                                    <div class="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 transition-all duration-300"
                                         style="width: 100%;"></div>
                                 </div>
-                                <span
-                                    class="text-[13px] font-mono font-bold text-slate-200 w-8 text-right drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
-                                    MAX
-                                </span>
+                                <span class="text-[10px] font-mono font-bold text-slate-200 w-6 text-right drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">MAX</span>
                             </div>
-
-                            <div id="heroStatusBar" class="w-full flex justify-start gap-1 h-3 items-center pl-2"></div>
                         </div>
 
-                        <!-- Right -->
-                        <div
-                            class="flex-shrink-0 flex flex-nowrap items-center justify-end gap-1 w-auto md:flex-1 md:justify-end">
+                        <!-- Right: Icons (Enlarged) -->
+                        <div class="flex-shrink-0 flex flex-nowrap items-center justify-end gap-2 md:gap-3 w-auto md:flex-none">
+                            <button @click="isInventoryOpen = true; pauseBattle();"
+                                class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-800/80 border border-slate-600 flex items-center justify-center text-slate-300 shadow-inner hover:bg-slate-600 transition-all active:scale-95 group">
+                                <span class="text-[15px] sm:text-[17px] group-hover:scale-110">🎒</span>
+                            </button>
                             <button @click="isSkillOpen = true; pauseBattle();"
-                                class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-emerald-700/80 border border-emerald-600 flex items-center justify-center text-emerald-200 shadow-[inset_0_2px_4px_rgba(255,255,255,0.05)] hover:bg-emerald-600 hover:text-white hover:border-emerald-400 transition-all active:scale-95 group relative">
-                                <span
-                                    class="text-[10px] sm:text-[11px] group-hover:scale-110 transition-transform flex items-center justify-center">📖</span>
+                                class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-700/80 border border-emerald-600 flex items-center justify-center text-emerald-200 shadow-inner hover:bg-emerald-600 transition-all active:scale-95 group">
+                                <span class="text-[15px] sm:text-[17px] group-hover:scale-110 flex items-center justify-center">📖</span>
                             </button>
                             <button @click="usePotion()"
-                                class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-emerald-700/80 border border-emerald-600 flex items-center justify-center text-emerald-200 shadow-[inset_0_2px_4px_rgba(255,255,255,0.05)] hover:bg-emerald-600 hover:text-white hover:border-emerald-400 transition-all active:scale-95 group relative">
-                                <span class="text-[10px] sm:text-[11px] group-hover:scale-110 transition-transform">💊{{
-                                    inventory.potions }}</span>
+                                class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-700/80 border border-emerald-600 flex items-center justify-center text-emerald-200 shadow-inner hover:bg-emerald-600 transition-all active:scale-95 group">
+                                <span class="text-[15px] sm:text-[17px] group-hover:scale-110">💊</span>
                             </button>
                             <button @click="isMenuOpen = true; pauseBattle();"
-                                class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-slate-800/80 border border-slate-600 flex items-center justify-center text-slate-300 shadow-[inset_0_2px_4px_rgba(255,255,255,0.05)] hover:bg-slate-600 hover:text-white transition-all active:scale-95 group">
-                                <span
-                                    class="text-[10px] sm:text-[11px] group-hover:scale-110 transition-transform">⚙️</span>
+                                class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-800/80 border border-slate-600 flex items-center justify-center text-slate-300 shadow-inner hover:bg-slate-600 transition-all active:scale-95 group">
+                                <span class="text-[15px] sm:text-[17px] group-hover:scale-110">⚙️</span>
                             </button>
                         </div>
                     </div>
                 </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-
-            <!-- [L7] Result Overlay -->
+<!-- [L7] Result Overlay -->
             <div v-if="monsterResultShown || playerDead"
                 class="absolute inset-0 z-[100] flex items-center justify-center result-screen-backdrop pointer-events-auto px-4">
                 <div
@@ -445,9 +433,8 @@
             </div>
 
             <!-- Mentor Modal -->
-            <template v-if="isMentorModalOpen">
-                <div class="mentor-overlay" style="z-index: 5000;"></div>
-                <div class="mentor-panel shadow-2xl" style="z-index: 5001;">
+            <div v-if="isMentorModalOpen" class="mentor-overlay" style="z-index: 5000;">
+                <div class="mentor-panel shadow-2xl">
                     <div class="mentor-header">
                         <span class="mentor-name">傳說中的導師</span>
                         <div class="mentor-page-indicator" v-if="mentorPages.length > 1">
@@ -488,7 +475,7 @@
                         </button>
                     </div>
                 </div>
-            </template>
+            </div>
 
             <!-- Skill Unlock Modal -->
             <div v-if="isSkillUnlockModalOpen" class="modal-overlay" @click.self="isSkillUnlockModalOpen = false"
@@ -542,7 +529,7 @@
             </div>
 
             <!-- Skill Panel -->
-            <div v-if="isSkillOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+            <div v-if="isSkillOpen" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
                 style="background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px);">
                 <div
                     class="glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-lg shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col max-h-[90vh]">
@@ -581,7 +568,7 @@
             </div>
 
             <!-- Codex -->
-            <div v-if="isCodexOpen" class="fixed inset-0 z-[2000] flex items-center justify-center p-4 md:p-8"
+            <div v-if="isCodexOpen" class="modal-overlay fixed inset-0 z-[2000] flex items-center justify-center p-4 md:p-8"
                 @click.self="isCodexOpen = false; if (!isSkillOpen) resumeBattle();">
                 <div class="absolute inset-0 bg-slate-950/20 backdrop-blur-md pointer-events-none"></div>
                 <div
@@ -632,7 +619,7 @@
             </div>
 
             <!-- Menu -->
-            <div v-if="isMenuOpen" class="fixed inset-0 z-[5000] flex items-center justify-center p-4"
+            <div v-if="isMenuOpen" class="modal-overlay fixed inset-0 z-[5000] flex items-center justify-center p-4"
                 @click.self="isMenuOpen = false; resumeBattle();">
                 <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
                 <div class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[400px] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col">
@@ -707,7 +694,7 @@
             </div>
 
             <!-- Advanced Settings -->
-            <div v-if="isAdvancedSettingsOpen" class="fixed inset-0 z-[5000] flex items-center justify-center p-4"
+            <div v-if="isAdvancedSettingsOpen" class="modal-overlay fixed inset-0 z-[5000] flex items-center justify-center p-4"
                 @click.self="isAdvancedSettingsOpen = false; resumeBattle();">
                 <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
                 <div class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[400px] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col">

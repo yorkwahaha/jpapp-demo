@@ -1039,7 +1039,7 @@ jpDebug commands:
         const VOCAB = ref(null);
         const maxLevel = ref(35);
 
-        const APP_VERSION = window.APP_VERSION || "26031301";
+        const APP_VERSION = window.APP_VERSION || "26031404";
         const appVersion = ref(APP_VERSION);
         const VFX_ENHANCED = true;
 
