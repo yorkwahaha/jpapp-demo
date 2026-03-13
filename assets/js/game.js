@@ -4374,56 +4374,64 @@ jpDebug commands:
             clearTimer();
 
             const isBoss = currentLevel.value % 5 === 0;
-            const deathDuration = isBoss ? 4000 : 1000;
+            // 🟢 26031301 Optimized: 死亡演出長度 (Boss 5.5s / 一般固定 2.0s)
+            const deathDuration = isBoss ? 5500 : 2000; 
 
             monsterIsDying.value = true;
+            
+            // 🌟 第一階段：等待死亡演出完整播完
             setTimeout(() => {
                 monsterTrulyDead.value = true;
-            }, deathDuration);
-
-            // 🌟 延後所有獎勵與結算介面的顯示，直到死亡動畫結束
-            setTimeout(() => {
                 monsterResultShown.value = true;
+                
                 stopAllAudio();
-                playSfx('win');
+                if (isBoss) {
+                    playSfx('bossClear');
+                } else {
+                    playSfx('win');
+                }
                 setHeroAvatar('win');
-                setTimeout(() => { playSfx('fanfare'); }, 2000);
+                
+                // 🌟 第二階段：死亡演出結束後，才開始數值遞增動畫
+                setTimeout(() => { 
+                    playSfx('fanfare'); 
+                    startTallySequence();
+                }, 800);
 
-                // 延遲顯示「下一關」按鈕
-                setTimeout(() => {
-                    isNextBtnVisible.value = true;
-                }, 2000);
-
-                // 數值增加動畫啟動
-                requestAnimationFrame(animateRewards);
             }, deathDuration);
 
-            // 數值增加動畫
-            const expTarget = earnedExp.value;
-            const goldTarget = earnedGold.value;
-            
-            // 計算動畫時長：以較大值為基準，目標速度約每秒 30 單位
-            const maxUnits = Math.max(expTarget, goldTarget);
-            let calculatedDuration = (maxUnits / 30) * 1000;
-            // 設定上限 2.0s，下限 0.6s 確保視覺銜接
-            const duration = Math.min(Math.max(calculatedDuration, 600), 2000);
-            
-            const startTime = Date.now();
+            // 拆分出數字遞增邏輯，確保在正確時機點火
+            const startTallySequence = () => {
+                const expTarget = earnedExp.value;
+                const goldTarget = earnedGold.value;
+                const maxUnits = Math.max(expTarget, goldTarget);
+                let calculatedDuration = (maxUnits / 30) * 1000;
+                const duration = Math.min(Math.max(calculatedDuration, 800), 2000);
+                
+                const startTime = Date.now();
 
-            const animateRewards = () => {
-                const elapsed = Date.now() - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                animatedExp.value = Math.floor(expTarget * progress);
-                animatedGold.value = Math.floor(goldTarget * progress);
-                if (progress < 1) {
-                    requestAnimationFrame(animateRewards);
-                } else {
-                    animatedExp.value = expTarget;
-                    animatedGold.value = goldTarget;
-                }
+                const animateRewards = () => {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    animatedExp.value = Math.floor(expTarget * progress);
+                    animatedGold.value = Math.floor(goldTarget * progress);
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animateRewards);
+                    } else {
+                        // 🌟 第三階段：遞增完成後，才顯示 Next 鈕
+                        animatedExp.value = expTarget;
+                        animatedGold.value = goldTarget;
+                        setTimeout(() => {
+                            isNextBtnVisible.value = true;
+                        }, 300);
+                    }
+                };
+                requestAnimationFrame(animateRewards);
             };
-            requestAnimationFrame(animateRewards);
         };
+
+
 
         const getInputStyle = (idx) => {
             if (!hasSubmitted.value) return '';

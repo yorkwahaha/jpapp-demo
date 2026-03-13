@@ -29,7 +29,26 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/styles.css?v=26031001">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26031301">
+
+    <script>
+        (function () {
+            // 老闆專業的破快取機制 - 使用全域單一版本號
+            const v = window.APP_VERSION || '26031301';
+
+            // 1. 載入資料檔
+            const s1 = document.createElement('script');
+            s1.src = 'assets/data/earlyGamePools.v1.js?v=' + v;
+            s1.async = false;
+            document.head.appendChild(s1);
+
+            // 2. 載入遊戲主程式
+            const s2 = document.createElement('script');
+            s2.src = 'assets/js/game.js?v=' + v;
+            s2.async = false;
+            document.head.appendChild(s2);
+        })();
+    </script>
 </head>
 
 <body class="">
@@ -215,13 +234,16 @@
             </div>
 
             <!-- [L5] Bottom HUD Console -->
-            <div id="hud" v-if="!isFinished" :class="{ 'hud-shake': screenShake }"
-                class="fixed md:absolute bottom-0 left-0 w-full md:w-[35%] md:min-w-[380px] md:max-w-[440px] md:left-1/2 md:-translate-x-1/2 z-50 glass-panel border-t md:border-x border-white/20 shadow-[0_-15px_40px_rgba(0,0,0,0.5)] flex flex-col justify-start !p-0 !min-h-0 h-auto overflow-visible"
+            <div id="hud" v-if="!isFinished"
+                class="fixed md:absolute bottom-0 left-0 w-full md:w-[60%] md:min-w-[400px] md:max-w-[700px] md:left-1/2 md:-translate-x-1/2 z-50 glass-panel border-t md:border-x border-white/20 shadow-[0_-15px_40px_rgba(0,0,0,0.5)] flex flex-col justify-start !p-0 !min-h-0 h-auto overflow-visible"
                 style="background: rgba(15, 23, 42, 0.15); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-top-left-radius: 20px; border-top-right-radius: 20px; padding-bottom: 2px;">
+
+                <div class="hud-inner-wrap" :class="{ 'hud-shake': screenShake }">
+                    <div class="h-full relative overflow-visible">
 
                 <!-- Hint Overlay anchored above HUD -->
                 <div
-                    class="absolute left-1/2 -translate-x-1/2 -top-5 z-[60] pointer-events-none text-[11px] font-black tracking-widest text-amber-300 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]">
+                    class="absolute left-1/2 -translate-x-1/2 -top-5 z-[60] pointer-events-none text-[11px] font-black tracking-widest text-amber-300 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)] hidden md:block">
                     {{ answerMode === 'flick' ? 'FLICK TO ATTACK' : 'TAP TO ATTACK' }}
                 </div>
 
@@ -232,7 +254,7 @@
                 <!-- L5.1 Answer Row -->
                 <div class="w-full px-2 py-0" style="height: 60px;">
                     <div class="h-full relative overflow-visible">
-                        <div v-show="answerMode === 'tap' && !hasSubmitted"
+                        <div v-if="answerMode === 'tap' && !hasSubmitted"
                             class="tap-mode-controls w-full h-full flex flex-col md:flex-row items-center justify-center gap-1 sm:gap-1.5 md:gap-3 py-1">
                             <div class="flex w-full justify-center"
                                 :class="currentQuestion?.choices?.length > 3 ? 'gap-1' : 'gap-2'">
@@ -256,7 +278,7 @@
                             </button>
                         </div>
 
-                        <div v-show="answerMode === 'flick' && !hasSubmitted" id="flickLayer"
+                        <div v-if="answerMode === 'flick' && !hasSubmitted" id="flickLayer"
                             class="w-full h-full flex justify-center items-center select-none touch-none"
                             :class="currentQuestion?.choices?.length > 3 ? 'gap-1' : 'gap-2'" @pointermove="moveFlick"
                             @pointerup="endFlick" @pointercancel="endFlick" @pointerleave="endFlick">
@@ -361,6 +383,8 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
             <!-- [L7] Result Overlay -->
             <div v-if="monsterResultShown || playerDead"
@@ -999,28 +1023,8 @@
                 </div>
             </div>
 
-        </div> <!-- #stageWrap closes here; ALL battle modals above are inside it -->
-
+        </div> <!-- #stageWrap -->
     </div><!-- #app -->
-
-    <script>
-        (function () {
-            // 老闆專業的破快取機制 - 使用全域單一版本號
-            const v = window.APP_VERSION || '26031001';
-
-            // 1. 載入資料檔
-            const s1 = document.createElement('script');
-            s1.src = 'assets/data/earlyGamePools.v1.js?v=' + v;
-            s1.async = false;
-            document.head.appendChild(s1);
-
-            // 2. 載入遊戲主程式
-            const s2 = document.createElement('script');
-            s2.src = 'assets/js/game.js?v=' + v;
-            s2.async = false;
-            document.head.appendChild(s2);
-        })();
-    </script>
 </body>
 
 </html>

@@ -275,7 +275,7 @@ rt {
 #hud {
     flex: 1;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     padding: 1rem;
     overflow: hidden;
     gap: 1rem;
@@ -2135,6 +2135,10 @@ body.lock-scroll {
     position: relative; 
     margin: auto;
     padding-bottom: 2rem;
+    /* Desktop constraints */
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
 }
 
 @keyframes mentorPop {
@@ -2171,6 +2175,8 @@ body.lock-scroll {
     display: flex;
     gap: 3rem;
     align-items: center;
+    overflow-y: auto;
+    flex: 1;
 }
 
 .mentor-portrait-container {
@@ -2638,13 +2644,14 @@ body.lock-scroll {
 }
 /* 怪物死亡動畫 - 普通 */
 .monster-death-anim {
-    animation: monster-die-sequence 1.0s ease-out forwards !important;
+    animation: monster-die-sequence 2s ease-out forwards !important;
     pointer-events: none;
 }
 
+
 /* 怪物死亡動畫 - Boss */
 .boss-death-anim {
-    animation: boss-die-sequence 4.0s ease-in-out forwards !important;
+    animation: boss-die-sequence 5.5s ease-in-out forwards !important;
     pointer-events: none;
 }
 
@@ -2940,6 +2947,16 @@ body.lock-scroll {
     z-index: 2;
 }
 
+/* Desktop override for home page character height and position */
+@media (min-width: 901px) {
+    .home-mentor-keyart {
+        height: 60vh;
+        margin-bottom: 5vh;
+        transform: translateY(0) scale(1.3) translateX(30%) !important;
+        object-position: bottom;
+    }
+}
+
 @keyframes mentor-fade-in {
     0% {
         opacity: 0;
@@ -3097,5 +3114,42 @@ body.lock-scroll {
     .tap-mode-controls {
         background: transparent !important;
         overflow: visible !important;
+    }
+}
+
+/* Base HUD internal for shake abstraction */
+.hud-inner-wrap {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    padding: 0;
+    margin: 0;
+}
+
+/* Desktop HUD Layout Polish */
+@media (min-width: 901px) {
+    #hud {
+        padding: 4px 8px !important;
+    }
+    
+    .hero-status-pill {
+        height: 20px !important;
+        font-size: 11px !important;
+    }
+    
+    #heroStatusBar {
+        margin-top: 0 !important;
+    }
+    
+    /* Ensure clear spacing between zones on wide HUD */
+    #hud .flex-row.md\:flex-nowrap {
+        gap: 1.5rem !important;
+    }
+    
+    /* Center zone (HP/SP) gets more breath */
+    #hud .md\:max-w-md {
+        max-width: 480px !important;
     }
 }
