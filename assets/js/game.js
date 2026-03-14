@@ -963,8 +963,10 @@ createApp({
                         if (typeof goHome === "function") {
                             goHome();
                         } else {
-                            if (typeof showHome !== "undefined") showHome.value = true;
-                            if (typeof showLevelSelect !== "undefined") showLevelSelect.value = false;
+                            if (typeof showLevelSelect !== "undefined") showLevelSelect.value = true;
+                            if (typeof showLevelSelect !== "undefined") {
+                                // Already setting showLevelSelect to true above
+                            }
                             if (typeof isFinished !== "undefined") isFinished.value = false;
                         }
                         console.log("[jpDebug] go home");
@@ -1014,7 +1016,7 @@ jpDebug commands:
 
             console.log("[jpDebug] ready. Try: goLevel(4), jpDebug.help()");
         })();
-        onMounted(() => {
+        onMounted(async () => {
             const h = location.hostname;
             const isLocal = h === 'localhost' || h === '127.0.0.1' || h === '0.0.0.0'
                 || /^192\.168\./.test(h) || /^10\./.test(h) || /^172\.(1[6-9]|2\d|3[01])\./.test(h);
@@ -1026,6 +1028,17 @@ jpDebug commands:
             script.onload = () => console.log(`[AZURE] config.local.js loaded`);
             script.onerror = () => { };
             document.head.appendChild(script);
+
+            // Load Map Chapter Data
+            try {
+                const resp = await fetch('assets/data/map-chapters.json?v=' + (window.APP_VERSION || Date.now()));
+                if (resp.ok) {
+                    mapChapters.value = await resp.json();
+                    console.log('[MapData] chapters loaded');
+                }
+            } catch (e) {
+                console.warn('[MapData] fetch error', e);
+            }
         });
 
         // --- 資料抽離：讀取全域早期關卡資料庫 ---
@@ -1039,9 +1052,201 @@ jpDebug commands:
         const VOCAB = ref(null);
         const maxLevel = ref(35);
 
-        const APP_VERSION = window.APP_VERSION || "26031404";
+        // --- Stage Map / Progression State ---
+        const PROGRESSION_KEY = 'jpapp_progression_v1';
+        const showMap = ref(false);
+        const unlockedLevels = ref([1]);
+        const lastClearedLevel = ref(null);
+        const newUnlockLv = ref(null);
+        const bestGrades = ref({}); // { stageNumber: 'S' }
+        const clearedLevels = ref([]);
+        const showMentorChoice = ref(false);
+        const selectedMapLevel = ref(null);
+
+        const mapChapters = ref({});
+        const activeChapter = ref('chapter1');
+        const selectedSegmentIdx = ref(0);
+        const isBattleConfirmOpen = ref(false);
+        const selectedStageToConfirm = ref(null);
+
+        const autoSelectSegment = () => {
+            const maxUnlocked = Math.max(...unlockedLevels.value, 1);
+            // Dynamic selection: 1-5 -> 0, 6-10 -> 1, 11-15 -> 2, etc.
+            selectedSegmentIdx.value = Math.floor((maxUnlocked - 1) / 5);
+        };
+
+        const isSegmentUnlocked = (idx) => {
+            if (idx === 0) return true;
+            const maxUnlocked = Math.max(...unlockedLevels.value, 1);
+            // A segment is unlocked if the first level of that segment is unlocked
+            return maxUnlocked >= (idx * 5) + 1;
+        };
+
+        const getMapNodeStyle = (node) => {
+            if (!node) return {};
+            return {
+                left: node.x + '%',
+                bottom: node.y + '%',
+                position: 'absolute',
+                transform: 'translate(-50%, 50%)' // Center the anchor
+            };
+        };
+
+
+
+        const saveProgression = () => {
+            try {
+                const data = {
+                    unlockedLevels: unlockedLevels.value,
+                    clearedLevels: clearedLevels.value,
+                    bestGrades: bestGrades.value
+                };
+                localStorage.setItem(PROGRESSION_KEY, JSON.stringify(data));
+            } catch (e) {
+                console.warn('[Progression] save error', e);
+            }
+        };
+
+        const loadProgression = () => {
+            try {
+                const raw = localStorage.getItem(PROGRESSION_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed.unlockedLevels) unlockedLevels.value = parsed.unlockedLevels;
+                    if (parsed.clearedLevels) clearedLevels.value = parsed.clearedLevels;
+                    if (parsed.bestGrades) bestGrades.value = parsed.bestGrades;
+                }
+            } catch (e) {
+                console.warn('[Progression] load error', e);
+            }
+        };
+        loadProgression();
+
+        const openMap = () => {
+            showLevelSelect.value = false;
+            autoSelectSegment();
+            showMap.value = true;
+        };
+
+        const isLevelUnlocked = (n) => unlockedLevels.value.includes(Number(n));
+        const isLevelCleared = (n) => clearedLevels.value.includes(Number(n));
+
+        const getStageNodeClass = (n) => {
+            const lvNum = Number(n);
+            if (!isLevelUnlocked(lvNum)) return 'is-locked';
+            if (isLevelCleared(lvNum)) return 'is-cleared';
+            const currentTarget = Math.min(...unlockedLevels.value.filter(lv => !clearedLevels.value.includes(lv)));
+            if (lvNum === currentTarget) return 'is-current';
+            return '';
+        };
+
+        const getLevelTitle = (n) => {
+            const conf = LEVEL_CONFIG.value[n];
+            return conf ? conf.title : `Level ${n}`;
+        };
+
+        const hasMentor = (n) => {
+            const conf = LEVEL_CONFIG.value[Number(n)];
+            if (!conf) return false;
+            return !!(conf.skillId || (conf.unlockSkills && conf.unlockSkills.length > 0));
+        };
+
+        const handleMapTabClick = (idx) => {
+            if (!isSegmentUnlocked(idx)) {
+                if (typeof showStatusToast === 'function') {
+                    showStatusToast('🔒 區域尚未解鎖', { bg: 'rgba(0,0,0,0.7)', border: '#555', color: '#fff' });
+                }
+                return;
+            }
+
+            const segment = mapChapters.value[activeChapter.value]?.segments[idx];
+            if (!segment || !segment.background) {
+                if (typeof showStatusToast === 'function') {
+                    showStatusToast('🚧 區域開發中，敬請期待！', { bg: 'rgba(30,41,59,0.9)', border: '#475569', color: '#f8fafc' });
+                }
+                return;
+            }
+
+            selectedSegmentIdx.value = idx;
+        };
+
+        const selectStageFromMap = (n) => {
+            const lvNum = Number(n);
+            if (!isLevelUnlocked(lvNum)) {
+                if (typeof showStatusToast === 'function') {
+                    showStatusToast('🔒 關卡尚未解鎖', { bg: 'rgba(0,0,0,0.7)', border: '#555', color: '#fff' });
+                }
+                return;
+            }
+            selectedStageToConfirm.value = lvNum;
+            isBattleConfirmOpen.value = true;
+        };
+        
+        const confirmAndStartBattle = () => {
+            if (selectedStageToConfirm.value !== null) {
+                const lv = selectedStageToConfirm.value;
+                isBattleConfirmOpen.value = false;
+                startLevel(lv, false);
+            }
+        };
+
+        const startStageWithExplanation = (n) => {
+            const lvNum = Number(n);
+            if (!isLevelUnlocked(lvNum)) return;
+            selectedMapLevel.value = lvNum;
+            
+            // Just setup dialogue, don't start level
+            const config = LEVEL_CONFIG.value[lvNum];
+            if (config && config.skillId) {
+                const skill = skillsAll.value[config.skillId];
+                if (skill) {
+                    setupMentorDialogue(skill);
+                }
+            } else if (config && config.unlockSkills && config.unlockSkills.length > 0) {
+                const skill = skillsAll.value[config.unlockSkills[0]];
+                if (skill) {
+                    setupMentorDialogue(skill);
+                }
+            }
+        };
+
+        const returnToMap = () => {
+            isFinished.value = true;
+            showLevelSelect.value = false;
+            autoSelectSegment();
+            showMap.value = true;
+            
+            // Reset battle UI states
+            monsterResultShown.value = false;
+            monsterTrulyDead.value = false;
+            monsterIsDying.value = false;
+            isNextBtnVisible.value = false;
+
+            const vfxLayer = document.getElementById('global-vfx-layer');
+            if (vfxLayer) vfxLayer.innerHTML = '';
+            
+            // Auto scroll to target
+            const target = newUnlockLv.value || lastClearedLevel.value || 1;
+            scrollToStage(target);
+            
+            // Stop battle music and play map music
+            stopAllAudio();
+            playBgm();
+        };
+
+        const scrollToStage = (n) => {
+            Vue.nextTick(() => {
+                const el = document.querySelector(`[data-stage-node="${n}"]`);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+        };
+
+        const APP_VERSION = window.APP_VERSION || "26031501";
         const appVersion = ref(APP_VERSION);
         const VFX_ENHANCED = true;
+
 
         const SETTINGS_KEY = 'jpRpgSettingsV1';
         const settings = reactive({
@@ -1120,6 +1325,7 @@ jpDebug commands:
         const isMentorReplayOpen = ref(false);
         const isLevelJumpOpen = ref(false);
         const currentMentorSkill = ref(null);
+        const isMapMentorOpen = ref(false);
         const mentorPages = ref([]); // 平鋪後的文字分頁
         const mentorDialogueIndex = ref(0); // 指向目前的 Page
         const displayedMentorText = ref("");
@@ -1182,17 +1388,29 @@ jpDebug commands:
             currentMentorSkill.value = skill;
             mentorPages.value = fragmentMentorDialogue(skill.mentorDialogue);
             mentorDialogueIndex.value = 0;
-            isMentorModalOpen.value = true;
+            
+            if (showMap.value) {
+                isMapMentorOpen.value = true;
+                isMentorModalOpen.value = false;
+            } else {
+                isMentorModalOpen.value = true;
+                isMapMentorOpen.value = false;
+            }
+            
             isMentorPortraitError.value = false;
             startMentorTyping(currentMentorLine.value || "");
             playMentorAudioForCurrentPage();
         };
 
-        const triggerMentorDialogue = (skillId) => {
+        const triggerMentorDialogue = (skillId, force = false) => {
             const skill = skillsAll.value[skillId];
-            if (!skill || !skill.mentorDialogue || mentorTutorialSeen.value.includes(skillId)) {
+            if (!skill || !skill.mentorDialogue) return false;
+            
+            // If NOT forced, check if already seen
+            if (!force && mentorTutorialSeen.value.includes(skillId)) {
                 return false;
             }
+            
             setupMentorDialogue(skill);
             return true;
         };
@@ -1267,7 +1485,7 @@ jpDebug commands:
                 return;
             }
 
-            if (isLastMentorLine.value) {
+            if (mentorDialogueIndex.value >= mentorPages.value.length - 1) {
                 finishMentorDialogue();
             } else {
                 mentorDialogueIndex.value++;
@@ -1289,15 +1507,14 @@ jpDebug commands:
             }
             stopMentorAudio();
             isMentorModalOpen.value = false;
+            isMapMentorOpen.value = false;
 
             // 立即刷新音量 (因 isMentorModalOpen 已設為 false)
             updateGainVolumes();
 
-            // Continue to skill unlock modal if we just unlocked it, 
-            // or resume level start
             if (window._resumeAfterMentor) {
                 const callback = window._resumeAfterMentor;
-                window._resumeAfterMentor = null; // 執行前清空，避免遞迴或殘留
+                window._resumeAfterMentor = null; 
                 callback();
             }
         };
@@ -1380,6 +1597,8 @@ jpDebug commands:
                         if (lvNum === 1) config.bgImage = 'assets/images/levels/bg_lv1.png';
                         if (lvNum === 10) config.bgImage = 'assets/images/levels/bg_lv10.png';
                         if (lvNum === 13) config.bgImage = 'assets/images/levels/bg_lv13.png';
+                        if (lvNum === 16) config.bgImage = 'C:/Users/York/.gemini/antigravity/brain/866b81f1-c497-4000-8080-d5f45acc5698/bg_lv16_castle_gate_gallery_1773504670379.png';
+                        if (lvNum === 20) config.bgImage = 'C:/Users/York/.gemini/antigravity/brain/866b81f1-c497-4000-8080-d5f45acc5698/bg_lv20_castle_gallery_exit_boss_1773504693543.png';
 
                         mappedLevels[lvNum] = config;
                     });
@@ -1825,7 +2044,7 @@ jpDebug commands:
                 gameover: 'assets/audio/sfx_gameover.mp3'
             };
 
-            const criticalAssets = [BGM_BASE + 'BGM_1.mp3', BGM_BASE + 'BGM_2.mp3', BGM_BASE + 'BGM_3.mp3', BGM_BASE + 'BGM_4.mp3', BGM_BASE + 'BGM_boss.mp3', sfxPaths.click, sfxPaths.pop];
+            const criticalAssets = [BGM_BASE + 'BGM_1.mp3', BGM_BASE + 'BGM_2.mp3', BGM_BASE + 'BGM_3.mp3', BGM_BASE + 'BGM_4.mp3', BGM_BASE + 'BGM_boss.mp3', 'assets/audio/bgm/map.mp3', sfxPaths.click, sfxPaths.pop];
             const promises = [];
 
             const loadAsset = (url) => {
@@ -2023,7 +2242,13 @@ jpDebug commands:
             if (audioCtx.value && audioCtx.value.state === 'suspended') await audioCtx.value.resume();
             updateGainVolumes();
 
-            const expectedUrl = currentBattleBgmPick.value || (BGM_BASE + 'BGM_1.mp3');
+            let expectedUrl = "";
+            if (showMap.value && !showLevelSelect.value) {
+                expectedUrl = 'assets/audio/bgm/map.mp3';
+            } else {
+                expectedUrl = currentBattleBgmPick.value || (BGM_BASE + 'BGM_1.mp3');
+            }
+
             const expectedAbs = new URL(expectedUrl, window.location.href).href;
             const curSrc = bgmAudio.value?.src || '';
 
@@ -2038,6 +2263,10 @@ jpDebug commands:
                 bgmAudio.value.play().catch(e => console.warn('[BGM] play failed', e.name, e.message));
             }
         };
+
+        watch(showMap, (val) => {
+            if (val) playBgm();
+        });
 
         const ensureBattleBgmApplied = (forcePlay) => { playBgm(); };
 
@@ -2096,7 +2325,7 @@ jpDebug commands:
             if (!audioInited.value) initAudio();
             if (!bgmEnabled.value || isMuted.value || bgmVolume.value <= 0) return;
             if (bgmAudio.value && bgmAudio.value.paused) {
-                const expectedUrl = currentBattleBgmPick.value || (BGM_BASE + 'BGM_1.mp3');
+                const expectedUrl = (showMap.value && !showLevelSelect.value) ? 'assets/audio/bgm/map.mp3' : (currentBattleBgmPick.value || (BGM_BASE + 'BGM_1.mp3'));
                 const expectedAbs = new URL(expectedUrl, window.location.href).href;
                 const curSrc = bgmAudio.value.src || '';
                 if (curSrc !== expectedAbs) {
@@ -2918,20 +3147,10 @@ jpDebug commands:
         };
 
         const applyBattleBgmNow = (lv) => {
-            const srcRel = currentBattleBgmPick.value || (BGM_BASE + 'BGM_1.mp3');
-            const srcAbs = new URL(srcRel, window.location.href).href;
-            if (!bgmAudio.value) return;
-            bgmAudio.value.pause();
-            bgmAudio.value.src = srcAbs;
-            bgmAudio.value.load();
-            bgmAudio.value.currentTime = 0;
-            updateGainVolumes();
-            bgmAudio.value.play().catch(e => {
-                needsUserGestureToResumeBgm.value = true;
-            });
+            playBgm();
         };
 
-        const startLevel = async (level) => {
+        const startLevel = async (level, withMentor = false) => {
             const lv = Number(level) || parseInt(level, 10) || 1;
             initAudioCtx();
             stopAllAudio();
@@ -2942,8 +3161,12 @@ jpDebug commands:
 
             playSfx('click');
             showLevelSelect.value = false;
+            showMap.value = false; // CRITICAL: Hide map to show battle HUD
             currentLevel.value = lv;
-            initGame(lv);
+            
+            // withMentor = true means user clicked the "Mentor Icon" -> forceMentor = true
+            // withMentor = false means user clicked the "Stage Card" -> skipMentor = true
+            initGame(lv, !withMentor, withMentor); 
         };
 
         const usePotion = () => {
@@ -3641,18 +3864,182 @@ jpDebug commands:
                     });
                 }
             }
+            else if (skillDef.id === 'KARA_SOURCE_START') {
+                const skillPool = (pool.skills?.KARA_SOURCE_START) || {};
+                const useTime = Math.random() < 0.5;
+
+                if (useTime) {
+                    const tList = skillPool.timePool || [{ j: "九時", r: "くじ", zh: "九點" }];
+                    const time = pickOne(tList);
+                    const vList = skillPool.verbs || [
+                        { j: "始まる", r: "はじまる", zh: "開始" },
+                        { j: "出る", r: "でる", zh: "出去" }
+                    ];
+                    const v = pickOne(vList);
+
+                    q = makeParticleQuestion({
+                        chinese: `從${zhOf(time)}${zhOf(v)}`,
+                        leftText: time.j,
+                        leftRuby: time.r,
+                        rightText: v.j,
+                        rightRuby: v.r,
+                        answer: 'から',
+                        skillId: skillDef.id,
+                        grammarTip: tipText,
+                        choices: getChoices(["から", "まで", "へ", "に"], 'から')
+                    });
+                } else {
+                    const pList = skillPool.placePool || [{ j: "家", r: "いえ", zh: "家" }];
+                    const p = pickOne(pList);
+                    const vList = skillPool.verbs || [
+                        { j: "来る", r: "くる", zh: "來" },
+                        { j: "行く", r: "いく", zh: "去" }
+                    ];
+                    const v = pickOne(vList);
+
+                    q = makeParticleQuestion({
+                        chinese: `從${zhOf(p)}${zhOf(v)}`,
+                        leftText: p.j,
+                        leftRuby: p.r,
+                        rightText: v.j,
+                        rightRuby: v.r,
+                        answer: 'から',
+                        skillId: skillDef.id,
+                        grammarTip: tipText,
+                        choices: getChoices(["から", "まで", "へ", "に"], 'から')
+                    });
+                }
+            }
+            else if (skillDef.id === 'MADE_LIMIT_END') {
+                const skillPool = (pool.skills?.MADE_LIMIT_END) || {};
+                const useTime = Math.random() < 0.5;
+
+                if (useTime) {
+                    const tList = skillPool.timePool || [{ j: "三時", r: "さんじ", zh: "三點" }];
+                    const time = pickOne(tList);
+                    const vList = skillPool.verbs || [
+                        { j: "勉強する", r: "べんきょうする", zh: "讀書" },
+                        { j: "待つ", r: "まつ", zh: "等待" }
+                    ];
+                    const v = pickOne(vList);
+
+                    q = makeParticleQuestion({
+                        chinese: `${zhOf(v)}到${zhOf(time)}`,
+                        leftText: v.j,
+                        leftRuby: v.r,
+                        rightText: time.j,
+                        rightRuby: time.r,
+                        answer: 'まで',
+                        skillId: skillDef.id,
+                        grammarTip: tipText,
+                        choices: getChoices(["まで", "から", "へ", "に"], 'まで')
+                    });
+                } else {
+                    const pList = skillPool.placePool || [{ j: "駅", r: "えき", zh: "車站" }];
+                    const p = pickOne(pList);
+                    const vList = skillPool.verbs || [
+                        { j: "歩く", r: "あるく", zh: "走路" },
+                        { j: "帰る", r: "かえる", zh: "回家" }
+                    ];
+                    const v = pickOne(vList);
+
+                    q = makeParticleQuestion({
+                        chinese: `${zhOf(v)}到${zhOf(p)}`,
+                        leftText: v.j,
+                        leftRuby: v.r,
+                        rightText: p.j,
+                        rightRuby: p.r,
+                        answer: 'まで',
+                        skillId: skillDef.id,
+                        grammarTip: tipText,
+                        choices: getChoices(["まで", "から", "へ", "に"], 'まで')
+                    });
+                }
+            }
+            else if (skillDef.id === 'TO_COMPANION') {
+                const skillPool = (pool.skills?.TO_COMPANION) || {};
+                const xList = skillPool.people || [{ j: "友達", r: "ともだち", zh: "朋友" }];
+                const vList = skillPool.actions || [{ j: "遊ぶ", r: "あそぶ", zh: "玩耍" }];
+
+                const x = pickOne(xList);
+                const v = pickOne(vList);
+
+                q = makeParticleQuestion({
+                    chinese: `和${zhOf(x)}${zhOf(v)}`,
+                    leftText: x.j,
+                    leftRuby: x.r,
+                    rightText: v.j,
+                    rightRuby: v.r,
+                    answer: 'と',
+                    skillId: skillDef.id,
+                    grammarTip: tipText,
+                    choices: getChoices(["と", "に", "で", "を"], 'と')
+                });
+            }
+            else if (skillDef.id === 'DE_TOOL_MEANS') {
+                const skillPool = (pool.skills?.DE_TOOL_MEANS) || {};
+                const useSafeCombo = Math.random() < 0.6;
+
+                if (useSafeCombo && skillPool.safeCombos) {
+                    const combo = pickOne(skillPool.safeCombos);
+                    const parts = combo.j.split('で');
+                    if (parts.length === 2) {
+                        q = makeParticleQuestion({
+                            chinese: combo.zh,
+                            leftText: parts[0],
+                            leftRuby: combo.r?.split('で')[0] || parts[0],
+                            rightText: parts[1],
+                            rightRuby: combo.r?.split('で')[1] || parts[1],
+                            answer: 'で',
+                            skillId: skillDef.id,
+                            grammarTip: tipText,
+                            choices: getChoices(["で", "に", "と", "へ"], 'で')
+                        });
+                    }
+                } else {
+                    // Fallback to tool generation
+                    const toolList = skillPool.tools || [{ j: "箸", r: "はし", zh: "筷子" }];
+                    const vList = skillPool.actions || [
+                        { j: "食べる", r: "たべる", zh: "吃飯" },
+                        { j: "書く", r: "かく", zh: "寫" }
+                    ];
+
+                    const tool = pickOne(toolList);
+                    const v = pickOne(vList);
+
+                    q = makeParticleQuestion({
+                        chinese: `用${zhOf(tool)}${zhOf(v)}`,
+                        leftText: tool.j,
+                        leftRuby: tool.r,
+                        rightText: v.j,
+                        rightRuby: v.r,
+                        answer: 'で',
+                        skillId: skillDef.id,
+                        grammarTip: tipText,
+                        choices: getChoices(["で", "に", "と", "へ"], 'で')
+                    });
+                }
+            }
+            else if (skillDef.id === 'BOSS_REVIEW_04') {
+                // Mixed review of から, まで, と, で
+                const reviewSkills = ['KARA_SOURCE_START', 'MADE_LIMIT_END', 'TO_COMPANION', 'DE_TOOL_MEANS'];
+                const chosenSkillId = pickOne(reviewSkills);
+                const fallbackSkill = { id: chosenSkillId };
+                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab);
+            }
             return q;
         };
 
-        const initGame = (level) => {
+        const initGame = (level, skipMentor = false, forceMentor = false) => {
             window._battlePopPlayed = false;
             let triggeredMentor = false;
             const ratio = player.value.hp / player.value.maxHp;
             let startState = 'neutral';
             if (ratio <= 0.4) startState = 'scary';
             else if (ratio < 0.8) startState = 'ase';
-
+            
             setHeroAvatar(startState);
+
             window.heroHP = player.value.hp;
             window.heroMaxHP = player.value.maxHp;
             clearSpeedStatus();
@@ -3699,11 +4086,11 @@ jpDebug commands:
                 if (newUnlocks.length > 0) {
                     newlyUnlocked.value = newUnlocks.map(id => skillsAll.value[id]).filter(Boolean);
 
-                    if (window._disableMentorAutoTrigger) {
-                        // Skip mentor and popup for debug jump
+                    if (window._disableMentorAutoTrigger || skipMentor) {
+                        // Skip mentor and popup for debug jump or direct map card entry
                     } else {
                         const firstNewSkillId = newUnlocks[0];
-                        if (triggerMentorDialogue(firstNewSkillId)) {
+                        if (triggerMentorDialogue(firstNewSkillId, forceMentor)) {
                             triggeredMentor = true;
                             // Pause and wait for mentor to finish
                             window._resumeAfterMentor = () => {
@@ -3716,12 +4103,21 @@ jpDebug commands:
                 }
             }
 
-            // 確保「主技能」教學同步：即使技能已解鎖，若未看過教學且本關是該技能的主場 (skillId 匹配)，仍觸發教學
-            if (!triggeredMentor && config.skillId && !window._disableMentorAutoTrigger) {
-                if (triggerMentorDialogue(config.skillId)) {
+            // Instruction mentor logic
+            if (!skipMentor && !triggeredMentor && config.skillId && !window._disableMentorAutoTrigger) {
+                if (triggerMentorDialogue(config.skillId, forceMentor)) {
                     triggeredMentor = true;
+                    // Ensure battle starts after mentor
+                    window._resumeAfterMentor = () => {
+                        if (!window._battlePopPlayed) {
+                            playSfx('pop');
+                            window._battlePopPlayed = true;
+                        }
+                        startTimer();
+                    };
                 }
             }
+
 
             const typePool = config.types;
             const blanks = config.blanks;
@@ -4384,6 +4780,31 @@ jpDebug commands:
                 monsterTrulyDead.value = true;
                 monsterResultShown.value = true;
                 
+                // Update progression
+                lastClearedLevel.value = currentLevel.value;
+                if (!clearedLevels.value.includes(currentLevel.value)) {
+                    clearedLevels.value.push(currentLevel.value);
+                }
+                
+                // Update best grade
+                const currentG = calculatedGrade.value;
+                const oldG = bestGrades.value[currentLevel.value];
+                const GRADE_RANK = { 'S': 6, 'A': 5, 'B': 4, 'C': 3, 'D': 2, 'E': 1, '-': 0 };
+                const isGradeBetter = (newG, oldG) => (GRADE_RANK[newG] || 0) > (GRADE_RANK[oldG] || 0);
+                
+                if (!oldG || isGradeBetter(currentG, oldG)) {
+                    bestGrades.value[currentLevel.value] = currentG;
+                }
+
+                const nextLv = currentLevel.value + 1;
+                if (nextLv <= 15 && !unlockedLevels.value.includes(nextLv)) {
+                    unlockedLevels.value.push(nextLv);
+                    newUnlockLv.value = nextLv; // Mark for highlight and scroll
+                } else {
+                    newUnlockLv.value = null;
+                }
+                saveProgression();
+
                 stopAllAudio();
                 if (isBoss) {
                     playSfx('bossClear');
@@ -4498,6 +4919,29 @@ jpDebug commands:
         const playerDead = computed(() => player.value.hp <= 0);
         const levelPassed = computed(() => monsterDead.value);
 
+
+
+        const proceedToNextLevel = () => {
+            if (difficulty.value === 'easy') {
+                player.value.hp = 100;
+                inventory.value.potions = INITIAL_POTIONS;
+            } else {
+                player.value.hp = Math.min(100, player.value.hp + 50);
+            }
+
+            window.__sp.cur = window.__sp.max;
+            if (window.updateSpUI) window.updateSpUI();
+
+            currentLevel.value++;
+            if (currentLevel.value > maxLevel.value) {
+                isFinished.value = true;
+                return;
+            }
+            initGame(currentLevel.value);
+            pickBattleBgm(currentLevel.value);
+            playBgm();
+        };
+
         const goNextLevel = () => {
             needsUserGestureToResumeBgm.value = false;
             stopAllAudio();
@@ -4516,25 +4960,7 @@ jpDebug commands:
                     return; // 中斷原本的 goNextLevel 流程
                 }
             }
-
             proceedToNextLevel();
-        };
-
-        const proceedToNextLevel = () => {
-            if (difficulty.value === 'easy') {
-                player.value.hp = 100;
-                inventory.value.potions = INITIAL_POTIONS;
-            } else {
-                player.value.hp = Math.min(100, player.value.hp + 50);
-            }
-
-            window.__sp.cur = window.__sp.max;
-            if (window.updateSpUI) window.updateSpUI();
-
-            currentLevel.value++;
-            initGame(currentLevel.value);
-            pickBattleBgm(currentLevel.value);
-            playBgm();
         };
 
         const confirmAbilityUnlockAndContinue = () => {
@@ -4894,8 +5320,16 @@ jpDebug commands:
             isMentorModalOpen, isMentorReplayOpen, isLevelJumpOpen, isAdvancedSettingsOpen, replaySpecificMentor, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
             displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,
             isMentorSkipPressing, startMentorSkipPress, cancelMentorSkipPress,
-            isMonsterImageError, handleMonsterImageError, currentMonsterSprite, monsterIsDying, monsterTrulyDead, monsterResultShown
+            isMonsterImageError, handleMonsterImageError, currentMonsterSprite, monsterIsDying, monsterTrulyDead, monsterResultShown,
+            showMap, unlockedLevels, clearedLevels, showMentorChoice, selectedMapLevel,
+            openMap, isLevelUnlocked, isLevelCleared, getStageNodeClass, getLevelTitle, hasMentor,
+            selectStageFromMap, startStageWithExplanation, returnToMap,
+            scrollToStage, lastClearedLevel, newUnlockLv, bestGrades, getGradeColor,
+            mapChapters, activeChapter, getMapNodeStyle, selectedSegmentIdx, isSegmentUnlocked, handleMapTabClick,
+            isBattleConfirmOpen, selectedStageToConfirm, confirmAndStartBattle,
+            isMapMentorOpen, mentorPages, mentorDialogueIndex, displayedMentorText, isTypingMentor, nextMentorLine, finishMentorDialogue
         };
+
     }
 }).mount('#app');
 

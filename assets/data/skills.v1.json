@@ -651,5 +651,204 @@
         "emotion": "explain"
       }
     ]
+  },
+  {
+    "id": "KARA_SOURCE_START",
+    "particle": "から",
+    "rank": 1,
+    "name": "から・第二式：起點／來源",
+    "meaning": "表示從哪裡、從什麼時候開始",
+    "rule": "Xから…",
+    "examples": [
+      "家から学校へ行く",
+      "九時から始まる",
+      "台北から来る"
+    ],
+    "choiceSet": [
+      "から",
+      "まで",
+      "へ",
+      "に"
+    ],
+    "mentorDialogue": [
+      {
+        "text": "你已經學過基本的『從』，現在要看得更細。起點不只是位置，還有時間。",
+        "audio": "",
+        "emotion": "explain"
+      },
+      {
+        "text": "從家裡出發、從九點開始、從台北過來——這些都是清楚起點的用法。",
+        "audio": "",
+        "emotion": "explain"
+      },
+      {
+        "text": "看到『から』時，先問：這個動作或狀態是從哪裡開始的？",
+        "audio": "",
+        "emotion": "explain"
+      },
+      {
+        "text": "掌握起點，句子的流向就會更清楚。你已經在路上了。",
+        "audio": "",
+        "emotion": "encourage"
+      }
+    ]
+  },
+  {
+    "id": "MADE_LIMIT_END",
+    "particle": "まで",
+    "rank": 1,
+    "name": "まで・第一式：終點／截止",
+    "meaning": "表示到哪裡、到什麼時候為止",
+    "rule": "Xまで…",
+    "examples": [
+      "駅まで歩く",
+      "三時まで勉強する",
+      "家まで帰る"
+    ],
+    "choiceSet": [
+      "まで",
+      "から",
+      "へ",
+      "に"
+    ],
+    "mentorDialogue": [
+      {
+        "text": "有起點就有終點。『まで』就是替你的旅程或時間畫下句點的那個助詞。",
+        "audio": "",
+        "emotion": "mission"
+      },
+      {
+        "text": "到車站為止、到三點為止、到家為止——它標記的是『到此結束』的位置。",
+        "audio": "",
+        "emotion": "explain"
+      },
+      {
+        "text": "你可以把它想成『到』。看到它時，就去找那個邊界或截止點。",
+        "audio": "",
+        "emotion": "explain"
+      },
+      {
+        "text": "起點和終點一起學，句子的時間與空間感就完整了。",
+        "audio": "",
+        "emotion": "encourage"
+      }
+    ]
+  },
+  {
+    "id": "TO_COMPANION",
+    "particle": "と",
+    "rank": 1,
+    "name": "と・第三式：共同動作對象",
+    "meaning": "和誰一起做某件事",
+    "rule": "人とV",
+    "examples": [
+      "友達と遊ぶ",
+      "家族と食べる",
+      "先生と話す"
+    ],
+    "choiceSet": [
+      "と",
+      "に",
+      "で",
+      "を"
+    ],
+    "mentorDialogue": [
+      {
+        "text": "你學過『と』的並列用法，現在回到它最溫暖的意思：和誰一起。",
+        "audio": "",
+        "emotion": "warm"
+      },
+      {
+        "text": "和朋友玩耍、和家人吃飯、和老師說話——這些都需要同伴。",
+        "audio": "",
+        "emotion": "explain"
+      },
+      {
+        "text": "看到『と』時，找找看是不是有另一個人陪你一起完成這個動作。",
+        "audio": "",
+        "emotion": "explain"
+      },
+      {
+        "text": "語言是拿來連人的。學會看懂同伴，句子就會活起來。",
+        "audio": "",
+        "emotion": "encourage"
+      }
+    ]
+  },
+  {
+    "id": "DE_TOOL_MEANS",
+    "particle": "で",
+    "rank": 1,
+    "name": "で・第二式：工具／手段",
+    "meaning": "表示用什麼、搭什麼、以什麼方式",
+    "rule": "NでV",
+    "examples": [
+      "箸で食べる",
+      "日本語で話す",
+      "バスで行く"
+    ],
+    "choiceSet": [
+      "で",
+      "に",
+      "と",
+      "へ"
+    ],
+    "mentorDialogue": [
+      {
+        "text": "你已經知道『で』可以表示場所，但它還有一個實用的功能：工具與手段。",
+        "audio": "",
+        "emotion": "mission"
+      },
+      {
+        "text": "用筷子吃、用日語說、搭巴士去——這些都是靠工具或方式完成的動作。",
+        "audio": "",
+        "emotion": "explain"
+      },
+      {
+        "text": "看到『で』時，問問自己：這個動作是靠什麼完成的？",
+        "audio": "",
+        "emotion": "explain"
+      },
+      {
+        "text": "工具看得準，句子的邏輯就會更清晰。你已經不是新手了。",
+        "audio": "",
+        "emotion": "encourage"
+      }
+    ]
+  },
+  {
+    "id": "BOSS_REVIEW_04",
+    "name": "魔王考驗：起點・終點・同行・手段",
+    "particle": "複習",
+    "rank": 3,
+    "meaning": "綜合複習 から、まで、と、で",
+    "rule": "綜合應用",
+    "examples": [
+      "家から学校までバスで行く",
+      "友達と九時から三時まで勉強する"
+    ],
+    "choiceSet": [],
+    "mentorDialogue": [
+      {
+        "text": "令人驚嘆，你已經走到了這一步。起點、終點、同伴、工具——這些世界的規則，你都逐一掌握了。",
+        "audio": "",
+        "emotion": "gentle"
+      },
+      {
+        "text": "魔王這次會用更複雜的方式考驗你。時間與空間的流動、人與人之間的連結、工具與手段的運用，都會交織在一起。",
+        "audio": "",
+        "emotion": "mission"
+      },
+      {
+        "text": "別被混亂迷惑。回想我們學過的：是從哪裡開始（から），還是到哪裡結束（まで）？是和誰一起（と），還是用什麼完成（で）？",
+        "audio": "",
+        "emotion": "explain"
+      },
+      {
+        "text": "你已經不再是那個剛踏入試煉的新手了。去吧，讓這場複習成為你實力的證明。",
+        "audio": "",
+        "emotion": "encourage"
+      }
+    ]
   }
 ]

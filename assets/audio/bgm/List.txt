@@ -1,3 +1,5 @@
 BGM_3 / アンドロイドの涙/shimtone / https://dova-s.jp/bgm/detail/22940
 BGM_boss1 / 戦いの旅路を征く/MATSU / https://dova-s.jp/bgm/detail/12447
 BGM_boss2 / 絆の戦い / Fukagawa / https://dova-s.jp/bgm/detail/20892
+map / 退廃の園/ ioni / https://dova-s.jp/bgm/detail/10018
+map2 / van / 伊藤ケイスケ / https://dova-s.jp/bgm/detail/14657

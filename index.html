@@ -20,7 +20,7 @@
         })();
     </script>
     <script>
-        window.APP_VERSION = '26031404'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26031501'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
         document.addEventListener('gesturechange', function (e) { e.preventDefault(); });
     </script>
@@ -34,7 +34,7 @@
     <script>
         (function () {
             // 老闆專業的破快取機制 - 使用全域單一版本號
-            const v = window.APP_VERSION || '26031404';
+            const v = window.APP_VERSION || '26031501';
 
             // 1. 載入資料檔
             const s1 = document.createElement('script');
@@ -49,6 +49,209 @@
             document.head.appendChild(s2);
         })();
     </script>
+    <style>
+        .map-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            z-index: 50;
+            position: relative;
+        }
+
+        .map-viewport {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+        }
+
+        .map-nodes-container {
+            height: 100%;
+            width: auto;
+            position: relative;
+            flex-shrink: 0;
+            user-select: none;
+        }
+
+        .map-nodes-container img, .map-base-img {
+            height: 100%;
+            width: auto;
+            max-width: none;
+            display: block;
+            pointer-events: none;
+        }
+
+        /* Stage Anchor v1 */
+        .stage-node-wrap {
+            position: absolute;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Node Style v6 - JPAPP 2.0 Glassmorphism */
+        .stage-node-btn {
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 10px 16px !important;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            width: auto !important;
+            min-width: 180px;
+            max-width: 280px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .is-current .stage-node-btn {
+            background: rgba(251, 191, 36, 0.15) !important;
+            border-color: rgba(251, 191, 36, 0.5);
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+            transform: scale(1.05);
+        }
+        .is-cleared .stage-node-btn {
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+        .is-locked .stage-node-btn {
+            opacity: 0.6;
+            filter: grayscale(0.8) blur(1px);
+        }
+
+        /* Landmark Labels - Refined to cover background English labels */
+        .node-landmark-label {
+            position: absolute;
+            top: -30px;
+            font-size: 0.75rem;
+            font-weight: 900;
+            color: #fbbf24;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 4px 12px;
+            border-radius: 999px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            white-space: nowrap;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+            z-index: 5;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+        }
+
+        /* Immersive Map Layout (v1.9) */
+        .map-page-container {
+            display: flex;
+            flex-direction: column;
+            height: 100dvh;
+            background: #0b1121;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+        
+        .map-viewport {
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Mentor Dialogue Box v1.9.1 - Refined Dark Glass (More Transparent v2.0.1) */
+        .mentor-dialogue-box {
+            background: rgba(10, 15, 30, 0.55) !important;
+            backdrop-filter: blur(48px) saturate(180%);
+            -webkit-backdrop-filter: blur(48px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 40px 120px -20px rgba(0, 0, 0, 0.9),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.05);
+        }
+        .mentor-dialogue-box p, .mentor-dialogue-text {
+            line-height: 2.0 !important;
+            letter-spacing: 0.05em !important;
+        }
+
+        /* 2.0 Confirm Modal Base (More Transparent v2.0.1) */
+        .confirm-modal-glass {
+            background: rgba(15, 23, 42, 0.6) !important;
+            backdrop-filter: blur(32px) saturate(180%);
+            -webkit-backdrop-filter: blur(32px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 40px 120px -20px rgba(0, 0, 0, 1);
+        }
+
+        .mentor-portrait-fade {
+            -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 95%);
+            mask-image: linear-gradient(to bottom, black 70%, transparent 95%);
+        }
+
+        .mentor-portrait-shadow {
+            position: absolute;
+            bottom: -5%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120%;
+            height: 40%;
+            background: radial-gradient(circle at center, rgba(245, 158, 11, 0.15) 0%, transparent 80%);
+            z-index: -1;
+            filter: blur(40px);
+        }
+
+        .node-icon {
+            width: 36px !important;
+            height: 36px !important;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .node-number {
+            font-size: 0.65rem !important;
+            color: #94a3b8;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            line-height: 1;
+            margin-bottom: 2px;
+            opacity: 0.7;
+        }
+        .node-title {
+            font-size: 0.85rem !important;
+            font-weight: 900;
+            color: #f8fafc;
+            white-space: nowrap;
+            max-width: 160px; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chapter-header-area {
+            padding: 1rem;
+            text-align: center;
+            background: linear-gradient(to bottom, #0f172a, transparent);
+            z-index: 50;
+        }
+    </style>
 </head>
 
 <body class="">
@@ -79,15 +282,169 @@
                 <p class="home-chinese-subtitle">和導師一起展開助詞冒險</p>
 
                 <div class="home-cta-box">
-                    <button @click="startLevel(1)" class="home-start-btn">
+                    <button @click="openMap" class="home-start-btn">
                         開始冒險
                     </button>
                 </div>
             </div>
         </div>
 
+        <!-- Stage Map Screen v1 -->
+        <div v-else-if="showMap" class="map-page-container pt-safe">
+            <!-- Immersive Floating Map Header (Hidden during Mentor overlay) -->
+            <transition name="fade">
+                <div v-if="!isMapMentorOpen" class="absolute top-6 left-6 right-6 z-30 pointer-events-none flex justify-between items-start">
+                    <div class="px-4 py-2 bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl pointer-events-auto">
+                        <h2 class="text-white text-base font-black tracking-tight leading-tight">第一章：魔王城入口</h2>
+                        <div class="text-white/60 text-[10px] font-bold uppercase tracking-widest mt-0.5">關卡進度：{{ clearedLevels.length }} / 15</div>
+                    </div>
+                </div>
+            </transition>
+
+            <!-- Area Switcher Tabs (2.0 Glass Style - Floating) -->
+            <div class="flex-shrink-0 flex items-center gap-2 mb-2 p-1 bg-white/5 backdrop-blur-2xl rounded-full border border-white/5 mx-6 mt-20 overflow-x-auto no-scrollbar scroll-smooth z-20 relative" v-if="mapChapters && activeChapter && mapChapters[activeChapter]">
+                <div class="flex gap-1.5 px-1">
+                    <button v-for="(seg, idx) in mapChapters[activeChapter].segments" 
+                        :key="'tab_' + (seg.id || idx)"
+                        @click="handleMapTabClick(idx)"
+                        class="px-4 py-2 rounded-full text-[10px] font-black transition-all flex items-center gap-2 shrink-0 border border-transparent"
+                        :class="[
+                            selectedSegmentIdx === idx ? 'bg-amber-500 text-slate-900 shadow-lg border-amber-400/50' : 'text-white/50 hover:text-white/80 hover:bg-white/5',
+                            !isSegmentUnlocked(idx) ? 'opacity-30 grayscale' : 'active:scale-95'
+                        ]">
+                        <span>{{ seg.title || ('AREA ' + (idx + 1)) }}</span>
+                        <span v-if="!isSegmentUnlocked(idx)" class="text-xs">🔒</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Map Viewport (Fills remaining height) -->
+            <div class="map-viewport" v-if="mapChapters && activeChapter && mapChapters[activeChapter]">
+                <div class="map-nodes-container" v-if="mapChapters[activeChapter].segments[selectedSegmentIdx]">
+                    <!-- Base Map Layer: Height-First Scaling -->
+                    <img :src="mapChapters[activeChapter].segments[selectedSegmentIdx].background" 
+                        class="map-base-img" 
+                        alt="Base Map">
+
+                    <template v-for="(node, n) in mapChapters[activeChapter].segments[selectedSegmentIdx].nodes" :key="'node_overlay_' + n">
+                        <div class="stage-node-wrap" 
+                            :style="getMapNodeStyle(node)"
+                            :class="[getStageNodeClass(n)]">
+                            
+                            <!-- Optional Landmark Label Anchored to Node -->
+                            <div class="node-landmark-label">{{ node.landmark }}</div>
+
+                            <div class="flex items-center gap-3 z-10">
+                                <button @click="selectStageFromMap(n)" 
+                                    :data-stage-node="n"
+                                    class="stage-node-btn relative"
+                                    :class="{ 'new-unlock-glow': n === newUnlockLv }"
+                                    :disabled="!isLevelUnlocked(n)">
+                                    <div v-if="n === newUnlockLv" class="absolute -top-3 -left-2 bg-amber-500 text-slate-900 text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg z-20 animate-bounce">NEW</div>
+                                    <div class="node-icon">
+                                        <span v-if="!isLevelUnlocked(n)">🔒</span>
+                                        <div v-else-if="isLevelCleared(n)" class="flex items-center justify-center">
+                                            <span v-if="bestGrades[n]" :class="getGradeColor(bestGrades[n])" class="text-xl font-black drop-shadow-md">{{ bestGrades[n] }}</span>
+                                            <span v-else>⭐</span>
+                                        </div>
+                                        <span v-else>🚩</span>
+                                    </div>
+                                    <div class="node-info text-left">
+                                        <div class="node-number">STAGE {{ String(n).padStart(2, '0') }}</div>
+                                        <div class="node-title">{{ getLevelTitle(n) }}</div>
+                                    </div>
+                                </button>
+
+                                <button v-if="isLevelUnlocked(n) && hasMentor(n)"
+                                    @click.stop="startStageWithExplanation(n)"
+                                    class="relative w-12 h-12 rounded-2xl bg-amber-500/90 backdrop-blur-xl border border-amber-400/50 flex flex-col items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.3)] active:scale-90 transition-all hover:bg-amber-400 shrink-0 group"
+                                    title="查看教學">
+                                    <div class="absolute -inset-1 bg-amber-400/30 rounded-2xl animate-pulse group-hover:block hidden"></div>
+                                    <span class="text-xl">👩‍🏫</span>
+                                    <span class="text-[8px] font-black text-slate-900 leading-none -mt-0.5">說明</span>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Roadmap Layer (Can be expanded with SVG in v2) -->
+                    <!-- For now, we use the background image's path as the primary visual road -->
+                </div>
+            </div>
+
+            <!-- Battle Confirm Overlay (2.0 Style Refined v2.0.1) -->
+            <transition name="fade">
+                <div v-if="isBattleConfirmOpen" class="fixed inset-0 z-[100] flex items-center justify-center px-8 bg-slate-950/40 backdrop-blur-sm" @click="isBattleConfirmOpen = false">
+                    <div class="w-full max-w-xs confirm-modal-glass rounded-[2rem] overflow-hidden" @click.stop v-if="selectedStageToConfirm">
+                        <div class="p-7 text-center bg-gradient-to-b from-white/5 to-transparent">
+                            <div class="mb-5 flex items-center justify-center">
+                                <span class="text-3xl animate-pulse opacity-80">⚔️</span>
+                            </div>
+                            <h3 class="text-white text-lg font-black mb-1.5 tracking-tighter">準備好挑戰了嗎？</h3>
+                            <div class="inline-block px-2.5 py-0.5 bg-amber-500/10 rounded-lg border border-amber-500/20 mb-1">
+                                <p class="text-amber-400 text-[9px] font-black uppercase tracking-[0.2em]">STAGE {{ String(selectedStageToConfirm).padStart(2, '0') }}</p>
+                            </div>
+                            <p class="text-white/80 font-bold mt-1 text-xs tracking-wide">{{ getLevelTitle(selectedStageToConfirm) }}</p>
+                        </div>
+                        <div class="flex p-4 gap-3 bg-black/10">
+                            <button @click="isBattleConfirmOpen = false" 
+                                class="flex-2 px-6 py-2.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 rounded-xl text-white/50 text-[10px] font-black transition-all active:scale-95 uppercase tracking-widest">
+                                取消
+                            </button>
+                            <button @click="confirmAndStartBattle" 
+                                class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black rounded-xl transition-all active:scale-95 shadow-[0_4px_15px_rgba(245,158,11,0.2)]">
+                                出發！
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+
+            <!-- In-Map Mentor explanation Overlay (v1.9.1 Refined) -->
+            <transition name="fade">
+                <div v-if="isMapMentorOpen" class="fixed inset-0 z-[110] flex flex-col justify-end bg-slate-950/40 backdrop-blur-md px-6 pb-10" @click="nextMentorLine">
+                    <!-- Mentor Portrait (Floating) -->
+                    <div class="absolute bottom-40 left-1/2 -translate-x-1/2 w-full max-w-sm pointer-events-none transition-all duration-700 ease-out flex justify-center">
+                        <div class="mentor-portrait-shadow"></div>
+                        <img src="assets/images/ui/mentor-cover-fullbody.png" alt="Mentor" 
+                            class="h-[65vh] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] mentor-portrait-fade"
+                            style="transform: translateY(20px);">
+                    </div>
+                    
+                    <!-- New Refined Dialogue Box (Dark Glass) -->
+                    <div class="mentor-dialogue-box w-full px-8 py-7 rounded-[2rem] relative isolate overflow-hidden shadow-[0_24px_64px_-16px_rgba(0,0,0,0.8)] border border-white/5 active:scale-[0.99] transition-transform" @click.stop="nextMentorLine">
+                        
+                        <!-- Top Bar within Dialogue Box -->
+                        <div class="flex justify-between items-center mb-6">
+                            <div class="flex items-center gap-2">
+                                <div class="w-1.5 h-5 bg-amber-500 rounded-full"></div>
+                                <span class="text-amber-500/80 font-black text-xs tracking-widest uppercase">導師說明</span>
+                            </div>
+                            <button @click.stop="finishMentorDialogue" 
+                                class="px-3 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-white/40 text-[9px] font-black transition-all tracking-tighter">
+                                跳過
+                            </button>
+                        </div>
+                        
+                        <div class="min-h-[5em] text-white/95 text-lg font-medium mentor-dialogue-text">
+                            {{ displayedMentorText }}<span v-if="isTypingMentor" class="inline-block w-1 h-5 bg-amber-500 ml-1 animate-pulse align-middle"></span>
+                        </div>
+                        
+                        <!-- Next Hint -->
+                        <div class="flex justify-end mt-4">
+                            <div v-if="!isTypingMentor" class="flex flex-col items-center opacity-80">
+                                <div class="w-10 h-6 flex items-center justify-center animate-bounce">
+                                    <span class="text-amber-500 text-sm">▼</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+        </div>
+
         <!-- V3.0 Battle UI -->
-        <div v-else id="stageWrap" class="fixed inset-0 bg-slate-900 overflow-hidden font-sans select-none"
+        <div v-else-if="!isFinished" id="stageWrap" class="fixed inset-0 bg-slate-900 overflow-hidden font-sans select-none"
             :class="{ 'boss-vfx-shake': bossScreenShake }">
 
             <!-- [L0, L1] Scene & Arena Layer -->
@@ -403,12 +760,16 @@
                         <button @click="isMistakesOpen = true"
                             class="w-full py-3 rounded-xl bg-slate-800 text-slate-300 font-bold text-sm hover:bg-slate-700 transition-colors border border-slate-600 mb-3">📒
                             查看題目</button>
-                        <button v-if="currentLevel < maxLevel" @click="goNextLevel"
+                        <button v-if="currentLevel < maxLevel" @click="returnToMap"
                             class="w-full py-4 rounded-xl bg-amber-500 text-slate-900 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all mb-3"
-                            :class="{ 'opacity-0 pointer-events-none': !isNextBtnVisible }">下一關</button>
-                        <button v-else @click="startOver"
+                            :class="{ 'opacity-0 pointer-events-none': !isNextBtnVisible }">
+                            返回地圖
+                        </button>
+                        <button v-else @click="returnToMap"
                             class="w-full py-4 rounded-xl bg-amber-500 text-slate-900 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all mb-3"
-                            :class="{ 'opacity-0 pointer-events-none': !isNextBtnVisible }">回到首頁</button>
+                            :class="{ 'opacity-0 pointer-events-none': !isNextBtnVisible }">
+                            章節結算
+                        </button>
                     </div>
 
                     <div v-if="playerDead" class="w-full">

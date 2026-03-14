@@ -1,0 +1,74 @@
+{
+  "chapter1": {
+    "id": 1,
+    "title": "第一章：魔王城入口",
+    "segments": [
+      {
+        "id": "a",
+        "title": "新手村",
+        "background": "assets/images/maps/chapter1-a.png",
+        "nodes": {
+          "1": { "x": 50, "y": 15, "landmark": "新手村" },
+          "2": { "x": 30, "y": 35, "landmark": "草道" },
+          "3": { "x": 75, "y": 55, "landmark": "森林入口" },
+          "4": { "x": 40, "y": 75, "landmark": "森林深處" },
+          "5": { "x": 65, "y": 90, "landmark": "幽暗小徑" }
+        }
+      },
+      {
+        "id": "b",
+        "title": "山路高地",
+        "background": "assets/images/maps/chapter1-b.png",
+        "nodes": {
+          "6": { "x": 25, "y": 15, "landmark": "荒野邊境" },
+          "7": { "x": 75, "y": 35, "landmark": "高地入口" },
+          "8": { "x": 45, "y": 55, "landmark": "山影小道" },
+          "9": { "x": 60, "y": 75, "landmark": "巨石陣" },
+          "10": { "x": 35, "y": 90, "landmark": "魔力泉水" }
+        }
+      },
+      {
+        "id": "c",
+        "title": "魔王城前",
+        "background": "assets/images/maps/chapter1-c.png",
+        "nodes": {
+          "11": { "x": 70, "y": 15, "landmark": "城堡哨站" },
+          "12": { "x": 40, "y": 35, "landmark": "守衛營地" },
+          "13": { "x": 65, "y": 55, "landmark": "內城護欄" },
+          "14": { "x": 30, "y": 75, "landmark": "吊橋前" },
+          "15": { "x": 50, "y": 90, "landmark": "魔王城大門" }
+        }
+      },
+      {
+        "id": "d",
+        "title": "城內外廊",
+        "background": "C:/Users/York/.gemini/antigravity/brain/866b81f1-c497-4000-8080-d5f45acc5698/chapter1_segment_d_castle_walls_1773504614165.png",
+        "nodes": {
+          "16": { "x": 20, "y": 15, "landmark": "城門長廊" },
+          "17": { "x": 50, "y": 35, "landmark": "幽靜階梯" },
+          "18": { "x": 30, "y": 55, "landmark": "石橋" },
+          "19": { "x": 70, "y": 75, "landmark": "城內外苑" },
+          "20": { "x": 45, "y": 90, "landmark": "外廊出口" }
+        }
+      },
+      {
+        "id": "e",
+        "title": "深淵迴廊",
+        "background": "",
+        "nodes": {}
+      },
+      {
+        "id": "f",
+        "title": "王座深處",
+        "background": "",
+        "nodes": {}
+      },
+      {
+        "id": "g",
+        "title": "終局聖域",
+        "background": "",
+        "nodes": {}
+      }
+    ]
+  }
+}

@@ -1,5 +1,22 @@
 [
     {
+        "version": "26031501",
+        "date": "2026-03-15",
+        "title": "Map 2.0 & Mentor Flow Refactor Milestone",
+        "changes": [
+            "第一章地圖改成分區分頁式地圖，大幅提升地圖導覽與擴充性。",
+            "地圖背景與節點錨點架構持續優化，確保不同解析度下的視覺一致性。",
+            "區域標籤（Area Tabs）擴充為可支援未來 35 關 / 7 區的骨架，奠定長期擴充基礎。",
+            "姊姊說明（Mentor Dialogue）改為地圖內 Overlay 形式，查看完畢後返回地圖，不再自動進入戰鬥。",
+            "關卡進入前加入挑戰確認彈窗（Battle Confirm Modal），防止誤觸戰鬥。",
+            "導師對話框（Mentor Overlay）與挑戰確認視窗統一為 2.0 黑玻璃半透明風格（Black Glass）。",
+            "補完第 16–20 關（Segment D：城內外廊）資料、背景資產與題庫生成邏輯。",
+            "修正 Vue 的「computed is readonly」警告問題，強化狀態管理的穩定性。",
+            "優化地圖與戰鬥 BGM 的切換逻辑，加入地圖專屬配樂 (map.mp3)。",
+            "對話框內文排版與按鈕視覺細節微調（Ultra-Polish），提升整體專業感。"
+        ]
+    },
+    {
         "version": "26031404",
         "date": "2026-03-14",
         "title": "HUD／桌面版版面收尾優化",

@@ -275,5 +275,100 @@
     "focusParticle": "Boss",
     "focusLabel": "複習",
     "bgKey": ""
+  },
+  {
+    "id": "L16",
+    "name": "城門長廊：起點",
+    "skillId": "KARA_SOURCE_START",
+    "unlockSkills": [
+      "KARA_SOURCE_START"
+    ],
+    "skillMix": {
+      "newSkillWeight": 0.6,
+      "oldSkillWeight": 0.4
+    },
+    "questionCount": 10,
+    "boss": null,
+    "levelNumber": 16,
+    "levelName": "城門長廊",
+    "focusParticle": "から",
+    "focusLabel": "起點",
+    "bgKey": ""
+  },
+  {
+    "id": "L17",
+    "name": "幽靜階梯：終點",
+    "skillId": "MADE_LIMIT_END",
+    "unlockSkills": [
+      "MADE_LIMIT_END"
+    ],
+    "skillMix": {
+      "newSkillWeight": 0.6,
+      "oldSkillWeight": 0.4
+    },
+    "questionCount": 10,
+    "boss": null,
+    "levelNumber": 17,
+    "levelName": "幽靜階梯",
+    "focusParticle": "まで",
+    "focusLabel": "終點",
+    "bgKey": ""
+  },
+  {
+    "id": "L18",
+    "name": "石橋：同行",
+    "skillId": "TO_COMPANION",
+    "unlockSkills": [
+      "TO_COMPANION"
+    ],
+    "skillMix": {
+      "newSkillWeight": 0.6,
+      "oldSkillWeight": 0.4
+    },
+    "questionCount": 10,
+    "boss": null,
+    "levelNumber": 18,
+    "levelName": "石橋",
+    "focusParticle": "と",
+    "focusLabel": "同行",
+    "bgKey": ""
+  },
+  {
+    "id": "L19",
+    "name": "城內外苑：手段",
+    "skillId": "DE_TOOL_MEANS",
+    "unlockSkills": [
+      "DE_TOOL_MEANS"
+    ],
+    "skillMix": {
+      "newSkillWeight": 0.6,
+      "oldSkillWeight": 0.4
+    },
+    "questionCount": 10,
+    "boss": null,
+    "levelNumber": 19,
+    "levelName": "城內外苑",
+    "focusParticle": "で",
+    "focusLabel": "手段",
+    "bgKey": ""
+  },
+  {
+    "id": "L20_BOSS",
+    "name": "魔王關：外廊守護者",
+    "unlockSkills": [
+      "BOSS_REVIEW_04"
+    ],
+    "questionCount": 15,
+    "rewardAbilityId": "WAKUWAKU",
+    "boss": {
+      "everyNLevels": 5,
+      "mode": "all_unlocked",
+      "sampling": "balanced"
+    },
+    "levelNumber": 20,
+    "levelName": "魔王關",
+    "focusParticle": "Boss",
+    "focusLabel": "複習",
+    "bgKey": ""
   }
 ]
