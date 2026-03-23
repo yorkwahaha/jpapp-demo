@@ -1,3 +1,4 @@
+﻿// ================= [ DEBUG OVERLAY ] =================
 (function () {
 
     'use strict';
@@ -296,10 +297,7 @@
 
 
 
-const { createApp, ref, reactive, computed, watch, onMounted, nextTick } = Vue;
-
-
-
+// ================= [ TTS AUDIO — MODULE-LEVEL SETUP ] =================
 const TTS_AUDIO_BASE = "assets/audio/tts/";
 
 const ttsExistCache = new Map();
@@ -586,6 +584,7 @@ function getAzureSpeechRegion() {
 
 
 
+// ================= [ AZURE TTS — PROXY & SPEAK ] =================
 const TTS_PROXY_URL = "https://jpapp-tts-proxy.yorkwahaha.workers.dev/tts";
 
 const TTS_SESSION_URL = "https://jpapp-tts-proxy.yorkwahaha.workers.dev/session";
@@ -838,6 +837,7 @@ function getCurrentQuestionTtsKey() {
 
 
 
+// ================= [ BATTLE LOG — DOM HELPERS ] =================
 const battleLogs = [];
 
 function pushBattleLog(text, type = "info") {
@@ -998,6 +998,7 @@ function flashHeroHit(hpPct = 1.0, ms = 1000) {
 
 
 
+// ================= [ HERO STATUS & BUFFS ] =================
 const heroStatusTimers = { speedUntil: 0, evadeUntil: 0 };
 
 const heroBuffs = { enemyAtbMult: 1.0, enemyDmgMult: 1.0, odoodoTurns: 0, gachigachiTurns: 0, monsterSleep: false };
@@ -1280,7 +1281,10 @@ window.updateSpUI = function () {
 
 
 
-createApp({
+const { ref, reactive, computed, watch, onMounted, nextTick } = Vue;
+
+// ================= [ VUE APP — MAIN COMPONENT ] =================
+Vue.createApp({
 
     setup() {
 
@@ -1306,6 +1310,7 @@ createApp({
 
 ========================= */
 
+        // ---- [ DEBUG TOOLS : jpDebug ] ----
         (function attachDebugTools() {
 
             function safeMaxLevel() {
@@ -2166,6 +2171,7 @@ jpDebug commands:
 
 
 
+        // ================= [ CONFIG & STATE — VUE REACTIVE SETUP ] =================
         // --- 資料抽離：讀取全域早期關卡資料庫 ---
 
         const pool = window.EARLY_GAME_POOLS || { config: {}, legacyDb: {}, skills: {} };
@@ -2838,6 +2844,7 @@ jpDebug commands:
 
 
 
+        // ---- [ CONSTANTS & SETTINGS ] ----
         const APP_VERSION = window.APP_VERSION || "26032101";
 
         const appVersion = ref(APP_VERSION);
@@ -2976,6 +2983,7 @@ jpDebug commands:
 
 
 
+        // ---- [ STATE — SKILLS & CODEX ] ----
         const skillsAll = ref({});
 
         const skillUnlockMap = ref({});
@@ -3120,6 +3128,7 @@ jpDebug commands:
 
 
 
+        // ================= [ MENTOR DIALOGUE ] =================
         const setupMentorDialogue = (skill) => {
 
             currentMentorSkill.value = skill;
@@ -4072,6 +4081,7 @@ jpDebug commands:
 
         const isInventoryOpen = ref(false);
 
+        // ---- [ STATE — GAME BATTLE CORE ] ----
         const player = ref({ hp: 100, maxHp: 100, gold: 0, exp: 0 });
 
         const monster = ref({ hp: MONSTER_HP, maxHp: MONSTER_HP, name: '助詞怪', size: 1 });
@@ -4166,6 +4176,7 @@ jpDebug commands:
 
 
 
+        // ---- [ STATE — AUDIO REFS ] ----
         const audioInited = ref(false);
 
         const isPreloading = ref(false);
@@ -4250,6 +4261,7 @@ jpDebug commands:
 
 
 
+        // ---- [ BATTLE CONTROL — PAUSE / RESUME ] ----
         const pauseBattle = () => {
 
             wasTimerRunning = wasTimerRunning || !!timerId;
@@ -4342,6 +4354,7 @@ jpDebug commands:
 
 
 
+        // ================= [ AUDIO & TTS ] =================
         const loadAudioSettings = () => {
 
             try {
@@ -4744,6 +4757,7 @@ jpDebug commands:
 
 
 
+        /** 初始化音效池：preload SFX / BGM，建立 AudioContext 並注入 gain nodes */
         const initAudio = async () => {
 
             if (audioInited.value) return;
@@ -5884,6 +5898,7 @@ jpDebug commands:
 
 
 
+        // ---- [ TIMER ] ----
         const startTimer = () => {
 
             clearTimer();
@@ -6540,6 +6555,7 @@ jpDebug commands:
 
 
 
+        // ================= [ QUESTION GENERATION ] =================
         const ALL_PARTICLES = ['は', 'が', 'を', 'に', 'で', 'へ', 'と'];
 
         const DEFAULT_NEW_SKILL_RATIO = 0.6;
@@ -6792,6 +6808,7 @@ jpDebug commands:
 
 
 
+        /** 載入並啟動指定關卡：停止舊音效、選播 BGM、呼叫 initGame。withMentor=true 時由導師圖示觸發。 */
         const startLevel = async (level, withMentor = false) => {
 
             const lv = Number(level) || parseInt(level, 10) || 1;
@@ -7118,6 +7135,7 @@ jpDebug commands:
 
 
 
+        /** 依 skillId 生成單道助詞題（包含所有 if/else 助詞都合邏輯分支）。回傳 question object 或 null。 */
         const generateQuestionBySkill = (skillId, blanks, db, vocab) => {
 
             // 向下相容 MO_ALSO_BASIC
@@ -8446,6 +8464,8 @@ jpDebug commands:
 
 
 
+        // ================= [ BATTLE INIT ] =================
+        /** 主戰鬥初始化：依關卡 ID 生成題庫、配置怪物、重置所有 battle state、啟動計時器。 */
         const initGame = (level, skipMentor = false, forceMentor = false) => {
 
             window._battlePopPlayed = false;
@@ -9506,6 +9526,8 @@ jpDebug commands:
 
 
 
+        // ================= [ BATTLE LOGIC ] =================
+        /** 答案判定入口：計算是否正確、處理傘害 / combo 計數、觸發自動推進郏輯。 */
         const checkAnswer = () => {
 
             if (hasSubmitted.value) return;
@@ -10244,6 +10266,8 @@ jpDebug commands:
 
 
 
+        // ================= [ PROGRESSION & REWARDS ] =================
+        /** 關卡推進入口：發放 Boss 能力獎勵 Modal，完成後呼叫 proceedToNextLevel。 */
         const goNextLevel = () => {
 
             needsUserGestureToResumeBgm.value = false;
@@ -10878,6 +10902,7 @@ jpDebug commands:
 
 
 
+        // ================= [ DEBUG TOOLS — LEVEL JUMP ] =================
         const debugJumpToLevel = (level) => {
 
             const lv = Math.max(1, Math.min(level, maxLevel.value || 99));
