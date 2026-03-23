@@ -6764,9 +6764,7 @@ jpDebug commands:
 
         };
 
-        const playCorrectBeep = () => { playBeep(523, 0.15); playBeep(659, 0.15, 'sine'); };
 
-        const playWrongBeep = () => { playBeep(200, 0.25, 'sawtooth'); };
 
 
 
@@ -6794,14 +6792,6 @@ jpDebug commands:
 
 
 
-        const applyBattleBgmNow = (lv) => {
-
-            playBgm();
-
-        };
-
-
-
         const startLevel = async (level, withMentor = false) => {
 
             const lv = Number(level) || parseInt(level, 10) || 1;
@@ -6814,7 +6804,7 @@ jpDebug commands:
 
             ensureBgmElementSync();
 
-            applyBattleBgmNow(lv);
+            playBgm();
 
             preloadAllAudio();
 
@@ -7125,14 +7115,6 @@ jpDebug commands:
             return q;
 
         };
-
-
-
-        const gaExistRecentSentences = [];
-
-        const gaExistRecentTemplates = [];
-
-        const gaExistRecentCategories = [];
 
 
 
@@ -9026,14 +9008,6 @@ jpDebug commands:
 
 
 
-                if (lv === 5) {
-
-                } else if (lv === 10) {
-
-                }
-
-
-
                 if (!generatedFromSkill && skillId) {
 
                     q = safeFallbackQuestion(skillId);
@@ -9218,17 +9192,6 @@ jpDebug commands:
 
                 } // end of else (non-L5 global fallback)
 
-
-
-                if (q) {
-
-                    const isBoss = (currentLevel.value % 5 === 0);
-
-                    const targetCount = getChoiceCountForLevel(currentLevel.value);
-
-                    const actualCount = q.choices ? q.choices.length : 0;
-
-                }
 
 
                 qList.push(q);
@@ -11042,12 +11005,6 @@ window.addEventListener('error', (e) => {
 
 
 window.addEventListener("keydown", (e) => {
-
-    if ((e.shiftKey || e.ctrlKey) && e.key === "2") {
-
-        const appInstance = document.querySelector('#app').__vue_app__.config.globalProperties;
-
-    }
 
     if (e.key && e.key.toLowerCase() === "t") {
 
