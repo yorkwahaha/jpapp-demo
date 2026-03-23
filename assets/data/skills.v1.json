@@ -850,5 +850,152 @@
         "emotion": "encourage"
       }
     ]
+  },
+  {
+    "id": "BOSS_REVIEW_05",
+    "name": "魔王考驗：時間・對象・存在・方向",
+    "particle": "複習",
+    "rank": 3,
+    "meaning": "綜合複習 に、へ",
+    "rule": "綜合應用",
+    "examples": [],
+    "choiceSet": [],
+    "mentorDialogue": [
+      {
+        "text": "你已經深入了深淵。這一次的考驗，將專注在你對『方向』與『存在』的感知。",
+        "audio": "",
+        "emotion": "mission"
+      },
+      {
+        "text": "時間點、動作對象、存在地點，或是前進的方向，種種線索都會交錯。這不是靠猜測就能通過的關卡。",
+        "audio": "",
+        "emotion": "explain"
+      },
+      {
+        "text": "去吧，展現你對時空坐標的掌握。",
+        "audio": "",
+        "emotion": "encourage"
+      }
+    ]
+  },
+  {
+    "id": "YA_AND_OTHERS",
+    "name": "や・第一式：並列（不完全列舉）",
+    "particle": "や",
+    "rank": 2,
+    "meaning": "A和B等事物",
+    "rule": "AやB",
+    "examples": ["パンや牛乳"],
+    "choiceSet": ["や", "と", "に", "で"],
+    "mentorDialogue": []
+  },
+  {
+    "id": "DE_SCOPE",
+    "name": "で・第三式：範圍與狀態",
+    "particle": "で",
+    "rank": 2,
+    "meaning": "表示範圍、期限或數量狀態",
+    "rule": "範圍で",
+    "examples": ["日本で一番"],
+    "choiceSet": ["で", "に", "へ", "を"],
+    "mentorDialogue": []
+  },
+  {
+    "id": "NI_PURPOSE",
+    "name": "に・第四式：移動的目的",
+    "particle": "に",
+    "rank": 2,
+    "meaning": "去做某事（接在移動動詞前）",
+    "rule": "N(動作)に行く／来る",
+    "examples": ["買い物に行く"],
+    "choiceSet": ["に", "で", "を", "へ"],
+    "mentorDialogue": []
+  },
+  {
+    "id": "TO_QUOTE",
+    "name": "と・第四式：引用與思考內容",
+    "particle": "と",
+    "rank": 2,
+    "meaning": "說出的話或思考的內容",
+    "rule": "句子/內容 と 言う/思う",
+    "examples": ["行くと思う", "好きだと言う"],
+    "choiceSet": ["と", "に", "で", "を"],
+    "mentorDialogue": []
+  },
+  {
+    "id": "BOSS_REVIEW_06",
+    "name": "魔王考驗：並列・範圍・目的・引用",
+    "particle": "複習",
+    "rank": 3,
+    "meaning": "綜合複習 や、で、に、と",
+    "rule": "綜合應用",
+    "examples": [],
+    "mentorDialogue": []
+  },
+  {
+    "id": "KARA_REASON",
+    "name": "から・第四式：原因與理由",
+    "particle": "から",
+    "rank": 2,
+    "meaning": "表示產生某結果的原因",
+    "rule": "原因から",
+    "examples": ["時間がないから"],
+    "choiceSet": ["から", "で", "に", "を"],
+    "mentorDialogue": []
+  },
+  {
+    "id": "YORI_COMPARE",
+    "name": "より・第一式：比較基準",
+    "particle": "より",
+    "rank": 2,
+    "meaning": "表示比較的基準 (比...更...)",
+    "rule": "AはBより",
+    "examples": ["肉より魚が好き"],
+    "choiceSet": ["より", "から", "で", "に"],
+    "mentorDialogue": []
+  },
+  {
+    "id": "NI_FREQUENCY",
+    "name": "に・第五式：頻率與分配比例",
+    "particle": "に",
+    "rank": 2,
+    "meaning": "表示平均分配的比例或頻率",
+    "rule": "時間區間/數量 に",
+    "examples": ["一日に三回"],
+    "choiceSet": ["に", "で", "を", "へ"],
+    "mentorDialogue": []
+  },
+  {
+    "id": "DE_MATERIAL",
+    "name": "で・第四式：製作材料",
+    "particle": "で",
+    "rank": 2,
+    "meaning": "表示製成物品的成分或原料",
+    "rule": "原料で",
+    "examples": ["木で作る", "布で作る"],
+    "choiceSet": ["で", "に", "から", "を"],
+    "mentorDialogue": []
+  },
+  {
+    "id": "FINAL_BOSS_35",
+    "name": "世界之巔：終局考驗",
+    "particle": "複習",
+    "rank": 3,
+    "meaning": "綜合終局複習，驗收所有最高階助詞與句型",
+    "rule": "綜合應用",
+    "examples": [],
+    "choiceSet": [],
+    "mentorDialogue": []
+  },
+  {
+    "id": "HIDDEN_BOSS_36",
+    "name": "裏・極限深淵：無盡試煉",
+    "particle": "極限",
+    "rank": 3,
+    "meaning": "全遊戲 1~35 關終極無死角試煉",
+    "rule": "全域綜合",
+    "examples": [],
+    "choiceSet": [],
+    "mentorDialogue": []
   }
 ]

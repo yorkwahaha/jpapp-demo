@@ -1,1378 +1,4067 @@
 <!DOCTYPE html>
+
 <html lang="zh-TW">
 
+
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
     <title>日語助詞 RPG：魔王城大冒險</title>
+
     <link rel="icon" type="image/x-icon" href="favicon.ico">
+
     <script>
+
         (function () {
+
             const h = location.hostname;
+
             const isLocal = h === 'localhost' || h === '127.0.0.1' || h === '0.0.0.0'
+
                 || /^192\.168\./.test(h) || /^10\./.test(h) || /^172\.(1[6-9]|2\d|3[01])\./.test(h);
+
             if (!isLocal) return;
+
             const s = document.createElement("script");
+
             s.src = "config.secret.local.js";
+
             s.defer = true;
+
             s.onerror = function () { };
+
             document.head.appendChild(s);
+
         })();
+
     </script>
+
     <script>
+
         window.APP_VERSION = '26031501'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+
         document.addEventListener('gesturechange', function (e) { e.preventDefault(); });
+
     </script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.js"></script>
+
     <script src="https://cdn.tailwindcss.com"></script>
+
     <link
+
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
+
         rel="stylesheet">
+
     <link rel="stylesheet" href="assets/css/styles.css?v=26031403">
 
+
+
     <script>
+
         (function () {
+
             // 老闆專業的破快取機制 - 使用全域單一版本號
+
             const v = window.APP_VERSION || '26031501';
 
+
+
             // 1. 載入資料檔
+
             const s1 = document.createElement('script');
+
             s1.src = 'assets/data/earlyGamePools.v1.js?v=' + v;
+
             s1.async = false;
+
             document.head.appendChild(s1);
 
+
+
             // 2. 載入遊戲主程式
+
             const s2 = document.createElement('script');
+
             s2.src = 'assets/js/game.js?v=' + v;
+
             s2.async = false;
+
             document.head.appendChild(s2);
+
         })();
+
     </script>
+
     <style>
+
         .map-header {
+
             display: flex;
+
             justify-content: center;
+
             align-items: center;
+
             padding: 1rem;
+
             background: rgba(15, 23, 42, 0.4);
+
             backdrop-filter: blur(20px);
+
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
             z-index: 50;
+
             position: relative;
+
         }
 
+
+
         .map-viewport {
+
             flex: 1;
+
             overflow: hidden;
+
             position: relative;
+
             display: flex;
+
             justify-content: center;
+
             align-items: flex-start;
+
             background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+
         }
+
+
 
         .map-nodes-container {
+
             height: 100%;
+
             width: auto;
+
             position: relative;
+
             flex-shrink: 0;
+
             user-select: none;
+
         }
 
-        .map-nodes-container img, .map-base-img {
+
+
+        .map-nodes-container img,
+
+        .map-base-img {
+
             height: 100%;
+
             width: auto;
+
             max-width: none;
+
             display: block;
+
             pointer-events: none;
+
         }
+
+
 
         /* Stage Anchor v1 */
+
         .stage-node-wrap {
+
             position: absolute;
+
             z-index: 10;
+
             display: flex;
+
             flex-direction: column;
+
             align-items: center;
+
         }
 
-        /* Node Style v6 - JPAPP 2.0 Glassmorphism */
+
+
+        /* Node Style v9 - Clean Glass Panel */
+
         .stage-node-btn {
-            background: rgba(30, 41, 59, 0.4) !important;
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 16px;
-            padding: 10px 16px !important;
+
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.35), rgba(51, 65, 85, 0.32), rgba(30, 41, 59, 0.38)) !important;
+
+            backdrop-filter: blur(20px) saturate(140%);
+
+            -webkit-backdrop-filter: blur(20px) saturate(140%);
+
+            border: 1px solid rgba(148, 163, 184, 0.15);
+
+            border-radius: 14px;
+
+            padding: 10px 16px 10px 10px !important;
+
             display: flex;
+
             align-items: center;
-            gap: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+
+            gap: 14px;
+
+            box-shadow:
+
+                0 6px 20px rgba(0, 0, 0, 0.5),
+
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
             width: auto !important;
+
             min-width: 180px;
+
             max-width: 280px;
+
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+            position: relative;
+
         }
+
+
+
+        .stage-node-btn::before {
+
+            content: '';
+
+            position: absolute;
+
+            inset: 0;
+
+            border-radius: 13px;
+
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, transparent 50%);
+
+            pointer-events: none;
+
+        }
+
+
+
         .is-current .stage-node-btn {
-            background: rgba(251, 191, 36, 0.15) !important;
-            border-color: rgba(251, 191, 36, 0.5);
-            box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+
+            background: linear-gradient(145deg, rgba(251, 191, 36, 0.18), rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.12)) !important;
+
+            border-color: rgba(251, 191, 36, 0.35);
+
+            border-width: 1.5px;
+
+            box-shadow:
+
+                0 0 20px rgba(251, 191, 36, 0.25),
+
+                0 6px 20px rgba(0, 0, 0, 0.6),
+
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+
             transform: scale(1.05);
+
         }
+
+
+
+        .is-current .stage-node-btn::before {
+
+            content: '';
+
+            position: absolute;
+
+            inset: 0;
+
+            border-radius: 13px;
+
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, transparent 50%);
+
+            pointer-events: none;
+
+        }
+
+
+
         .is-cleared .stage-node-btn {
-            border-color: rgba(16, 185, 129, 0.2);
+
+            border-color: rgba(148, 163, 184, 0.18);
+
+            box-shadow:
+
+                0 6px 20px rgba(0, 0, 0, 0.5),
+
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
         }
+
+
+
         .is-locked .stage-node-btn {
+
             opacity: 0.6;
+
             filter: grayscale(0.8) blur(1px);
+
         }
 
-        /* Landmark Labels - Refined to cover background English labels */
-        .node-landmark-label {
-            position: absolute;
-            top: -30px;
-            font-size: 0.75rem;
-            font-weight: 900;
-            color: #fbbf24;
-            background: rgba(15, 23, 42, 0.85);
-            padding: 4px 12px;
-            border-radius: 999px;
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(251, 191, 36, 0.4);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            white-space: nowrap;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
-            z-index: 5;
-            text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
-        }
 
-        /* Immersive Map Layout (v1.9) */
-        .map-page-container {
-            display: flex;
-            flex-direction: column;
-            height: 100dvh;
-            background: #0b1121;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
-        .fade-enter-from, .fade-leave-to { opacity: 0; }
-        
-        .map-viewport {
-            flex-grow: 1;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Mentor Dialogue Box v1.9.1 - Refined Dark Glass (More Transparent v2.0.1) */
-        .mentor-dialogue-box {
-            background: rgba(10, 15, 30, 0.55) !important;
-            backdrop-filter: blur(48px) saturate(180%);
-            -webkit-backdrop-filter: blur(48px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 40px 120px -20px rgba(0, 0, 0, 0.9),
-                        inset 0 1px 1px rgba(255, 255, 255, 0.05);
-        }
-        .mentor-dialogue-box p, .mentor-dialogue-text {
-            line-height: 2.0 !important;
-            letter-spacing: 0.05em !important;
-        }
-
-        /* 2.0 Confirm Modal Base (More Transparent v2.0.1) */
-        .confirm-modal-glass {
-            background: rgba(15, 23, 42, 0.6) !important;
-            backdrop-filter: blur(32px) saturate(180%);
-            -webkit-backdrop-filter: blur(32px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 40px 120px -20px rgba(0, 0, 0, 1);
-        }
-
-        .mentor-portrait-fade {
-            -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 95%);
-            mask-image: linear-gradient(to bottom, black 70%, transparent 95%);
-        }
-
-        .mentor-portrait-shadow {
-            position: absolute;
-            bottom: -5%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 120%;
-            height: 40%;
-            background: radial-gradient(circle at center, rgba(245, 158, 11, 0.15) 0%, transparent 80%);
-            z-index: -1;
-            filter: blur(40px);
-        }
 
         .node-icon {
-            width: 36px !important;
-            height: 36px !important;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
+
+            width: 48px !important;
+
+            height: 48px !important;
+
+            background: transparent;
+
+            border-radius: 50%;
+
             flex-shrink: 0;
+
             display: flex;
+
             align-items: center;
+
             justify-content: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .node-number {
-            font-size: 0.65rem !important;
-            color: #94a3b8;
-            font-weight: 900;
-            letter-spacing: 1.5px;
-            line-height: 1;
-            margin-bottom: 2px;
-            opacity: 0.7;
-        }
-        .node-title {
-            font-size: 0.85rem !important;
-            font-weight: 900;
-            color: #f8fafc;
-            white-space: nowrap;
-            max-width: 160px; 
-            overflow: hidden;
-            text-overflow: ellipsis;
+
+            border: none;
+
+            box-shadow: none;
+
+            position: relative;
+
+            margin-left: -8px;
+
+            z-index: 15;
+
         }
 
-        .chapter-header-area {
-            padding: 1rem;
-            text-align: center;
-            background: linear-gradient(to bottom, #0f172a, transparent);
-            z-index: 50;
+
+
+        .node-number {
+
+            font-size: 0.6rem !important;
+
+            color: #cbd5e1;
+
+            font-weight: 800;
+
+            letter-spacing: 1.8px;
+
+            line-height: 1;
+
+            margin-bottom: 3px;
+
+            opacity: 0.85;
+
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), 0 0 1px rgba(0, 0, 0, 0.8);
+
         }
+
+
+
+        .node-title {
+
+            font-size: 0.9rem !important;
+
+            font-weight: 900;
+
+            color: #ffffff;
+
+            white-space: nowrap;
+
+            max-width: 160px;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+            text-shadow:
+
+                0 2px 4px rgba(0, 0, 0, 0.7),
+
+                0 0 1px rgba(0, 0, 0, 0.9),
+
+                0 1px 0 rgba(0, 0, 0, 0.8);
+
+            letter-spacing: 0.02em;
+
+        }
+
+        .node-landmark-label {
+
+            font-size: 0.75rem;
+
+            font-weight: 800;
+
+            color: #f1f5f9;
+
+            text-shadow:
+
+                0 2px 6px rgba(0, 0, 0, 0.8),
+
+                0 1px 2px rgba(0, 0, 0, 0.9),
+
+                0 0 1px rgba(0, 0, 0, 1);
+
+            letter-spacing: 0.05em;
+
+            opacity: 0.95;
+
+        }
+
+
+
+        .stage-card-v4 {
+
+            position: relative;
+
+            display: block;
+
+            min-width: 190px;
+
+            padding: 0 !important;
+
+            background: transparent !important;
+
+            border: none;
+
+            box-shadow: none;
+
+            overflow: visible;
+
+        }
+
+
+
+        .stage-card-v4-panel {
+
+            position: relative;
+
+            min-height: 68px;
+
+            padding: 12px 13px 10px 47px;
+
+            border-radius: 15px;
+
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.2), rgba(241, 245, 249, 0.15) 38%, rgba(148, 163, 184, 0.12) 72%, rgba(71, 85, 105, 0.14) 100%);
+
+            backdrop-filter: blur(18px) saturate(128%);
+
+            -webkit-backdrop-filter: blur(18px) saturate(128%);
+
+            border: 1px solid rgba(255, 255, 255, 0.24);
+
+            box-shadow:
+
+                0 14px 28px rgba(15, 23, 42, 0.24),
+
+                0 3px 10px rgba(255, 255, 255, 0.05),
+
+                inset 0 2px 0 rgba(255, 255, 255, 0.28),
+
+                inset 0 -12px 18px rgba(15, 23, 42, 0.16),
+
+                inset 1.5px 0 0 rgba(255, 255, 255, 0.1),
+
+                inset -1.5px 0 0 rgba(15, 23, 42, 0.08),
+
+                inset 0 12px 18px rgba(255, 255, 255, 0.025);
+
+        }
+
+
+
+        .stage-card-v4-panel::before {
+
+            content: '';
+
+            position: absolute;
+
+            inset: 0;
+
+            border-radius: 14px;
+
+            background:
+
+                radial-gradient(110% 80% at 12% 0%, rgba(255, 255, 255, 0.2) 0%, transparent 48%),
+
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.1) 14%, transparent 42%);
+
+            pointer-events: none;
+
+        }
+
+
+
+        .stage-card-v4-panel::after {
+
+            content: '';
+
+            position: absolute;
+
+            inset: 0;
+
+            border-radius: 14px;
+
+            box-shadow:
+
+                inset 0 -1.5px 0 rgba(15, 23, 42, 0.28),
+
+                inset 0 -9px 14px rgba(15, 23, 42, 0.12),
+
+                inset 1.5px 0 0 rgba(255, 255, 255, 0.1),
+
+                inset -1.5px 0 0 rgba(15, 23, 42, 0.08),
+
+                inset 0 12px 18px rgba(255, 255, 255, 0.025);
+
+            pointer-events: none;
+
+        }
+
+
+
+        .stage-card-v4-letter {
+
+            position: absolute;
+
+            left: 7px;
+
+            top: -22px;
+
+            transform: skewX(-8deg);
+
+            z-index: 3;
+
+            display: block;
+
+            font-size: 70px;
+
+            line-height: 0.88;
+
+            font-weight: 900;
+
+            letter-spacing: -0.06em;
+
+            pointer-events: none;
+
+            filter: drop-shadow(0 12px 16px rgba(15, 23, 42, 0.24));
+
+        }
+
+
+
+        .stage-card-v4-letter.text-purple-400 {
+
+            color: #b95cff;
+
+            -webkit-text-stroke: 2.2px rgba(88, 28, 135, 0.42);
+
+            text-shadow:
+
+                0 1px 2px rgba(250, 245, 255, 0.32),
+
+                0 2px 0 rgba(147, 51, 234, 0.34),
+
+                0 4px 0 rgba(107, 33, 168, 0.24),
+
+                0 8px 14px rgba(76, 29, 149, 0.22),
+
+                0 12px 20px rgba(15, 23, 42, 0.18);
+
+        }
+
+
+
+        .stage-card-v4-letter.text-yellow-400,
+
+        .stage-card-v4-letter.text-yellow-300 {
+
+            color: #fcd34d;
+
+            -webkit-text-stroke: 2.2px rgba(120, 53, 15, 0.4);
+
+            text-shadow:
+
+                0 6px 14px rgba(15, 23, 42, 0.28),
+
+                0 2px 4px rgba(15, 23, 42, 0.34),
+
+                0 0 1px rgba(255, 255, 255, 0.28),
+
+                0 0 10px rgba(252, 211, 77, 0.1);
+
+        }
+
+
+
+        .stage-card-v4-letter.text-blue-400,
+
+        .stage-card-v4-letter.text-cyan-400 {
+
+            color: #22d3ee;
+
+            -webkit-text-stroke: 2px rgba(8, 47, 73, 0.55);
+
+            text-shadow:
+
+                0 4px 10px rgba(0, 0, 0, 0.42),
+
+                0 2px 3px rgba(15, 23, 42, 0.72),
+
+                0 0 10px rgba(34, 211, 238, 0.14);
+
+        }
+
+
+
+        .stage-card-v4-letter.text-orange-400,
+
+        .stage-card-v4-letter.text-amber-600 {
+
+            color: #60a5fa;
+
+            -webkit-text-stroke: 2px rgba(30, 64, 175, 0.55);
+
+            text-shadow:
+
+                0 4px 10px rgba(0, 0, 0, 0.42),
+
+                0 2px 3px rgba(15, 23, 42, 0.72),
+
+                0 0 10px rgba(96, 165, 250, 0.14);
+
+        }
+
+
+
+        .stage-card-v4-letter.text-slate-200,
+
+        .stage-card-v4-letter.text-gray-200 {
+
+            color: #f8fafc;
+
+            -webkit-text-stroke: 2px rgba(51, 65, 85, 0.45);
+
+            text-shadow:
+
+                0 4px 10px rgba(0, 0, 0, 0.38),
+
+                0 2px 3px rgba(15, 23, 42, 0.7);
+
+        }
+
+
+
+        .stage-card-v4-info {
+
+            position: relative;
+
+            z-index: 2;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: flex-start;
+
+            gap: 3px;
+
+            text-align: left;
+
+            margin-left: -1px;
+
+        }
+
+
+
+        .stage-card-v4-number {
+
+            font-size: 0.66rem;
+
+            color: rgba(244, 247, 251, 0.72);
+
+            font-weight: 800;
+
+            letter-spacing: 0.17em;
+
+            line-height: 1;
+
+            text-shadow:
+
+                0 1px 2px rgba(15, 23, 42, 0.18),
+
+                0 0 1px rgba(15, 23, 42, 0.1),
+
+                0 1px 0 rgba(255, 255, 255, 0.04),
+
+                0 2px 3px rgba(15, 23, 42, 0.08);
+
+        }
+
+
+
+        .stage-card-v4-title {
+
+            font-size: 0.99rem;
+
+            color: rgba(248, 250, 252, 0.94);
+
+            font-weight: 900;
+
+            letter-spacing: 0.01em;
+
+            line-height: 1.18;
+
+            text-shadow:
+
+                0 2px 4px rgba(15, 23, 42, 0.18),
+
+                0 0 1px rgba(15, 23, 42, 0.12),
+
+                0 1px 0 rgba(255, 255, 255, 0.035),
+
+                0 3px 6px rgba(15, 23, 42, 0.08);
+
+        }
+
+
+
+        /* S/A/B Grade Badge - Primary Visual Focus */
+
+        .grade-badge {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            width: 32px;
+
+            height: 32px;
+
+            border-radius: 50%;
+
+            font-size: 26px;
+
+            font-weight: 900;
+
+            text-align: center;
+
+            position: relative;
+
+            z-index: 10;
+
+        }
+
+
+
+        /* S Grade - Brilliant Gold Medal (Most Prominent) */
+
+        .text-yellow-400.grade-badge,
+
+        .text-yellow-300.grade-badge {
+
+            background: linear-gradient(145deg, #fde047, #fbbf24, #f59e0b);
+
+            color: #2d1408;
+
+            border: 3px solid #fef9c3;
+
+            box-shadow:
+
+                0 0 28px rgba(251, 191, 36, 1),
+
+                0 0 16px rgba(251, 191, 36, 0.8),
+
+                0 0 8px rgba(251, 191, 36, 0.6),
+
+                0 4px 12px rgba(0, 0, 0, 0.6),
+
+                inset 0 2px 4px rgba(255, 255, 255, 0.6),
+
+                inset 0 -2px 6px rgba(217, 119, 6, 0.7);
+
+            -webkit-text-stroke: 1px rgba(0,0,0,0.3);
+
+            text-shadow:
+
+                0 1px 2px rgba(255, 255, 255, 0.9),
+
+                0 0 12px rgba(251, 191, 36, 1),
+
+                0 0 6px rgba(251, 191, 36, 0.8);
+
+            animation: pulse-glow-s 1.8s ease-in-out infinite;
+
+            filter: brightness(1.3);
+
+        }
+
+
+
+        /* A Grade - Silver Medal */
+
+        .text-blue-400.grade-badge,
+
+        .text-cyan-400.grade-badge {
+
+            background: linear-gradient(145deg, #93c5fd, #60a5fa, #3b82f6);
+
+            color: #0b2559;
+
+            border: 2.5px solid #dbeafe;
+
+            box-shadow:
+
+                0 0 16px rgba(96, 165, 250, 0.7),
+
+                0 0 8px rgba(96, 165, 250, 0.5),
+
+                0 4px 12px rgba(0, 0, 0, 0.5),
+
+                inset 0 2px 3px rgba(255, 255, 255, 0.5),
+
+                inset 0 -2px 4px rgba(37, 99, 235, 0.6);
+
+            -webkit-text-stroke: 0.8px rgba(0,0,0,0.25);
+
+            text-shadow:
+
+                0 1px 2px rgba(255, 255, 255, 0.8),
+
+                0 0 8px rgba(147, 197, 253, 0.8);
+
+            filter: brightness(1.2);
+
+        }
+
+
+
+        /* B Grade - Bronze Medal */
+
+        .text-orange-400.grade-badge,
+
+        .text-amber-600.grade-badge {
+
+            background: linear-gradient(145deg, #fdba74, #fb923c, #f97316);
+
+            color: #4a1908;
+
+            border: 2px solid #fed7aa;
+
+            box-shadow:
+
+                0 0 12px rgba(251, 146, 60, 0.6),
+
+                0 0 6px rgba(251, 146, 60, 0.4),
+
+                0 4px 12px rgba(0, 0, 0, 0.5),
+
+                inset 0 2px 3px rgba(255, 255, 255, 0.4),
+
+                inset 0 -2px 4px rgba(234, 88, 12, 0.5);
+
+            -webkit-text-stroke: 0.8px rgba(0,0,0,0.25);
+
+            text-shadow:
+
+                0 1px 2px rgba(255, 255, 255, 0.7),
+
+                0 0 6px rgba(253, 186, 116, 0.7);
+
+            filter: brightness(1.15);
+
+        }
+
+
+
+        /* Modal Panel - Readable Glass */
+
+        .confirm-modal-glass {
+
+            background: rgba(15, 23, 42, 0.75) !important;
+
+            backdrop-filter: blur(32px) saturate(180%);
+
+            -webkit-backdrop-filter: blur(32px) saturate(180%);
+
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+
+            box-shadow:
+
+                0 24px 48px rgba(0, 0, 0, 0.8),
+
+                inset 0 1px 2px rgba(255, 255, 255, 0.15),
+
+                inset 0 -1px 2px rgba(0, 0, 0, 0.3);
+
+        }
+
+
+
+        /* Modal Panel - Glass Shine v1 */
+
+        .confirm-modal-glass {
+
+            position: relative;
+
+            box-shadow:
+
+                0 24px 48px rgba(0, 0, 0, 0.8),
+
+                inset 0 1px 0 rgba(255, 255, 255, 0.22),
+
+                inset 0 -1px 2px rgba(0, 0, 0, 0.35);
+
+        }
+
+
+
+        .confirm-modal-glass::before {
+
+            content: '';
+
+            position: absolute;
+
+            inset: 0;
+
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.10) 14%, rgba(255, 255, 255, 0.05) 28%, transparent 48%);
+
+            mix-blend-mode: screen;
+
+            pointer-events: none;
+
+        }
+
+
+
+        .confirm-modal-glass::after {
+
+            content: '';
+
+            position: absolute;
+
+            inset: 0;
+
+            background:
+
+                radial-gradient(120% 70% at 0% 0%, rgba(236, 253, 255, 0.16) 0%, transparent 60%),
+
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.04) 22%, transparent 36%),
+
+                linear-gradient(to top, rgba(0, 0, 0, 0.18), transparent 35%);
+
+            mix-blend-mode: screen;
+
+            pointer-events: none;
+
+        }
+
+
+
+        /* Mentor Dialogue - Readability v2.0.2 */
+
+        .mentor-dialogue-box {
+
+            background: rgba(10, 15, 30, 0.62) !important;
+
+            backdrop-filter: blur(48px) saturate(180%);
+
+            -webkit-backdrop-filter: blur(48px) saturate(180%);
+
+            border-color: rgba(255, 255, 255, 0.1);
+
+            box-shadow:
+
+                0 40px 120px -20px rgba(0, 0, 0, 0.9),
+
+                inset 0 1px 1px rgba(255, 255, 255, 0.06);
+
+        }
+
+
+
+        .mentor-dialogue-text {
+
+            background: linear-gradient(to bottom, rgba(2, 6, 23, 0.10), rgba(2, 6, 23, 0.06));
+
+            border: 1px solid rgba(255, 255, 255, 0.04);
+
+            border-radius: 12px;
+
+            padding: 0.5rem 0.75rem;
+
+            backdrop-filter: blur(2px) saturate(140%);
+
+            -webkit-backdrop-filter: blur(2px) saturate(140%);
+
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.04);
+
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45), 0 0 1px rgba(0, 0, 0, 0.6);
+
+        }
+
+
+
+        /* Modal Panel - Glass Depth v1 */
+
+        .confirm-modal-glass {
+
+            border: 2px solid rgba(255, 255, 255, 0.18);
+
+            box-shadow:
+
+                0 24px 48px rgba(0, 0, 0, 0.8),
+
+                inset 0 2px 0 rgba(255, 255, 255, 0.25),
+
+                inset 0 -3px 6px rgba(0, 0, 0, 0.35),
+
+                inset 0 0 0 8px rgba(255, 255, 255, 0.02);
+
+        }
+
+
+
+        .confirm-modal-glass::before {
+
+            content: '';
+
+            position: absolute;
+
+            inset: 0;
+
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.08) 14%, rgba(255, 255, 255, 0.04) 28%, transparent 48%);
+
+            mix-blend-mode: screen;
+
+            pointer-events: none;
+
+        }
+
+
+
+        .confirm-modal-glass::after {
+
+            content: '';
+
+            position: absolute;
+
+            inset: 0;
+
+            background:
+
+                radial-gradient(80% 60% at 0% 0%, rgba(236, 253, 255, 0.12) 0%, transparent 60%),
+
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.04) 22%, transparent 36%),
+
+                linear-gradient(to top, rgba(0, 0, 0, 0.18), transparent 35%);
+
+            mix-blend-mode: screen;
+
+            pointer-events: none;
+
+        }
+
+
+
+        /* Grade Letter Readability v1 */
+
+        .grade-badge {
+
+            -webkit-text-stroke: 0.6px rgba(0, 0, 0, 0.7);
+
+            text-shadow:
+
+                0 1px 0 rgba(255, 255, 255, 0.35),
+
+                0 0 1px rgba(0, 0, 0, 0.9),
+
+                0 1.5px 2px rgba(0, 0, 0, 0.85);
+
+            paint-order: stroke fill;
+
+            letter-spacing: 0.02em;
+
+        }
+
+
+
+        .text-yellow-400.grade-badge,
+
+        .text-yellow-300.grade-badge {
+
+            color: #5b3708;
+
+        }
+
+
+
+        .text-blue-400.grade-badge,
+
+        .text-cyan-400.grade-badge {
+
+            color: #0b3a82;
+
+        }
+
+
+
+        .text-orange-400.grade-badge,
+
+        .text-amber-600.grade-badge {
+
+            color: #5f250c;
+
+        }
+
+
+
+        .text-slate-200.grade-badge,
+
+        .text-gray-200.grade-badge {
+
+            color: #0f172a;
+
+        }
+
+
+
+        .map-progress-paths {
+
+            position: absolute;
+
+            inset: 0;
+
+            pointer-events: none;
+
+            z-index: 4;
+
+        }
+
+
+
+        .map-progress-line {
+
+            position: absolute;
+
+            height: 3px;
+
+            border-radius: 999px;
+
+            transform-origin: center center;
+
+            background: linear-gradient(90deg, transparent, rgba(226, 232, 240, 0.34) 18%, rgba(251, 191, 36, 0.26) 50%, rgba(226, 232, 240, 0.34) 82%, transparent);
+
+            filter: drop-shadow(0 0 8px rgba(148, 163, 184, 0.16));
+
+            opacity: 0.72;
+
+        }
+
+
+
+        .map-progress-line::after {
+
+            content: '';
+
+            position: absolute;
+
+            inset: -1px 0;
+
+            border-radius: inherit;
+
+            background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.16) 0 10px, rgba(255, 255, 255, 0) 10px 18px);
+
+            opacity: 0.8;
+
+        }
+
+
+
+        .map-progress-line.route-1 {
+
+            left: 40%;
+
+            top: 25%;
+
+            width: 30%;
+
+            transform: translate(-50%, -50%) rotate(135deg);
+
+        }
+
+
+
+        .map-progress-line.route-2 {
+
+            left: 52.5%;
+
+            top: 45%;
+
+            width: 50%;
+
+            transform: translate(-50%, -50%) rotate(24deg);
+
+        }
+
+
+
+        .map-progress-line.route-3 {
+
+            left: 57.5%;
+
+            top: 65%;
+
+            width: 42%;
+
+            transform: translate(-50%, -50%) rotate(150deg);
+
+        }
+
+
+
+        .map-progress-line.route-4 {
+
+            left: 52.5%;
+
+            top: 82.5%;
+
+            width: 31%;
+
+            transform: translate(-50%, -50%) rotate(31deg);
+
+        }
+
+
+
+        .map-stage-node {
+
+            position: relative;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            gap: 8px;
+
+            width: 114px;
+
+            padding: 0 !important;
+
+            background: transparent !important;
+
+            border: none;
+
+            box-shadow: none;
+
+            overflow: visible;
+
+        }
+
+
+
+        .map-stage-node-visual {
+
+            position: relative;
+
+            width: 78px;
+
+            height: 78px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+        }
+
+
+
+        .map-stage-node-frame {
+
+            position: relative;
+
+            width: 72px;
+
+            height: 72px;
+
+            padding: 6px;
+
+            border-radius: 24px;
+
+            background: linear-gradient(160deg, rgba(30, 41, 59, 0.54), rgba(51, 65, 85, 0.26));
+
+            border: 1px solid rgba(226, 232, 240, 0.16);
+
+            box-shadow:
+
+                0 10px 20px rgba(15, 23, 42, 0.28),
+
+                inset 0 1px 0 rgba(255, 255, 255, 0.12),
+
+                inset 0 -8px 12px rgba(15, 23, 42, 0.14);
+
+            transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease, opacity 0.28s ease;
+
+        }
+
+
+
+        .map-stage-node-image-layer {
+
+            position: relative;
+
+            width: 100%;
+
+            height: 100%;
+
+            border-radius: 18px;
+
+            background-color: rgba(15, 23, 42, 0.34);
+
+            background-size: contain;
+
+            background-position: center;
+
+            background-repeat: no-repeat;
+
+            overflow: hidden;
+
+        }
+
+
+
+        .map-stage-node-image-placeholder {
+
+            position: absolute;
+
+            inset: 0;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 5px;
+
+            border-radius: 18px;
+
+            border: 1px dashed rgba(226, 232, 240, 0.22);
+
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(148, 163, 184, 0.04));
+
+            backdrop-filter: blur(4px);
+
+            -webkit-backdrop-filter: blur(4px);
+
+        }
+
+
+
+        .map-stage-node-image-glyph {
+
+            font-size: 1.1rem;
+
+            line-height: 1;
+
+            font-weight: 900;
+
+            color: rgba(248, 250, 252, 0.82);
+
+            text-shadow: 0 2px 6px rgba(15, 23, 42, 0.28);
+
+        }
+
+
+
+        .map-stage-node-image-label {
+
+            font-size: 0.5rem;
+
+            line-height: 1;
+
+            font-weight: 900;
+
+            letter-spacing: 0.16em;
+
+            color: rgba(226, 232, 240, 0.76);
+
+        }
+
+
+
+        .map-stage-node-plate {
+
+            min-width: 104px;
+
+            max-width: 122px;
+
+            padding: 7px 9px 6px;
+
+            border-radius: 12px;
+
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.18), rgba(226, 232, 240, 0.11) 50%, rgba(71, 85, 105, 0.14));
+
+            backdrop-filter: blur(16px) saturate(140%);
+
+            -webkit-backdrop-filter: blur(16px) saturate(140%);
+
+            border: 1px solid rgba(255, 255, 255, 0.2);
+
+            box-shadow:
+
+                0 10px 18px rgba(15, 23, 42, 0.22),
+
+                inset 0 1px 0 rgba(255, 255, 255, 0.18),
+
+                inset 0 -8px 12px rgba(15, 23, 42, 0.1);
+
+            text-align: center;
+
+        }
+
+
+
+        .map-stage-node-number {
+
+            font-size: 0.54rem;
+
+            font-weight: 900;
+
+            letter-spacing: 0.18em;
+
+            color: rgba(241, 245, 249, 0.76);
+
+            text-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
+
+        }
+
+
+
+        .map-stage-node-title {
+
+            margin-top: 2px;
+
+            font-size: 0.78rem;
+
+            font-weight: 900;
+
+            line-height: 1.15;
+
+            color: rgba(248, 250, 252, 0.96);
+
+            text-shadow:
+
+                0 2px 4px rgba(15, 23, 42, 0.18),
+
+                0 0 1px rgba(15, 23, 42, 0.12);
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+        }
+
+
+
+        .map-stage-node.state-unopened .map-stage-node-frame {
+
+            opacity: 0.82;
+
+            border-color: rgba(148, 163, 184, 0.16);
+
+        }
+
+
+
+        .map-stage-node.state-unopened .map-stage-node-image-layer {
+
+            background: linear-gradient(180deg, rgba(51, 65, 85, 0.54), rgba(30, 41, 59, 0.68));
+
+        }
+
+
+
+        .map-stage-node.state-unopened .map-stage-node-image-placeholder {
+
+            border-color: rgba(148, 163, 184, 0.24);
+
+        }
+
+
+
+        .map-stage-node.state-unopened .map-stage-node-image-label {
+
+            color: rgba(203, 213, 225, 0.68);
+
+        }
+
+
+
+        .map-stage-node.state-opened .map-stage-node-frame {
+
+            border-color: rgba(167, 139, 250, 0.24);
+
+            transform: translateY(-1px);
+
+            box-shadow:
+
+                0 12px 22px rgba(15, 23, 42, 0.26),
+
+                0 0 12px rgba(167, 139, 250, 0.08),
+
+                inset 0 1px 0 rgba(255, 255, 255, 0.14),
+
+                inset 0 -8px 12px rgba(15, 23, 42, 0.12);
+
+        }
+
+
+
+        .map-stage-node.state-opened .map-stage-node-image-layer {
+
+            background: linear-gradient(180deg, rgba(217, 119, 6, 0.18), rgba(71, 85, 105, 0.22));
+
+        }
+
+
+
+        .map-stage-node.state-opened .map-stage-node-image-placeholder {
+
+            border-color: rgba(251, 191, 36, 0.26);
+
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(251, 191, 36, 0.06));
+
+        }
+
+
+
+        .map-stage-node.state-current .map-stage-node-frame {
+
+            border-color: rgba(251, 191, 36, 0.34);
+
+            transform: translateY(-2px) scale(1.02);
+
+            box-shadow:
+
+                0 14px 24px rgba(15, 23, 42, 0.28),
+
+                0 0 16px rgba(251, 191, 36, 0.12),
+
+                inset 0 1px 0 rgba(255, 255, 255, 0.16),
+
+                inset 0 -8px 12px rgba(15, 23, 42, 0.12);
+
+            animation: map-stage-node-pulse 2.5s ease-in-out infinite;
+
+        }
+
+
+
+        .map-stage-node.state-current .map-stage-node-image-layer {
+
+            background: linear-gradient(180deg, rgba(251, 191, 36, 0.18), rgba(59, 130, 246, 0.16));
+
+        }
+
+
+
+        .map-stage-node.state-current .map-stage-node-image-placeholder {
+
+            border-color: rgba(251, 191, 36, 0.34);
+
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(251, 191, 36, 0.08));
+
+        }
+
+
+
+        .map-stage-node.state-current .map-stage-node-plate {
+
+            border-color: rgba(251, 191, 36, 0.22);
+
+            box-shadow:
+
+                0 12px 20px rgba(15, 23, 42, 0.24),
+
+                0 0 10px rgba(251, 191, 36, 0.08),
+
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+
+                inset 0 -8px 12px rgba(15, 23, 42, 0.1);
+
+        }
+
+
+
+        @keyframes map-stage-node-pulse {
+
+            0%,
+
+            100% {
+
+                transform: translateY(-2px) scale(1.02);
+
+            }
+
+
+
+            50% {
+
+                transform: translateY(-4px) scale(1.04);
+
+            }
+
+        }
+
+
+
     </style>
+
 </head>
 
+
+
 <body class="">
+
     <div id="app" v-cloak class="w-full" @pointerdown="onUserGesture"
+
         :class="{ 'max-w-6xl mx-auto p-4 md:p-8 relative': showLevelSelect, 'min-h-screen': !showLevelSelect, shake: screenShake }">
+
         <div
+
             class="absolute top-2 right-4 text-[10px] text-slate-500/80 font-mono tracking-wider pointer-events-none z-50">
+
             v{{ appVersion }}</div>
 
+
+
         <div v-if="showLevelSelect" class="home-page-container">
-            <!-- Layer 1: Background -->
+
             <div class="home-bg-layer" :style="{ backgroundImage: 'url(assets/images/bg_home_painterly.png)' }"></div>
 
-            <!-- Layer 2: Character Key Art -->
+
+
             <div class="home-character-layer">
+
                 <div class="home-mentor-shadow"></div>
+
                 <img src="assets/images/ui/mentor-cover-fullbody.png" alt="Mentor" class="home-mentor-keyart">
+
             </div>
 
-            <!-- Layer 3: Foreground UI -->
+
+
             <div class="home-ui-layer">
+
                 <div class="home-title-box">
+
                     <h1 class="home-title">日語助詞 RPG</h1>
+
                     <div class="home-title-accent"></div>
+
                     <h2 class="home-title-sub">魔王城冒險譚</h2>
+
                 </div>
+
+
 
                 <p class="home-chinese-subtitle">和導師一起展開助詞冒險</p>
 
+
+
                 <div class="home-cta-box">
+
                     <button @click="openMap" class="home-start-btn">
+
                         開始冒險
+
                     </button>
+
                 </div>
+
             </div>
+
         </div>
 
-        <!-- Stage Map Screen v1 -->
-        <div v-else-if="showMap" class="map-page-container pt-safe">
-            <!-- Immersive Floating Map Header (Hidden during Mentor overlay) -->
-            <transition name="fade">
-                <div v-if="!isMapMentorOpen" class="absolute top-6 left-6 right-6 z-30 pointer-events-none flex justify-between items-start">
-                    <div class="px-4 py-2 bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl pointer-events-auto">
-                        <h2 class="text-white text-base font-black tracking-tight leading-tight">第一章：魔王城入口</h2>
-                        <div class="text-white/60 text-[10px] font-bold uppercase tracking-widest mt-0.5">關卡進度：{{ clearedLevels.length }} / 15</div>
-                    </div>
-                </div>
-            </transition>
 
-            <!-- Area Switcher Tabs (2.0 Glass Style - Floating) -->
-            <div class="flex-shrink-0 flex items-center gap-2 mb-2 p-1 bg-white/5 backdrop-blur-2xl rounded-full border border-white/5 mx-6 mt-20 overflow-x-auto no-scrollbar scroll-smooth z-20 relative" v-if="mapChapters && activeChapter && mapChapters[activeChapter]">
+
+        <div v-else-if="showMap" class="map-page-container pt-safe">
+
+
+
+            <div class="flex-shrink-0 flex items-center gap-2 mb-2 p-1 bg-white/5 backdrop-blur-2xl rounded-full border border-white/5 mx-6 mt-6 overflow-x-auto no-scrollbar scroll-smooth z-20 relative"
+
+                v-if="mapChapters && activeChapter && mapChapters[activeChapter]">
+
                 <div class="flex gap-1.5 px-1">
-                    <button v-for="(seg, idx) in mapChapters[activeChapter].segments" 
-                        :key="'tab_' + (seg.id || idx)"
+
+                    <button v-for="(seg, idx) in mapChapters[activeChapter].segments" :key="'tab_' + (seg.id || idx)"
+
                         @click="handleMapTabClick(idx)"
+
                         class="px-4 py-2 rounded-full text-[10px] font-black transition-all flex items-center gap-2 shrink-0 border border-transparent"
+
                         :class="[
+
                             selectedSegmentIdx === idx ? 'bg-amber-500 text-slate-900 shadow-lg border-amber-400/50' : 'text-white/50 hover:text-white/80 hover:bg-white/5',
+
                             !isSegmentUnlocked(idx) ? 'opacity-30 grayscale' : 'active:scale-95'
+
                         ]">
+
                         <span>{{ seg.title || ('AREA ' + (idx + 1)) }}</span>
+
                         <span v-if="!isSegmentUnlocked(idx)" class="text-xs">🔒</span>
+
                     </button>
+
                 </div>
+
             </div>
 
-            <!-- Map Viewport (Fills remaining height) -->
+
+
             <div class="map-viewport" v-if="mapChapters && activeChapter && mapChapters[activeChapter]">
+
                 <div class="map-nodes-container" v-if="mapChapters[activeChapter].segments[selectedSegmentIdx]">
-                    <!-- Base Map Layer: Height-First Scaling -->
-                    <img :src="mapChapters[activeChapter].segments[selectedSegmentIdx].background" 
-                        class="map-base-img" 
+
+                    <img :src="mapChapters[activeChapter].segments[selectedSegmentIdx].background" class="map-base-img"
+
                         alt="Base Map">
 
-                    <template v-for="(node, n) in mapChapters[activeChapter].segments[selectedSegmentIdx].nodes" :key="'node_overlay_' + n">
-                        <div class="stage-node-wrap" 
-                            :style="getMapNodeStyle(node)"
-                            :class="[getStageNodeClass(n)]">
-                            
-                            <!-- Optional Landmark Label Anchored to Node -->
-                            <div class="node-landmark-label">{{ node.landmark }}</div>
 
-                            <div class="flex items-center gap-3 z-10">
-                                <button @click="selectStageFromMap(n)" 
-                                    :data-stage-node="n"
-                                    class="stage-node-btn relative"
-                                    :class="{ 'new-unlock-glow': n === newUnlockLv }"
+
+                    <div v-if="mapChapters[activeChapter].segments[selectedSegmentIdx].nodes['1']" class="map-progress-paths">
+
+                        <div class="map-progress-line route-1"></div>
+
+                        <div class="map-progress-line route-2"></div>
+
+                        <div class="map-progress-line route-3"></div>
+
+                        <div class="map-progress-line route-4"></div>
+
+                    </div>
+
+
+
+                    <template v-for="(node, n) in mapChapters[activeChapter].segments[selectedSegmentIdx].nodes"
+
+                        :key="'node_overlay_' + n">
+
+                        <div class="stage-node-wrap" :style="getMapNodeStyle(node)" :class="[getStageNodeClass(n)]">
+
+
+
+                            <div v-if="Number(n) > 5" class="node-landmark-label">{{ node.landmark }}</div>
+
+
+
+                            <div class="flex items-center justify-center gap-4 z-10">
+
+                                <button v-if="Number(n) <= 5" @click="selectStageFromMap(n)" :data-stage-node="n"
+
+                                    class="map-stage-node"
+
+                                    :class="[{ 'new-unlock-glow': n === newUnlockLv }, !isLevelUnlocked(n) ? 'state-unopened' : isLevelCleared(n) ? 'state-opened' : 'state-current']"
+
                                     :disabled="!isLevelUnlocked(n)">
-                                    <div v-if="n === newUnlockLv" class="absolute -top-3 -left-2 bg-amber-500 text-slate-900 text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg z-20 animate-bounce">NEW</div>
-                                    <div class="node-icon">
-                                        <span v-if="!isLevelUnlocked(n)">🔒</span>
-                                        <div v-else-if="isLevelCleared(n)" class="flex items-center justify-center">
-                                            <span v-if="bestGrades[n]" :class="getGradeColor(bestGrades[n])" class="text-xl font-black drop-shadow-md">{{ bestGrades[n] }}</span>
-                                            <span v-else>⭐</span>
+
+                                    <div v-if="n === newUnlockLv"
+
+                                        class="absolute -top-3 -right-1 bg-amber-500 text-slate-900 text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg z-20 animate-bounce">
+
+                                        NEW</div>
+
+                                    <div class="map-stage-node-visual">
+
+                                        <div class="map-stage-node-frame">
+
+                                            <div class="map-stage-node-image-layer"
+
+                                                :class="!isLevelUnlocked(n) ? 'state-unopened' : isLevelCleared(n) ? 'state-opened' : 'state-current'">
+
+                                                <div class="map-stage-node-image-placeholder">
+
+                                                    <div class="map-stage-node-image-glyph">{{ !isLevelUnlocked(n) ? '◻' : isLevelCleared(n) ? '◫' : '✦' }}</div>
+
+                                                    <div class="map-stage-node-image-label">{{ !isLevelUnlocked(n) ? 'UNOPENED' : isLevelCleared(n) ? 'OPENED' : 'CURRENT' }}</div>
+
+                                                </div>
+
+                                            </div>
+
                                         </div>
-                                        <span v-else>🚩</span>
+
                                     </div>
-                                    <div class="node-info text-left">
-                                        <div class="node-number">STAGE {{ String(n).padStart(2, '0') }}</div>
-                                        <div class="node-title">{{ getLevelTitle(n) }}</div>
+
+                                    <div class="map-stage-node-plate">
+
+                                        <div class="map-stage-node-number">STAGE {{ String(n).padStart(2, '0') }}</div>
+
+                                        <div class="map-stage-node-title">{{ getLevelTitle(n) }}</div>
+
                                     </div>
+
                                 </button>
 
-                                <button v-if="isLevelUnlocked(n) && hasMentor(n)"
-                                    @click.stop="startStageWithExplanation(n)"
-                                    class="relative w-12 h-12 rounded-2xl bg-amber-500/90 backdrop-blur-xl border border-amber-400/50 flex flex-col items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.3)] active:scale-90 transition-all hover:bg-amber-400 shrink-0 group"
-                                    title="查看教學">
-                                    <div class="absolute -inset-1 bg-amber-400/30 rounded-2xl animate-pulse group-hover:block hidden"></div>
-                                    <span class="text-xl">👩‍🏫</span>
-                                    <span class="text-[8px] font-black text-slate-900 leading-none -mt-0.5">說明</span>
+
+
+                                <button v-else @click="selectStageFromMap(n)" :data-stage-node="n"
+
+                                    class="stage-node-btn relative" :class="{ 'new-unlock-glow': n === newUnlockLv }"
+
+                                    :disabled="!isLevelUnlocked(n)">
+
+                                    <div v-if="n === newUnlockLv"
+
+                                        class="absolute -top-3 -left-2 bg-amber-500 text-slate-900 text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg z-20 animate-bounce">
+
+                                        NEW</div>
+
+                                    <div class="node-icon">
+
+                                        <span v-if="!isLevelUnlocked(n)">🔒</span>
+
+                                        <div v-else-if="isLevelCleared(n)" class="flex items-center justify-center">
+
+                                            <span v-if="bestGrades[n]" :class="getGradeColor(bestGrades[n])"
+
+                                                class="grade-badge">{{ bestGrades[n] }}</span>
+
+                                            <span v-else>⭐</span>
+
+                                        </div>
+
+                                        <span v-else>🚩</span>
+
+                                    </div>
+
+                                    <div class="node-info text-left">
+
+                                        <div class="node-number">STAGE {{ String(n).padStart(2, '0') }}</div>
+
+                                        <div class="node-title">{{ getLevelTitle(n) }}</div>
+
+                                    </div>
+
                                 </button>
+
                             </div>
+
                         </div>
+
                     </template>
 
-                    <!-- Roadmap Layer (Can be expanded with SVG in v2) -->
-                    <!-- For now, we use the background image's path as the primary visual road -->
                 </div>
+
             </div>
 
-            <!-- Battle Confirm Overlay (2.0 Style Refined v2.0.1) -->
+
+
             <transition name="fade">
-                <div v-if="isBattleConfirmOpen" class="fixed inset-0 z-[100] flex items-center justify-center px-8 bg-slate-950/40 backdrop-blur-sm" @click="isBattleConfirmOpen = false">
-                    <div class="w-full max-w-xs confirm-modal-glass rounded-[2rem] overflow-hidden" @click.stop v-if="selectedStageToConfirm">
+
+                <div v-if="isBattleConfirmOpen"
+
+                    class="fixed inset-0 z-[100] flex items-center justify-center px-8 bg-slate-950/[0.05] backdrop-blur-[2px]"
+
+                    @click="isBattleConfirmOpen = false">
+
+                    <div class="w-full max-w-xs confirm-modal-glass rounded-[2rem] overflow-hidden" @click.stop
+
+                        v-if="selectedStageToConfirm">
+
                         <div class="p-7 text-center bg-gradient-to-b from-white/5 to-transparent">
+
                             <div class="mb-5 flex items-center justify-center">
+
                                 <span class="text-3xl animate-pulse opacity-80">⚔️</span>
+
                             </div>
+
                             <h3 class="text-white text-lg font-black mb-1.5 tracking-tighter">準備好挑戰了嗎？</h3>
-                            <div class="inline-block px-2.5 py-0.5 bg-amber-500/10 rounded-lg border border-amber-500/20 mb-1">
-                                <p class="text-amber-400 text-[9px] font-black uppercase tracking-[0.2em]">STAGE {{ String(selectedStageToConfirm).padStart(2, '0') }}</p>
+
+                            <div
+
+                                class="inline-block px-2.5 py-0.5 bg-amber-500/10 rounded-lg border border-amber-500/20 mb-1">
+
+                                <p class="text-amber-400 text-[10px] font-black uppercase tracking-[0.2em]">STAGE {{
+
+                                    String(selectedStageToConfirm).padStart(2, '0') }}</p>
+
                             </div>
-                            <p class="text-white/80 font-bold mt-1 text-xs tracking-wide">{{ getLevelTitle(selectedStageToConfirm) }}</p>
+
+                            <p class="text-white/80 font-bold mt-1 text-sm tracking-wide">{{
+
+                                getLevelTitle(selectedStageToConfirm) }}</p>
+
                         </div>
-                        <div class="flex p-4 gap-3 bg-black/10">
-                            <button @click="isBattleConfirmOpen = false" 
-                                class="flex-2 px-6 py-2.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 rounded-xl text-white/50 text-[10px] font-black transition-all active:scale-95 uppercase tracking-widest">
+
+                        <div class="pl-6 pr-5 pt-3" v-if="hasMentor(selectedStageToConfirm)">
+
+                            <button @click="startStageWithExplanation(selectedStageToConfirm)"
+
+                                class="w-full py-3 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 text-white/90 text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-4">
+
+                                <span
+
+                                    class="relative inline-flex items-center justify-center w-14 h-14 rounded-full overflow-visible border border-white/30 shadow-md">
+
+                                    <img src="assets/images/ui/mentor/mentor-neutral.png" alt="Mentor"
+
+                                        class="w-full h-full object-cover rounded-full">
+
+                                    <span
+
+                                        class="absolute -top-2 -right-2 -mr-0.5 -mt-0.5 px-2 py-[2px] rounded-full bg-white/95 border border-white/70 shadow-[0_2px_6px_rgba(0,0,0,0.25)] flex items-center justify-center z-20 pointer-events-none"><span
+
+                                            class="text-[10px] font-black leading-none text-slate-700 tracking-wider">...</span></span>
+
+                                </span>
+
+                                <span class="text-white font-black tracking-wide text-sm">姐姐引導</span>
+
+                            </button>
+
+                        </div>
+
+                        <div class="flex items-center p-4 gap-2 bg-black/10">
+
+                            <button @click="isBattleConfirmOpen = false"
+
+                                class="basis-1/3 px-6 py-2.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 rounded-xl text-white/60 text-xs font-black transition-all active:scale-95 uppercase tracking-widest">
+
                                 取消
+
                             </button>
-                            <button @click="confirmAndStartBattle" 
-                                class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black rounded-xl transition-all active:scale-95 shadow-[0_4px_15px_rgba(245,158,11,0.2)]">
+
+                            <button @click="confirmAndStartBattle"
+
+                                class="basis-2/3 px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-sm font-black rounded-xl transition-all active:scale-95 shadow-[0_4px_15px_rgba(245,158,11,0.3)] border border-amber-400/60">
+
                                 出發！
+
                             </button>
+
                         </div>
+
                     </div>
+
                 </div>
+
             </transition>
 
-            <!-- In-Map Mentor explanation Overlay (v1.9.1 Refined) -->
+
+
             <transition name="fade">
-                <div v-if="isMapMentorOpen" class="fixed inset-0 z-[110] flex flex-col justify-end bg-slate-950/40 backdrop-blur-md px-6 pb-10" @click="nextMentorLine">
-                    <!-- Mentor Portrait (Floating) -->
-                    <div class="absolute bottom-40 left-1/2 -translate-x-1/2 w-full max-w-sm pointer-events-none transition-all duration-700 ease-out flex justify-center">
+
+                <div v-if="isMapMentorOpen"
+
+                    class="fixed inset-0 z-[110] flex flex-col justify-end bg-slate-950/40 backdrop-blur-md px-6 pb-10"
+
+                    @click="nextMentorLine">
+
+                    <div
+
+                        class="absolute bottom-40 left-1/2 -translate-x-1/2 w-full max-w-sm pointer-events-none transition-all duration-700 ease-out flex justify-center">
+
                         <div class="mentor-portrait-shadow"></div>
-                        <img src="assets/images/ui/mentor-cover-fullbody.png" alt="Mentor" 
+
+                        <img src="assets/images/ui/mentor-cover-fullbody.png" alt="Mentor"
+
                             class="h-[65vh] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] mentor-portrait-fade"
+
                             style="transform: translateY(20px);">
+
                     </div>
-                    
-                    <!-- New Refined Dialogue Box (Dark Glass) -->
-                    <div class="mentor-dialogue-box w-full px-8 py-7 rounded-[2rem] relative isolate overflow-hidden shadow-[0_24px_64px_-16px_rgba(0,0,0,0.8)] border border-white/5 active:scale-[0.99] transition-transform" @click.stop="nextMentorLine">
-                        
-                        <!-- Top Bar within Dialogue Box -->
+
+
+
+                    <div class="mentor-dialogue-box w-full px-8 py-7 rounded-[2rem] relative isolate overflow-hidden shadow-[0_24px_64px_-16px_rgba(0,0,0,0.8)] border border-white/5 active:scale-[0.99] transition-transform"
+
+                        @click.stop="nextMentorLine">
+
                         <div class="flex justify-between items-center mb-6">
+
                             <div class="flex items-center gap-2">
+
                                 <div class="w-1.5 h-5 bg-amber-500 rounded-full"></div>
+
                                 <span class="text-amber-500/80 font-black text-xs tracking-widest uppercase">導師說明</span>
+
                             </div>
-                            <button @click.stop="finishMentorDialogue" 
+
+                            <button @click.stop="finishMentorDialogue"
+
                                 class="px-3 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-white/40 text-[9px] font-black transition-all tracking-tighter">
+
                                 跳過
+
                             </button>
+
                         </div>
-                        
+
+
+
                         <div class="min-h-[5em] text-white/95 text-lg font-medium mentor-dialogue-text">
-                            {{ displayedMentorText }}<span v-if="isTypingMentor" class="inline-block w-1 h-5 bg-amber-500 ml-1 animate-pulse align-middle"></span>
+
+                            {{ displayedMentorText }}<span v-if="isTypingMentor"
+
+                                class="inline-block w-1 h-5 bg-amber-500 ml-1 animate-pulse align-middle"></span>
+
                         </div>
-                        
-                        <!-- Next Hint -->
+
+
+
                         <div class="flex justify-end mt-4">
+
                             <div v-if="!isTypingMentor" class="flex flex-col items-center opacity-80">
+
                                 <div class="w-10 h-6 flex items-center justify-center animate-bounce">
+
                                     <span class="text-amber-500 text-sm">▼</span>
+
                                 </div>
+
                             </div>
+
                         </div>
+
                     </div>
+
                 </div>
+
             </transition>
+
         </div>
 
+
+
         <!-- V3.0 Battle UI -->
-        <div v-else-if="!isFinished" id="stageWrap" class="fixed inset-0 bg-slate-900 overflow-hidden font-sans select-none"
+
+        <div v-else-if="!isFinished" id="stageWrap"
+
+            class="fixed inset-0 bg-slate-900 overflow-hidden font-sans select-none"
+
             :class="{ 'boss-vfx-shake': bossScreenShake }">
 
+
+
             <!-- [L0, L1] Scene & Arena Layer -->
+
             <div class="absolute inset-0 z-0 h-[100dvh] w-full">
+
                 <div id="battleScene"
+
                     class="absolute inset-0 transition-all duration-300 bg-cover bg-center bg-no-repeat"
+
                     :style="{ backgroundImage: 'url(' + currentBg + ')' }" :class="{ 'bg-dodge': isPlayerDodging }">
 
+
+
                     <!-- Monster Container -->
+
                     <div
+
                         class="absolute top-[20dvh] left-0 w-full h-[50dvh] flex items-center justify-center z-10 pointer-events-none">
+
                         <div v-if="!monsterTrulyDead"
+
                             class="flex flex-col items-center relative transition-all duration-300 pointer-events-auto"
+
                             :class="{ 
+
                                 hit: monsterHit, 
+
                                 'monster-death-anim': monsterIsDying && currentLevel % 5 !== 0,
+
                                 'boss-death-anim': monsterIsDying && currentLevel % 5 === 0
+
                             }">
 
+
+
                             <!-- Monster Image -->
+
                             <div class="rounded-full flex items-center justify-center text-5xl mb-3 shadow-[0_0_30px_rgba(225,29,72,0.3)] ring-2 ring-rose-500/20"
+
                                 :style="{ 
+
                                     background: 'conic-gradient(rgba(225, 29, 72, 0.6) ' + ((10 - timeLeft) / 10 * 360) + 'deg, rgba(136, 19, 55, 0.2) 0deg)',
+
                                     transform: 'scale(' + (monster.size || 1) + ')'
+
                                 }"
+
                                 :class="currentLevel % 5 === 0 ? 'monster-container-boss' : 'monster-container-normal'">
-                                <img v-if="monster.sprite && monster.sprite.includes('/')"
-                                    :src="currentMonsterSprite" @error="handleMonsterImageError" alt="monster"
+
+                                <img v-if="monster.sprite && monster.sprite.includes('/')" :src="currentMonsterSprite"
+
+                                    @error="handleMonsterImageError" alt="monster"
+
                                     class="object-contain drop-shadow-2xl monster-breath"
+
                                     :class="currentLevel % 5 === 0 ? 'monster-img-boss' : 'monster-img-normal'">
+
                                 <span v-else class="monster-breath inline-block">{{ monster.sprite || '👹' }}</span>
+
                             </div>
+
+
 
                             <!-- Monster Info -->
+
                             <div class="relative z-10 flex flex-col items-center">
+
                                 <span class="text-xl font-black text-white mb-0.5"
+
                                     style="text-shadow: 0 2px 10px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9);">{{
+
                                     monster.name }}</span>
+
                                 <span class="text-sm font-bold text-amber-300 text-center"
+
                                     style="white-space: pre-line; line-height: 1.15; text-shadow: 0 2px 8px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9);">{{
+
                                     monster.trait?.replace(/，/g, '\n') }}</span>
+
                             </div>
+
+
 
                             <!-- Monster HP -->
+
                             <div class="w-full h-2.5 bg-slate-950/80 rounded-full overflow-hidden mb-1 border border-white/20 shadow-lg"
+
                                 style="width: 160px;">
+
                                 <div class="h-full bg-gradient-to-r from-rose-600 to-rose-400 shadow-[0_0_10px_rgba(225,29,72,0.6)] transition-all duration-500"
+
                                     :style="{ width: (monster.hp / monster.maxHp * 100) + '%' }"></div>
+
                             </div>
+
+
 
                             <div id="monsterStatusBar" class="w-full flex justify-center gap-1 mt-1 min-h-[22px]"></div>
+
                         </div>
+
                     </div>
+
                 </div>
+
             </div>
+
+
 
             <!-- [L2] Cinematic / Skill Close-up Layer -->
+
             <div class="absolute inset-0 z-20 pointer-events-none"></div>
 
+
+
             <!-- [L3] Legacy Hero Stand Slot -->
+
             <div id="heroStandContainer"
+
                 class="absolute left-0 w-[45%] max-w-[170px] z-[45] pointer-events-none flex items-end justify-start"
+
                 style="bottom: clamp(150px, 28dvh, 240px); height: min(35dvh, 260px); display: none;">
+
                 <img src="assets/images/hero/hero_neutral.png"
+
                     class="object-contain object-bottom w-full h-full drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)] opacity-60 mix-blend-screen mask-image-b mask-gradient-b">
+
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent z-[-1]"></div>
+
             </div>
+
+
 
             <!-- [L4] Action VFX Layer -->
+
             <div id="flickVfxLayer" class="absolute inset-0 pointer-events-none z-40"></div>
 
+
+
             <!-- Praise Toast Layer -->
+
             <div class="absolute inset-0 pointer-events-none z-40">
+
                 <transition name="praise-pop">
+
                     <div v-if="praiseToast.show"
+
                         class="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-5xl font-black text-rose-300 drop-shadow-[0_0_20px_rgba(244,63,94,1)] tracking-widest text-center"
+
                         style="-webkit-text-stroke: 1.5px #881337; text-shadow: 0 4px 6px rgba(0,0,0,0.5); width: max-content;">
+
                         {{ praiseToast.text }}
+
                     </div>
+
                 </transition>
+
             </div>
+
+
 
             <!-- [L6] Global UI Layer -->
+
             <div
+
                 class="absolute top-0 w-full z-[60] pt-safe px-4 pointer-events-none flex flex-col items-center gap-3 mt-2">
 
+
+
                 <!-- Notification / System Bar -->
+
                 <div class="flex items-center justify-between w-full max-w-lg mb-1 pointer-events-auto">
+
                     <div
+
                         class="px-3 py-1 bg-black/40 backdrop-blur-sm rounded-full border border-white/10 text-[11px] font-bold text-slate-300 shadow-lg flex items-center gap-2">
+
                         <span class="w-2 h-2 rounded-full"
+
                             :class="difficulty === 'easy' ? 'bg-emerald-400' : 'bg-rose-500 shadow-[0_0_5px_rgba(225,29,72,0.8)]'"></span>
+
                         <span>LV.{{ currentLevel }}</span>
+
                     </div>
+
                     <div id="battleLog"
+
                         class="flex-1 mx-2 text-center text-xs font-bold text-amber-300 drop-shadow-md truncate"
+
                         aria-live="polite"></div>
+
                     <div class="flex items-center gap-2">
+
                         <span v-if="comboCount > 1"
+
                             class="px-2 py-0.5 bg-rose-900/60 border border-rose-500/50 rounded text-rose-300 font-black text-[10px] animate-pulse">
+
                             🔥 {{ comboCount }} COMBO
+
                         </span>
+
                     </div>
+
                 </div>
+
+
 
                 <!-- Floating Question Bubble -->
+
                 <div v-if="!monsterDead && !playerDead && !isFinished"
+
                     class="w-full max-w-md mx-auto pointer-events-auto transition-all duration-300"
+
                     :class="{ 'blur-md brightness-50 grayscale-[0.2] opacity-40 scale-95': isSkillOpen || isCodexOpen || isMenuOpen || isMistakesOpen }">
+
                     <div
+
                         class="glass-panel question-card rounded-2xl p-2 sm:p-3 shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-white/20 relative">
+
                         <div id="question-area" class="w-full flex flex-col items-center justify-center min-h-[50px]">
+
                             <div
+
                                 class="text-amber-100/80 font-bold mb-3 text-sm md:text-base tracking-widest text-shadow-sm text-center">
+
                                 {{ currentQuestion?.chinese || '' }}
+
                             </div>
+
+
 
                             <div class="flex flex-wrap justify-center items-center gap-2 leading-tight">
+
                                 <span v-for="(seg, idx) in displaySegments"
+
                                     :key="'seg_' + currentLevel + '_' + currentIndex + '_' + idx"
+
                                     class="inline-flex items-center">
+
                                     <span v-if="!seg.isBlank"
+
                                         class="text-white text-2xl md:text-3xl font-black drop-shadow-md">
+
                                         <ruby v-if="seg.ruby">{{ seg.text }}<rt
+
                                                 class="text-[10px] md:text-xs text-amber-300 font-bold mb-1">{{ seg.ruby
+
                                                 }}</rt></ruby>
+
                                         <span v-else>{{ seg.text }}</span>
+
                                     </span>
+
                                     <span v-else-if="seg.showInput && isChoiceMode"
+
                                         class="blank-slot text-2xl md:text-3xl font-black mx-1"
+
                                         :class="[getInputStyle(seg.blankIndex), { 'is-empty': !hasSubmitted && !userAnswers[seg.blankIndex] }]">
+
                                         {{ hasSubmitted ? getAnswerForDisplay(seg.blankIndex) :
+
                                         (userAnswers[seg.blankIndex] || '\u00A0') }}
+
                                     </span>
+
                                     <span v-else
+
                                         class="particle-input correct inline-block px-3 py-0.5 text-2xl md:text-3xl mx-1 shadow-inner">
+
                                         {{ getAnswerForDisplay(seg.blankIndex) }}
+
                                     </span>
+
                                 </span>
+
                             </div>
+
                         </div>
+
                     </div>
+
                 </div>
+
             </div>
+
+
 
             <!-- [L5] Bottom HUD Console -->
-                        <div id="hud" v-if="!isFinished"
+
+            <div id="hud" v-if="!isFinished"
+
                 class="fixed md:absolute bottom-0 left-0 w-full md:w-[60%] md:min-w-[400px] md:max-w-[700px] md:left-1/2 md:-translate-x-1/2 z-50 glass-panel border-t md:border-x border-white/20 shadow-[0_-15px_40px_rgba(0,0,0,0.5)] flex flex-col justify-start !p-0 !min-h-0 h-auto overflow-visible"
+
                 style="background: rgba(15, 23, 42, 0.15); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-top-left-radius: 20px; border-top-right-radius: 20px; padding-bottom: env(safe-area-inset-bottom, 2px);">
 
+
+
                 <div class="hud-inner-wrap" :class="{ 'hud-shake': screenShake }">
-                    <div class="h-full relative overflow-visible flex flex-col hud-interactive-rows" :class="{ 'hud-tap-mode': answerMode === 'tap' }">
 
-                <!-- Hint Overlay anchored above HUD -->
-                <div
-                    class="absolute left-1/2 -translate-x-1/2 -top-5 z-[60] pointer-events-none text-[11px] font-black tracking-widest text-amber-300 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)] hidden md:block">
-                    {{ answerMode === 'flick' ? 'FLICK TO ATTACK' : 'TAP TO ATTACK' }}
-                </div>
+                    <div class="h-full relative overflow-visible flex flex-col hud-interactive-rows"
 
-                <!-- Row 1: Answers (Compact height) -->
-                <div class="w-full px-2 py-0 flex-none" style="height: 48px;">
-                    <div class="h-full relative overflow-visible">
-                        <div v-if="answerMode === 'tap' && !hasSubmitted"
-                            class="tap-mode-controls w-full h-full flex items-center justify-center gap-1 sm:gap-2 pt-1">
-                            <div class="flex w-full justify-center"
-                                :class="currentQuestion?.choices?.length > 3 ? 'gap-1' : 'gap-2'">
-                                <button v-for="(opt, i) in currentQuestion.choices" :key="'tap_' + opt + '_' + i"
-                                    @click="selectChoice(opt)"
-                                    class="flex-1 h-[34px] rounded-xl border border-amber-400/50 bg-slate-800/60 outline-none hover:bg-amber-400/30 active:bg-amber-500/60 active:scale-95 transition-all shadow-lg relative overflow-hidden group"
-                                    :class="getChoiceBtnClass(opt)">
-                                    <div
-                                        class="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent opacity-30 group-hover:opacity-50 transition-opacity">
+                        :class="{ 'hud-tap-mode': answerMode === 'tap' }">
+
+
+
+                        <!-- Hint Overlay anchored above HUD -->
+
+                        <div
+
+                            class="absolute left-1/2 -translate-x-1/2 -top-5 z-[60] pointer-events-none text-[11px] font-black tracking-widest text-amber-300 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)] hidden md:block">
+
+                            {{ answerMode === 'flick' ? 'FLICK TO ATTACK' : 'TAP TO ATTACK' }}
+
+                        </div>
+
+
+
+                        <!-- Row 1: Answers (Compact height) -->
+
+                        <div class="w-full px-2 py-0 flex-none" style="height: 48px;">
+
+                            <div class="h-full relative overflow-visible">
+
+                                <div v-if="answerMode === 'tap' && !hasSubmitted"
+
+                                    class="tap-mode-controls w-full h-full flex items-center justify-center gap-1 sm:gap-2 pt-1">
+
+                                    <div class="flex w-full justify-center"
+
+                                        :class="currentQuestion?.choices?.length > 3 ? 'gap-1' : 'gap-2'">
+
+                                        <button v-for="(opt, i) in currentQuestion.choices"
+
+                                            :key="'tap_' + opt + '_' + i" @click="selectChoice(opt)"
+
+                                            class="flex-1 h-[34px] rounded-xl border border-amber-400/50 bg-slate-800/60 outline-none hover:bg-amber-400/30 active:bg-amber-500/60 active:scale-95 transition-all shadow-lg relative overflow-hidden group"
+
+                                            :class="getChoiceBtnClass(opt)">
+
+                                            <div
+
+                                                class="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent opacity-30 group-hover:opacity-50 transition-opacity">
+
+                                            </div>
+
+                                            <span
+
+                                                class="relative z-10 text-[20px] md:text-[22px] font-black text-amber-50 shadow-sm leading-none">{{
+
+                                                opt }}</span>
+
+                                        </button>
+
                                     </div>
-                                    <span
-                                        class="relative z-10 text-[20px] md:text-[22px] font-black text-amber-50 shadow-sm leading-none">{{
-                                        opt }}</span>
-                                </button>
-                            </div>
-                        </div>
 
-                        <div v-if="answerMode === 'flick' && !hasSubmitted" id="flickLayer"
-                            class="w-full h-full flex justify-center items-center select-none touch-none"
-                            :class="currentQuestion?.choices?.length > 3 ? 'gap-1' : 'gap-2'" @pointermove="moveFlick"
-                            @pointerup="endFlick" @pointercancel="endFlick" @pointerleave="endFlick">
-                            <button v-for="(opt, i) in currentQuestion.choices" :key="'flick_' + opt + '_' + i"
-                                class="flex-1 h-[36px] rounded-2xl border bg-slate-800/35 transition-all shadow-inner relative flex justify-center items-center"
-                                :class="flickState.successOpt === opt ? 'border-emerald-400 bg-emerald-500/30 text-emerald-100' : (flickState.activeOpt === opt ? 'border-amber-400 bg-amber-500/30 text-amber-50 scale-105 shadow-[0_0_15px_rgba(251,191,36,0.4)]' : 'border-amber-400/30 text-amber-50 border-white/10')"
-                                @pointerdown="startFlick($event, opt)">
-                                <span
-                                    class="text-[19px] md:text-[20px] font-bold text-amber-100 drop-shadow-lg pointer-events-none leading-none">{{
-                                    opt }}</span>
-                            </button>
-                        </div>
-
-                        <!-- Feedback Overlay -->
-                        <div v-show="hasSubmitted"
-                            class="absolute inset-0 w-full h-full flex items-center justify-center gap-4 z-20 pointer-events-none">
-                            <div class="flex items-center gap-3 px-6 py-2 rounded-full border shadow-[0_0_20px_rgba(0,0,0,0.8)] pointer-events-auto"
-                                :class="isCurrentCorrect ? 'border-emerald-500 bg-emerald-950/80' : 'border-rose-500 bg-rose-950/80'">
-                                <span v-if="isCurrentCorrect"
-                                    class="text-emerald-400 text-lg font-black flex items-center gap-2">✓ 正確！</span>
-                                <span v-else class="text-rose-400 text-lg font-black flex items-center gap-2">✕
-                                    失敗</span>
-                            </div>
-
-                            <button v-if="shouldShowNextButton" @click="nextQuestion"
-                                class="px-6 py-2 rounded-full bg-amber-500 text-slate-950 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all border border-amber-300 tracking-widest pointer-events-auto">
-                                次へ
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Row 2: Attack Button (Compacted) -->
-                <div v-if="answerMode === 'tap'" class="w-full px-2 py-0.5 flex justify-center flex-none" style="height: 38px;">
-                    <button v-show="!hasSubmitted" @click="checkAnswer" :disabled="hasSubmitted || (isChoiceMode && !userAnswers[0])"
-                        class="w-[60%] max-w-[320px] h-[32px] md:h-[36px] rounded-2xl bg-gradient-to-r from-amber-600 to-amber-500 border border-amber-300 shadow-xl text-slate-900 text-[12px] font-black tracking-widest transition-transform active:scale-95 disabled:opacity-50 disabled:grayscale hover:brightness-110 flex justify-center items-center leading-none"
-                        :class="(isChoiceMode && !userAnswers[0]) ? 'cursor-not-allowed opacity-50' : ''">
-                        攻擊 ATTACK
-                    </button>
-                </div>
-
-                <!-- Row 3: Status Info -->
-                <div class="w-full px-2 pb-0.5 pt-0.5 flex-none border-t border-white/10 bg-black/5">
-                    <div class="flex flex-row items-center gap-1 w-full max-w-lg md:max-w-2xl mx-auto">
-                        <!-- Left: Mode Toggle (Vertical Dual Switch) -->
-                        <div class="flex-shrink-0 flex flex-col gap-1 items-center w-auto md:flex-none">
-                            <button @click="answerMode = 'flick'"
-                                class="w-14 md:w-16 h-5 md:h-6 rounded-sm flex items-center justify-center transition-all shadow-md border border-white/10"
-                                :class="answerMode === 'flick' ? 'bg-amber-400 text-slate-900 border-amber-200' : 'bg-slate-800 text-slate-500 opacity-60'">
-                                <span class="text-[9px] font-black tracking-tighter uppercase leading-none">FLICK</span>
-                            </button>
-                            <button @click="answerMode = 'tap'"
-                                class="w-14 md:w-16 h-5 md:h-6 rounded-sm flex items-center justify-center transition-all shadow-md border border-white/10"
-                                :class="answerMode === 'tap' ? 'bg-amber-400 text-slate-900 border-amber-200' : 'bg-slate-800 text-slate-500 opacity-60'">
-                                <span class="text-[9px] font-black tracking-tighter uppercase leading-none">TAP</span>
-                            </button>
-                        </div>
-
-                        <!-- Center: HP/SP (Compacted) -->
-                        <div class="flex-1 flex flex-col justify-center gap-0.5 md:gap-1 max-w-[160px] md:max-w-xs mx-auto">
-                            <div class="w-full flex items-center gap-1">
-                                <span class="text-[10px] md:text-[11px] font-black text-emerald-400 w-5 tracking-tighter drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">HP</span>
-                                <div class="flex-1 h-1 bg-slate-950 rounded-full border border-slate-700/60 overflow-hidden shadow-inner">
-                                    <div class="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-300"
-                                        :class="[{ 'bg-rose-500 from-rose-600 to-rose-400': hpBarDanger, 'animate-pulse': playerBlink }]"
-                                        :style="{ width: (player.hp / player.maxHp * 100) + '%' }"></div>
                                 </div>
-                                <span class="text-[10px] font-mono font-bold text-slate-200 w-6 text-right drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
-                                    {{ player.hp }}
-                                </span>
-                            </div>
-                            <div class="w-full flex items-center gap-1">
-                                <span class="text-[10px] md:text-[11px] font-black text-cyan-400 w-5 tracking-tighter drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">SP</span>
-                                <div class="flex-1 h-1 bg-slate-950 rounded-full border border-slate-700/60 overflow-hidden shadow-inner">
-                                    <div class="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 transition-all duration-300"
-                                        style="width: 100%;"></div>
+
+
+
+                                <div v-if="answerMode === 'flick' && !hasSubmitted" id="flickLayer"
+
+                                    class="w-full h-full flex justify-center items-center select-none touch-none"
+
+                                    :class="currentQuestion?.choices?.length > 3 ? 'gap-1' : 'gap-2'"
+
+                                    @pointermove="moveFlick" @pointerup="endFlick" @pointercancel="endFlick"
+
+                                    @pointerleave="endFlick">
+
+                                    <button v-for="(opt, i) in currentQuestion.choices" :key="'flick_' + opt + '_' + i"
+
+                                        class="flex-1 h-[36px] rounded-2xl border bg-slate-800/35 transition-all shadow-inner relative flex justify-center items-center"
+
+                                        :class="flickState.successOpt === opt ? 'border-emerald-400 bg-emerald-500/30 text-emerald-100' : (flickState.activeOpt === opt ? 'border-amber-400 bg-amber-500/30 text-amber-50 scale-105 shadow-[0_0_15px_rgba(251,191,36,0.4)]' : 'border-amber-400/30 text-amber-50 border-white/10')"
+
+                                        @pointerdown="startFlick($event, opt)">
+
+                                        <span
+
+                                            class="text-[19px] md:text-[20px] font-bold text-amber-100 drop-shadow-lg pointer-events-none leading-none">{{
+
+                                            opt }}</span>
+
+                                    </button>
+
                                 </div>
-                                <span class="text-[10px] font-mono font-bold text-slate-200 w-6 text-right drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">MAX</span>
+
+
+
+                                <!-- Feedback Overlay -->
+
+                                <div v-show="hasSubmitted"
+
+                                    class="absolute inset-0 w-full h-full flex items-center justify-center gap-4 z-20 pointer-events-none">
+
+                                    <div class="flex items-center justify-center gap-4 px-6 py-2 rounded-full border shadow-[0_0_20px_rgba(0,0,0,0.8)] pointer-events-auto"
+
+                                        :class="isCurrentCorrect ? 'border-emerald-500 bg-emerald-950/80' : 'border-rose-500 bg-rose-950/80'">
+
+                                        <span v-if="isCurrentCorrect"
+
+                                            class="text-emerald-400 text-lg font-black flex items-center gap-2">✓
+
+                                            正確！</span>
+
+                                        <span v-else class="text-rose-400 text-lg font-black flex items-center gap-2">✕
+
+                                            失敗</span>
+
+                                    </div>
+
+
+
+                                    <button v-if="shouldShowNextButton" @click="nextQuestion"
+
+                                        class="px-6 py-2 rounded-full bg-amber-500 text-slate-950 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all border border-amber-300 tracking-widest pointer-events-auto">
+
+                                        次へ
+
+                                    </button>
+
+                                </div>
+
                             </div>
+
                         </div>
 
-                        <!-- Right: Icons (Enlarged) -->
-                        <div class="flex-shrink-0 flex flex-nowrap items-center justify-end gap-2 md:gap-3 w-auto md:flex-none">
-                            <button @click="isInventoryOpen = true; pauseBattle();"
-                                class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-800/80 border border-slate-600 flex items-center justify-center text-slate-300 shadow-inner hover:bg-slate-600 transition-all active:scale-95 group">
-                                <span class="text-[15px] sm:text-[17px] group-hover:scale-110">🎒</span>
+
+
+                        <!-- Row 2: Attack Button (Compacted) -->
+
+                        <div v-if="answerMode === 'tap'" class="w-full px-2 py-0.5 flex justify-center flex-none"
+
+                            style="height: 38px;">
+
+                            <button v-show="!hasSubmitted" @click="checkAnswer"
+
+                                :disabled="hasSubmitted || (isChoiceMode && !userAnswers[0])"
+
+                                class="w-[60%] max-w-[320px] h-[32px] md:h-[36px] rounded-2xl bg-gradient-to-r from-amber-600 to-amber-500 border border-amber-300 shadow-xl text-slate-900 text-[12px] font-black tracking-widest transition-transform active:scale-95 disabled:opacity-50 disabled:grayscale hover:brightness-110 flex justify-center items-center leading-none"
+
+                                :class="(isChoiceMode && !userAnswers[0]) ? 'cursor-not-allowed opacity-50' : ''">
+
+                                攻擊 ATTACK
+
                             </button>
-                            <button @click="isSkillOpen = true; pauseBattle();"
-                                class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-700/80 border border-emerald-600 flex items-center justify-center text-emerald-200 shadow-inner hover:bg-emerald-600 transition-all active:scale-95 group">
-                                <span class="text-[15px] sm:text-[17px] group-hover:scale-110 flex items-center justify-center">📖</span>
-                            </button>
-                            <button @click="usePotion()"
-                                class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-700/80 border border-emerald-600 flex items-center justify-center text-emerald-200 shadow-inner hover:bg-emerald-600 transition-all active:scale-95 group">
-                                <span class="text-[15px] sm:text-[17px] group-hover:scale-110">💊</span>
-                            </button>
-                            <button @click="isMenuOpen = true; pauseBattle();"
-                                class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-800/80 border border-slate-600 flex items-center justify-center text-slate-300 shadow-inner hover:bg-slate-600 transition-all active:scale-95 group">
-                                <span class="text-[15px] sm:text-[17px] group-hover:scale-110">⚙️</span>
-                            </button>
+
                         </div>
+
+
+
+                        <!-- Row 3: Status Info -->
+
+                        <div class="w-full px-2 pb-0.5 pt-0.5 flex-none border-t border-white/10 bg-black/5">
+
+                            <div class="flex flex-row items-center gap-1 w-full max-w-lg md:max-w-2xl mx-auto">
+
+                                <!-- Left: Mode Toggle (Vertical Dual Switch) -->
+
+                                <div class="flex-shrink-0 flex flex-col gap-1 items-center w-auto md:flex-none">
+
+                                    <button @click="answerMode = 'flick'"
+
+                                        class="w-14 md:w-16 h-5 md:h-6 rounded-sm flex items-center justify-center transition-all shadow-md border border-white/10"
+
+                                        :class="answerMode === 'flick' ? 'bg-amber-400 text-slate-900 border-amber-200' : 'bg-slate-800 text-slate-500 opacity-60'">
+
+                                        <span
+
+                                            class="text-[9px] font-black tracking-tighter uppercase leading-none">FLICK</span>
+
+                                    </button>
+
+                                    <button @click="answerMode = 'tap'"
+
+                                        class="w-14 md:w-16 h-5 md:h-6 rounded-sm flex items-center justify-center transition-all shadow-md border border-white/10"
+
+                                        :class="answerMode === 'tap' ? 'bg-amber-400 text-slate-900 border-amber-200' : 'bg-slate-800 text-slate-500 opacity-60'">
+
+                                        <span
+
+                                            class="text-[9px] font-black tracking-tighter uppercase leading-none">TAP</span>
+
+                                    </button>
+
+                                </div>
+
+
+
+                                <!-- Center: HP/SP (Compacted) -->
+
+                                <div
+
+                                    class="flex-1 flex flex-col justify-center gap-0.5 md:gap-1 max-w-[160px] md:max-w-xs mx-auto">
+
+                                    <div class="w-full flex items-center gap-1">
+
+                                        <span
+
+                                            class="text-[10px] md:text-[11px] font-black text-emerald-400 w-5 tracking-tighter drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">HP</span>
+
+                                        <div
+
+                                            class="flex-1 h-1 bg-slate-950 rounded-full border border-slate-700/60 overflow-hidden shadow-inner">
+
+                                            <div class="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-300"
+
+                                                :class="[{ 'bg-rose-500 from-rose-600 to-rose-400': hpBarDanger, 'animate-pulse': playerBlink }]"
+
+                                                :style="{ width: (player.hp / player.maxHp * 100) + '%' }"></div>
+
+                                        </div>
+
+                                        <span
+
+                                            class="text-[10px] font-mono font-bold text-slate-200 w-6 text-right drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+
+                                            {{ player.hp }}
+
+                                        </span>
+
+                                    </div>
+
+                                    <div class="w-full flex items-center gap-1">
+
+                                        <span
+
+                                            class="text-[10px] md:text-[11px] font-black text-cyan-400 w-5 tracking-tighter drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">SP</span>
+
+                                        <div
+
+                                            class="flex-1 h-1 bg-slate-950 rounded-full border border-slate-700/60 overflow-hidden shadow-inner">
+
+                                            <div class="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 transition-all duration-300"
+
+                                                style="width: 100%;"></div>
+
+                                        </div>
+
+                                        <span
+
+                                            class="text-[10px] font-mono font-bold text-slate-200 w-6 text-right drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">MAX</span>
+
+                                    </div>
+
+                                </div>
+
+
+
+                                <!-- Right: Icons (Enlarged) -->
+
+                                <div
+
+                                    class="flex-shrink-0 flex flex-nowrap items-center justify-end gap-2 md:gap-3 w-auto md:flex-none">
+
+                                    <button @click="isInventoryOpen = true; pauseBattle();"
+
+                                        class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-800/80 border border-slate-600 flex items-center justify-center text-slate-300 shadow-inner hover:bg-slate-600 transition-all active:scale-95 group">
+
+                                        <span class="text-[15px] sm:text-[17px] group-hover:scale-110">🎒</span>
+
+                                    </button>
+
+                                    <button @click="isSkillOpen = true; pauseBattle();"
+
+                                        class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-700/80 border border-emerald-600 flex items-center justify-center text-emerald-200 shadow-inner hover:bg-emerald-600 transition-all active:scale-95 group">
+
+                                        <span
+
+                                            class="text-[15px] sm:text-[17px] group-hover:scale-110 flex items-center justify-center">📖</span>
+
+                                    </button>
+
+                                    <button @click="usePotion()"
+
+                                        class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-700/80 border border-emerald-600 flex items-center justify-center text-emerald-200 shadow-inner hover:bg-emerald-600 transition-all active:scale-95 group">
+
+                                        <span class="text-[15px] sm:text-[17px] group-hover:scale-110">💊</span>
+
+                                    </button>
+
+                                    <button @click="isMenuOpen = true; pauseBattle();"
+
+                                        class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-800/80 border border-slate-600 flex items-center justify-center text-slate-300 shadow-inner hover:bg-slate-600 transition-all active:scale-95 group">
+
+                                        <span class="text-[15px] sm:text-[17px] group-hover:scale-110">⚙️</span>
+
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
                     </div>
+
                 </div>
-                    </div>
-                </div>
+
             </div>
-<!-- [L7] Result Overlay -->
+
+            <!-- [L7] Result Overlay -->
+
             <div v-if="monsterResultShown || playerDead"
+
                 class="absolute inset-0 z-[100] flex items-center justify-center result-screen-backdrop pointer-events-auto px-4">
+
                 <div
+
                     class="glass-panel p-8 rounded-3xl border border-white/20 shadow-[0_10px_50px_rgba(0,0,0,0.8)] flex flex-col items-center text-center w-full max-w-sm">
+
                     <div v-if="monsterDead" class="w-full">
+
                         <div class="text-6xl mb-4 drop-shadow-lg animate-bounce">🏆</div>
+
                         <h2 class="text-2xl font-black text-amber-400 mb-6 tracking-widest">{{ currentLevel >= maxLevel
+
                             ? '全章節破關！' : '戰鬥突破！' }}</h2>
+
                         <div class="w-full bg-black/40 rounded-xl p-4 mb-6 border border-white/5 space-y-2">
+
                             <div class="flex justify-between items-center"><span
+
                                     class="text-slate-400 font-bold text-sm">評價</span><span class="text-3xl font-black"
+
                                     :class="getGradeColor(calculatedGrade)">{{ calculatedGrade }}</span></div>
+
                             <div class="flex justify-between items-center"><span
+
                                     class="text-slate-400 text-xs">正確率</span><span
+
                                     class="text-emerald-400 font-mono font-bold">{{ accuracyPct }}%</span></div>
+
                             <div class="flex justify-between items-center"><span class="text-slate-400 text-xs">最大
+
                                     Combo</span><span class="text-rose-400 font-mono font-bold">{{ maxComboCount
+
                                     }}</span></div>
+
                             <div class="flex justify-between items-center"><span
+
                                     class="text-slate-400 text-xs">獲得經驗值</span><span
+
                                     class="text-blue-400 font-mono font-bold">+{{ animatedExp }}</span></div>
+
                             <div class="flex justify-between items-center"><span
+
                                     class="text-slate-400 text-xs">獲得金幣</span><span
+
                                     class="text-amber-400 font-mono font-bold">+{{ animatedGold }}</span></div>
+
                         </div>
+
                         <button @click="isMistakesOpen = true"
+
                             class="w-full py-3 rounded-xl bg-slate-800 text-slate-300 font-bold text-sm hover:bg-slate-700 transition-colors border border-slate-600 mb-3">📒
+
                             查看題目</button>
+
                         <button v-if="currentLevel < maxLevel" @click="returnToMap"
+
                             class="w-full py-4 rounded-xl bg-amber-500 text-slate-900 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all mb-3"
+
                             :class="{ 'opacity-0 pointer-events-none': !isNextBtnVisible }">
+
                             返回地圖
+
                         </button>
+
                         <button v-else @click="returnToMap"
+
                             class="w-full py-4 rounded-xl bg-amber-500 text-slate-900 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all mb-3"
+
                             :class="{ 'opacity-0 pointer-events-none': !isNextBtnVisible }">
+
                             章節結算
+
                         </button>
+
                     </div>
+
+
 
                     <div v-if="playerDead" class="w-full">
+
                         <div class="text-6xl mb-4 drop-shadow-lg">💀</div>
+
                         <h2 class="text-2xl font-black text-rose-500 mb-6 tracking-widest">敗北...</h2>
+
                         <button @click="revive"
+
                             class="w-full py-4 rounded-xl bg-emerald-600 text-white font-black text-lg shadow-[0_4px_0_#065f46] active:translate-y-1 active:shadow-none transition-all mb-3">重新開始</button>
+
                         <button @click="isMistakesOpen = true"
+
                             class="w-full py-3 rounded-xl bg-slate-800 text-slate-300 font-bold text-sm hover:bg-slate-700 transition-colors border border-slate-600">📒
+
                             查看題目</button>
+
                     </div>
+
                 </div>
+
             </div>
+
+
 
             <!-- Hero Avatar Behind HUD -->
+
             <div v-if="!isFinished" id="heroAvatar"
+
                 class="fixed md:absolute bottom-0 left-4 md:left-1/2 md:-translate-x-1/2 md:ml-[-180px] z-[45] pointer-events-none"
+
                 style="width: clamp(110px, 7vw, 160px); height: clamp(110px, 7vw, 160px); margin-bottom: clamp(135px, 18dvh, 160px);">
+
                 <img src="assets/images/hero/hero_neutral.png"
+
                     class="w-full h-full object-contain drop-shadow-[0_8px_12px_rgba(0,0,0,0.6)]"
+
                     data-state="neutral" />
+
             </div>
+
+
 
             <!-- Mentor Modal -->
+
             <div v-if="isMentorModalOpen" class="mentor-overlay" style="z-index: 5000;">
+
                 <div class="mentor-panel shadow-2xl">
+
                     <div class="mentor-header">
+
                         <span class="mentor-name">傳說中的導師</span>
+
                         <div class="mentor-page-indicator" v-if="mentorPages.length > 1">
+
                             {{ mentorDialogueIndex + 1 }} / {{ mentorPages.length }}
+
                         </div>
+
                     </div>
+
                     <div class="mentor-body flex gap-6">
+
                         <div class="mentor-portrait-container">
+
                             <img v-if="!isMentorPortraitError" src="assets/images/ui/mentor/mentor-neutral.png"
-                                @error="isMentorPortraitError = true" class="mentor-portrait-img">
+
+                                @error="isMentorPortraitError = true" class="mentor-portrait-img rounded-full">
+
                             <div v-else class="mentor-portrait-placeholder">
+
                                 <span class="text-4xl">👤</span>
+
                             </div>
+
                         </div>
+
                         <div class="mentor-text flex-1">{{ displayedMentorText }}</div>
+
                     </div>
+
                     <div class="mentor-footer">
+
                         <button @pointerdown="startMentorSkipPress" @pointerup="cancelMentorSkipPress"
+
                             @pointerleave="cancelMentorSkipPress" @pointercancel="cancelMentorSkipPress"
+
                             @contextmenu.prevent class="mentor-skip-btn"
+
                             :class="{ 'is-pressing': isMentorSkipPressing }">
+
                             <div class="mentor-skip-progress" :style="{ width: isMentorSkipPressing ? '100%' : '0%' }">
+
                             </div>
+
                             <span>長按 3 秒略過對話</span>
+
                         </button>
+
+
 
                         <div v-if="isLastMentorLine && !isTypingMentor" class="flex gap-4">
+
                             <button @click="restartMentorDialogue"
+
                                 class="mentor-btn btn-secondary text-sm sm:text-base px-4 sm:px-10">
+
                                 再看一次
+
                             </button>
+
                             <button @click="nextMentorLine" class="mentor-btn text-sm sm:text-base px-4 sm:px-10">
+
                                 開始戰鬥
+
                             </button>
+
                         </div>
+
                         <button v-else @click="nextMentorLine" class="mentor-btn">
+
                             {{ isTypingMentor ? '▶ 快進' : '下一句' }}
+
                         </button>
+
                     </div>
+
                 </div>
+
             </div>
+
+
 
             <!-- Skill Unlock Modal -->
+
             <div v-if="isSkillUnlockModalOpen" class="modal-overlay" @click.self="isSkillUnlockModalOpen = false"
+
                 style="z-index: 100;">
+
                 <div
+
                     class="modal-panel max-w-sm rounded-[1rem] border-2 border-amber-600/60 bg-[#1e110a]/95 drop-shadow-[0_0_20px_rgba(217,119,6,0.3)] shadow-2xl overflow-hidden font-serif">
+
                     <div class="text-6xl text-center mb-4 animate-bounce mt-4">✨</div>
+
                     <h2 class="text-2xl font-black text-amber-500 mb-6 text-center tracking-wider">新招式習得！</h2>
+
                     <div class="space-y-3 mb-8 px-2 max-h-64 overflow-y-auto custom-scrollbar">
+
                         <div v-for="skill in newlyUnlocked" :key="skill.id"
+
                             class="p-4 bg-[#3e2723]/60 rounded border border-amber-700/50 shadow-inner">
+
                             <div class="font-bold text-lg text-amber-400 tracking-wide">{{ skill.name }}</div>
+
                             <div class="text-sm text-amber-100/90 mt-2 leading-relaxed">{{ skill.meaning }}</div>
+
                         </div>
+
                     </div>
+
                     <div class="flex gap-3 px-2 mb-2">
+
                         <button @click="openCodexTo(newlyUnlocked[0]?.id)"
+
                             class="flex-1 px-4 py-3 rounded bg-gradient-to-t from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500 text-amber-50 text-base font-bold shadow-lg transition-colors border border-amber-500/50">
+
                             📖 立刻翻開秘笈
+
                         </button>
+
                         <button @click="isSkillUnlockModalOpen = false; resumeBattle();"
+
                             class="px-4 py-3 rounded bg-[#2a1c15] hover:bg-[#3e2723] text-amber-600 hover:text-amber-500 text-base font-bold shadow-lg transition-colors border border-amber-900/50">
+
                             稍後
+
                         </button>
+
                     </div>
+
                 </div>
+
             </div>
+
+
 
             <!-- Boss Ability Unlock Modal -->
+
             <div v-if="isAbilityUnlockModalOpen" class="modal-overlay" style="z-index: 3000;">
+
                 <div
+
                     class="modal-panel max-w-md rounded-2xl border-4 border-amber-500 bg-slate-900 shadow-[0_0_50px_rgba(245,158,11,0.4)] overflow-hidden">
+
                     <div class="p-8 text-center">
+
                         <div class="text-7xl mb-6 animate-bounce">✨</div>
+
                         <h2 class="text-3xl font-black text-amber-400 mb-2 tracking-widest">獲得新能力！</h2>
+
                         <p class="text-slate-400 mb-8 uppercase text-xs tracking-[0.2em]">New Ability Unlocked</p>
 
+
+
                         <div v-if="pendingLevelUpAbility"
+
                             class="bg-slate-800/80 rounded-2xl p-6 border border-amber-500/30 mb-8 shadow-inner">
+
                             <div class="text-5xl mb-4">{{ pendingLevelUpAbility.icon }}</div>
+
                             <h3 class="text-2xl font-bold text-amber-300 mb-3">{{ pendingLevelUpAbility.name }}</h3>
+
                             <p class="text-slate-300 text-sm leading-relaxed">{{ pendingLevelUpAbility.desc }}</p>
+
                         </div>
+
+
 
                         <button @click="confirmAbilityUnlockAndContinue"
+
                             class="w-full py-4 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-900 font-black text-xl rounded-xl shadow-[0_4px_0_#92400e] active:shadow-none active:translate-y-1 transition-all">
+
                             確認並前往下一關
+
                         </button>
+
                     </div>
+
                 </div>
+
             </div>
+
+
 
             <!-- Skill Panel -->
+
             <div v-if="isSkillOpen" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+
                 style="background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px);">
+
                 <div
+
                     class="glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-lg shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col max-h-[90vh]">
+
                     <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
+
                         <h2 class="text-2xl font-black text-amber-400 tracking-[0.15em] drop-shadow-lg">技能 <span
+
                                 class="text-xs text-amber-500/30 font-bold tracking-[0.2em] ml-2">SKILLS</span></h2>
+
                         <div class="flex gap-2">
+
                             <button @click="isCodexOpen = true"
+
                                 class="px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl border border-white/5 transition-all active:scale-95 shadow-lg backdrop-blur-md">圖鑑</button>
+
                             <button @click="closeSkillOverlay(); resumeBattle();"
+
                                 class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-800/60 hover:bg-slate-700 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
+
                         </div>
+
                     </div>
+
+
 
                     <div class="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+
                         <div v-for="skill in skillList" :key="skill.id" @click="castAbility(skill.id)"
+
                             class="group relative bg-slate-900/60 border border-slate-700 hover:border-amber-500/50 rounded-xl p-3 flex gap-4 cursor-pointer transition-all hover:bg-slate-800"
+
                             :class="{ 'opacity-50 grayscale cursor-not-allowed': spState.cur < skill.cost || playerDead || monsterDead }">
+
                             <div
-                                class="w-12 h-12 flex-shrink-0 bg-slate-800 rounded-lg flex items-center justify-center text-2xl border border-slate-600 group-hover:border-amber-400">
+
+                                class="w-14 h-14 flex-shrink-0 bg-slate-800 rounded-lg flex items-center justify-center text-2xl border border-slate-600 group-hover:border-amber-400">
+
                                 {{ skill.icon }}
+
                             </div>
+
                             <div class="flex-1 flex flex-col justify-center">
+
                                 <div class="flex justify-between items-start mb-1">
+
                                     <h3 class="font-bold text-slate-200 group-hover:text-amber-300 transition-colors">{{
+
                                         skill.name }}</h3>
+
                                     <span
+
                                         class="text-xs font-black px-2 py-0.5 rounded-full bg-cyan-900 text-cyan-300 border border-cyan-700">{{
+
                                         skill.cost }} SP</span>
+
                                 </div>
+
                                 <p class="text-xs text-slate-400 leading-snug">{{ skill.desc }}</p>
+
                             </div>
+
                         </div>
+
                     </div>
+
                 </div>
+
             </div>
+
+
 
             <!-- Codex -->
-            <div v-if="isCodexOpen" class="modal-overlay fixed inset-0 z-[2000] flex items-center justify-center p-4 md:p-8"
+
+            <div v-if="isCodexOpen"
+
+                class="modal-overlay fixed inset-0 z-[2000] flex items-center justify-center p-4 md:p-8"
+
                 @click.self="isCodexOpen = false; if (!isSkillOpen) resumeBattle();">
+
                 <div class="absolute inset-0 bg-slate-950/20 backdrop-blur-md pointer-events-none"></div>
+
                 <div
+
                     class="relative w-full max-w-4xl h-full max-h-[85vh] glass-panel modal-panel !bg-indigo-950/40 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
 
+
+
                     <div class="text-center py-6 border-b border-white/10 shadow-lg relative z-10 bg-black/10">
+
                         <h2 class="text-2xl font-[900] text-amber-400 tracking-[0.2em] drop-shadow-xl"
+
                             style="text-shadow: 0 4px 12px rgba(0,0,0,0.5);">招式圖鑑 <span
+
                                 class="text-[10px] font-bold opacity-20 tracking-[0.4em] ml-3">CODEX</span></h2>
+
                         <button @click="isCodexOpen = false; if (!isSkillOpen) resumeBattle();"
+
                             class="absolute top-1/2 -translate-y-1/2 right-8 text-amber-400/40 hover:text-amber-300 transition-all active:scale-90 p-1.5 focus:outline-none">
+
                             <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+
                                     d="M6 18L18 6M6 6l12 12"></path>
+
                             </svg>
+
                         </button>
+
                     </div>
+
+
 
                     <div class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar relative z-10 space-y-4">
+
                         <div v-for="skill in skillsWithUnlockLevel" :key="skill.id" :id="'skill-card-' + skill.id">
+
                             <div v-if="unlockedSkillIds.includes(skill.id)"
+
                                 :class="['border rounded pointer-events-auto transition-all duration-300 shadow-md', expandedSkillId === skill.id ? 'border-amber-500/30 shadow-[0_0_20px_rgba(251,191,36,0.1)] bg-amber-900/20' : 'bg-[#3e2723]/40 border-amber-900/20']">
+
                                 <button @click="expandedSkillId = expandedSkillId === skill.id ? null : skill.id"
+
                                     class="w-full text-left px-4 py-3 flex justify-between items-center hover:bg-white/5 transition-colors rounded">
+
                                     <span class="font-bold text-lg text-amber-400/90 tracking-wide">{{ skill.name
+
                                         }}</span>
+
                                     <span class="text-amber-600/80">{{ expandedSkillId === skill.id ? '▼' : '▶'
+
                                         }}</span>
+
                                 </button>
+
                                 <div v-if="expandedSkillId === skill.id"
+
                                     class="p-4 pt-2 text-base space-y-3 bg-[#1e110a]/40 border-t border-amber-900/50">
+
                                     <div v-if="skill.meaning"><span
+
                                             class="text-emerald-500 font-bold mr-2">含義</span><span
+
                                             class="text-amber-100/90 leading-relaxed">{{ skill.meaning }}</span></div>
+
                                     <div v-if="skill.rule"><span class="text-blue-400 font-bold mr-2">句型</span><span
+
                                             class="text-amber-100/90 leading-relaxed">{{ skill.rule }}</span></div>
+
                                 </div>
+
                             </div>
+
                             <div v-else
+
                                 class="bg-slate-900/40 border border-white/5 rounded p-4 flex items-center justify-between pointer-events-none opacity-80 grayscale filter shadow-inner">
+
                                 <span class="font-bold text-slate-400 text-lg flex items-center gap-2">🔒 未習得</span>
+
                                 <span class="text-xs font-bold text-amber-800/40">{{ skill.unlockLevel ? '第 ' +
+
                                     skill.unlockLevel + ' 關習得' : '未安排' }}</span>
+
                             </div>
+
                         </div>
+
                     </div>
+
                 </div>
+
             </div>
+
+
 
             <!-- Menu -->
+
             <div v-if="isMenuOpen" class="modal-overlay fixed inset-0 z-[5000] flex items-center justify-center p-4"
+
                 @click.self="isMenuOpen = false; resumeBattle();">
+
                 <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
-                <div class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[400px] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col">
+
+                <div
+
+                    class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[400px] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col">
+
                     <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4">
-                        <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">暫停 <span class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2">MENU</span></h2>
+
+                        <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">暫停 <span
+
+                                class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2">MENU</span></h2>
+
                         <button @click="isMenuOpen = false; resumeBattle();"
+
                             class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
+
                     </div>
+
+
 
                     <div class="space-y-4">
+
                         <!-- Volume Controls -->
+
                         <div class="bg-white/5 rounded-2xl p-4 border border-white/5 space-y-3 shadow-inner">
+
                             <div class="flex items-center justify-between mb-1">
+
                                 <div class="flex items-center gap-2">
-                                    <span class="text-sm font-bold text-slate-200">{{ isMuted ? '🔇 靜音' : '🔊 音量' }}</span>
+
+                                    <span class="text-sm font-bold text-slate-200">{{ isMuted ? '🔇 靜音' : '🔊 音量'
+
+                                        }}</span>
+
                                 </div>
+
                                 <button @click="isMuted = !isMuted; saveAudioSettings(); playBgm();"
+
                                     class="text-xs px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 transition-colors border border-white/5">
+
                                     {{ isMuted ? '取消靜音' : '設為靜音' }}
+
                                 </button>
+
                             </div>
+
                             <div class="space-y-2">
-                                <label class="flex items-center gap-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+
+                                <label
+
+                                    class="flex items-center justify-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+
                                     <span class="w-8">BGM</span>
+
                                     <input type="range" min="0" max="1" step="0.01" v-model.number="bgmVolume"
-                                        @input="playBgm(); saveAudioSettings()" class="flex-1 accent-amber-500 h-1.5 bg-black/30 rounded-full appearance-none">
+
+                                        @input="playBgm(); saveAudioSettings()"
+
+                                        class="flex-1 accent-amber-500 h-1.5 bg-black/30 rounded-full appearance-none">
+
                                 </label>
-                                <label class="flex items-center gap-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+
+                                <label
+
+                                    class="flex items-center justify-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+
                                     <span class="w-8">SFX</span>
+
                                     <input type="range" min="0" max="1" step="0.01" v-model.number="sfxVolume"
-                                        @input="saveAudioSettings()" class="flex-1 accent-amber-500 h-1.5 bg-black/30 rounded-full appearance-none">
+
+                                        @input="saveAudioSettings()"
+
+                                        class="flex-1 accent-amber-500 h-1.5 bg-black/30 rounded-full appearance-none">
+
                                 </label>
+
                             </div>
+
                         </div>
+
+
 
                         <!-- System Actions -->
+
                         <div class="grid grid-cols-1 gap-2.5">
+
                             <button
+
                                 @click="isAdvancedSettingsOpen = true; isMenuOpen = false; isLevelJumpOpen = false; isMentorReplayOpen = false; isMistakesOpen = false; isInventoryOpen = false; isSkillUnlockModalOpen = false;"
+
                                 class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 hover:bg-indigo-500/20 border border-white/10 text-slate-200 text-sm font-bold shadow transition-all group">
+
                                 <span class="group-hover:rotate-45 transition-transform duration-500">⚙️</span> 進階設定
+
                             </button>
+
                         </div>
+
+
 
                         <div class="grid grid-cols-2 gap-2.5">
+
                             <button @click="isMentorReplayOpen = true; isMenuOpen = false;"
+
                                 class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-400/20 text-blue-100 text-sm font-bold transition-all">
+
                                 🧙‍♂️ 教學
+
                             </button>
+
                             <button @click="isLevelJumpOpen = true; isMenuOpen = false;"
+
                                 class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-400/20 text-purple-100 text-sm font-bold transition-all">
+
                                 ⏭️ 關卡
+
                             </button>
+
                         </div>
+
+
 
                         <button @click="openChangelog();"
+
                             class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-400/20 text-indigo-100 text-sm font-bold transition-all">
+
                             📋 更新日誌
+
                         </button>
+
+
 
                         <button @pointerdown="startRunAwayPress" @pointerup="cancelRunAwayPress"
+
                             @pointerleave="cancelRunAwayPress" @pointercancel="cancelRunAwayPress" @contextmenu.prevent
+
                             class="relative w-full px-4 py-3.5 rounded-xl bg-rose-950/30 border border-rose-500/30 hover:bg-rose-900/40 text-rose-100 text-xs font-black shadow-lg transition-all overflow-hidden select-none active:scale-95 mt-2"
+
                             :class="{ 'border-rose-400/50 shadow-rose-500/10': isRunAwayPressing }">
+
                             <div class="absolute left-0 top-0 bottom-0 bg-rose-500/30 pointer-events-none"
+
                                 :style="{ width: isRunAwayPressing ? '100%' : '0%', transition: isRunAwayPressing ? 'width 3s linear' : 'width 0.2s ease-out' }">
+
                             </div>
+
                             <span class="relative z-10 tracking-widest uppercase">🏃 長按 3 秒重新整理最新版</span>
+
                         </button>
+
                     </div>
+
                 </div>
+
             </div>
+
+
 
             <!-- Advanced Settings -->
-            <div v-if="isAdvancedSettingsOpen" class="modal-overlay fixed inset-0 z-[5000] flex items-center justify-center p-4"
+
+            <div v-if="isAdvancedSettingsOpen"
+
+                class="modal-overlay fixed inset-0 z-[5000] flex items-center justify-center p-4"
+
                 @click.self="isAdvancedSettingsOpen = false; resumeBattle();">
+
                 <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
-                <div class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[400px] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col">
+
+                <div
+
+                    class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[400px] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col">
+
                     <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4">
-                        <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">設定 <span class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2">SETTINGS</span></h2>
+
+                        <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">設定 <span
+
+                                class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2">SETTINGS</span></h2>
+
                         <button @click="isAdvancedSettingsOpen = false; resumeBattle();"
+
                             class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
+
                     </div>
+
+
 
                     <div class="flex-1 overflow-y-auto pr-1 space-y-4 custom-scrollbar max-h-[60vh]">
+
                         <!-- Auto Read -->
+
                         <div class="bg-white/5 rounded-2xl p-4 border border-white/5 shadow-inner">
+
                             <label class="flex items-center justify-between cursor-pointer group">
-                                <span class="text-sm font-bold text-slate-200 group-hover:text-white transition-colors">答錯時自動朗讀句子</span>
+
+                                <span
+
+                                    class="text-sm font-bold text-slate-200 group-hover:text-white transition-colors">答錯時自動朗讀句子</span>
+
                                 <div class="relative inline-flex items-center cursor-pointer">
+
                                     <input type="checkbox" v-model="settings.autoReadOnWrong" class="sr-only peer">
-                                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+
+                                    <div
+
+                                        class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+
+                                    </div>
+
                                 </div>
+
                             </label>
+
                         </div>
+
+
 
                         <!-- Advancement delays -->
+
                         <div class="bg-white/5 rounded-2xl p-4 border border-white/5 space-y-4 shadow-inner">
+
                             <div>
-                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">答對後自動前進</span>
+
+                                <span
+
+                                    class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">答對後自動前進</span>
+
                                 <div class="flex bg-black/30 rounded-xl p-1">
+
                                     <button v-for="v in [0, 1000, 2000, 3000]" :key="'adv_'+v"
+
                                         @click="settings.correctAdvanceDelayMs = v"
+
                                         class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all"
+
                                         :class="settings.correctAdvanceDelayMs === v ? 'bg-amber-500 text-indigo-950' : 'text-slate-400 hover:text-slate-200'">
+
                                         {{ v === 0 ? '手動' : (v/1000) + 's' }}
+
                                     </button>
+
                                 </div>
+
                             </div>
+
                             <div>
-                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">答錯後自動前進</span>
+
+                                <span
+
+                                    class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">答錯後自動前進</span>
+
                                 <div class="flex bg-black/30 rounded-xl p-1">
+
                                     <button v-for="v in [0, 2000, 3000, 5000]" :key="'err_'+v"
+
                                         @click="settings.wrongAdvanceDelayMs = v"
+
                                         class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all"
+
                                         :class="settings.wrongAdvanceDelayMs === v ? 'bg-amber-500 text-indigo-950' : 'text-slate-400 hover:text-slate-200'">
+
                                         {{ v === 0 ? '手動' : (v/1000) + 's' }}
+
                                     </button>
+
                                 </div>
+
                             </div>
+
                         </div>
+
+
 
                         <!-- Visual/Feedback -->
+
                         <div class="bg-white/5 rounded-2xl p-4 border border-white/5 space-y-4 shadow-inner">
+
                             <div>
-                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">回饋風格</span>
+
+                                <span
+
+                                    class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">回饋風格</span>
+
                                 <div class="grid grid-cols-2 gap-2">
+
                                     <button @click="settings.feedbackStyle = 'oneesan'"
+
                                         class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
+
                                         :class="settings.feedbackStyle === 'oneesan' ? 'bg-indigo-500/20 border-indigo-500 text-indigo-100 shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+
                                         播報姊姊
+
                                     </button>
+
                                     <button @click="settings.feedbackStyle = 'combat'"
+
                                         class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
+
                                         :class="settings.feedbackStyle === 'combat' ? 'bg-indigo-500/20 border-indigo-500 text-indigo-100 shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+
                                         爽快戰鬥
+
                                     </button>
+
                                 </div>
+
                             </div>
+
                             <div>
-                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">戰鬥模式</span>
+
+                                <span
+
+                                    class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">戰鬥模式</span>
+
                                 <div class="grid grid-cols-2 gap-2">
+
                                     <button @click="settings.enemyAttackMode = 'atb'"
+
                                         class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
+
                                         :class="settings.enemyAttackMode === 'atb' ? 'bg-rose-500/20 border-rose-500 text-rose-100 shadow-[0_0_15px_rgba(244,63,94,0.2)]' : 'bg-black/20 border-white/5 text-slate-400'">
+
                                         ATB(即時)
+
                                     </button>
-                                    <button class="py-2 px-1 text-xs font-bold rounded-xl border border-white/5 bg-black/10 text-slate-600 cursor-not-allowed italic">
+
+                                    <button
+
+                                        class="py-2 px-1 text-xs font-bold rounded-xl border border-white/5 bg-black/10 text-slate-600 cursor-not-allowed italic">
+
                                         回合制(TODO)
+
                                     </button>
+
                                 </div>
+
                             </div>
+
                         </div>
+
                     </div>
+
+
 
                     <div class="grid grid-cols-2 gap-3 mt-6 pt-4 border-t border-white/10">
+
                         <button @click="isAdvancedSettingsOpen = false; isMenuOpen = true;"
+
                             class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-bold border border-white/5 transition-all">返回主選單</button>
+
                         <button @click="isAdvancedSettingsOpen = false; resumeBattle();"
+
                             class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95">關閉全部</button>
+
                     </div>
+
                 </div>
+
             </div>
+
+
 
             <!-- Mentor Replay -->
+
             <div v-if="isMentorReplayOpen" class="fixed inset-0 z-[5000] flex items-center justify-center p-4"
+
                 @click.self="isMentorReplayOpen = false; resumeBattle();">
+
                 <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
-                <div class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[500px] h-full max-h-[70vh] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden">
+
+                <div
+
+                    class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[500px] h-full max-h-[70vh] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden">
+
                     <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4 flex-shrink-0">
-                        <h2 class="text-2xl font-black text-blue-400 tracking-[0.1em] drop-shadow-lg">教學 <span class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2 uppercase">REPLAY</span></h2>
+
+                        <h2 class="text-2xl font-black text-blue-400 tracking-[0.1em] drop-shadow-lg">教學 <span
+
+                                class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2 uppercase">REPLAY</span>
+
+                        </h2>
+
                         <button @click="isMentorReplayOpen = false; resumeBattle();"
+
                             class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
+
                     </div>
+
+
 
                     <div class="flex-1 overflow-y-auto custom-scrollbar space-y-2.5 pr-1 pb-2">
+
                         <div v-for="skillId in unlockedSkillIds" :key="'mentor-'+skillId">
+
                             <button v-if="skillsAll[skillId] && skillsAll[skillId].mentorDialogue"
+
                                 @click="replaySpecificMentor(skillId)"
+
                                 class="w-full text-left px-5 py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-blue-500/30 shadow-md transition-all group active:scale-[0.98]">
+
                                 <div class="flex justify-between items-center">
-                                    <span class="font-bold text-amber-400 text-lg group-hover:text-amber-300 transition-colors">{{ skillsAll[skillId].name || skillId }}</span>
-                                    <span class="text-xs text-blue-400/50 font-black tracking-widest uppercase">REPLAY ▶</span>
+
+                                    <span
+
+                                        class="font-bold text-amber-400 text-lg group-hover:text-amber-300 transition-colors">{{
+
+                                        skillsAll[skillId].name || skillId }}</span>
+
+                                    <span class="text-xs text-blue-400/50 font-black tracking-widest uppercase">REPLAY
+
+                                        ▶</span>
+
                                 </div>
-                                <div class="text-[11px] text-slate-400 mt-1 leading-relaxed opacity-80">{{ skillsAll[skillId].meaning || '' }}</div>
+
+                                <div class="text-[11px] text-slate-400 mt-1 leading-relaxed opacity-80">{{
+
+                                    skillsAll[skillId].meaning || '' }}</div>
+
                             </button>
+
                         </div>
+
                     </div>
 
+
+
                     <div class="flex justify-end pt-5 mt-3 border-t border-white/10 shrink-0">
+
                         <button @click="isMentorReplayOpen = false; resumeBattle()"
+
                             class="px-8 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold shadow-lg transition-all active:scale-95">關閉</button>
+
                     </div>
+
                 </div>
+
             </div>
+
+
 
             <!-- Level Jump (Redesigned as Mission Cards) -->
+
             <div v-if="isLevelJumpOpen" class="fixed inset-0 z-[5000] flex items-center justify-center p-4 md:p-8"
+
                 @click.self="isLevelJumpOpen = false; resumeBattle();">
+
                 <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
-                <div class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[600px] h-full max-h-[80vh] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden">
+
+                <div
+
+                    class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[600px] h-full max-h-[80vh] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden">
+
                     <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4 flex-shrink-0">
-                        <h2 class="text-2xl font-black text-purple-400 tracking-[0.1em] drop-shadow-lg">關卡選擇 <span class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2 uppercase">STAGES</span></h2>
+
+                        <h2 class="text-2xl font-black text-purple-400 tracking-[0.1em] drop-shadow-lg">關卡選擇 <span
+
+                                class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2 uppercase">STAGES</span>
+
+                        </h2>
+
                         <button @click="isLevelJumpOpen = false; resumeBattle();"
+
                             class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
+
                     </div>
 
-                    <div class="flex-1 overflow-y-auto custom-scrollbar grid grid-cols-2 sm:grid-cols-3 gap-3 pr-1 pb-4 content-start">
+
+
+                    <div
+
+                        class="flex-1 overflow-y-auto custom-scrollbar grid grid-cols-2 sm:grid-cols-3 gap-3 pr-1 pb-4 content-start">
+
                         <div v-for="l in maxLevel" :key="'jump_'+l"
+
                             @click="isLevelJumpOpen = false; debugJumpToLevel(l)"
+
                             class="relative group cursor-pointer overflow-hidden rounded-2xl border transition-all duration-300 active:scale-95 flex flex-col h-32"
+
                             :class="currentLevel === l ? 'bg-amber-500/20 border-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.15)]' : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'">
-                            
+
+
+
                             <!-- Card Header -->
+
                             <div class="p-2.5 flex justify-between items-start border-b border-white/5 bg-black/10">
-                                <span class="text-[10px] font-black tracking-widest leading-none" :class="currentLevel === l ? 'text-amber-400' : 'text-slate-500'">STAGE {{ l }}</span>
-                                <span class="text-[8px] font-bold opacity-20 uppercase tracking-tighter truncate max-w-[60px]">{{ LEVEL_CONFIG[l]?.levelName || '未知區域' }}</span>
+
+                                <span class="text-[10px] font-black tracking-widest leading-none"
+
+                                    :class="currentLevel === l ? 'text-amber-400' : 'text-slate-500'">STAGE {{ l
+
+                                    }}</span>
+
+                                <span
+
+                                    class="text-[8px] font-bold opacity-20 uppercase tracking-tighter truncate max-w-[60px]">{{
+
+                                    LEVEL_CONFIG[l]?.levelName || '未知區域' }}</span>
+
                             </div>
+
+
 
                             <!-- Card Body (Large Particle) -->
+
                             <div class="flex-1 flex flex-col items-center justify-center p-2 relative overflow-hidden">
-                                <div class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none">
+
+                                <div
+
+                                    class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none">
+
                                     <span class="text-7xl font-black italic">{{ l }}</span>
+
                                 </div>
+
                                 <div class="text-3xl font-black transition-transform group-hover:scale-110 duration-300 drop-shadow-md"
+
                                     :class="currentLevel === l ? 'text-amber-400' : 'text-amber-500/80'">
+
                                     {{ LEVEL_CONFIG[l]?.focusParticle || '?' }}
+
                                 </div>
+
                                 <div class="text-[10px] font-bold text-slate-300/60 mt-0.5 tracking-wide text-center">
+
                                     {{ LEVEL_CONFIG[l]?.focusLabel || '???' }}
+
                                 </div>
+
                             </div>
-                            
+
+
+
                             <!-- Selection Glow Indicator -->
-                            <div v-if="currentLevel === l" class="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-400"></div>
+
+                            <div v-if="currentLevel === l" class="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-400">
+
+                            </div>
+
                         </div>
+
                     </div>
+
+
 
                     <div class="flex justify-end pt-5 mt-3 border-t border-white/10 shrink-0">
+
                         <button @click="isLevelJumpOpen = false; resumeBattle()"
+
                             class="px-8 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold shadow-lg transition-all active:scale-95">關閉</button>
+
                     </div>
+
                 </div>
+
             </div>
+
+
 
             <!-- Changelog -->
+
             <div v-if="isChangelogOpen" class="fixed inset-0 z-[6000] flex items-center justify-center p-4"
+
                 @click.self="isChangelogOpen = false">
+
                 <div class="absolute inset-0 bg-slate-950/50 backdrop-blur-md pointer-events-none"></div>
-                <div class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[500px] h-full max-h-[75vh] shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
+
+                <div
+
+                    class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[500px] h-full max-h-[75vh] shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
+
                     <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4 flex-shrink-0">
-                        <h2 class="text-2xl font-black text-indigo-300 tracking-[0.1em] drop-shadow-lg">更新日誌 <span class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2 uppercase">CHANGELOG</span></h2>
+
+                        <h2 class="text-2xl font-black text-indigo-300 tracking-[0.1em] drop-shadow-lg">更新日誌 <span
+
+                                class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2 uppercase">CHANGELOG</span>
+
+                        </h2>
+
                         <button @click="isChangelogOpen = false"
+
                             class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
+
                     </div>
 
-                    <div v-if="changelogError" class="flex-1 flex flex-col items-center justify-center p-10 text-center">
+
+
+                    <div v-if="changelogError"
+
+                        class="flex-1 flex flex-col items-center justify-center p-10 text-center">
+
                         <span class="text-4xl mb-4">⚠️</span>
+
                         <div class="text-rose-400 font-bold">讀取失敗，請重新整理</div>
+
                     </div>
-                    <div v-else-if="changelogData.length === 0" class="flex-1 flex flex-col items-center justify-center p-10 text-center">
-                        <div class="w-8 h-8 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mb-4"></div>
-                        <div class="text-slate-400 text-sm font-bold tracking-widest">載入中...</div>
-                    </div>
-                    <div v-else class="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-1 pb-2">
-                        <div v-for="(entry, index) in changelogData" :key="index"
-                            class="p-5 bg-white/5 rounded-2xl border border-white/5 shadow-inner group">
-                            <div class="flex items-center justify-between mb-3">
-                                <span class="text-indigo-300 font-black text-xl tracking-tight leading-none group-hover:text-indigo-200 transition-colors">v{{ entry.version }}</span>
-                                <span class="text-[10px] font-bold text-slate-500 bg-black/20 px-2 py-0.5 rounded-full border border-white/5 uppercase tracking-tighter">{{ entry.date }}</span>
-                            </div>
-                            <ul class="space-y-2">
-                                <li v-for="(change, cIndex) in entry.changes" :key="cIndex" class="flex items-start gap-3 text-slate-300 text-xs leading-relaxed">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-500/50 mt-1.5 flex-shrink-0 shadow-[0_0_8px_rgba(99,102,241,0.3)]"></span>
-                                    <span>{{ change }}</span>
-                                </li>
-                            </ul>
+
+                    <div v-else-if="changelogData.length === 0"
+
+                        class="flex-1 flex flex-col items-center justify-center p-10 text-center">
+
+                        <div
+
+                            class="w-8 h-8 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mb-4">
+
                         </div>
+
+                        <div class="text-slate-400 text-sm font-bold tracking-widest">載入中...</div>
+
                     </div>
+
+                    <div v-else class="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-1 pb-2">
+
+                        <div v-for="(entry, index) in changelogData" :key="index"
+
+                            class="p-5 bg-white/5 rounded-2xl border border-white/5 shadow-inner group">
+
+                            <div class="flex items-center justify-between mb-3">
+
+                                <span
+
+                                    class="text-indigo-300 font-black text-xl tracking-tight leading-none group-hover:text-indigo-200 transition-colors">v{{
+
+                                    entry.version }}</span>
+
+                                <span
+
+                                    class="text-[10px] font-bold text-slate-500 bg-black/20 px-2 py-0.5 rounded-full border border-white/5 uppercase tracking-tighter">{{
+
+                                    entry.date }}</span>
+
+                            </div>
+
+                            <ul class="space-y-2">
+
+                                <li v-for="(change, cIndex) in entry.changes" :key="cIndex"
+
+                                    class="flex items-start gap-3 text-slate-300 text-xs leading-relaxed">
+
+                                    <span
+
+                                        class="w-1.5 h-1.5 rounded-full bg-indigo-500/50 mt-1.5 flex-shrink-0 shadow-[0_0_8px_rgba(99,102,241,0.3)]"></span>
+
+                                    <span>{{ change }}</span>
+
+                                </li>
+
+                            </ul>
+
+                        </div>
+
+                    </div>
+
+
 
                     <div class="flex justify-end pt-5 mt-3 border-t border-white/10 flex-shrink-0">
+
                         <button @click="isChangelogOpen = false"
+
                             class="px-8 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95">關閉</button>
+
                     </div>
+
                 </div>
+
             </div>
 
+
+
             <!-- Mistakes -->
+
             <div v-if="isMistakesOpen" class="modal-overlay backdrop-blur-sm" @click.self="isMistakesOpen = false"
+
                 style="z-index: 5000; background: rgba(15, 23, 42, 0.1);">
+
                 <div
+
                     class="modal-panel w-[500px] max-w-[95vw] !bg-slate-900/30 backdrop-blur-2xl border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
+
                     <h2 class="text-2xl font-black text-blue-400 mb-4 tracking-tighter">📒 出題本</h2>
+
                     <div v-if="stageLog.length === 0" class="text-slate-400 text-center py-6">本關尚無出題紀錄</div>
+
                     <div v-else class="space-y-3 mb-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
+
                         <div v-for="(m, i) in stageLog" :key="i"
+
                             class="p-4 rounded-2xl border border-white/10 shadow-lg transition-all backdrop-blur-md"
+
                             :class="[
+
                                 m.isCorrect 
+
                                     ? 'bg-indigo-900/10 border-l-4 border-l-emerald-500/40 shadow-indigo-900/5' 
+
                                     : 'bg-rose-950/10 border-l-4 border-l-rose-500 shadow-[0_0_20px_rgba(225,29,72,0.08)]'
+
                             ]">
+
                             <div class="flex items-start justify-between mb-1.5">
+
                                 <div class="flex flex-col gap-1">
+
                                     <div class="flex items-center gap-2 mb-0.5">
+
                                         <span
+
                                             class="text-[10px] font-mono text-slate-400 bg-white/5 px-2 py-0.5 rounded-full border border-white/5">#{{
+
                                             m.order }}</span>
+
                                         <span v-if="!m.isCorrect"
+
                                             class="text-[10px] font-black text-white bg-rose-600 px-2 py-0.5 rounded shadow-sm tracking-widest scale-90 origin-left">MISS</span>
+
                                     </div>
+
                                     <div class="text-slate-100 font-bold text-lg leading-relaxed tracking-wide"
+
                                         v-html="m.displayJp || m.sentenceText"></div>
+
                                 </div>
+
                                 <button @click="playMistakeVoice(m)"
+
                                     class="ml-3 bg-blue-600/80 hover:bg-blue-500 text-white rounded-xl px-3 py-2 shadow-lg flex-shrink-0 text-sm transition-all active:scale-95 backdrop-blur-md border border-white/10">🔊</button>
+
                             </div>
+
                             <div class="text-slate-400 text-sm mb-2 font-medium brightness-125">{{ m.prompt }}</div>
+
                             <div v-if="m.grammarTip"
+
                                 class="text-slate-400 text-xs mt-2 bg-slate-900/40 p-3 rounded-xl leading-relaxed border border-white/5">
+
                                 <span class="text-amber-400/80 font-bold mr-1">💡</span> {{ m.grammarTip }}
+
                             </div>
+
                         </div>
+
                     </div>
+
                     <div class="flex gap-3">
+
                         <button @click="clearMistakes"
+
                             class="flex-1 px-3 py-3 rounded-xl bg-red-600/80 hover:bg-red-500 text-white text-sm font-bold flex items-center justify-center gap-2 shadow-lg transition-transform active:scale-95">
+
                             🗑 清空
+
                         </button>
+
                         <button @click="isMistakesOpen = false"
+
                             class="flex-1 px-3 py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold shadow-lg transition-transform active:scale-95">關閉</button>
+
                     </div>
+
                 </div>
+
             </div>
+
+
 
             <div v-if="flashOverlay" class="flash-overlay"></div>
 
+
+
             <div v-if="isPreloading"
+
                 class="fixed inset-0 z-[3000] flex items-center justify-center bg-slate-900/90 backdrop-blur-sm">
+
                 <div class="flex flex-col items-center">
+
                     <div
+
                         class="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4">
+
                     </div>
+
                     <div class="text-amber-400 font-bold text-xl tracking-widest animate-pulse">音效載入中...</div>
+
                 </div>
+
             </div>
+
+
 
             <!-- Inventory -->
+
             <div v-if="isInventoryOpen" class="modal-overlay" @click.self="isInventoryOpen = false; resumeBattle();">
+
                 <div class="modal-panel w-[400px]">
+
                     <h2 class="text-2xl font-black text-emerald-400 mb-4 flex items-center gap-2">🎒 冒險者背包</h2>
+
                     <div class="space-y-3 mb-4">
-                        <div class="flex items-center gap-3 bg-slate-700/50 p-3 rounded-xl border border-slate-600/50">
+
+                        <div
+
+                            class="flex items-center justify-center gap-4 bg-slate-700/50 p-3 rounded-xl border border-slate-600/50">
+
                             <div
-                                class="w-12 h-12 flex-shrink-0 bg-gradient-to-tr from-cyan-900 to-cyan-500 rounded-lg flex items-center justify-center text-2xl shadow-inner border border-cyan-400/30">
+
+                                class="w-14 h-14 flex-shrink-0 bg-gradient-to-tr from-cyan-900 to-cyan-500 rounded-lg flex items-center justify-center text-2xl shadow-inner border border-cyan-400/30">
+
                                 💨
+
                             </div>
+
                             <div class="flex-1">
+
                                 <h3 class="text-slate-100 font-bold text-base flex justify-between items-center">
+
                                     神速藥水
+
                                     <span
+
                                         class="bg-cyan-600/50 text-cyan-200 text-xs px-2 py-0.5 rounded-full border border-cyan-500/30">
+
                                         x {{ inventory.speedPotions }}
+
                                     </span>
+
                                 </h3>
+
                                 <p class="text-slate-400 text-xs mt-1 leading-relaxed">
+
                                     飲用後的一分鐘內，面對怪物的接下來 6 次攻擊，自身閃避率提升至
+
                                     <span class="text-amber-400 font-bold">50%</span>。
+
                                 </p>
+
                                 <div v-if="evasionBuffAttacksLeft > 0"
+
                                     class="text-cyan-300 text-xs mt-1 font-bold animate-pulse">
+
                                     效果持續中... (剩餘 {{ evasionBuffAttacksLeft }} 次)
+
                                 </div>
+
                             </div>
+
+
 
                             <button @click="useSpeedPotion"
+
                                 class="shrink-0 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-lg transition-transform active:scale-95 shadow-md disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
+
                                 :disabled="inventory.speedPotions <= 0 || evasionBuffAttacksLeft > 0 || monsterDead || playerDead">
+
                                 使用
+
                             </button>
+
                         </div>
+
                     </div>
+
+
 
                     <div class="flex gap-2">
+
                         <button @click="isInventoryOpen = false; resumeBattle();"
+
                             class="w-full px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold shadow-md">關閉</button>
+
                     </div>
+
                 </div>
+
             </div>
 
+
+
         </div> <!-- #stageWrap -->
+
     </div><!-- #app -->
+
 </body>
+
+
 
 </html>

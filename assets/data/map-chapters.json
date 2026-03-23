@@ -42,7 +42,7 @@
       {
         "id": "d",
         "title": "城內外廊",
-        "background": "C:/Users/York/.gemini/antigravity/brain/866b81f1-c497-4000-8080-d5f45acc5698/chapter1_segment_d_castle_walls_1773504614165.png",
+        "background": "assets/images/maps/chapter1-d.png",
         "nodes": {
           "16": { "x": 20, "y": 15, "landmark": "城門長廊" },
           "17": { "x": 50, "y": 35, "landmark": "幽靜階梯" },
@@ -54,20 +54,46 @@
       {
         "id": "e",
         "title": "深淵迴廊",
-        "background": "",
-        "nodes": {}
+        "background": "assets/images/maps/chapter1-e.png",
+        "nodes": {
+          "21": { "x": 60, "y": 15, "landmark": "幽暗入口" },
+          "22": { "x": 35, "y": 35, "landmark": "骨骸路" },
+          "23": { "x": 75, "y": 55, "landmark": "無盡長廊" },
+          "24": { "x": 40, "y": 75, "landmark": "封印大門" },
+          "25": { "x": 55, "y": 90, "landmark": "深淵盡頭" }
+        }
       },
       {
         "id": "f",
         "title": "王座深處",
-        "background": "",
-        "nodes": {}
+        "background": "assets/images/maps/chapter1-f.png",
+        "nodes": {
+          "26": { "x": 30, "y": 15, "landmark": "禁忌書庫" },
+          "27": { "x": 65, "y": 35, "landmark": "幻影長廊" },
+          "28": { "x": 40, "y": 55, "landmark": "抉擇之廳" },
+          "29": { "x": 75, "y": 75, "landmark": "真理之門" },
+          "30": { "x": 50, "y": 90, "landmark": "王座之間" }
+        }
       },
       {
         "id": "g",
         "title": "終局聖域",
-        "background": "",
-        "nodes": {}
+        "background": "assets/images/maps/chapter1-g.png",
+        "nodes": {
+          "31": { "x": 60, "y": 15, "landmark": "起源石碑" },
+          "32": { "x": 30, "y": 35, "landmark": "試煉迴廊" },
+          "33": { "x": 75, "y": 55, "landmark": "神域祭壇" },
+          "34": { "x": 40, "y": 75, "landmark": "禁忌鍛爐" },
+          "35": { "x": 50, "y": 95, "landmark": "世界之巔" }
+        }
+      },
+      {
+        "id": "h",
+        "title": "裏・極限深淵",
+        "background": "assets/images/maps/chapter1-h.png",
+        "nodes": {
+          "36": { "x": 50, "y": 50, "landmark": "真正的終結" }
+        }
       }
     ]
   }

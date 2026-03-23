@@ -1,5 +1,22 @@
 [
     {
+        "version": "26032101",
+        "date": "2026-03-21",
+        "title": "Final Boss & True Ending Milestone (v1.0 Final)",
+        "changes": [
+            "L16–L35 題庫白名單化與正式接通，全面捨棄隨機拼湊，確保語感絕對自然。",
+            "各區 Boss 複習機制完成，動態抽樣該區所有解鎖技能，消除歷史逾期題型。",
+            "第 7 區「終局聖域」(L31–35) 與 L35 最終魔王戰正式實裝。",
+            "隱藏關卡 L36「裏・極限深淵」解鎖機制：達成 1–35 關全 S 評價後開啟。",
+            "L36 HIDDEN_BOSS_36 三層難度 Tiered Queue 抽題系統實裝（中後期精華 30 題馬拉松）。",
+            "完整 True Ending 流程、隱藏章節節點、導師收尾事件與警告對白全數完工。",
+            "系統優化：L31+ 關卡選項數統一提升至 4 選 1，提升後期挑戰難度。",
+            "顯示修復：修正 HE_DIRECTION 等特定題型分段異常問題。",
+            "穩定性：修正 AudioContext 初始化流程，解決手機版地圖 BGM 播放與 Mentor 語音 Ducking 問題。",
+            "品質拋光：各區 Boss 戰血量、ATB 速度與獎勵邏輯全面平衡調整。"
+        ]
+    },
+    {
         "version": "26031501",
         "date": "2026-03-15",
         "title": "Map 2.0 & Mentor Flow Refactor Milestone",
