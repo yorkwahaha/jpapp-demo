@@ -1279,6 +1279,26 @@ window.updateSpUI = function () {
 
 };
 
+// ---- [ SP 統一操作函式 ] ----
+function canAffordSP(cost) { return window.__sp.cur >= cost; }
+
+function spendSP(cost) {
+    window.__sp.cur -= cost;
+    if (window.updateSpUI) window.updateSpUI();
+}
+
+function regenSP() {
+    if (window.__sp.cur < window.__sp.max) {
+        window.__sp.cur++;
+        if (window.updateSpUI) window.updateSpUI();
+    }
+}
+
+function resetSP() {
+    window.__sp.cur = window.__sp.max;
+    if (window.updateSpUI) window.updateSpUI();
+}
+
 
 
 const { ref, reactive, computed, watch, onMounted, nextTick } = Vue;
@@ -2278,6 +2298,8 @@ jpDebug commands:
 
 
 
+        let _pendingAbilityIds = null;
+
         const saveProgression = () => {
 
             try {
@@ -2288,7 +2310,9 @@ jpDebug commands:
 
                     clearedLevels: clearedLevels.value,
 
-                    bestGrades: bestGrades.value
+                    bestGrades: bestGrades.value,
+
+                    unlockedAbilityIds: unlockedAbilityIds.value
 
                 };
 
@@ -2319,6 +2343,8 @@ jpDebug commands:
                     if (parsed.clearedLevels) clearedLevels.value = parsed.clearedLevels;
 
                     if (parsed.bestGrades) bestGrades.value = parsed.bestGrades;
+
+                    if (parsed.unlockedAbilityIds) _pendingAbilityIds = parsed.unlockedAbilityIds;
 
                 }
 
@@ -3645,7 +3671,10 @@ jpDebug commands:
 
 
 
-        const unlockedAbilityIds = ref([]);
+        const unlockedAbilityIds = ref(_pendingAbilityIds || []);
+        _pendingAbilityIds = null;
+
+        const spState = window.__sp;
 
         const allAbilities = ref([]);
 
@@ -3823,15 +3852,13 @@ jpDebug commands:
 
             const skill = abilitiesMap[id];
 
-            if (!skill || window.__sp.cur < skill.cost || (typeof playerDead !== 'undefined' && (playerDead.value || monsterDead.value))) return;
+            if (!skill || !canAffordSP(skill.cost) || (typeof playerDead !== 'undefined' && (playerDead.value || monsterDead.value))) return;
 
 
 
             // 扣除 SP
 
-            window.__sp.cur -= skill.cost;
-
-            if (window.updateSpUI) window.updateSpUI();
+            spendSP(skill.cost);
 
 
 
@@ -4087,8 +4114,6 @@ jpDebug commands:
         const monster = ref({ hp: MONSTER_HP, maxHp: MONSTER_HP, name: '助詞怪', size: 1 });
 
         const inventory = ref({ potions: INITIAL_POTIONS, speedPotions: 3 });
-
-        const spState = window.__sp;
 
         const evasionBuffAttacksLeft = ref(0);
 
@@ -9668,15 +9693,7 @@ jpDebug commands:
 
                         if (comboCount.value > maxComboCount.value) maxComboCount.value = comboCount.value;
 
-
-
-                        if (window.__sp.cur < window.__sp.max) {
-
-                            window.__sp.cur++;
-
-                            if (window.updateSpUI) window.updateSpUI();
-
-                        }
+                        regenSP();
 
 
 
@@ -10060,6 +10077,26 @@ jpDebug commands:
 
                         setTimeout(() => {
 
+                            const clearedLevelConfig = LEVEL_CONFIG.value[currentLevel.value];
+
+                            if (clearedLevelConfig?.rewardAbilityId) {
+
+                                const rewardedSkill = grantAbilityReward(clearedLevelConfig.rewardAbilityId);
+
+                                if (rewardedSkill) {
+
+                                    pendingLevelUpAbility.value = rewardedSkill;
+
+                                    saveProgression();
+
+                                    isAbilityUnlockModalOpen.value = true;
+
+                                    return;
+
+                                }
+
+                            }
+
                             isNextBtnVisible.value = true;
 
                         }, 300);
@@ -10240,11 +10277,7 @@ jpDebug commands:
 
 
 
-            window.__sp.cur = window.__sp.max;
-
-            if (window.updateSpUI) window.updateSpUI();
-
-
+            resetSP();
 
             currentLevel.value++;
 
@@ -10326,6 +10359,12 @@ jpDebug commands:
 
                 queuedNextLevel.value = null;
 
+            } else {
+
+                // 來自結算後即時發放路徑：只需顯示 Next 鈕
+
+                isNextBtnVisible.value = true;
+
             }
 
             resumeBattle();
@@ -10366,9 +10405,7 @@ jpDebug commands:
 
             inventory.value.potions = INITIAL_POTIONS;
 
-            window.__sp.cur = window.__sp.max;
-
-            if (window.updateSpUI) window.updateSpUI();
+            resetSP();
 
         };
 
@@ -10402,9 +10439,7 @@ jpDebug commands:
 
             inventory.value.potions = INITIAL_POTIONS;
 
-            window.__sp.cur = window.__sp.max;
-
-            if (window.updateSpUI) window.updateSpUI();
+            resetSP();
 
             showLevelSelect.value = true;
 
