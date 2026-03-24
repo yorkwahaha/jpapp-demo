@@ -170,27 +170,39 @@
             document.head.appendChild(s8);
 
 
-            // 9. 載入遊戲主程式
+
+            // 9. 載入 VFX Helpers
 
             const s9 = document.createElement('script');
 
-            s9.src = 'assets/js/game.js?v=' + v;
+            s9.src = 'assets/js/vfx-helpers.js?v=' + v;
 
             s9.async = false;
 
             document.head.appendChild(s9);
 
 
-
-            // 10. 全局監聽 (error / keydown)
+            // 10. 載入遊戲主程式
 
             const s10 = document.createElement('script');
 
-            s10.src = 'assets/js/global-hooks.js?v=' + v;
+            s10.src = 'assets/js/game.js?v=' + v;
 
             s10.async = false;
 
             document.head.appendChild(s10);
+
+
+
+            // 11. 全局監聽 (error / keydown)
+
+            const s11 = document.createElement('script');
+
+            s11.src = 'assets/js/global-hooks.js?v=' + v;
+
+            s11.async = false;
+
+            document.head.appendChild(s11);
 
         })();
 
