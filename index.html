@@ -120,6 +120,18 @@
 
             document.head.appendChild(s4);
 
+
+
+            // 5. 全局監聽 (error / keydown)
+
+            const s5 = document.createElement('script');
+
+            s5.src = 'assets/js/global-hooks.js?v=' + v;
+
+            s5.async = false;
+
+            document.head.appendChild(s5);
+
         })();
 
     </script>
