@@ -1,303 +1,4 @@
-﻿// ================= [ DEBUG OVERLAY ] =================
-(function () {
-
-    'use strict';
-
-
-
-    const MAX_LINES = 25;
-
-    const LOG_COLORS = { log: '#7fff7f', warn: '#ffd700', error: '#ff6b6b' };
-
-    const FOCUS_KEYWORDS = ['[BGM]', '[AZURE]', '[PRAISE]'];
-
-    window.__DEBUG_OVERLAY_MODE = 'focus';
-
-    let _lines = [];
-
-    let _el = null;
-
-    let _enabled = false;
-
-
-
-    function _ts() {
-
-        const d = new Date();
-
-        return String(d.getMinutes()).padStart(2, '0') + ':' +
-
-            String(d.getSeconds()).padStart(2, '0') + '.' +
-
-            String(d.getMilliseconds()).padStart(3, '0');
-
-    }
-
-
-
-    function _createOverlay() {
-
-        if (_el) return;
-
-        _el = document.createElement('div');
-
-        _el.id = 'debugOverlay';
-
-        Object.assign(_el.style, {
-
-            position: 'fixed', top: '8px', right: '8px', zIndex: '9999999',
-
-            background: 'rgba(0,0,0,0.72)', color: '#7fff7f',
-
-            font: '11px/1.45 monospace', padding: '6px 8px', borderRadius: '8px',
-
-            maxHeight: '35vh', width: 'min(90vw, 420px)', overflowY: 'hidden',
-
-            whiteSpace: 'pre-wrap', wordBreak: 'break-all',
-
-            pointerEvents: 'none', display: 'none',
-
-            boxShadow: '0 2px 12px rgba(0,0,0,.5)',
-
-            opacity: '0.92'
-
-        });
-
-        document.body.appendChild(_el);
-
-    }
-
-
-
-    function _render() {
-
-        if (!_el) return;
-
-        _el.innerHTML = _lines.slice(-MAX_LINES).join('\n');
-
-        _el.scrollTop = _el.scrollHeight;
-
-    }
-
-
-
-    function _push(level, args) {
-
-        if (!_enabled) return;
-
-        const msg = args.map(a => {
-
-            if (typeof a === 'string') return a;
-
-            try { return JSON.stringify(a); } catch { return String(a); }
-
-        }).join(' ');
-
-
-
-        if (window.__DEBUG_OVERLAY_MODE === 'focus' && level === 'log') {
-
-            const isFocus = FOCUS_KEYWORDS.some(k => msg.includes(k));
-
-            if (!isFocus) return;
-
-        }
-
-
-
-        if (!_el) _createOverlay();
-
-        const color = LOG_COLORS[level] || '#7fff7f';
-
-        const prefix = level === 'warn' ? '⚠ ' : level === 'error' ? '✖ ' : '';
-
-        _lines.push(`<span style="color:${color}">[${_ts()}] ${prefix}${_escHtml(msg)}</span>`);
-
-        if (_lines.length > MAX_LINES * 2) _lines = _lines.slice(-MAX_LINES);
-
-        _render();
-
-    }
-
-
-
-    function _escHtml(s) {
-
-        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-    }
-
-
-
-    const _orig = { log: console.log, warn: console.warn, error: console.error };
-
-    ['log', 'warn', 'error'].forEach(lvl => {
-
-        console[lvl] = function (...args) {
-
-            _orig[lvl].apply(console, args);
-
-            _push(lvl, args);
-
-        };
-
-    });
-
-
-
-    function _enable() {
-
-        if (_enabled) return;
-
-        _enabled = true;
-
-        window.__AUDIO_DEBUG = true;
-
-        if (!_el) _createOverlay();
-
-        _el.style.display = 'block';
-
-        console.log('[DebugOverlay] ON — listening');
-
-    }
-
-
-
-    function _disable() {
-
-        _enabled = false;
-
-        if (_el) _el.style.display = 'none';
-
-        _orig.log.call(console, '[DebugOverlay] OFF');
-
-    }
-
-
-
-    window.__overlayPush = (tag, msg) => {
-
-        if (!_enabled) return;
-
-        if (window.__DEBUG_OVERLAY_MODE === 'focus') {
-
-            const isFocus = FOCUS_KEYWORDS.some(k => tag.includes(k) || msg.includes(k));
-
-            if (!isFocus) return;
-
-        }
-
-        if (!_el) _createOverlay();
-
-        const color = LOG_COLORS['log'] || '#7fff7f';
-
-        _lines.push(`<span style="color:${color}">[${_ts()}] ${_escHtml(tag + ' ' + msg)}</span>`);
-
-        if (_lines.length > MAX_LINES * 2) _lines = _lines.slice(-MAX_LINES);
-
-        _render();
-
-    };
-
-
-
-    window.__debugOverlayOn = _enable;
-
-    window.__debugOverlayOff = _disable;
-
-    Object.defineProperty(window, '__DEBUG_OVERLAY', {
-
-        get() { return _enabled; },
-
-        set(v) { v ? _enable() : _disable(); },
-
-        configurable: true
-
-    });
-
-
-
-    if (location.hash === '#debug' || new URLSearchParams(location.search).has('debug')) {
-
-        if (document.readyState === 'loading') {
-
-            document.addEventListener('DOMContentLoaded', _enable, { once: true });
-
-        } else {
-
-            _enable();
-
-        }
-
-    }
-
-
-
-    let _lpTimer = null;
-
-    let _lpTimer4s = null;
-
-    document.addEventListener('pointerdown', function (e) {
-
-        const t = e.target.closest('#menuBtn, [data-debug-toggle], button');
-
-        if (!t) return;
-
-        const txt = (t.id + ' ' + t.textContent + ' ' + (t.getAttribute('aria-label') || '')).toLowerCase();
-
-        if (!txt.includes('menu') && !txt.includes('系統') && !txt.includes('system') && t.id !== 'menuBtn') return;
-
-
-
-        _lpTimer = setTimeout(() => {
-
-            _enabled ? _disable() : _enable();
-
-            t.style.outline = '2px solid #0f0';
-
-            setTimeout(() => { t.style.outline = ''; }, 600);
-
-        }, 2000);
-
-
-
-        _lpTimer4s = setTimeout(() => {
-
-            window.__DEBUG_OVERLAY_MODE = window.__DEBUG_OVERLAY_MODE === 'focus' ? 'all' : 'focus';
-
-            t.style.outline = '2px solid #f0f';
-
-            setTimeout(() => { t.style.outline = ''; }, 600);
-
-            _orig.log.call(console, `[Overlay] mode=${window.__DEBUG_OVERLAY_MODE}`);
-
-            _push('log', [`[Overlay] mode=${window.__DEBUG_OVERLAY_MODE}`]);
-
-        }, 4000);
-
-    }, true);
-
-
-
-    const _clearLp = () => {
-
-        if (_lpTimer) { clearTimeout(_lpTimer); _lpTimer = null; }
-
-        if (_lpTimer4s) { clearTimeout(_lpTimer4s); _lpTimer4s = null; }
-
-    };
-
-    document.addEventListener('pointerup', _clearLp, true);
-
-    document.addEventListener('pointerleave', _clearLp, true);
-
-    document.addEventListener('pointermove', _clearLp, true);
-
-})();
-
-
-
-// ================= [ TTS AUDIO — MODULE-LEVEL SETUP ] =================
+﻿// ================= [ TTS AUDIO — MODULE-LEVEL SETUP ] =================
 const TTS_AUDIO_BASE = "assets/audio/tts/";
 
 const ttsExistCache = new Map();
@@ -1305,839 +1006,6 @@ const _jpApp = Vue.createApp({
 
     setup() {
 
-/* =========================
-
-   可在 console 使用：
-
-   goLevel(4)
-
-   jpDebug.goLevel(4)
-
-   jpDebug.retry()
-
-   jpDebug.next()
-
-   jpDebug.state()
-
-   jpDebug.skill('MO_ALSO')
-
-   jpDebug.home()
-
-   jpDebug.levels()
-
-========================= */
-
-        // ---- [ DEBUG TOOLS : jpDebug ] ----
-        (function attachDebugTools() {
-
-            function safeMaxLevel() {
-
-                try {
-
-                    if (typeof maxLevel !== "undefined") {
-
-                        const v = Number(
-
-                            typeof maxLevel?.value !== "undefined" ? maxLevel.value : maxLevel
-
-                        );
-
-                        if (Number.isFinite(v) && v > 0) return v;
-
-                    }
-
-
-
-                    if (typeof LEVEL_CONFIG !== "undefined" && LEVEL_CONFIG?.value) {
-
-                        const keys = Object.keys(LEVEL_CONFIG.value)
-
-                            .map(Number)
-
-                            .filter(Number.isFinite);
-
-                        if (keys.length) return Math.max(...keys);
-
-                    }
-
-                } catch (err) {
-
-                    console.warn("[jpDebug.safeMaxLevel] failed:", err);
-
-                }
-
-                return 1;
-
-            }
-
-
-
-            function clampLevel(level) {
-
-                const lv = Number(level);
-
-                const max = safeMaxLevel();
-
-                if (!Number.isFinite(lv)) return 1;
-
-                if (lv < 1) return 1;
-
-                if (lv > max) return max;
-
-                return lv;
-
-            }
-
-
-
-            function ensureStartedToLevel(level) {
-
-                const lv = clampLevel(level);
-
-                try {
-
-                    if (typeof startLevel === "function") {
-
-                        startLevel(lv);
-
-                    } else {
-
-                        currentLevel.value = lv;
-
-                        showLevelSelect.value = false;
-
-                        showHome.value = false;
-
-                        isFinished.value = false;
-
-                        if (typeof initGame === "function") initGame(lv);
-
-                    }
-
-                    console.log(`[jpDebug] jumped to level ${lv}`);
-
-                    return lv;
-
-                } catch (err) {
-
-                    console.error("[jpDebug.goLevel] failed:", err);
-
-                    throw err;
-
-                }
-
-            }
-
-
-
-            function makeOneSkillQuestion(skillId) {
-
-                if (!skillId) {
-
-                    console.warn("[jpDebug.skill] missing skillId");
-
-                    return null;
-
-                }
-
-
-
-                // --- Alias Handle for L16-20 ---
-
-                let targetId = skillId;
-
-                if (skillId === 'KARA_START') targetId = 'KARA_SOURCE_START';
-
-                if (skillId === 'MADE_END') targetId = 'MADE_LIMIT_END';
-
-                if (skillId === 'TO_WITH_PERSON' || skillId === 'TO_WITH') targetId = 'TO_COMPANION';
-
-                if (skillId === 'DE_MEANS_METHOD' || skillId === 'DE_TOOLS') targetId = 'DE_TOOL_MEANS';
-
-                if (skillId === 'BOSS_4') targetId = 'BOSS_REVIEW_04';
-
-                if (skillId === 'NI_EXISTENCE') targetId = 'NI_EXIST_PLACE';
-
-                if (skillId === 'NI_INFO_RECEIVER') targetId = 'NI_TARGET';
-
-                if (skillId === 'BOSS_5') targetId = 'BOSS_REVIEW_05';
-
-                if (skillId === 'BOSS_6') targetId = 'BOSS_REVIEW_06';
-
-                if (skillId === 'BOSS_7') targetId = 'FINAL_BOSS_35';
-
-                if (skillId === 'BOSS_HIDDEN') targetId = 'HIDDEN_BOSS_36';
-
-
-
-                if (typeof generateQuestionBySkill !== "function") {
-
-                    console.warn("[jpDebug.skill] generateQuestionBySkill not found");
-
-                    return null;
-
-                }
-
-
-
-                try {
-
-                    const debugBlanks =
-
-                        (typeof levelConfig !== "undefined" && levelConfig?.value?.blanks != null)
-
-                            ? levelConfig.value.blanks
-
-                            : ((typeof LEVEL_CONFIG !== "undefined" && LEVEL_CONFIG?.value?.[currentLevel?.value]?.blanks != null)
-
-                                ? LEVEL_CONFIG.value[currentLevel.value].blanks
-
-                                : 1);
-
-
-
-                    const q = generateQuestionBySkill(targetId, debugBlanks, db?.value || db, VOCAB?.value || VOCAB);
-
-                    if (!q) {
-
-                        console.warn("[jpDebug.skill] no question generated for:", targetId);
-
-                        return null;
-
-                    }
-
-
-
-                    // 盡量只重置與當前題目相關的狀態，不強制重開整關
-
-                    if (typeof questions !== "undefined") questions.value = [q];
-
-                    if (typeof currentQuestionIndex !== "undefined") currentQuestionIndex.value = 0;
-
-                    if (typeof questionIndex !== "undefined") questionIndex.value = 0;
-
-                    if (typeof userAnswers !== "undefined") userAnswers.value = [];
-
-                    if (typeof selectedAnswers !== "undefined") selectedAnswers.value = [];
-
-                    if (typeof hasSubmitted !== "undefined") hasSubmitted.value = false;
-
-                    if (typeof isCorrect !== "undefined") isCorrect.value = null;
-
-                    if (typeof showResult !== "undefined") showResult.value = false;
-
-                    if (typeof showLevelSelect !== "undefined") showLevelSelect.value = false;
-
-                    if (typeof showHome !== "undefined") showHome.value = false;
-
-                    if (typeof isFinished !== "undefined") isFinished.value = false;
-
-
-
-                    console.log(`[jpDebug] generated skill question: ${targetId}`, q);
-
-                    return q;
-
-                } catch (err) {
-
-                    console.error("[jpDebug.skill] failed:", err);
-
-                    throw err;
-
-                }
-
-            }
-
-
-
-            function getState() {
-
-                return {
-
-                    currentLevel:
-
-                        typeof currentLevel !== "undefined" ? currentLevel.value : undefined,
-
-                    maxLevel: safeMaxLevel(),
-
-                    showHome:
-
-                        typeof showHome !== "undefined" ? showHome.value : undefined,
-
-                    showLevelSelect:
-
-                        typeof showLevelSelect !== "undefined"
-
-                            ? showLevelSelect.value
-
-                            : undefined,
-
-                    isFinished:
-
-                        typeof isFinished !== "undefined" ? isFinished.value : undefined,
-
-                    levelTitle:
-
-                        typeof levelTitle !== "undefined" ? levelTitle.value : undefined,
-
-                    playerHp:
-
-                        typeof player !== "undefined" ? player?.value?.hp : undefined,
-
-                    monsterHp:
-
-                        typeof monster !== "undefined" ? monster?.value?.hp : undefined,
-
-                    currentQuestion:
-
-                        typeof currentQuestion !== "undefined"
-
-                            ? currentQuestion.value
-
-                            : undefined,
-
-                    questionCount:
-
-                        typeof questions !== "undefined" && Array.isArray(questions?.value)
-
-                            ? questions.value.length
-
-                            : undefined
-
-                };
-
-            }
-
-
-
-            function listLevels() {
-
-                try {
-
-                    if (typeof LEVEL_CONFIG === "undefined" || !LEVEL_CONFIG?.value) {
-
-                        console.warn("[jpDebug.levels] LEVEL_CONFIG not ready");
-
-                        return [];
-
-                    }
-
-                    const rows = Object.entries(LEVEL_CONFIG.value)
-
-                        .map(([k, v]) => ({
-
-                            level: Number(k),
-
-                            title: v?.title || "",
-
-                            skillId: v?.skillId || "",
-
-                            skillIds: v?.skillIds || [],
-
-                            questionCount: v?.questionCount ?? v?.questions ?? undefined
-
-                        }))
-
-                        .sort((a, b) => a.level - b.level);
-
-
-
-                    console.table(rows);
-
-                    return rows;
-
-                } catch (err) {
-
-                    console.error("[jpDebug.levels] failed:", err);
-
-                    return [];
-
-                }
-
-            }
-
-
-
-            const debugApi = {
-
-                goLevel(level) {
-
-                    return ensureStartedToLevel(level);
-
-                },
-
-
-
-                retry() {
-
-                    try {
-
-                        if (typeof retryLevel === "function") {
-
-                            retryLevel();
-
-                            console.log("[jpDebug] retry current level");
-
-                        } else if (typeof initGame === "function") {
-
-                            initGame(currentLevel.value);
-
-                            console.log("[jpDebug] retry current level via initGame");
-
-                        } else {
-
-                            console.warn("[jpDebug.retry] retryLevel/initGame not found");
-
-                        }
-
-                    } catch (err) {
-
-                        console.error("[jpDebug.retry] failed:", err);
-
-                        throw err;
-
-                    }
-
-                },
-
-
-
-                next() {
-
-                    try {
-
-                        const nextLevel = clampLevel(
-
-                            (typeof currentLevel !== "undefined" ? currentLevel.value : 1) + 1
-
-                        );
-
-                        return ensureStartedToLevel(nextLevel);
-
-                    } catch (err) {
-
-                        console.error("[jpDebug.next] failed:", err);
-
-                        throw err;
-
-                    }
-
-                },
-
-
-
-                prev() {
-
-                    try {
-
-                        const prevLevel = clampLevel(
-
-                            (typeof currentLevel !== "undefined" ? currentLevel.value : 1) - 1
-
-                        );
-
-                        return ensureStartedToLevel(prevLevel);
-
-                    } catch (err) {
-
-                        console.error("[jpDebug.prev] failed:", err);
-
-                        throw err;
-
-                    }
-
-                },
-
-
-
-                resetMentorTutorials() {
-
-                    mentorTutorialSeen.value = [];
-
-                    saveMentorState();
-
-                    console.log("[jpDebug] Mentor tutorials reset.");
-
-                },
-
-
-
-                replayMentor(skillId) {
-
-                    const skill = skillsAll.value[skillId];
-
-                    if (!skill) {
-
-                        console.warn(`[jpDebug] Skill ID "${skillId}" not found.`);
-
-                        return;
-
-                    }
-
-                    if (!skill.mentorDialogue) {
-
-                        console.warn(`[jpDebug] Skill "${skillId}" has no mentor dialogue.`);
-
-                        return;
-
-                    }
-
-                    setupMentorDialogue(skill);
-
-                    pauseBattle();
-
-                    console.log(`[jpDebug] Replaying mentor dialogue for: ${skillId}`);
-
-                },
-
-
-
-                skill(skillId) {
-
-                    return makeOneSkillQuestion(skillId);
-
-                },
-
-
-
-                skillMany(skillId, n = 20) {
-
-                    const results = [];
-
-                    const stats = { uniqueCount: 0, duplicateCount: 0, freq: {} };
-
-                    let lastSig = null;
-
-
-
-                    for (let i = 0; i < n; i++) {
-
-                        let q = null;
-
-                        let retry = 0;
-
-                        while (retry < 10) {
-
-                            q = this.skill(skillId);
-
-                            if (!q) break;
-
-                            const left = q.leftText || (q.segments?.[0]?.j) || '';
-
-                            const right = q.rightText || (q.segments?.[2]?.j) || '';
-
-                            const ansStr = q.answers?.[0]?.[0] || q.answer || '';
-
-                            const sig = `${q.chinese}|${left}|${ansStr}|${right}`;
-
-                            if (sig !== lastSig) {
-
-                                lastSig = sig;
-
-                                break;
-
-                            }
-
-                            retry++;
-
-                        }
-
-                        if (q) {
-
-                            const ansStr = q.answers?.[0]?.join('/') || q.answer || '';
-
-                            const left = q.leftText || (q.segments?.[0]?.j) || '';
-
-                            const right = q.rightText || (q.segments?.[2]?.j) || '';
-
-                            results.push({
-
-                                i: i + 1,
-
-                                skill: q.skillId,
-
-                                chinese: q.chinese,
-
-                                left: left,
-
-                                answer: ansStr,
-
-                                right: right,
-
-                                choices: q.choices?.join(', ')
-
-                            });
-
-                            stats.freq[q.chinese] = (stats.freq[q.chinese] || 0) + 1;
-
-                        }
-
-                    }
-
-
-
-                    if (results.length > 0) {
-
-                        console.table(results);
-
-                        const uniqueKeys = Object.keys(stats.freq);
-
-                        stats.uniqueCount = uniqueKeys.length;
-
-                        stats.duplicateCount = n - stats.uniqueCount;
-
-                        console.log(`[jpDebug.skillMany] Results for ${skillId}:`, {
-
-                            total: results.length,
-
-                            unique: stats.uniqueCount,
-
-                            duplicates: stats.duplicateCount,
-
-                            frequency: stats.freq
-
-                        });
-
-                    }
-
-                    return results;
-
-                },
-
-
-
-                skillLines(skillId, n = 20) {
-
-                    let lastSig = null;
-
-                    const lines = [];
-
-                    for (let i = 0; i < n; i++) {
-
-                        let q = null;
-
-                        let retry = 0;
-
-                        while (retry < 10) {
-
-                            q = this.skill(skillId);
-
-                            if (!q) break;
-
-                            const left = q.leftText || (q.segments?.[0]?.j) || '';
-
-                            const right = q.rightText || (q.segments?.[2]?.j) || '';
-
-                            const ansStr = q.answers?.[0]?.[0] || q.answer || '';
-
-                            const sig = `${q.chinese}|${left}|${ansStr}|${right}`;
-
-                            if (sig !== lastSig) {
-
-                                lastSig = sig;
-
-                                break;
-
-                            }
-
-                            retry++;
-
-                        }
-
-                        if (q) {
-
-                            const ansStr = q.answers?.[0]?.join('/') || q.answer || '';
-
-                            const num = String(i + 1).padStart(2, '0');
-
-                            const left = q.leftText || (q.segments?.[0]?.j) || '';
-
-                            const right = q.rightText || (q.segments?.[2]?.j) || '';
-
-                            lines.push(`${num}. ${left}【${ansStr}】${right} ｜ ${q.chinese}`);
-
-                        }
-
-                    }
-
-                    if (lines.length > 0) {
-
-                        console.log(`[jpDebug.skillLines] ${skillId} (${n} questions):\n` + lines.join('\n'));
-
-                    }
-
-                    return lines;
-
-                },
-
-
-
-                state() {
-
-                    const s = getState();
-
-                    console.log("[jpDebug.state]", s);
-
-                    return s;
-
-                },
-
-
-
-                home() {
-
-                    try {
-
-                        if (typeof goHome === "function") {
-
-                            goHome();
-
-                        } else {
-
-                            if (typeof showLevelSelect !== "undefined") showLevelSelect.value = true;
-
-                            if (typeof showLevelSelect !== "undefined") {
-
-                                // Already setting showLevelSelect to true above
-
-                            }
-
-                            if (typeof isFinished !== "undefined") isFinished.value = false;
-
-                        }
-
-                        console.log("[jpDebug] go home");
-
-                    } catch (err) {
-
-                        console.error("[jpDebug.home] failed:", err);
-
-                        throw err;
-
-                    }
-
-                },
-
-
-
-                levels() {
-
-                    return listLevels();
-
-                },
-
-
-
-                help() {
-
-                    const msg = `
-
-jpDebug commands:
-
-- goLevel(4)
-
-- jpDebug.goLevel(4)
-
-- jpDebug.retry()
-
-- jpDebug.next()
-
-- jpDebug.prev()
-
-- jpDebug.skill('MO_ALSO_BASIC')
-
-- jpDebug.skillLines('KARA_SOURCE_START', 20)
-
-- jpDebug.skillLines('MADE_LIMIT_END', 20)
-
-- jpDebug.skillLines('TO_COMPANION', 20)
-
-- jpDebug.skillLines('DE_TOOL_MEANS', 20)
-
-- jpDebug.skillLines('BOSS_REVIEW_04', 20)
-
-- jpDebug.skillLines('NI_TIME', 20)
-
-- jpDebug.skillLines('NI_TARGET', 20)
-
-- jpDebug.skillLines('NI_EXIST_PLACE', 20)
-
-- jpDebug.skillLines('HE_DIRECTION', 20)
-
-- jpDebug.skillLines('BOSS_REVIEW_05', 20)
-
-- jpDebug.skillLines('YA_AND_OTHERS', 20)
-
-- jpDebug.skillLines('DE_SCOPE', 20)
-
-- jpDebug.skillLines('NI_PURPOSE', 20)
-
-- jpDebug.skillLines('TO_QUOTE', 20)
-
-- jpDebug.skillLines('BOSS_REVIEW_06', 20)
-
-- jpDebug.skillLines('KARA_REASON', 20)
-
-- jpDebug.skillLines('YORI_COMPARE', 20)
-
-- jpDebug.skillLines('NI_FREQUENCY', 20)
-
-- jpDebug.skillLines('DE_MATERIAL', 20)
-
-- jpDebug.skillLines('FINAL_BOSS_35', 20)
-
-- jpDebug.skillLines('HIDDEN_BOSS_36', 20)
-
-- jpDebug.state()
-
-- jpDebug.home()
-
-- jpDebug.levels()
-
-- jpDebug.resetMentorTutorials()
-
-- jpDebug.replayMentor('WA_TOPIC_BASIC')
-
-      `.trim();
-
-                    console.log(msg);
-
-                    return msg;
-
-                }
-
-            };
-
-
-
-            // 正式命名空間
-
-            window.jpDebug = debugApi;
-
-
-
-            // 短版捷徑
-
-            window.goLevel = (lv) => debugApi.goLevel(lv);
-
-            window.retryLevelDebug = () => debugApi.retry();
-
-            window.nextLevelDebug = () => debugApi.next();
-
-            window.prevLevelDebug = () => debugApi.prev();
-
-            window.testSkill = (skillId) => debugApi.skill(skillId);
-
-            window.testSkillMany = (skillId, n) => debugApi.skillMany(skillId, n);
-
-            window.testSkillLines = (skillId, n) => debugApi.skillLines(skillId, n);
-
-
-
-            console.log("[jpDebug] ready. Try: goLevel(4), jpDebug.help()");
-
-        })();
-
         onMounted(async () => {
 
             const h = location.hostname;
@@ -2218,6 +1086,8 @@ jpDebug commands:
         const showMap = ref(false);
 
         const unlockedLevels = ref([1]);
+
+        const totalGold = ref(0);
 
         const lastClearedLevel = ref(null);
 
@@ -2308,7 +1178,9 @@ jpDebug commands:
 
                     bestGrades: bestGrades.value,
 
-                    unlockedAbilityIds: unlockedAbilityIds.value
+                    unlockedAbilityIds: unlockedAbilityIds.value,
+
+                    gold: totalGold.value
 
                 };
 
@@ -2341,6 +1213,8 @@ jpDebug commands:
                     if (parsed.bestGrades) bestGrades.value = parsed.bestGrades;
 
                     if (parsed.unlockedAbilityIds) _pendingAbilityIds = parsed.unlockedAbilityIds;
+
+                    if (typeof parsed.gold === 'number') totalGold.value = parsed.gold;
 
                 }
 
@@ -2436,388 +1310,6 @@ jpDebug commands:
 
             showMap.value = true;
 
-        };
-
-
-
-        const isLevelUnlocked = (n) => unlockedLevels.value.includes(Number(n));
-
-        const isLevelCleared = (n) => clearedLevels.value.includes(Number(n));
-
-
-
-        const getStageNodeClass = (n) => {
-
-            const lvNum = Number(n);
-
-            if (!isLevelUnlocked(lvNum)) return 'is-locked';
-
-            if (isLevelCleared(lvNum)) return 'is-cleared';
-
-            const currentTarget = Math.min(...unlockedLevels.value.filter(lv => !clearedLevels.value.includes(lv)));
-
-            if (lvNum === currentTarget) return 'is-current';
-
-            return '';
-
-        };
-
-
-
-        const getLevelTitle = (n) => {
-
-            const conf = LEVEL_CONFIG.value[n];
-
-            return conf ? conf.title : `Level ${n}`;
-
-        };
-
-
-
-        const hasMentor = (n) => {
-
-            const conf = LEVEL_CONFIG.value[Number(n)];
-
-            if (!conf) return false;
-
-            return !!(conf.skillId || (conf.unlockSkills && conf.unlockSkills.length > 0));
-
-        };
-
-
-
-        const handleMapTabClick = (idx) => {
-
-            if (!isSegmentUnlocked(idx)) {
-
-                if (typeof showStatusToast === 'function') {
-
-                    showStatusToast('🔒 區域尚未解鎖', { bg: 'rgba(0,0,0,0.7)', border: '#555', color: '#fff' });
-
-                }
-
-                return;
-
-            }
-
-
-
-            const segment = mapChapters.value[activeChapter.value]?.segments[idx];
-
-            if (!segment || !segment.background) {
-
-                if (typeof showStatusToast === 'function') {
-
-                    showStatusToast('🚧 區域開發中，敬請期待！', { bg: 'rgba(30,41,59,0.9)', border: '#475569', color: '#f8fafc' });
-
-                }
-
-                return;
-
-            }
-
-
-
-            selectedSegmentIdx.value = idx;
-
-        };
-
-
-
-        const selectStageFromMap = (n) => {
-
-            const lvNum = Number(n);
-
-            if (!isLevelUnlocked(lvNum)) {
-
-                if (typeof showStatusToast === 'function') {
-
-                    showStatusToast('🔒 關卡尚未解鎖', { bg: 'rgba(0,0,0,0.7)', border: '#555', color: '#fff' });
-
-                }
-
-                return;
-
-            }
-
-
-
-            if (lvNum === 36 && !mentorTutorialSeen.value.includes('L36_FIRST_ENTRY')) {
-
-                mentorTutorialSeen.value.push('L36_FIRST_ENTRY');
-
-                saveMentorState();
-
-                setupMentorDialogue({
-
-                    id: "L36_FIRST_ENTRY",
-
-                    name: "導師・優依",
-
-                    mentorDialogue: [
-
-                        { text: "你終於站在這裡了。這一刻是你用全部 35 道完美的試煉換來的。" },
-
-                        { text: "前方的深淵凝聚了你一路走來所有的記憶與力量。這是屬於你一個人的最終決戰。" },
-
-                        { text: "去吧。你已經不需要我了。" }
-
-                    ]
-
-                });
-
-                return;
-
-            }
-
-
-
-            selectedStageToConfirm.value = lvNum;
-
-            isBattleConfirmOpen.value = true;
-
-        };
-
-        
-
-        const confirmAndStartBattle = () => {
-
-            if (selectedStageToConfirm.value !== null) {
-
-                const lv = selectedStageToConfirm.value;
-
-                isBattleConfirmOpen.value = false;
-
-                startLevel(lv, false);
-
-            }
-
-        };
-
-
-
-        const startStageWithExplanation = (n) => {
-
-            const lvNum = Number(n);
-
-            if (!isLevelUnlocked(lvNum)) return;
-
-            selectedMapLevel.value = lvNum;
-
-
-
-            // Just setup dialogue, don't start level
-
-            const config = LEVEL_CONFIG.value[lvNum];
-
-            if (config && config.skillId) {
-
-                const skill = skillsAll.value[config.skillId];
-
-                if (skill) {
-
-                    setupMentorDialogue(skill);
-
-                }
-
-            } else if (config && config.unlockSkills && config.unlockSkills.length > 0) {
-
-                const skill = skillsAll.value[config.unlockSkills[0]];
-
-                if (skill) {
-
-                    setupMentorDialogue(skill);
-
-                }
-
-            }
-
-        };
-
-
-
-        const checkAllSRank = () => {
-
-            for (let i = 1; i <= 35; i++) {
-
-                if (bestGrades.value[i] !== 'S') return false;
-
-            }
-
-            return true;
-
-        };
-
-        const sRankCount = Vue.computed(() => {
-            let count = 0;
-            for (let i = 1; i <= 35; i++) {
-                if (bestGrades.value[i] === 'S') count++;
-            }
-            return count;
-        });
-
-        // Post-load guard: strip stale level-36 unlock if S-rank condition is no longer met.
-        if (unlockedLevels.value.includes(36) && !checkAllSRank()) {
-            unlockedLevels.value = unlockedLevels.value.filter(lv => lv !== 36);
-            localStorage.removeItem('jpRpgL36Unlocked');
-        }
-
-
-
-        const checkGlobalEndingTriggers = () => {
-
-            if (clearedLevels.value.includes(36) && currentLevel.value === 36) {
-
-                const hasSeenTrueEnding = localStorage.getItem('jpRpgTrueEndingSeen');
-
-                if (!hasSeenTrueEnding) {
-
-                    localStorage.setItem('jpRpgTrueEndingSeen', 'true');
-
-                    const endingDialogue = {
-
-                        id: "TRUE_ENDING",
-
-                        name: "導師・優依",
-
-                        mentorDialogue: [
-
-                            { text: "……你真的辦到了。" },
-
-                            { text: "這個連神明都感到恐懼的深淵，居然被你徹底淨化了。" },
-
-                            { text: "從今以後，你已經不需要我的指引了。" },
-
-                            { text: "日文的世界其實無比廣大，還有無數的冒險在等著你。勇敢地踏上旅程吧！" },
-
-                            { text: "再見了，我最驕傲的學生。" }
-
-                        ]
-
-                    };
-
-                    setTimeout(() => setupMentorDialogue(endingDialogue), 800);
-
-                }
-
-                return;
-
-            }
-
-
-
-            if (!clearedLevels.value.includes(35)) return;
-
-
-
-            const isAllS = checkAllSRank();
-
-            const hasSeenAllS = localStorage.getItem('jpRpgL36Unlocked');
-
-            const hasSeenNormal = localStorage.getItem('jpRpgL35EndingSeen');
-
-
-
-            if (isAllS && !hasSeenAllS) {
-
-                localStorage.setItem('jpRpgL36Unlocked', 'true');
-
-                if (!unlockedLevels.value.includes(36)) {
-
-                    unlockedLevels.value.push(36);
-
-                }
-
-                saveProgression();
-
-
-
-                const endingDialogue = {
-
-                    id: "ENDING_L35_ALL_S",
-
-                    name: "導師・優依",
-
-                    mentorDialogue: [
-
-                        { text: "恭喜你找到了隱藏的道路！" },
-
-                        { text: "你已經將過去 35 道試煉全部達成「完美無瑕（S級）」了。" },
-
-                        { text: "沒想到你居然真的做到了。全部 35 關，無一失手。" },
-
-                        { text: "那麼，我為你開啟這扇隱藏的門吧。最終的終極隱藏魔王，正在那裡等你。" }
-
-                    ]
-
-                };
-
-                if (currentLevel.value === 35) {
-
-                    endingDialogue.mentorDialogue = [
-
-                        { text: "恭喜你，終於擊敗了世界之巔的最終試煉！" },
-
-                        { text: "你的日文實力已經達到了令我刮目相看的境界……" },
-
-                        { text: "而且，全部 35 道試煉——無一例外——都是完美無瑕的 S 等級。" },
-
-                        { text: "這扇只有最頂尖的人才能看見的隱藏之門，已經為你開啟了。" },
-
-                        { text: "最終的終局魔王正在前方等你。準備好了嗎？" }
-
-                    ];
-
-                }
-
-                setTimeout(() => setupMentorDialogue(endingDialogue), 800);
-
-            } else if (!isAllS && !hasSeenNormal && currentLevel.value === 35) {
-
-                localStorage.setItem('jpRpgL35EndingSeen', 'true');
-
-                const endingDialogue = {
-
-                    id: "ENDING_L35_NORMAL",
-
-                    name: "導師・優依",
-
-                    mentorDialogue: [
-
-                        { text: "恭喜你，終於擊敗了世界之巔的最終試煉！" },
-
-                        { text: "你的日文實力已經達到了不可思議的境界……" },
-
-                        { text: "但是，你感覺到了嗎？這個世界還有更深層的氣息。" },
-
-                        { text: "其實還有一個隱藏的禁忌封印，只有將過去 1 到 35 道試煉『全部』達成「完美無瑕（S級）」的人才能打開。" },
-
-                        { text: "如果不將每一關的失誤都徹底消除，那扇門是絕對不會開啟的。" },
-
-                        { text: "如果你準備好了，隨時都能回去重新挑戰過去的關卡。我會一直看著你的喔！" }
-
-                    ]
-
-                };
-
-                setTimeout(() => setupMentorDialogue(endingDialogue), 800);
-
-            }
-
-        };
-
-
-
-        const returnToMap = () => {
-
-            isFinished.value = true;
-
-            showLevelSelect.value = false;
-
-            autoSelectSegment();
-
-            showMap.value = true;
-
             
 
             // Reset battle UI states
@@ -2877,6 +1369,153 @@ jpDebug commands:
         };
 
 
+
+        const isLevelUnlocked = (n) => unlockedLevels.value.includes(Number(n));
+
+        const isLevelCleared = (n) => clearedLevels.value.includes(Number(n));
+
+        const getStageNodeClass = (n) => {
+            const lvNum = Number(n);
+            if (!isLevelUnlocked(lvNum)) return 'is-locked';
+            if (isLevelCleared(lvNum)) return 'is-cleared';
+            const currentTarget = Math.min(...unlockedLevels.value.filter(lv => !clearedLevels.value.includes(lv)));
+            if (lvNum === currentTarget) return 'is-current';
+            return '';
+        };
+
+        const getLevelTitle = (n) => {
+            const conf = LEVEL_CONFIG.value[n];
+            return conf ? conf.title : `Level ${n}`;
+        };
+
+        const hasMentor = (n) => {
+            const conf = LEVEL_CONFIG.value[Number(n)];
+            if (!conf) return false;
+            return !!(conf.skillId || (conf.unlockSkills && conf.unlockSkills.length > 0));
+        };
+
+        const handleMapTabClick = (idx) => {
+            if (!isSegmentUnlocked(idx)) {
+                if (typeof showStatusToast === 'function') showStatusToast('🔒 區域尚未解鎖', { bg: 'rgba(0,0,0,0.7)', border: '#555', color: '#fff' });
+                return;
+            }
+            const segment = mapChapters.value[activeChapter.value]?.segments[idx];
+            if (!segment || !segment.background) {
+                if (typeof showStatusToast === 'function') showStatusToast('🚧 區域開發中，敬請期待！', { bg: 'rgba(30,41,59,0.9)', border: '#475569', color: '#f8fafc' });
+                return;
+            }
+            selectedSegmentIdx.value = idx;
+        };
+
+        const selectStageFromMap = (n) => {
+            const lvNum = Number(n);
+            if (!isLevelUnlocked(lvNum)) {
+                if (typeof showStatusToast === 'function') showStatusToast('🔒 關卡尚未解鎖', { bg: 'rgba(0,0,0,0.7)', border: '#555', color: '#fff' });
+                return;
+            }
+            if (lvNum === 36 && !mentorTutorialSeen.value.includes('L36_FIRST_ENTRY')) {
+                mentorTutorialSeen.value.push('L36_FIRST_ENTRY');
+                saveMentorState();
+                setupMentorDialogue({
+                    id: "L36_FIRST_ENTRY",
+                    name: "導師・優依",
+                    mentorDialogue: [
+                        { text: "你終於站在這裡了。這一刻是你用全部 35 道完美的試煉換來的。" },
+                        { text: "前方的深淵凝聚了你一路走來所有的記憶與力量。這是屬於你一個人的最終決戰。" },
+                        { text: "去吧。你已經不需要我了。" }
+                    ]
+                });
+                return;
+            }
+            selectedStageToConfirm.value = lvNum;
+            isBattleConfirmOpen.value = true;
+        };
+
+        const confirmAndStartBattle = () => {
+            if (selectedStageToConfirm.value !== null) {
+                const lv = selectedStageToConfirm.value;
+                isBattleConfirmOpen.value = false;
+                startLevel(lv, false);
+            }
+        };
+
+        const startStageWithExplanation = (n) => {
+            const lvNum = Number(n);
+            if (!isLevelUnlocked(lvNum)) return;
+            selectedMapLevel.value = lvNum;
+            const config = LEVEL_CONFIG.value[lvNum];
+            if (config && config.skillId) {
+                const skill = skillsAll.value[config.skillId];
+                if (skill) setupMentorDialogue(skill);
+            } else if (config && config.unlockSkills && config.unlockSkills.length > 0) {
+                const skill = skillsAll.value[config.unlockSkills[0]];
+                if (skill) setupMentorDialogue(skill);
+            }
+        };
+
+        const checkAllSRank = () => {
+            for (let i = 1; i <= 35; i++) {
+                if (bestGrades.value[i] !== 'S') return false;
+            }
+            return true;
+        };
+
+        const sRankCount = computed(() => {
+            let count = 0;
+            for (let i = 1; i <= 35; i++) {
+                if (bestGrades.value[i] === 'S') count++;
+            }
+            return count;
+        });
+
+        if (unlockedLevels.value.includes(36) && !checkAllSRank()) {
+            unlockedLevels.value = unlockedLevels.value.filter(lv => lv !== 36);
+            localStorage.removeItem('jpRpgL36Unlocked');
+        }
+
+        const checkGlobalEndingTriggers = () => {
+            if (clearedLevels.value.includes(36) && currentLevel.value === 36) {
+                const hasSeenTrueEnding = localStorage.getItem('jpRpgTrueEndingSeen');
+                if (!hasSeenTrueEnding) {
+                    localStorage.setItem('jpRpgTrueEndingSeen', 'true');
+                    setTimeout(() => setupMentorDialogue({ id: "TRUE_ENDING", name: "導師・優依", mentorDialogue: [{ text: "……你真的辦到了。" }, { text: "這個連神明都感到恐懼的深淵，居然被你徹底淨化了。" }, { text: "從今以後，你已經不需要我的指引了。" }, { text: "日文的世界其實無比廣大，還有無數的冒險在等著你。勇敢地踏上旅程吧！" }, { text: "再見了，我最驕傲的學生。" }] }), 800);
+                }
+                return;
+            }
+            if (!clearedLevels.value.includes(35)) return;
+            const isAllS = checkAllSRank();
+            const hasSeenAllS = localStorage.getItem('jpRpgL36Unlocked');
+            const hasSeenNormal = localStorage.getItem('jpRpgL35EndingSeen');
+            if (isAllS && !hasSeenAllS) {
+                localStorage.setItem('jpRpgL36Unlocked', 'true');
+                if (!unlockedLevels.value.includes(36)) unlockedLevels.value.push(36);
+                saveProgression();
+                const endingDialogue = { id: "ENDING_L35_ALL_S", name: "導師・優依", mentorDialogue: [{ text: "恭喜你找到了隱藏的道路！" }, { text: "你已經將過去 35 道試煉全部達成「完美無瑕（S級）」了。" }, { text: "沒想到你居然真的做到了。全部 35 關，無一失手。" }, { text: "那麼，我為你開啟這扇隱藏的門吧。最終的終極隱藏魔王，正在那裡等你。" }] };
+                if (currentLevel.value === 35) endingDialogue.mentorDialogue = [{ text: "恭喜你，終於擊敗了世界之巔的最終試煉！" }, { text: "你的日文實力已經達到了令我刮目相看的境界……" }, { text: "而且，全部 35 道試煉——無一例外——都是完美無瑕的 S 等級。" }, { text: "這扇只有最頂尖的人才能看見的隱藏之門，已經為你開啟了。" }, { text: "最終的終局魔王正在前方等你。準備好了嗎？" }];
+                setTimeout(() => setupMentorDialogue(endingDialogue), 800);
+            } else if (!isAllS && !hasSeenNormal && currentLevel.value === 35) {
+                localStorage.setItem('jpRpgL35EndingSeen', 'true');
+                setTimeout(() => setupMentorDialogue({ id: "ENDING_L35_NORMAL", name: "導師・優依", mentorDialogue: [{ text: "恭喜你，終於擊敗了世界之巔的最終試煉！" }, { text: "你的日文實力已經達到了不可思議的境界……" }, { text: "但是，你感覺到了嗎？這個世界還有更深層的氣息。" }, { text: "其實還有一個隱藏的禁忌封印，只有將過去 1 到 35 道試煉『全部』達成「完美無瑕（S級）」的人才能打開。" }, { text: "如果不將每一關的失誤都徹底消除，那扇門是絕對不會開啟的。" }, { text: "如果你準備好了，隨時都能回去重新挑戰過去的關卡。我會一直看著你的喔！" }] }), 800);
+            }
+        };
+
+        const returnToMap = () => {
+            isFinished.value = true;
+            showLevelSelect.value = false;
+            autoSelectSegment();
+            showMap.value = true;
+            monsterResultShown.value = false;
+            monsterTrulyDead.value = false;
+            monsterIsDying.value = false;
+            isNextBtnVisible.value = false;
+            const vfxLayer = document.getElementById('global-vfx-layer');
+            if (vfxLayer) vfxLayer.innerHTML = '';
+            const target = newUnlockLv.value || lastClearedLevel.value || 1;
+            scrollToStage(target);
+            stopAllAudio();
+            playBgm();
+            checkGlobalEndingTriggers();
+        };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
         const APP_VERSION = window.APP_VERSION || "26032401";
@@ -3523,7 +2162,7 @@ jpDebug commands:
 
             });
 
-            return [...unlocked, ...locked].map(s => ({
+            return [...unlocked, ...locked].map(s => ({ 
 
                 ...s,
 
@@ -3531,7 +2170,7 @@ jpDebug commands:
 
             }));
 
-        });
+        }); // Fix: added }); to properly close the computed() call
 
 
 
@@ -3680,6 +2319,7 @@ jpDebug commands:
 
 
         const unlockedAbilityIds = ref(_pendingAbilityIds || []);
+
         _pendingAbilityIds = null;
 
         const spState = window.__sp;
@@ -3832,15 +2472,11 @@ jpDebug commands:
 
                 if (audioCtx.value && !a._connected) {
 
-                    try {
+                    const source = audioCtx.value.createMediaElementSource(a);
 
-                        const source = audioCtx.value.createMediaElementSource(a);
+                    source.connect(sfxGain.value);
 
-                        source.connect(sfxGain.value);
-
-                        a._connected = true;
-
-                    } catch (e) { }
+                    a._connected = true;
 
                 }
 
@@ -4590,7 +3226,19 @@ jpDebug commands:
 
                 damage: 'assets/audio/damage.mp3',
 
+                damage2: 'assets/audio/damage2.mp3',
+
+                damage3: 'assets/audio/damage3.mp3',
+
+                damage4: 'assets/audio/damage4.mp3',
+
+                fanfare: 'assets/audio/fanfare.mp3',
+
                 pop: 'assets/audio/pop.mp3',
+
+                win: 'assets/audio/win.mp3',
+
+                gameover: 'assets/audio/sfx_gameover.mp3',
 
             };
 
@@ -6470,6 +5118,8 @@ jpDebug commands:
 
 
 
+
+
             // 2. 清理要給語音朗讀用的純文字
 
             let cleanSentenceText = sentenceTextBuilder.replace(/[_ ]/g, '').replace(/（[^）]*）|\([^)]*\)/g, '');
@@ -6539,6 +5189,8 @@ jpDebug commands:
                 }
 
             });
+
+
 
 
 
@@ -6825,7 +5477,7 @@ jpDebug commands:
 
                 bgm = new Audio(BGM_BASE + 'BGM_1.mp3');
 
-                bgm.crossOrigin = 'anonymous';
+                bgm.crossOrigin = "anonymous";
 
                 bgm.loop = true;
 
@@ -9929,6 +8581,8 @@ jpDebug commands:
 
             player.value.gold += earnedGold.value;
 
+            totalGold.value += earnedGold.value; // <--- Accumulate totalGold
+
             pushBattleLog(`擊敗怪物！獲得 ${earnedExp.value} EXP 與 ${earnedGold.value} 金幣！`, 'buff');
 
             clearTimer();
@@ -11031,6 +9685,17 @@ jpDebug commands:
 
         loadAudioSettings();
 
+        // ---- [ DEBUG TOOLS : jpDebug ] ----
+        window.__attachDebugTools?.({
+            maxLevel, currentLevel, questions, userAnswers,
+            hasSubmitted,
+            showLevelSelect, isFinished, levelConfig, LEVEL_CONFIG,
+            levelTitle, player, monster, currentQuestion,
+            startLevel, retryLevel, initGame, generateQuestionBySkill,
+            mentorTutorialSeen, saveMentorState, skillsAll, setupMentorDialogue,
+            pauseBattle, db, VOCAB
+        });
+
         return {
             isNextBtnVisible,
             animatedExp, animatedGold,
@@ -11046,7 +9711,7 @@ jpDebug commands:
 
             selectStageFromMap, startStageWithExplanation, returnToMap,
 
-            scrollToStage, lastClearedLevel, newUnlockLv, bestGrades, getGradeColor, sRankCount,
+            scrollToStage, lastClearedLevel, newUnlockLv, bestGrades, getGradeColor, sRankCount, totalGold,
 
             mapChapters, activeChapter, getMapNodeStyle, selectedSegmentIdx, isSegmentUnlocked, handleMapTabClick,
 

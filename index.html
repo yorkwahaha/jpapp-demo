@@ -86,15 +86,39 @@
 
 
 
-            // 2. 載入遊戲主程式
+            // 2. 載入 Debug Overlay
 
             const s2 = document.createElement('script');
 
-            s2.src = 'assets/js/game.js?v=' + v;
+            s2.src = 'assets/js/debug-overlay.js?v=' + v;
 
             s2.async = false;
 
             document.head.appendChild(s2);
+
+
+
+            // 3. 載入 Debug Tools
+
+            const s3 = document.createElement('script');
+
+            s3.src = 'assets/js/debug.js?v=' + v;
+
+            s3.async = false;
+
+            document.head.appendChild(s3);
+
+
+
+            // 4. 載入遊戲主程式
+
+            const s4 = document.createElement('script');
+
+            s4.src = 'assets/js/game.js?v=' + v;
+
+            s4.async = false;
+
+            document.head.appendChild(s4);
 
         })();
 
