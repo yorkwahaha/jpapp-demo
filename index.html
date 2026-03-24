@@ -110,11 +110,11 @@
 
 
 
-            // 4. 載入遊戲主程式
+            // 4. 載入 Corner Menu
 
             const s4 = document.createElement('script');
 
-            s4.src = 'assets/js/game.js?v=' + v;
+            s4.src = 'assets/js/corner-menu.js?v=' + v;
 
             s4.async = false;
 
@@ -122,15 +122,27 @@
 
 
 
-            // 5. 全局監聽 (error / keydown)
+            // 5. 載入遊戲主程式
 
             const s5 = document.createElement('script');
 
-            s5.src = 'assets/js/global-hooks.js?v=' + v;
+            s5.src = 'assets/js/game.js?v=' + v;
 
             s5.async = false;
 
             document.head.appendChild(s5);
+
+
+
+            // 6. 全局監聽 (error / keydown)
+
+            const s6 = document.createElement('script');
+
+            s6.src = 'assets/js/global-hooks.js?v=' + v;
+
+            s6.async = false;
+
+            document.head.appendChild(s6);
 
         })();
 
