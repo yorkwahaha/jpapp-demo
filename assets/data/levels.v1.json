@@ -15,7 +15,8 @@
     "levelName": "新手村",
     "focusParticle": "は",
     "focusLabel": "主題",
-    "bgKey": ""
+    "bgKey": "",
+    "bgImage": "assets/images/levels/bg_lv1.png"
   },
   {
     "id": "L2",
@@ -179,7 +180,8 @@
     "levelName": "魔王關",
     "focusParticle": "Boss",
     "focusLabel": "複習",
-    "bgKey": ""
+    "bgKey": "",
+    "bgImage": "assets/images/levels/bg_lv10.png"
   },
   {
     "id": "L11",
@@ -236,7 +238,8 @@
     "levelName": "存在之森",
     "focusParticle": "が",
     "focusLabel": "存在主體",
-    "bgKey": ""
+    "bgKey": "",
+    "bgImage": "assets/images/levels/bg_lv13.png"
   },
   {
     "id": "L14",
