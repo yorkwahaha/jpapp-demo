@@ -1299,12 +1299,9 @@ function resetSP() {
     if (window.updateSpUI) window.updateSpUI();
 }
 
-
-
-const { ref, reactive, computed, watch, onMounted, nextTick } = Vue;
-
 // ================= [ VUE APP — MAIN COMPONENT ] =================
-Vue.createApp({
+const { ref, reactive, computed, watch, onMounted, nextTick } = Vue;
+const _jpApp = Vue.createApp({
 
     setup() {
 
@@ -2255,14 +2252,15 @@ jpDebug commands:
             // Dynamic selection: 1-5 -> 0, 6-10 -> 1, 11-15 -> 2, etc.
 
             selectedSegmentIdx.value = Math.floor((maxUnlocked - 1) / 5);
-
         };
-
-
 
         const isSegmentUnlocked = (idx) => {
 
             if (idx === 0) return true;
+
+            // Chapter 8 (segment 7) becomes accessible once L35 is cleared so the
+            // player can see the locked Stage 36 and its S-rank seal progress.
+            if (idx === 7) return clearedLevels.value.includes(35);
 
             const maxUnlocked = Math.max(...unlockedLevels.value, 1);
 
@@ -2271,8 +2269,6 @@ jpDebug commands:
             return maxUnlocked >= (idx * 5) + 1;
 
         };
-
-
 
         const getMapNodeStyle = (node) => {
 
@@ -2560,11 +2556,11 @@ jpDebug commands:
 
                     mentorDialogue: [
 
-                        { text: "前方就是這片空間的最深處了……裡面混雜了你一路走來所有的記憶碎片。" },
+                        { text: "你終於站在這裡了。這一刻是你用全部 35 道完美的試煉換來的。" },
 
-                        { text: "這將會是一場考驗直覺的漫長耐久戰。請善用你的藥水，我已經沒辦法再進入這片深淵保護你了。" },
+                        { text: "前方的深淵凝聚了你一路走來所有的記憶與力量。這是屬於你一個人的最終決戰。" },
 
-                        { text: "準備好，面對過去的所有試煉了嗎？" }
+                        { text: "去吧。你已經不需要我了。" }
 
                     ]
 
@@ -2651,6 +2647,20 @@ jpDebug commands:
             return true;
 
         };
+
+        const sRankCount = Vue.computed(() => {
+            let count = 0;
+            for (let i = 1; i <= 35; i++) {
+                if (bestGrades.value[i] === 'S') count++;
+            }
+            return count;
+        });
+
+        // Post-load guard: strip stale level-36 unlock if S-rank condition is no longer met.
+        if (unlockedLevels.value.includes(36) && !checkAllSRank()) {
+            unlockedLevels.value = unlockedLevels.value.filter(lv => lv !== 36);
+            localStorage.removeItem('jpRpgL36Unlocked');
+        }
 
 
 
@@ -2748,15 +2758,13 @@ jpDebug commands:
 
                         { text: "恭喜你，終於擊敗了世界之巔的最終試煉！" },
 
-                        { text: "你的日文實力已經達到了不可思議的境界……" },
+                        { text: "你的日文實力已經達到了令我刮目相看的境界……" },
 
-                        { text: "我原本以為這裡就是終點了。" },
+                        { text: "而且，全部 35 道試煉——無一例外——都是完美無瑕的 S 等級。" },
 
-                        { text: "但……其實還有一個隱藏的禁忌封印，只有將過去 35 道試煉全部達成「完美無瑕（S級）」的人才能打開。" },
+                        { text: "這扇只有最頂尖的人才能看見的隱藏之門，已經為你開啟了。" },
 
-                        { text: "沒想到你居然做到了。全部 35 關，無一失手。" },
-
-                        { text: "那麼，我為你開啟這扇門吧。最終的終局魔王，正在那裡等你。" }
+                        { text: "最終的終局魔王正在前方等你。準備好了嗎？" }
 
                     ];
 
@@ -2871,7 +2879,7 @@ jpDebug commands:
 
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26032101";
+        const APP_VERSION = window.APP_VERSION || "26032401";
 
         const appVersion = ref(APP_VERSION);
 
@@ -9983,7 +9991,7 @@ jpDebug commands:
 
                 const nextLv = currentLevel.value + 1;
 
-                if (nextLv <= 15 && !unlockedLevels.value.includes(nextLv)) {
+                if (nextLv < maxLevel.value && !unlockedLevels.value.includes(nextLv)) {
 
                     unlockedLevels.value.push(nextLv);
 
@@ -11038,7 +11046,7 @@ jpDebug commands:
 
             selectStageFromMap, startStageWithExplanation, returnToMap,
 
-            scrollToStage, lastClearedLevel, newUnlockLv, bestGrades, getGradeColor,
+            scrollToStage, lastClearedLevel, newUnlockLv, bestGrades, getGradeColor, sRankCount,
 
             mapChapters, activeChapter, getMapNodeStyle, selectedSegmentIdx, isSegmentUnlocked, handleMapTabClick,
 
@@ -11052,7 +11060,12 @@ jpDebug commands:
 
     }
 
-}).mount('#app');
+});
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => _jpApp.mount('#app'));
+} else {
+    _jpApp.mount('#app');
+}
 
 
 

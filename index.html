@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26031501'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26032401'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -60,7 +60,7 @@
 
         rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/styles.css?v=26031403">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26032401">
 
 
 
@@ -70,7 +70,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26031501';
+            const v = window.APP_VERSION || '26032401';
 
 
 
@@ -1871,6 +1871,8 @@
                                         <div class="node-number">STAGE {{ String(n).padStart(2, '0') }}</div>
 
                                         <div class="node-title">{{ getLevelTitle(n) }}</div>
+
+                                        <div v-if="Number(n) === 36 && !isLevelUnlocked(n)" class="node-number" style="margin-top:2px;color:rgba(251,191,36,0.7)">{{ sRankCount }}/35 封印解除</div>
 
                                     </div>
 
