@@ -2010,6 +2010,18 @@ const _jpApp = Vue.createApp({
 
             const lv = Number(level) || parseInt(level, 10) || 1;
 
+            const configBgm = LEVEL_CONFIG.value?.[lv]?.bgm;
+
+            if (configBgm) {
+
+                currentBattleBgmPick.value = BGM_BASE + configBgm;
+
+                if (configBgm === 'BGM_boss.mp3') lastNormalBgm = null;
+
+                return;
+
+            }
+
             if (lv % 5 === 0) {
 
                 currentBattleBgmPick.value = BGM_BASE + 'BGM_boss.mp3';
