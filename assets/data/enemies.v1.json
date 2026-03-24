@@ -7,7 +7,10 @@
     "spawnLevels": [
       1
     ],
-    "hpMax": 28
+    "hpMax": 28,
+    "imageHit": null,
+    "posX": null,
+    "posY": null
   },
   {
     "id": "moss-boar",
@@ -17,7 +20,10 @@
     "spawnLevels": [
       2
     ],
-    "hpMax": 34
+    "hpMax": 34,
+    "imageHit": null,
+    "posX": null,
+    "posY": null
   },
   {
     "id": "rune-moth",
@@ -27,7 +33,10 @@
     "spawnLevels": [
       3
     ],
-    "hpMax": 30
+    "hpMax": 30,
+    "imageHit": null,
+    "posX": null,
+    "posY": null
   },
   {
     "id": "mist-bat",
@@ -37,7 +46,10 @@
     "spawnLevels": [
       4
     ],
-    "hpMax": 32
+    "hpMax": 32,
+    "imageHit": null,
+    "posX": null,
+    "posY": null
   },
   {
     "id": "man-eater-bloom",
@@ -48,7 +60,10 @@
       5
     ],
     "hpMax": 58,
-    "size": 1.5
+    "size": 1.5,
+    "imageHit": null,
+    "posX": null,
+    "posY": null
   },
   {
     "id": "ash-goblin",
@@ -58,7 +73,10 @@
     "spawnLevels": [
       6
     ],
-    "hpMax": 38
+    "hpMax": 38,
+    "imageHit": null,
+    "posX": null,
+    "posY": null
   },
   {
     "id": "shell-sprout",
@@ -68,7 +86,10 @@
     "spawnLevels": [
       7
     ],
-    "hpMax": 42
+    "hpMax": 42,
+    "imageHit": null,
+    "posX": null,
+    "posY": null
   },
   {
     "id": "forest-cat",
@@ -78,7 +99,10 @@
     "spawnLevels": [
       8
     ],
-    "hpMax": 36
+    "hpMax": 36,
+    "imageHit": null,
+    "posX": null,
+    "posY": null
   },
   {
     "id": "stone-mimic",
@@ -88,7 +112,10 @@
     "spawnLevels": [
       9
     ],
-    "hpMax": 48
+    "hpMax": 48,
+    "imageHit": null,
+    "posX": null,
+    "posY": null
   },
   {
     "id": "frost-roc",
@@ -99,7 +126,10 @@
       10
     ],
     "hpMax": 70,
-    "size": 1.6
+    "size": 1.6,
+    "imageHit": null,
+    "posX": null,
+    "posY": null
   },
   {
     "id": "ember-imp",
@@ -109,7 +139,10 @@
     "spawnLevels": [
       11
     ],
-    "hpMax": 44
+    "hpMax": 44,
+    "imageHit": null,
+    "posX": null,
+    "posY": null
   },
   {
     "id": "shore-wisp",
@@ -119,7 +152,10 @@
     "spawnLevels": [
       12
     ],
-    "hpMax": 40
+    "hpMax": 40,
+    "imageHit": null,
+    "posX": null,
+    "posY": null
   },
   {
     "id": "thorn-wolf",
@@ -129,7 +165,10 @@
     "spawnLevels": [
       13
     ],
-    "hpMax": 50
+    "hpMax": 50,
+    "imageHit": null,
+    "posX": null,
+    "posY": null
   },
   {
     "id": "moon-jelly",
@@ -139,7 +178,10 @@
     "spawnLevels": [
       14
     ],
-    "hpMax": 46
+    "hpMax": 46,
+    "imageHit": null,
+    "posX": null,
+    "posY": null
   },
   {
     "id": "orc-warlord",
@@ -150,6 +192,9 @@
       15
     ],
     "hpMax": 88,
-    "size": 1.6
+    "size": 1.6,
+    "imageHit": null,
+    "posX": null,
+    "posY": null
   }
 ]

@@ -1,4 +1,4 @@
-﻿
+
 
 
 window.__sp = { cur: 20, max: 20 };
@@ -113,6 +113,8 @@ const _jpApp = Vue.createApp({
         const SKILLS = ref([]);
 
         const ENEMIES = ref([]);
+
+        const MENTOR_AUDIO_MAP = ref({});
 
         const isMonsterImageError = ref(false);
 
@@ -450,6 +452,12 @@ const _jpApp = Vue.createApp({
             selectedSegmentIdx.value = idx;
         };
 
+        const jumpToMapSegment = (chapKey, segIdx) => {
+            isMapDropdownOpen.value = false;
+            if (chapKey !== activeChapter.value) activeChapter.value = chapKey;
+            handleMapTabClick(segIdx);
+        };
+
         const selectStageFromMap = (n) => {
             const lvNum = Number(n);
             if (!isLevelUnlocked(lvNum)) {
@@ -561,7 +569,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26032401";
+        const APP_VERSION = window.APP_VERSION || "26032402";
 
         const appVersion = ref(APP_VERSION);
 
@@ -946,6 +954,12 @@ const _jpApp = Vue.createApp({
 
 
         const getMentorAudioPath = (skillId, pageIndex) => {
+
+            const entry = MENTOR_AUDIO_MAP.value?.[skillId];
+
+            if (entry?.audio) return entry.audio[pageIndex] ?? null;
+
+            // legacy fallback
 
             if (skillId !== 'WA_TOPIC_BASIC') return null;
 
@@ -1342,6 +1356,18 @@ const _jpApp = Vue.createApp({
 
             } catch (e) { }
 
+            try {
+
+                const res = await fetch(`assets/data/mentor-dialogues.v1.json?v=${appVersion.value}`);
+
+                if (res.ok) {
+
+                    MENTOR_AUDIO_MAP.value = await res.json();
+
+                }
+
+            } catch (e) { }
+
         };
 
         loadGameData();
@@ -1673,6 +1699,8 @@ const _jpApp = Vue.createApp({
         const isMenuOpen = ref(false);
 
         const isAdvancedSettingsOpen = ref(false);
+
+        const isMapDropdownOpen = ref(false);
 
         const isMistakesOpen = ref(false);
 
@@ -6584,9 +6612,15 @@ const _jpApp = Vue.createApp({
 
                     sprite: enemyMatch.image,
 
+                    spriteHit: enemyMatch.imageHit || null,
+
                     trait: enemyMatch.trait,
 
-                    size: enemyMatch.size || (isBossLevel ? 1.2 : 1)
+                    size: enemyMatch.size || (isBossLevel ? 1.2 : 1),
+
+                    posX: enemyMatch.posX ?? null,
+
+                    posY: enemyMatch.posY ?? null
 
                 };
 
@@ -6602,9 +6636,15 @@ const _jpApp = Vue.createApp({
 
                     sprite: mdef.sprite, 
 
+                    spriteHit: null,
+
                     trait: mdef.trait,
 
-                    size: isBossLevel ? 1.2 : 1
+                    size: isBossLevel ? 1.2 : 1,
+
+                    posX: null,
+
+                    posY: null
 
                 };
 
@@ -7470,17 +7510,29 @@ const _jpApp = Vue.createApp({
 
             if (isMonsterImageError.value) return 'assets/images/monsters/slime.png';
 
-            
-
             // 只有在受擊中、非錯誤狀態、且該怪物尚未被標記為缺乏 *2 圖時，嘗試切換
 
-            if (monsterHit.value && !monsterHitImageFailed.value && monster.value.sprite.includes('.')) {
+            if (monsterHit.value && !monsterHitImageFailed.value) {
 
-                return monster.value.sprite.replace(/(\.[^.]+)$/, '2$1');
+                if (monster.value.spriteHit) return monster.value.spriteHit;
+
+                if (monster.value.sprite.includes('.')) return monster.value.sprite.replace(/(\.[^.]+)$/, '2$1');
 
             }
 
             return monster.value.sprite;
+
+        });
+
+        const monsterPositionStyle = computed(() => {
+
+            const x = monster.value?.posX;
+
+            const y = monster.value?.posY;
+
+            if (x == null && y == null) return {};
+
+            return { transform: `translateX(${x ?? 0}%) translateY(${y ?? 0}%)` };
 
         });
 
@@ -8065,7 +8117,7 @@ const _jpApp = Vue.createApp({
             isMentorModalOpen, isMentorReplayOpen, isLevelJumpOpen, isAdvancedSettingsOpen, replaySpecificMentor, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
             displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,
             isMentorSkipPressing, startMentorSkipPress, cancelMentorSkipPress,
-            isMonsterImageError, handleMonsterImageError, handleMapImageError, currentMonsterSprite, monsterIsDying, monsterTrulyDead, monsterResultShown,
+            isMonsterImageError, handleMonsterImageError, handleMapImageError, currentMonsterSprite, monsterPositionStyle, monsterIsDying, monsterTrulyDead, monsterResultShown,
             showMap, unlockedLevels, clearedLevels, showMentorChoice, selectedMapLevel,
             openMap, isLevelUnlocked, isLevelCleared, getStageNodeClass, getLevelTitle, hasMentor,
 
@@ -8073,7 +8125,7 @@ const _jpApp = Vue.createApp({
 
             scrollToStage, lastClearedLevel, newUnlockLv, bestGrades, getGradeColor, sRankCount, totalGold,
 
-            mapChapters, activeChapter, getMapNodeStyle, selectedSegmentIdx, isSegmentUnlocked, handleMapTabClick,
+            mapChapters, activeChapter, getMapNodeStyle, selectedSegmentIdx, isSegmentUnlocked, handleMapTabClick, jumpToMapSegment, isMapDropdownOpen,
 
             isBattleConfirmOpen, selectedStageToConfirm, confirmAndStartBattle,
 
