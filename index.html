@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26032601'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26032602'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -70,7 +70,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26032601';
+            const v = window.APP_VERSION || '26032602';
 
 
 
@@ -328,130 +328,6 @@
 
 
 
-        /* Node Style v9 - Clean Glass Panel */
-
-        .stage-node-btn {
-
-            background: linear-gradient(145deg, rgba(30, 41, 59, 0.35), rgba(51, 65, 85, 0.32), rgba(30, 41, 59, 0.38)) !important;
-
-            backdrop-filter: blur(20px) saturate(140%);
-
-            -webkit-backdrop-filter: blur(20px) saturate(140%);
-
-            border: 1px solid rgba(148, 163, 184, 0.15);
-
-            border-radius: 14px;
-
-            padding: 10px 16px 10px 10px !important;
-
-            display: flex;
-
-            align-items: center;
-
-            gap: 14px;
-
-            box-shadow:
-
-                0 6px 20px rgba(0, 0, 0, 0.5),
-
-                inset 0 1px 0 rgba(255, 255, 255, 0.08);
-
-            width: auto !important;
-
-            min-width: 180px;
-
-            max-width: 280px;
-
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-            position: relative;
-
-        }
-
-
-
-        .stage-node-btn::before {
-
-            content: '';
-
-            position: absolute;
-
-            inset: 0;
-
-            border-radius: 13px;
-
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, transparent 50%);
-
-            pointer-events: none;
-
-        }
-
-
-
-        .is-current .stage-node-btn {
-
-            background: linear-gradient(145deg, rgba(251, 191, 36, 0.18), rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.12)) !important;
-
-            border-color: rgba(251, 191, 36, 0.35);
-
-            border-width: 1.5px;
-
-            box-shadow:
-
-                0 0 20px rgba(251, 191, 36, 0.25),
-
-                0 6px 20px rgba(0, 0, 0, 0.6),
-
-                inset 0 1px 0 rgba(255, 255, 255, 0.15);
-
-            transform: scale(1.05);
-
-        }
-
-
-
-        .is-current .stage-node-btn::before {
-
-            content: '';
-
-            position: absolute;
-
-            inset: 0;
-
-            border-radius: 13px;
-
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, transparent 50%);
-
-            pointer-events: none;
-
-        }
-
-
-
-        .is-cleared .stage-node-btn {
-
-            border-color: rgba(148, 163, 184, 0.18);
-
-            box-shadow:
-
-                0 6px 20px rgba(0, 0, 0, 0.5),
-
-                inset 0 1px 0 rgba(255, 255, 255, 0.08);
-
-        }
-
-
-
-        .is-locked .stage-node-btn {
-
-            opacity: 0.6;
-
-            filter: grayscale(0.8) blur(1px);
-
-        }
-
-
-
         .node-icon {
 
             width: 48px !important;
@@ -479,28 +355,6 @@
             margin-left: -8px;
 
             z-index: 15;
-
-        }
-
-
-
-        .node-number {
-
-            font-size: 0.6rem !important;
-
-            color: #cbd5e1;
-
-            font-weight: 800;
-
-            letter-spacing: 1.8px;
-
-            line-height: 1;
-
-            margin-bottom: 3px;
-
-            opacity: 0.85;
-
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), 0 0 1px rgba(0, 0, 0, 0.8);
 
         }
 
@@ -1534,82 +1388,6 @@
 
 
 
-        .map-stage-node-plate {
-
-            min-width: 104px;
-
-            max-width: 122px;
-
-            padding: 7px 9px 6px;
-
-            border-radius: 12px;
-
-            background: linear-gradient(160deg, rgba(255, 255, 255, 0.18), rgba(226, 232, 240, 0.11) 50%, rgba(71, 85, 105, 0.14));
-
-            backdrop-filter: blur(16px) saturate(140%);
-
-            -webkit-backdrop-filter: blur(16px) saturate(140%);
-
-            border: 1px solid rgba(255, 255, 255, 0.2);
-
-            box-shadow:
-
-                0 10px 18px rgba(15, 23, 42, 0.22),
-
-                inset 0 1px 0 rgba(255, 255, 255, 0.18),
-
-                inset 0 -8px 12px rgba(15, 23, 42, 0.1);
-
-            text-align: center;
-
-        }
-
-
-
-        .map-stage-node-number {
-
-            font-size: 0.54rem;
-
-            font-weight: 900;
-
-            letter-spacing: 0.18em;
-
-            color: rgba(241, 245, 249, 0.76);
-
-            text-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
-
-        }
-
-
-
-        .map-stage-node-title {
-
-            margin-top: 2px;
-
-            font-size: 0.78rem;
-
-            font-weight: 900;
-
-            line-height: 1.15;
-
-            color: rgba(248, 250, 252, 0.96);
-
-            text-shadow:
-
-                0 2px 4px rgba(15, 23, 42, 0.18),
-
-                0 0 1px rgba(15, 23, 42, 0.12);
-
-            white-space: nowrap;
-
-            overflow: hidden;
-
-            text-overflow: ellipsis;
-
-        }
-
-
-
         .map-stage-node.state-unopened .map-stage-node-frame {
 
             border-color: rgba(148, 163, 184, 0.16);
@@ -1715,24 +1493,6 @@
             border-color: transparent;
 
             background: transparent;
-
-        }
-
-
-
-        .map-stage-node.state-current .map-stage-node-plate {
-
-            border-color: rgba(251, 191, 36, 0.22);
-
-            box-shadow:
-
-                0 12px 20px rgba(15, 23, 42, 0.24),
-
-                0 0 10px rgba(251, 191, 36, 0.08),
-
-                inset 0 1px 0 rgba(255, 255, 255, 0.2),
-
-                inset 0 -8px 12px rgba(15, 23, 42, 0.1);
 
         }
 
@@ -1973,13 +1733,13 @@
 
 
 
-                                    <div class="map-stage-node-plate">
+                                    <!-- Boss indicator badge -->
 
-                                        <div class="map-stage-node-number">STAGE {{ String(n).padStart(2, '0') }}</div>
+                                    <div v-if="LEVEL_CONFIG[n]?.boss"
 
-                                        <div class="map-stage-node-title">{{ getLevelTitle(n) }}</div>
+                                        class="absolute -bottom-2 bg-rose-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-[0_0_12px_rgba(225,29,72,0.5)] z-20 border border-rose-400 tracking-wider">
 
-                                    </div>
+                                        BOSS</div>
 
                                 </button>
 

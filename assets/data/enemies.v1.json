@@ -57,7 +57,7 @@
     "id": "frost-roc", "name": "冰原巨鳥",
     "image": "assets/images/monsters/frost-roc.png", "imageHit": "assets/images/monsters/frost-roc2.png",
     "trait": "展翼時像暴風雪壓過天空，羽尖會抖落寒霜，連呼吸都像被凍住",
-    "spawnLevels": [15], "hpMax": 100, "size": 2.3, "posX": null, "posY": 30
+    "spawnLevels": [15], "hpMax": 200, "size": 2.3, "posX": null, "posY": 30
   },
   {
     "id": "ember-imp", "name": "燼火小惡魔",

@@ -1,5 +1,16 @@
 [
     {
+        "version": "26032602",
+        "date": "2026-03-26",
+        "title": "Map UI Streamlining & Extended Audio Update",
+        "changes": [
+            "地圖節點精簡化：移除冗餘玻璃卡片，大幅提升地圖視野。 (1-36層)",
+            "新增 Boss 專屬紅標籤：讓魔王關卡依然一目了然。",
+            "地圖細節位置微調 (26-36關)。",
+            "地圖配樂擴展更新：新增歌單 (Frozen Labyrinth, Memories, Skylords, Lonely Justice, Ancient memories)。"
+        ]
+    },
+    {
         "version": "26032601",
         "date": "2026-03-26",
         "title": "Icefield Formalization & Battle Background Data Milestone",
