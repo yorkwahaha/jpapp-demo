@@ -8,11 +8,11 @@
         "title": "新手村",
         "background": "assets/images/maps/chapter1-a.png",
         "nodes": {
-          "1": { "x": 50, "y": 15, "landmark": "新手村" },
-          "2": { "x": 30, "y": 35, "landmark": "草道" },
-          "3": { "x": 75, "y": 55, "landmark": "森林入口" },
-          "4": { "x": 40, "y": 75, "landmark": "森林深處" },
-          "5": { "x": 65, "y": 90, "landmark": "幽暗小徑" }
+          "1": { "x": 40, "y": 20, "landmark": "新手村" },
+          "2": { "x": 25, "y": 45, "landmark": "草道" },
+          "3": { "x": 65, "y": 55, "landmark": "森林入口" },
+          "4": { "x": 35, "y": 70, "landmark": "森林深處" },
+          "5": { "x": 80, "y": 85, "landmark": "幽暗小徑" }
         }
       },
       {

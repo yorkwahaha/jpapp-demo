@@ -1,0 +1,1750 @@
+diff --git a/assets/data/earlyGamePools.v1.js b/assets/data/earlyGamePools.v1.js
+index ec8041c..aed6b2d 100644
+--- a/assets/data/earlyGamePools.v1.js
++++ b/assets/data/earlyGamePools.v1.js
+@@ -43,7 +43,12 @@ window.EARLY_GAME_POOLS = {
+             17: { blanks: 1, types: [0, 1, 2, 3, 4, 5], title: 'まで：終點／截止' },
+             18: { blanks: 1, types: [0, 1, 2, 3, 4, 5], title: 'と：共同動作對象' },
+             19: { blanks: 1, types: [0, 1, 2, 3, 4, 5], title: 'で：工具／手段' },
+-            20: { blanks: 1, types: [0, 1, 2, 3, 4, 5], title: '【魔王關】魔王複習關 4', isBoss: true }
++            20: { blanks: 1, types: [0, 1, 2, 3, 4, 5], title: '【魔王關】魔王複習關 4', isBoss: true },
++            21: { blanks: 1, types: [0, 1, 2, 3, 4, 5], title: 'に・時間點複習' },
++            22: { blanks: 1, types: [0, 1, 2, 3, 4, 5], title: 'に・動作對象' },
++            23: { blanks: 1, types: [0, 1, 2, 3, 4, 5], title: 'に・存在地點複習' },
++            24: { blanks: 1, types: [0, 1, 2, 3, 4, 5], title: 'へ・方向複習' },
++            25: { blanks: 1, types: [0, 1, 2, 3, 4, 5], title: '【魔王關】深淵盡頭', isBoss: true }
+         }
+     },
+ 
+@@ -371,7 +376,12 @@ window.EARLY_GAME_POOLS = {
+                 { j: "水曜日に来る", r: "すいようびにくる", zh: "星期三來" },
+                 { j: "金曜日に会う", r: "きんようびにあう", zh: "星期五見面" },
+                 { j: "12時に食べる", r: "じゅうにじにたべる", zh: "12點吃飯" },
+-                { j: "朝の7時に起きる", r: "あさのしちじにおきる", zh: "早上7點起床" }
++                { j: "朝の7時に起きる", r: "あさのしちじにおきる", zh: "早上7點起床" },
++                { j: "午後に雨が降る", r: "ごごにあめがふる", zh: "下午會下雨" },
++                { j: "11時に待ち合わせる", r: "じゅういちじにまちあわせる", zh: "11點碰頭" },
++                { j: "夏休みに旅行する", r: "なつやすみにりょこうする", zh: "暑假去旅行" },
++                { j: "夜の11時に寝る", r: "よるのじゅういちじにねる", zh: "晚上11點睡覺" },
++                { j: "誕生日にケーキを食べる", r: "たんじょうびにケーキをたべる", zh: "生日吃蛋糕" }
+             ]
+         },
+         NI_TARGET: {
+@@ -385,7 +395,15 @@ window.EARLY_GAME_POOLS = {
+                 { j: "家族にメールする", r: "かぞくにメールする", zh: "發郵件給家人" },
+                 { j: "彼女にプレゼントする", r: "かのじょにプレゼントする", zh: "送禮物給女朋友" },
+                 { j: "彼氏に電話する", r: "かれしにでんわする", zh: "打電話給男朋友" },
+-                { j: "田中さんに聞く", r: "たなかさんにきく", zh: "問田中先生" }
++                { j: "田中さんに聞く", r: "たなかさんにきく", zh: "問田中先生" },
++                { j: "弟に教える", r: "おとうとにおしえる", zh: "教弟弟" },
++                { j: "猫に餌をやる", r: "ねこにえさをやる", zh: "餵貓" },
++                { j: "店員に頼む", r: "てんいんにたのむ", zh: "拜託店員" },
++                { j: "友達に相談する", r: "ともだちにそうだんする", zh: "找朋友商量" },
++                { j: "警察に言う", r: "けいさつにいう", zh: "告訴警察" },
++                { j: "子供に見せる", r: "こどもにみせる", zh: "給小孩子看" },
++                { j: "客様に挨拶する", r: "きゃくさまにあいさつする", zh: "向客人打招呼" },
++                { j: "先生に質問する", r: "せんせいにしつもんする", zh: "向老師提問" }
+             ]
+         },
+         NI_EXIST_PLACE: {
+@@ -399,7 +417,13 @@ window.EARLY_GAME_POOLS = {
+                 { j: "冷蔵庫にケーキがある", r: "れいぞうこにケーキがある", zh: "冰箱裡有蛋糕" },
+                 { j: "学校に生徒がいる", r: "がっこうにせいとがいる", zh: "學校裡有學生" },
+                 { j: "箱の中にりんごがある", r: "はこのなかにりんごがある", zh: "箱子裡有蘋果" },
+-                { j: "教室に友達がいる", r: "きょうしつにともだちがいる", zh: "教室裡有朋友" }
++                { j: "教室に友達がいる", r: "きょうしつにともだちがいる", zh: "教室裡有朋友" },
++                { j: "山に雪がある", r: "やまにゆきがある", zh: "山上有雪" },
++                { j: "引き出しに鍵がある", r: "ひきだしにかぎがある", zh: "抽屜裡有鑰匙" },
++                { j: "空に雲がある", r: "そらにくもがある", zh: "天空中有雲" },
++                { j: "ロビーに人がいる", r: "ロビーにひとがいる", zh: "大廳有人" },
++                { j: "お皿にパンがある", r: "おさらにぱんがある", zh: "盤子裡有麵包" },
++                { j: "本棚に本がある", r: "ほんだなにほんがある", zh: "書架上有書" }
+             ]
+         },
+         HE_DIRECTION: {
+@@ -413,7 +437,12 @@ window.EARLY_GAME_POOLS = {
+                 { j: "南へ走る", r: "みなみへはしる", zh: "往南跑" },
+                 { j: "駅へ走る", r: "えきへはしる", zh: "跑向車站" },
+                 { j: "病院へ急ぐ", r: "びょういんへいそぐ", zh: "趕往醫院" },
+-                { j: "前へ進む", r: "まえへすすむ", zh: "向前進" }
++                { j: "前へ進む", r: "まえへすすむ", zh: "向前進" },
++                { j: "家へ向かう", r: "いえへむかう", zh: "回家/向家移動" },
++                { j: "外へ出る", r: "そとへでる", zh: "向外走" },
++                { j: "二階へ上がる", r: "にかいへあがる", zh: "上二樓" },
++                { j: "都会へ行く", r: "とかいへいく", zh: "去都市" },
++                { j: "地底へ降りる", r: "ちていへおりる", zh: "降到地底" }
+             ]
+         },
+         YA_AND_OTHERS: {
+diff --git a/assets/data/enemies.v1.json b/assets/data/enemies.v1.json
+index ce81880..bdc6995 100644
+--- a/assets/data/enemies.v1.json
++++ b/assets/data/enemies.v1.json
+@@ -1,200 +1,152 @@
+ [
+   {
+-    "id": "glow-slime",
+-    "name": "微光史萊姆",
+-    "image": "assets/images/monsters/glow-slime.png",
++    "id": "glow-slime", "name": "微光史萊姆",
++    "image": "assets/images/monsters/glow-slime.png", "imageHit": null,
+     "trait": "身體散著淡淡藍光，靠近時會發出啵啵聲",
+-    "spawnLevels": [
+-      1
+-    ],
+-    "hpMax": 28,
+-    "imageHit": null,
+-    "posX": null,
+-    "posY": null
+-  },
+-  {
+-    "id": "moss-boar",
+-    "name": "苔牙野豬",
+-    "image": "assets/images/monsters/moss-boar.png",
++    "spawnLevels": [1], "hpMax": 28, "size": 1.0, "posX": null, "posY": null
++  },
++  {
++    "id": "moss-boar", "name": "苔牙野豬",
++    "image": "assets/images/monsters/moss-boar.png", "imageHit": null,
+     "trait": "背上沾滿濕苔與落葉，衝撞前會低聲噴氣",
+-    "spawnLevels": [
+-      2
+-    ],
+-    "hpMax": 34,
+-    "imageHit": null,
+-    "posX": null,
+-    "posY": null
+-  },
+-  {
+-    "id": "rune-moth",
+-    "name": "符紋蛾",
+-    "image": "assets/images/monsters/rune-moth.png",
++    "spawnLevels": [2], "hpMax": 34, "size": 1.0, "posX": null, "posY": null
++  },
++  {
++    "id": "rune-moth", "name": "符紋蛾",
++    "image": "assets/images/monsters/rune-moth.png", "imageHit": null,
+     "trait": "翅面浮著像文字碎片般的紋路，飛行時會灑下淡金粉末",
+-    "spawnLevels": [
+-      3
+-    ],
+-    "hpMax": 30,
+-    "imageHit": null,
+-    "posX": null,
+-    "posY": null
+-  },
+-  {
+-    "id": "mist-bat",
+-    "name": "霧羽蝠",
+-    "image": "assets/images/monsters/mist-bat.png",
++    "spawnLevels": [3], "hpMax": 30, "size": 1.0, "posX": null, "posY": null
++  },
++  {
++    "id": "mist-bat", "name": "霧羽蝠",
++    "image": "assets/images/monsters/mist-bat.png", "imageHit": null,
+     "trait": "總在薄霧裡忽隱忽現，翅膀一振就像夜風掠過耳邊",
+-    "spawnLevels": [
+-      4
+-    ],
+-    "hpMax": 32,
+-    "imageHit": null,
+-    "posX": null,
+-    "posY": null
+-  },
+-  {
+-    "id": "man-eater-bloom",
+-    "name": "食人花之母",
+-    "image": "assets/images/monsters/man-eater-bloom.png",
++    "spawnLevels": [4], "hpMax": 32, "size": 1.0, "posX": null, "posY": null
++  },
++  {
++    "id": "man-eater-bloom", "name": "食人花之母",
++    "image": "assets/images/monsters/man-eater-bloom.png", "imageHit": "assets/images/monsters/man-eater-bloom2.png",
+     "trait": "巨大的花瓣一張一合，甜膩香氣裡藏著會把獵物慢慢吞下去的耐心",
+-    "spawnLevels": [
+-      5
+-    ],
+-    "hpMax": 58,
+-    "size": 1.5,
+-    "imageHit": null,
+-    "posX": null,
+-    "posY": null
+-  },
+-  {
+-    "id": "ash-goblin",
+-    "name": "灰枝小鬼",
+-    "image": "assets/images/monsters/ash-goblin.png",
++    "spawnLevels": [5], "hpMax": 58, "size": 1.5, "posX": null, "posY": null
++  },
++  {
++    "id": "ash-goblin", "name": "灰枝小鬼",
++    "image": "assets/images/monsters/ash-goblin.png", "imageHit": "assets/images/monsters/ash-goblin2.png",
+     "trait": "披著破布與枯枝，眼神鬼祟，最愛躲在陰影裡偷襲",
+-    "spawnLevels": [
+-      6
+-    ],
+-    "hpMax": 38,
+-    "imageHit": null,
+-    "posX": null,
+-    "posY": null
+-  },
+-  {
+-    "id": "shell-sprout",
+-    "name": "殼芽獸",
+-    "image": "assets/images/monsters/shell-sprout.png",
++    "spawnLevels": [6], "hpMax": 38, "size": 1.0, "posX": null, "posY": null
++  },
++  {
++    "id": "shell-sprout", "name": "殼芽獸",
++    "image": "assets/images/monsters/shell-sprout.png", "imageHit": null,
+     "trait": "背甲像剛長出的樹芽，移動慢，但意外地很耐打",
+-    "spawnLevels": [
+-      7
+-    ],
+-    "hpMax": 42,
+-    "imageHit": null,
+-    "posX": null,
+-    "posY": null
+-  },
+-  {
+-    "id": "forest-cat",
+-    "name": "林影妖貓",
+-    "image": "assets/images/monsters/forest-cat.png",
++    "spawnLevels": [7], "hpMax": 42, "size": 1.0, "posX": null, "posY": null
++  },
++  {
++    "id": "forest-cat", "name": "林影妖貓",
++    "image": "assets/images/monsters/forest-cat.png", "imageHit": null,
+     "trait": "步伐輕得像沒踩到地面，尾巴一甩就不見蹤影",
+-    "spawnLevels": [
+-      8
+-    ],
+-    "hpMax": 36,
+-    "imageHit": null,
+-    "posX": null,
+-    "posY": null
+-  },
+-  {
+-    "id": "stone-mimic",
+-    "name": "岩殼擬怪",
+-    "image": "assets/images/monsters/stone-mimic.png",
++    "spawnLevels": [8], "hpMax": 36, "size": 1.0, "posX": null, "posY": null
++  },
++  {
++    "id": "stone-mimic", "name": "岩殼擬怪",
++    "image": "assets/images/monsters/stone-mimic.png", "imageHit": null,
+     "trait": "蜷起身子時像一塊不起眼的石頭，張眼後才知道被盯上了",
+-    "spawnLevels": [
+-      9
+-    ],
+-    "hpMax": 48,
+-    "imageHit": null,
+-    "posX": null,
+-    "posY": null
+-  },
+-  {
+-    "id": "frost-roc",
+-    "name": "冰原巨鳥",
+-    "image": "assets/images/monsters/frost-roc.png",
++    "spawnLevels": [9], "hpMax": 48, "size": 1.0, "posX": null, "posY": null
++  },
++  {
++    "id": "frost-roc", "name": "冰原巨鳥",
++    "image": "assets/images/monsters/frost-roc.png", "imageHit": "assets/images/monsters/frost-roc2.png",
+     "trait": "展翼時像暴風雪壓過天空，羽尖會抖落寒霜，連呼吸都像被凍住",
+-    "spawnLevels": [
+-      10
+-    ],
+-    "hpMax": 70,
+-    "size": 1.6,
+-    "imageHit": null,
+-    "posX": null,
+-    "posY": null
+-  },
+-  {
+-    "id": "ember-imp",
+-    "name": "燼火小惡魔",
+-    "image": "assets/images/monsters/ember-imp.png",
++    "spawnLevels": [10], "hpMax": 70, "size": 1.6, "posX": null, "posY": null
++  },
++  {
++    "id": "ember-imp", "name": "燼火小惡魔",
++    "image": "assets/images/monsters/ember-imp.png", "imageHit": null,
+     "trait": "耳尖與尾端閃著火星，脾氣暴躁，笑聲比火還惱人",
+-    "spawnLevels": [
+-      11
+-    ],
+-    "hpMax": 44,
+-    "imageHit": null,
+-    "posX": null,
+-    "posY": null
+-  },
+-  {
+-    "id": "shore-wisp",
+-    "name": "潮燈幼靈",
+-    "image": "assets/images/monsters/shore-wisp.png",
++    "spawnLevels": [11], "hpMax": 44, "size": 1.0, "posX": null, "posY": null
++  },
++  {
++    "id": "shore-wisp", "name": "潮燈幼靈",
++    "image": "assets/images/monsters/shore-wisp.png", "imageHit": null,
+     "trait": "像漂在岸邊的微弱燈火，忽遠忽近，讓人很難抓準距離",
+-    "spawnLevels": [
+-      12
+-    ],
+-    "hpMax": 40,
+-    "imageHit": null,
+-    "posX": null,
+-    "posY": null
+-  },
+-  {
+-    "id": "thorn-wolf",
+-    "name": "棘原狼",
+-    "image": "assets/images/monsters/thorn-wolf.png",
++    "spawnLevels": [12], "hpMax": 40, "size": 1.0, "posX": null, "posY": null
++  },
++  {
++    "id": "thorn-wolf", "name": "棘原狼",
++    "image": "assets/images/monsters/thorn-wolf.png", "imageHit": null,
+     "trait": "毛皮間夾著細刺，奔跑時像一團貼地掠過的灰影",
+-    "spawnLevels": [
+-      13
+-    ],
+-    "hpMax": 50,
+-    "imageHit": null,
+-    "posX": null,
+-    "posY": null
+-  },
+-  {
+-    "id": "moon-jelly",
+-    "name": "月沫水母",
+-    "image": "assets/images/monsters/moon-jelly.png",
++    "spawnLevels": [13], "hpMax": 50, "size": 1.0, "posX": null, "posY": null
++  },
++  {
++    "id": "moon-jelly", "name": "月沫水母",
++    "image": "assets/images/monsters/moon-jelly.png", "imageHit": null,
+     "trait": "半透明的身體像月光融進水裡，安靜時反而更讓人發毛",
+-    "spawnLevels": [
+-      14
+-    ],
+-    "hpMax": 46,
+-    "imageHit": null,
+-    "posX": null,
+-    "posY": null
+-  },
+-  {
+-    "id": "orc-warlord",
+-    "name": "半獸人之王",
+-    "image": "assets/images/monsters/orc-warlord.png",
++    "spawnLevels": [14], "hpMax": 46, "size": 1.0, "posX": null, "posY": null
++  },
++  {
++    "id": "orc-warlord", "name": "半獸人之王",
++    "image": "assets/images/monsters/orc-warlord.png", "imageHit": "assets/images/monsters/orc-warlord2.png",
+     "trait": "披著沉重戰甲，目光像鐵鎚一樣砸下來，光站在那裡就有王者般的壓迫感",
+-    "spawnLevels": [
+-      15
+-    ],
+-    "hpMax": 88,
+-    "size": 1.6,
+-    "imageHit": null,
+-    "posX": null,
+-    "posY": null
++    "spawnLevels": [15], "hpMax": 88, "size": 1.6, "posX": null, "posY": null
++  },
++  {
++    "id": "shadow-hound", "name": "影跡獵犬",
++    "image": "assets/images/monsters/slime.png", "imageHit": null,
++    "trait": "潛伏在影子裡的獵食者，腳步聲極輕",
++    "spawnLevels": [16], "hpMax": 52, "size": 1.0, "posX": null, "posY": null
++  },
++  {
++    "id": "void-spirit", "name": "虛空靈體",
++    "image": "assets/images/monsters/slime.png", "imageHit": null,
++    "trait": "沒有實體的靈魂，散發著令人不安的寒氣",
++    "spawnLevels": [17], "hpMax": 54, "size": 1.0, "posX": null, "posY": null
++  },
++  {
++    "id": "dark-knight", "name": "漆黑騎士",
++    "image": "assets/images/monsters/slime.png", "imageHit": null,
++    "trait": "穿著鏽跡斑斑的鎧甲，手中的長劍依舊鋒利",
++    "spawnLevels": [18], "hpMax": 56, "size": 1.1, "posX": null, "posY": null
++  },
++  {
++    "id": "abyss-eyeball", "name": "深淵之眼",
++    "image": "assets/images/monsters/slime.png", "imageHit": null,
++    "trait": "無數眼球凝視著你，讓人感到毛骨悚然",
++    "spawnLevels": [19], "hpMax": 58, "size": 1.0, "posX": null, "posY": null
++  },
++  {
++    "id": "abyss-lord", "name": "深淵領主",
++    "image": "assets/images/monsters/slime.png", "imageHit": null,
++    "trait": "支配深淵的強大存在，散發著壓倒性的魔力",
++    "spawnLevels": [20], "hpMax": 100, "size": 1.8, "posX": null, "posY": null
++  },
++  {
++    "id": "gloom-crawler", "name": "幽暗爬行者",
++    "image": "assets/images/monsters/slime.png", "imageHit": null,
++    "trait": "在岩壁縫隙中穿梭的怪物，動作極其敏捷",
++    "spawnLevels": [21], "hpMax": 62, "size": 1.0, "posX": null, "posY": null
++  },
++  {
++    "id": "skeletal-warrior", "name": "骷髏戰士",
++    "image": "assets/images/monsters/slime.png", "imageHit": null,
++    "trait": "白骨構成的士兵，即使粉碎也會再次重組",
++    "spawnLevels": [22], "hpMax": 64, "size": 1.0, "posX": null, "posY": null
++  },
++  {
++    "id": "wraith", "name": "怨靈",
++    "image": "assets/images/monsters/slime.png", "imageHit": null,
++    "trait": "帶著強烈的執念而無法超脫，尖叫聲能震懾靈魂",
++    "spawnLevels": [23], "hpMax": 66, "size": 1.0, "posX": null, "posY": null
++  },
++  {
++    "id": "demon-gatekeeper", "name": "煉獄守門人",
++    "image": "assets/images/monsters/slime.png", "imageHit": null,
++    "trait": "守護著通往更深處的門戶，力量驚人",
++    "spawnLevels": [24], "hpMax": 68, "size": 1.2, "posX": null, "posY": null
++  },
++  {
++    "id": "lord-of-darkness", "name": "暗影主宰",
++    "image": "assets/images/monsters/slime.png", "imageHit": null,
++    "trait": "操縱陰影的大師，能將光芒徹底吞噬",
++    "spawnLevels": [25], "hpMax": 120, "size": 2.0, "posX": null, "posY": null
+   }
+ ]
+\ No newline at end of file
+diff --git a/assets/data/map-chapters.json b/assets/data/map-chapters.json
+index 09e29dd..8a9df0f 100644
+--- a/assets/data/map-chapters.json
++++ b/assets/data/map-chapters.json
+@@ -8,11 +8,11 @@
+         "title": "新手村",
+         "background": "assets/images/maps/chapter1-a.png",
+         "nodes": {
+-          "1": { "x": 50, "y": 15, "landmark": "新手村" },
+-          "2": { "x": 30, "y": 35, "landmark": "草道" },
+-          "3": { "x": 75, "y": 55, "landmark": "森林入口" },
+-          "4": { "x": 40, "y": 75, "landmark": "森林深處" },
+-          "5": { "x": 65, "y": 90, "landmark": "幽暗小徑" }
++          "1": { "x": 40, "y": 20, "landmark": "新手村" },
++          "2": { "x": 25, "y": 45, "landmark": "草道" },
++          "3": { "x": 65, "y": 55, "landmark": "森林入口" },
++          "4": { "x": 35, "y": 70, "landmark": "森林深處" },
++          "5": { "x": 80, "y": 85, "landmark": "幽暗小徑" }
+         }
+       },
+       {
+diff --git a/assets/data/mentor-dialogues.v1.json b/assets/data/mentor-dialogues.v1.json
+index 218c203..95d50c6 100644
+--- a/assets/data/mentor-dialogues.v1.json
++++ b/assets/data/mentor-dialogues.v1.json
+@@ -1,5 +1,42 @@
+ {
+   "WA_TOPIC_BASIC": {
++    "dialogue": [
++      {
++        "text": "先別緊張，終於見到你了。這裡是用語言構成的試煉之境，而我，是負責把新手平安帶過第一段路的導師，賽蕾娜。你接下來遇到的，不只是怪物，還有會讓人腦袋打結的句子。",
++        "audio": "",
++        "emotion": "gentle_intro"
++      },
++      {
++        "text": "在這個世界裡，誰能看懂語句的流向，誰就不容易被混亂牽著走。你不是被隨便推上前線的，我把你叫來，是因為你有資格學會看穿這套規則。",
++        "audio": "",
++        "emotion": "warm_mission"
++      },
++      {
++        "text": "第一個要學的，是『は』。它不像劍那樣耀眼，卻很重要。很多句子一開口，真正想談的主角，就是靠它被輕輕提到你眼前。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "你可以把它想成一句話的開場手勢：『關於這個啊……』。看到『は』時，先把前面的詞抱好，後面那一整段，通常都是圍著它說下去的。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "學會這個之後，你讀句子就不會一開始就迷路。你會慢慢分得出來：哪個是主題，哪個只是後面補上的描述。這一步，看起來小，其實很有用。",
++        "audio": "",
++        "emotion": "encourage"
++      },
++      {
++        "text": "別怕第一關就被我塞規則。真正麻煩的不是規則多，而是看不出句子到底在談誰。先把這一點抓住，你就已經比剛踏進來時強很多了。",
++        "audio": "",
++        "emotion": "gentle"
++      },
++      {
++        "text": "來吧，先把自己的聲音立起來。讓這個世界知道：你要開始說話了，而你說的，是什麼。",
++        "audio": "",
++        "emotion": "happy"
++      }
++    ],
+     "audio": [
+       "assets/audio/mentor/wa-topic-basic-p01.mp3",
+       "assets/audio/mentor/wa-topic-basic-p02.mp3",
+@@ -15,5 +52,501 @@
+       "assets/audio/mentor/wa-topic-basic-p12.mp3",
+       "assets/audio/mentor/wa-topic-basic-p13.mp3"
+     ]
++  },
++  "NO_POSSESSIVE": {
++    "dialogue": [
++      {
++        "text": "很好，你已經開始抓得到句子的中心了。接下來，我要教你看見那些不吵不鬧，卻一直默默把事物連在一起的細線。",
++        "audio": "",
++        "emotion": "gentle"
++      },
++      {
++        "text": "那條線，就是『の』。誰的書、哪裡的料理、什麼樣的東西——很多時候，名詞與名詞之間的關係，都是靠它慢慢牽起來的。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "它看起來很安靜，不像主角一樣站到正中央，可別小看它。沒有它，很多詞會擠成一團；有了它，關係就會一下子清楚起來。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "你可以先把『AのB』記成『A 的 B』，這樣最直覺。先學會看懂誰屬於誰、誰修飾誰，後面讀長一點的句子就不容易打結。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "這種地方最容易讓人想偷懶，覺得反正差不多就好。可真正能把句子看細的人，往往就是在這些小地方慢慢拉開差距的。",
++        "audio": "",
++        "emotion": "warm_mission"
++      },
++      {
++        "text": "放心，你不用一下子看透所有關係。先把眼前這條線認出來就好。等你越來越會連，句子的畫面也會越來越完整。",
++        "audio": "",
++        "emotion": "encourage"
++      }
++    ]
++  },
++  "GA_INTRANSITIVE": {
++    "dialogue": [
++      {
++        "text": "現在開始，句子不一定都會老老實實等你去推動它。有些事，是自己發生的。雨忽然下了，門忽然開了，燈忽然亮了——世界常常就是這樣，不先打招呼。",
++        "audio": "",
++        "emotion": "mission"
++      },
++      {
++        "text": "這種時候，『が』就很重要。它會把那個真正發生變化的對象推到你眼前，像是在提醒你：看這裡，事情是在它身上發生的。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "它和『は』有點像，又不完全一樣。『は』比較像把話題扶正，『が』則更像把『現在真正出現、真正變了的那個東西』指出來。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "一開始會混，很正常。別因為一時分不清就皺眉，這不是你笨，是你的眼睛正在學著看得更細。這一步，每個人都要過。",
++        "audio": "",
++        "emotion": "comfort"
++      },
++      {
++        "text": "只要你慢慢抓到『是誰怎麼了』，這種句子就會開始變得很順。你不是在背公式，你是在學會辨認世界自己發出的動靜。",
++        "audio": "",
++        "emotion": "encourage"
++      }
++    ]
++  },
++  "WO_OBJECT_BASIC": {
++    "dialogue": [
++      {
++        "text": "你應該已經發現了，很多動作都不是空揮的。讀書也好、吃飯也好、看電影也好，動作總會落到某個對象身上。",
++        "audio": "",
++        "emotion": "mission"
++      },
++      {
++        "text": "這時候，『を』就會出現。它像是在幫你指路：這個動作到底是對誰、對什麼做的，別看丟了。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "看到『を』時，你就去找它前面的那個名詞。很多時候，那就是被讀的、被吃的、被看的、被做的那個對象。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "只要你把這個抓住，整句話會一下子變清楚很多。因為你不會再只是看到一個動作飄在空中，而是能看出它究竟落在哪裡。",
++        "audio": "",
++        "emotion": "encourage"
++      },
++      {
++        "text": "基礎招式往往最不花俏，卻最能救命。把『を』看穩了，後面很多句子你都會讀得更快。這種進步，也很帥啊。",
++        "audio": "",
++        "emotion": "happy"
++      }
++    ]
++  },
++  "NI_TIME": {
++    "dialogue": [
++      {
++        "text": "戰鬥要抓時機，說話也一樣。有些時間像霧一樣散著，有些時間則像鐘聲敲下去那樣清楚——那種明確的瞬間，就很適合交給『に』。",
++        "audio": "",
++        "emotion": "mission"
++      },
++      {
++        "text": "這一關先別貪心，我只要你先記最穩的那一種：像六點、七點半、九點，這種清楚到不能再清楚的時間點。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "看到這種時間時，先優先想『に』。先把最不容易出錯的核心抓住，比一口氣把所有例外都塞進腦袋裡有效多了。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "很多人會以為自己是不會，其實只是一下子想太多。你先把最穩的規則站穩，後面那些細一點的差別，我再帶你慢慢看，不急。",
++        "audio": "",
++        "emotion": "comfort"
++      },
++      {
++        "text": "所以這一關，你的任務很單純：看到清楚的時間點，就把它牢牢釘住。穩穩來，你會發現時間題其實沒有那麼可怕。",
++        "audio": "",
++        "emotion": "encourage"
++      }
++    ]
++  },
++  "HE_DIRECTION": {
++    "dialogue": [
++      {
++        "text": "只要開始移動，就一定會有方向。朝學校去、往家裡回、向某個地方前進——腳步不是亂走的，句子也一樣。",
++        "audio": "",
++        "emotion": "mission"
++      },
++      {
++        "text": "『へ』像一支很安靜的指針，幫你把方向指清楚。它最重要的不是『待在那裡』，而是『朝那邊去』的感覺。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "所以看到它時，你腦中可以先浮出一個畫面：人正在移動，視線也跟著朝目的地方向延伸出去。這樣就比較不容易和別的助詞混掉。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "你之後還會遇到別的表示場所的助詞，確實很容易搞混。沒關係，現在先把『方向感』抓住就好。先分清大輪廓，再修細節，這才是穩的走法。",
++        "audio": "",
++        "emotion": "comfort"
++      },
++      {
++        "text": "來，朝目標邁步吧。你不是在亂猜答案，你是在學會替句子看見方向。",
++        "audio": "",
++        "emotion": "encourage"
++      }
++    ]
++  },
++  "MO_ALSO_BASIC": {
++    "dialogue": [
++      {
++        "text": "人會因為共鳴而靠近，句子也會。當前面已經有一個對象，後面又出現另一個『也是這樣』的存在時，『も』就會把它們連起來。",
++        "audio": "",
++        "emotion": "mission"
++      },
++      {
++        "text": "你可以先把它記成『也』。他也去、我也喜歡、這裡也下雨——它在告訴你：前面那種情況，不只一個人、不只一個東西有。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "它有時候會站在原本『は』或『が』出現的位置，所以一開始看到時別慌。你只要先抓住那個語氣：『不只前面那個，這個也一樣。』",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "我還滿喜歡這個助詞的，因為它有種『你不是一個人』的感覺。學語言也是，妳每看懂一點點，世界就會多一點回應你。",
++        "audio": "",
++        "emotion": "warm"
++      },
++      {
++        "text": "所以這次就放心地把相似處連起來吧。等你能熟練說出『也』，句子的層次會一下子豐富很多。",
++        "audio": "",
++        "emotion": "encourage"
++      }
++    ]
++  },
++  "TO_AND": {
++    "dialogue": [
++      {
++        "text": "還記得『と』嗎？我們曾經用它來表示跟誰一起行動。現在，我們要看它的另一面。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "當你只是想把兩個東西擺在一起，像是貓和狗、麵包和牛奶，也可以用『と』。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "這時候，它就像是一個小小的鉤子，把兩邊的名詞勾起來。先把它當成『和』來記就好。試試看找出這些被勾在一起的事物吧！",
++        "audio": "",
++        "emotion": "encourage"
++      }
++    ]
++  },
++  "DE_ACTION_PLACE": {
++    "dialogue": [
++      {
++        "text": "一件事不只要知道『做了什麼』，還要知道『在哪裡做』。沒有場景，動作就像飄在空中；有了場所，句子才會真的落地。",
++        "audio": "",
++        "emotion": "mission"
++      },
++      {
++        "text": "這就是『で』的工作。它常常用來圈出動作發生的舞台：在教室讀書、在公園玩、在家休息，事情都是在那裡展開的。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "看到『で』時，你可以先問自己一句：『這個動作是在哪裡發生的？』只要這個問題答得出來，很多題就會一下子亮起來。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "你現在已經不只是背單字了，是真的在把句子拼成場景。這很重要，因為一旦腦中有畫面，理解就會快很多，也不容易亂。",
++        "audio": "",
++        "emotion": "encourage"
++      },
++      {
++        "text": "好啦，這次換你來替動作搭舞台。別緊張，舞台不用華麗，只要位置看對了，你的判斷就會漂亮。",
++        "audio": "",
++        "emotion": "happy"
++      }
++    ]
++  },
++  "NI_EXIST_PLACE": {
++    "dialogue": [
++      {
++        "text": "剛剛你學過用『で』看動作發生的舞台，現在我們要看另一種更安靜的畫面：不是在哪裡做事，而是『有什麼存在在那裡』。",
++        "audio": "",
++        "emotion": "mission"
++      },
++      {
++        "text": "這時候，『に』會拿來替存在定位。房間裡有貓，桌上有書——重點不是動作，而是那個東西安安靜靜地待在某個位置上。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "所以這裡的關鍵問題是：『它在哪裡？』只要句子是在說存在的位置，而不是在哪裡做了什麼，你就要對『に』提高警覺。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "這裡很容易和表示場所的別人打架，我知道。但你不用一次全分到完美，先把『存在』和『動作』分開看，思路就會清楚很多。",
++        "audio": "",
++        "emotion": "comfort"
++      },
++      {
++        "text": "來吧，睜大眼睛。很多線索不會大聲喊你，它們只是安靜地待在某處，等你看見。",
++        "audio": "",
++        "emotion": "encourage"
++      }
++    ]
++  },
++  "GA_EXIST_SUBJECT": {
++    "dialogue": [
++      {
++        "text": "位置知道了，下一步就要看清楚：究竟是什麼東西在那裡。這時候，『が』會把那個存在的主角推到你面前。",
++        "audio": "",
++        "emotion": "mission"
++      },
++      {
++        "text": "有貓、有書、有老師、有怪物——句子裡那個『存在著的東西』，往往就是『が』後面要幫你指出來的重點。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "如果說前面的『に』像是在地圖上插釘子，那這裡的『が』就像是在告訴你：釘住的那個地方，站著的到底是誰。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "只要你能把『在哪裡』和『有什麼』分開看，這類句子就會一下子順起來。別急，這種拆法一熟，你後面會輕鬆很多。",
++        "audio": "",
++        "emotion": "encourage"
++      },
++      {
++        "text": "好，現在輪到你來辨認現身的主角了。看準一點，很多時候真正重要的，就是那個被輕輕點出來的存在。",
++        "audio": "",
++        "emotion": "happy"
++      }
++    ]
++  },
++  "TO_WITH": {
++    "dialogue": [
++      {
++        "text": "不是所有行動都得一個人完成。有時候，一句話裡還會帶上另一個同行者——和誰一起說話、和誰一起去、和誰一起做某件事。",
++        "audio": "",
++        "emotion": "mission"
++      },
++      {
++        "text": "這時候，『と』就會站出來。這一關裡，你可以先把它記成最直覺的意思：『和～一起』。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "看到『と』時，別只看動作，也看看旁邊是不是多了一個陪你一起出場的人。那個同行者，往往就是句子裡不能漏掉的重要角色。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "我知道，有時候學助詞會讓人覺得自己在孤軍奮戰。可語言本來就是拿來連人的。你現在學會的，不只是規則，也是把關係看清楚的方式。",
++        "audio": "",
++        "emotion": "warm"
++      },
++      {
++        "text": "所以這次就帶著同伴感去看句子吧。當你能看懂『和誰一起』，整句話會活起來，不再只是冷冰冰的字。",
++        "audio": "",
++        "emotion": "encourage"
++      }
++    ]
++  },
++  "BOSS_REVIEW_03": {
++    "dialogue": [
++      {
++        "text": "很驚人，你已經走到了這裡。城市、房間、森林... 這些場景中的規則，你都一一辨認出來了。",
++        "audio": "",
++        "emotion": "gentle"
++      },
++      {
++        "text": "這一次，魔王會用更混亂的方式考驗你。地點、主體、夥伴... 所有的線索會交織在一起。",
++        "audio": "",
++        "emotion": "mission"
++      },
++      {
++        "text": "別被雜訊干擾。回想我們學過的：是在那裡做（で），還是在那裡有（に）？是誰在那裡（が），還是和誰一起（と）？",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "看清楚句子的流向。你已經不再是那個剛踏入試煉的新手了。去吧，讓這場複習成為你實力的證明。",
++        "audio": "",
++        "emotion": "encourage"
++      }
++    ]
++  },
++  "KARA_SOURCE_START": {
++    "dialogue": [
++      {
++        "text": "你已經學過基本的『從』，現在要看得更細。起點不只是位置，還有時間。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "從家裡出發、從九點開始、從台北過來——這些都是清楚起點的用法。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "看到『から』時，先問：這個動作或狀態是從哪裡開始的？",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "掌握起點，句子的流向就會更清楚。你已經在路上了。",
++        "audio": "",
++        "emotion": "encourage"
++      }
++    ]
++  },
++  "MADE_LIMIT_END": {
++    "dialogue": [
++      {
++        "text": "有起點就有終點。『まで』就是替你的旅程或時間畫下句點的那個助詞。",
++        "audio": "",
++        "emotion": "mission"
++      },
++      {
++        "text": "到車站為止、到三點為止、到家為止——它標記的是『到此結束』的位置。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "你可以把它想成『到』。看到它時，就去找那個邊界或截止點。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "起點和終點一起學，句子的時間與空間感就完整了。",
++        "audio": "",
++        "emotion": "encourage"
++      }
++    ]
++  },
++  "TO_COMPANION": {
++    "dialogue": [
++      {
++        "text": "你學過『と』的並列用法，現在回到它最溫暖的意思：和誰一起。",
++        "audio": "",
++        "emotion": "warm"
++      },
++      {
++        "text": "和朋友玩耍、和家人吃飯、和老師說話——這些都需要同伴。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "看到『と』時，找找看是不是有另一個人陪你一起完成這個動作。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "語言是拿來連人的。學會看懂同伴，句子就會活起來。",
++        "audio": "",
++        "emotion": "encourage"
++      }
++    ]
++  },
++  "DE_TOOL_MEANS": {
++    "dialogue": [
++      {
++        "text": "你已經知道『で』可以表示場所，但它還有一個實用的功能：工具與手段。",
++        "audio": "",
++        "emotion": "mission"
++      },
++      {
++        "text": "用筷子吃、用日語說、搭巴士去——這些都是靠工具或方式完成的動作。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "看到『で』時，問問自己：這個動作是靠什麼完成的？",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "工具看得準，句子的邏輯就會更清晰。你已經不是新手了。",
++        "audio": "",
++        "emotion": "encourage"
++      }
++    ]
++  },
++  "BOSS_REVIEW_04": {
++    "dialogue": [
++      {
++        "text": "令人驚嘆，你已經走到了這一步。起點、終點、同伴、工具——這些世界的規則，你都逐一掌握了。",
++        "audio": "",
++        "emotion": "gentle"
++      },
++      {
++        "text": "魔王這次會用更複雜的方式考驗你。時間與空間的流動、人與人之間的連結、工具與手段的運用，都會交織在一起。",
++        "audio": "",
++        "emotion": "mission"
++      },
++      {
++        "text": "別被混亂迷惑。回想我們學過的：是從哪裡開始（から），還是到哪裡結束（まで）？是和誰一起（と），還是用什麼完成（で）？",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "你已經不再是那個剛踏入試煉的新手了。去吧，讓這場複習成為你實力的證明。",
++        "audio": "",
++        "emotion": "encourage"
++      }
++    ]
++  },
++  "NI_TARGET": {
++    "dialogue": [
++      {
++        "text": "你已經學過『に』用來定位時間與地點，現在換個角度——它還可以指向動作的對象。向誰說、找誰問、給誰打電話，那個『誰』，就是用『に』帶到你面前的。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "簡單記：看到人名或稱謂，後面跟的動作是『傳達』或『接觸』類的，十之八九就是『Nに V』的結構。先生に聞く、母に電話する——這種感覺，先抓住它。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "同樣是『に』，判斷時間、判斷地點、判斷對象，看起來很雜，其實都是在告訴句子：『這個動作朝哪裡落』。你多見幾次，會越來越自然。",
++        "audio": "",
++        "emotion": "encourage"
++      }
++    ]
++  },
++  "BOSS_REVIEW_05": {
++    "dialogue": [
++      {
++        "text": "你已經深入了深淵。這一次的考驗，將專注在你對『方向』與『存在』的感知。",
++        "audio": "",
++        "emotion": "mission"
++      },
++      {
++        "text": "時間點、動作對象、存在地點，或是前進的方向，種種線索都會交錯。這不是靠猜測就能通過的關卡。",
++        "audio": "",
++        "emotion": "explain"
++      },
++      {
++        "text": "去吧，展現你對時空坐標的掌握。",
++        "audio": "",
++        "emotion": "encourage"
++      }
++    ]
+   }
+ }
+diff --git a/assets/data/skills.v1.json b/assets/data/skills.v1.json
+index 0fde7f8..e7f4950 100644
+--- a/assets/data/skills.v1.json
++++ b/assets/data/skills.v1.json
+@@ -16,43 +16,7 @@
+       "も",
+       "を"
+     ],
+-    "mentorDialogue": [
+-      {
+-        "text": "先別緊張，終於見到你了。這裡是用語言構成的試煉之境，而我，是負責把新手平安帶過第一段路的導師，賽蕾娜。你接下來遇到的，不只是怪物，還有會讓人腦袋打結的句子。",
+-        "audio": "",
+-        "emotion": "gentle_intro"
+-      },
+-      {
+-        "text": "在這個世界裡，誰能看懂語句的流向，誰就不容易被混亂牽著走。你不是被隨便推上前線的，我把你叫來，是因為你有資格學會看穿這套規則。",
+-        "audio": "",
+-        "emotion": "warm_mission"
+-      },
+-      {
+-        "text": "第一個要學的，是『は』。它不像劍那樣耀眼，卻很重要。很多句子一開口，真正想談的主角，就是靠它被輕輕提到你眼前。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "你可以把它想成一句話的開場手勢：『關於這個啊……』。看到『は』時，先把前面的詞抱好，後面那一整段，通常都是圍著它說下去的。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "學會這個之後，你讀句子就不會一開始就迷路。你會慢慢分得出來：哪個是主題，哪個只是後面補上的描述。這一步，看起來小，其實很有用。",
+-        "audio": "",
+-        "emotion": "encourage"
+-      },
+-      {
+-        "text": "別怕第一關就被我塞規則。真正麻煩的不是規則多，而是看不出句子到底在談誰。先把這一點抓住，你就已經比剛踏進來時強很多了。",
+-        "audio": "",
+-        "emotion": "gentle"
+-      },
+-      {
+-        "text": "來吧，先把自己的聲音立起來。讓這個世界知道：你要開始說話了，而你說的，是什麼。",
+-        "audio": "",
+-        "emotion": "happy"
+-      }
+-    ]
++    "mentorDialogue": []
+   },
+   {
+     "id": "NO_POSSESSIVE",
+@@ -71,38 +35,7 @@
+       "が",
+       "に"
+     ],
+-    "mentorDialogue": [
+-      {
+-        "text": "很好，你已經開始抓得到句子的中心了。接下來，我要教你看見那些不吵不鬧，卻一直默默把事物連在一起的細線。",
+-        "audio": "",
+-        "emotion": "gentle"
+-      },
+-      {
+-        "text": "那條線，就是『の』。誰的書、哪裡的料理、什麼樣的東西——很多時候，名詞和名詞之間的關係，都是靠它慢慢牽起來的。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "它看起來很安靜，不像主角一樣站到正中央，可別小看它。沒有它，很多詞會擠成一團；有了它，關係就會一下子清楚起來。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "你可以先把『AのB』記成『A 的 B』，這樣最直覺。先學會看懂誰屬於誰、誰修飾誰，後面讀長一點的句子就不容易打結。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "這種地方最容易讓人想偷懶，覺得反正差不多就好。可真正能把句子看細的人，往往就是在這些小地方慢慢拉開差距的。",
+-        "audio": "",
+-        "emotion": "warm_mission"
+-      },
+-      {
+-        "text": "放心，你不用一下子看透所有關係。先把眼前這條線認出來就好。等你越來越會連，句子的畫面也會越來越完整。",
+-        "audio": "",
+-        "emotion": "encourage"
+-      }
+-    ]
++    "mentorDialogue": []
+   },
+   {
+     "id": "GA_INTRANSITIVE",
+@@ -122,33 +55,7 @@
+       "に",
+       "を"
+     ],
+-    "mentorDialogue": [
+-      {
+-        "text": "現在開始，句子不一定都會老老實實等你去推動它。有些事，是自己發生的。雨忽然下了，門忽然開了，燈忽然亮了——世界常常就是這樣，不先打招呼。",
+-        "audio": "",
+-        "emotion": "mission"
+-      },
+-      {
+-        "text": "這種時候，『が』就很重要。它會把那個真正發生變化的對象推到你眼前，像是在提醒你：看這裡，事情是在它身上發生的。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "它和『は』有點像，又不完全一樣。『は』比較像把話題扶正，『が』則更像把『現在真正出現、真正變了的那個東西』指出來。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "一開始會混，很正常。別因為一時分不清就皺眉，這不是你笨，是你的眼睛正在學著看得更細。這一步，每個人都要過。",
+-        "audio": "",
+-        "emotion": "comfort"
+-      },
+-      {
+-        "text": "只要你慢慢抓到『是誰怎麼了』，這種句子就會開始變得很順。你不是在背公式，你是在學會辨認世界自己發出的動靜。",
+-        "audio": "",
+-        "emotion": "encourage"
+-      }
+-    ]
++    "mentorDialogue": []
+   },
+   {
+     "id": "WO_OBJECT_BASIC",
+@@ -167,33 +74,7 @@
+       "で",
+       "に"
+     ],
+-    "mentorDialogue": [
+-      {
+-        "text": "你應該已經發現了，很多動作都不是空揮的。讀書也好、吃飯也好、看電影也好，動作總會落到某個對象身上。",
+-        "audio": "",
+-        "emotion": "mission"
+-      },
+-      {
+-        "text": "這時候，『を』就會出現。它像是在幫你指路：這個動作到底是對誰、對什麼做的，別看丟了。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "看到『を』時，你就去找它前面的那個名詞。很多時候，那就是被讀的、被吃的、被看的、被做的那個對象。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "只要你把這個抓住，整句話會一下子變清楚很多。因為你不會再只是看到一個動作飄在空中，而是能看出它究竟落在哪裡。",
+-        "audio": "",
+-        "emotion": "encourage"
+-      },
+-      {
+-        "text": "基礎招式往往最不花俏，卻最能救命。把『を』看穩了，後面很多句子你都會讀得更快。這種進步，也很帥啊。",
+-        "audio": "",
+-        "emotion": "happy"
+-      }
+-    ]
++    "mentorDialogue": []
+   },
+   {
+     "id": "NI_TIME",
+@@ -213,33 +94,7 @@
+       "へ",
+       "を"
+     ],
+-    "mentorDialogue": [
+-      {
+-        "text": "戰鬥要抓時機，說話也一樣。有些時間像霧一樣散著，有些時間則像鐘聲敲下去那樣清楚——那種明確的瞬間，就很適合交給『に』。",
+-        "audio": "",
+-        "emotion": "mission"
+-      },
+-      {
+-        "text": "這一關先別貪心，我只要你先記最穩的那一種：像六點、七點半、九點，這種清楚到不能再清楚的時間點。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "看到這種時間時，先優先想『に』。先把最不容易出錯的核心抓住，比一口氣把所有例外都塞進腦袋裡有效多了。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "很多人會以為自己是不會，其實只是一下子想太多。你先把最穩的規則站穩，後面那些細一點的差別，我再帶你慢慢看，不急。",
+-        "audio": "",
+-        "emotion": "comfort"
+-      },
+-      {
+-        "text": "所以這一關，你的任務很單純：看到清楚的時間點，就把它牢牢釘住。穩穩來，你會發現時間題其實沒有那麼可怕。",
+-        "audio": "",
+-        "emotion": "encourage"
+-      }
+-    ]
++    "mentorDialogue": []
+   },
+   {
+     "id": "HE_DIRECTION",
+@@ -260,33 +115,7 @@
+       "で",
+       "を"
+     ],
+-    "mentorDialogue": [
+-      {
+-        "text": "只要開始移動，就一定會有方向。朝學校去、往家裡回、向某個地方前進——腳步不是亂走的，句子也一樣。",
+-        "audio": "",
+-        "emotion": "mission"
+-      },
+-      {
+-        "text": "『へ』像一支很安靜的指針，幫你把方向指清楚。它最重要的不是『待在那裡』，而是『朝那邊去』的感覺。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "所以看到它時，你腦中可以先浮出一個畫面：人正在移動，視線也跟著朝目的地方向延伸出去。這樣就比較不容易和別的助詞混掉。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "你之後還會遇到別的表示場所的助詞，確實很容易搞混。沒關係，現在先把『方向感』抓住就好。先分清大輪廓，再修細節，這才是穩的走法。",
+-        "audio": "",
+-        "emotion": "comfort"
+-      },
+-      {
+-        "text": "來，朝目標邁步吧。你不是在亂猜答案，你是在學會替句子看見方向。",
+-        "audio": "",
+-        "emotion": "encourage"
+-      }
+-    ]
++    "mentorDialogue": []
+   },
+   {
+     "id": "MO_ALSO_BASIC",
+@@ -306,33 +135,7 @@
+       "が",
+       "の"
+     ],
+-    "mentorDialogue": [
+-      {
+-        "text": "人會因為共鳴而靠近，句子也會。當前面已經有一個對象，後面又出現另一個『也是這樣』的存在時，『も』就會把它們連起來。",
+-        "audio": "",
+-        "emotion": "mission"
+-      },
+-      {
+-        "text": "你可以先把它記成『也』。他也去、我也喜歡、這裡也下雨——它在告訴你：前面那種情況，不只一個人、不只一個東西有。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "它有時候會站在原本『は』或『が』出現的位置，所以一開始看到時別慌。你只要先抓住那個語氣：『不只前面那個，這個也一樣。』",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "我還滿喜歡這個助詞的，因為它有種『你不是一個人』的感覺。學語言也是，妳每看懂一點點，世界就會多一點回應你。",
+-        "audio": "",
+-        "emotion": "warm"
+-      },
+-      {
+-        "text": "所以這次就放心地把相似處連起來吧。等你能熟練說出『也』，句子的層次會一下子豐富很多。",
+-        "audio": "",
+-        "emotion": "encourage"
+-      }
+-    ]
++    "mentorDialogue": []
+   },
+   {
+     "id": "DE_ACTION_PLACE",
+@@ -351,33 +154,7 @@
+       "へ",
+       "を"
+     ],
+-    "mentorDialogue": [
+-      {
+-        "text": "一件事不只要知道『做了什麼』，還要知道『在哪裡做』。沒有場景，動作就像飄在空中；有了場所，句子才會真的落地。",
+-        "audio": "",
+-        "emotion": "mission"
+-      },
+-      {
+-        "text": "這就是『で』的工作。它常常用來圈出動作發生的舞台：在教室讀書、在公園玩、在家休息，事情都是在那裡展開的。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "看到『で』時，你可以先問自己一句：『這個動作是在哪裡發生的？』只要這個問題答得出來，很多題就會一下子亮起來。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "你現在已經不只是背單字了，是真的在把句子拼成場景。這很重要，因為一旦腦中有畫面，理解就會快很多，也不容易亂。",
+-        "audio": "",
+-        "emotion": "encourage"
+-      },
+-      {
+-        "text": "好啦，這次換你來替動作搭舞台。別緊張，舞台不用華麗，只要位置看對了，你的判斷就會漂亮。",
+-        "audio": "",
+-        "emotion": "happy"
+-      }
+-    ]
++    "mentorDialogue": []
+   },
+   {
+     "id": "TO_WITH",
+@@ -396,33 +173,7 @@
+       "で",
+       "へ"
+     ],
+-    "mentorDialogue": [
+-      {
+-        "text": "不是所有行動都得一個人完成。有時候，一句話裡還會帶上另一個同行者——和誰一起說話、和誰一起去、和誰一起做某件事。",
+-        "audio": "",
+-        "emotion": "mission"
+-      },
+-      {
+-        "text": "這時候，『と』就會站出來。這一關裡，你可以先把它記成最直覺的意思：『和～一起』。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "看到『と』時，別只看動作，也看看旁邊是不是多了一個陪你一起出場的人。那個同行者，往往就是句子裡不能漏掉的重要角色。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "我知道，有時候學助詞會讓人覺得自己在孤軍奮戰。可語言本來就是拿來連人的。你現在學會的，不只是規則，也是把關係看清楚的方式。",
+-        "audio": "",
+-        "emotion": "warm"
+-      },
+-      {
+-        "text": "所以這次就帶著同伴感去看句子吧。當你能看懂『和誰一起』，整句話就會活起來，不再只是冷冰冰的字。",
+-        "audio": "",
+-        "emotion": "encourage"
+-      }
+-    ]
++    "mentorDialogue": []
+   },
+   {
+     "id": "NI_EXIST_PLACE",
+@@ -441,33 +192,7 @@
+       "へ",
+       "が"
+     ],
+-    "mentorDialogue": [
+-      {
+-        "text": "剛剛你學過用『で』看動作發生的舞台，現在我們要看另一種更安靜的畫面：不是在哪裡做事，而是『有什麼存在在那裡』。",
+-        "audio": "",
+-        "emotion": "mission"
+-      },
+-      {
+-        "text": "這時候，『に』會拿來替存在定位。房間裡有貓，桌上有書——重點不是動作，而是那個東西安安靜靜地待在某個位置上。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "所以這裡的關鍵問題是：『它在哪裡？』只要句子是在說存在的位置，而不是在哪裡做了什麼，你就要對『に』提高警覺。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "這裡很容易和表示場所的別人打架，我知道。但你不用一次全分到完美，先把『存在』和『動作』分開看，思路就會清楚很多。",
+-        "audio": "",
+-        "emotion": "comfort"
+-      },
+-      {
+-        "text": "來吧，睜大眼睛。很多線索不會大聲喊你，它們只是安靜地待在某處，等你看見。",
+-        "audio": "",
+-        "emotion": "encourage"
+-      }
+-    ]
++    "mentorDialogue": []
+   },
+   {
+     "id": "GA_EXIST_SUBJECT",
+@@ -486,33 +211,7 @@
+       "に",
+       "で"
+     ],
+-    "mentorDialogue": [
+-      {
+-        "text": "位置知道了，下一步就要看清楚：究竟是什麼東西在那裡。這時候，『が』會把那個存在的主角推到你面前。",
+-        "audio": "",
+-        "emotion": "mission"
+-      },
+-      {
+-        "text": "有貓、有書、有老師、有怪物——句子裡那個『存在著的東西』，往往就是『が』後面要幫你指出來的重點。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "如果說前面的『に』像是在地圖上插釘子，那這裡的『が』就像是在告訴你：釘住的那個地方，站著的到底是誰。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "只要你能把『在哪裡』和『有什麼』分開看，這類句子就會一下子順起來。別急，這種拆法一熟，你後面會輕鬆很多。",
+-        "audio": "",
+-        "emotion": "encourage"
+-      },
+-      {
+-        "text": "好，現在輪到你來辨認現身的主角了。看準一點，很多時候真正重要的，就是那個被輕輕點出來的存在。",
+-        "audio": "",
+-        "emotion": "happy"
+-      }
+-    ]
++    "mentorDialogue": []
+   },
+   {
+     "id": "KARA_FROM",
+@@ -569,28 +268,7 @@
+     "rule": "綜合應用",
+     "examples": [],
+     "choiceSet": [],
+-    "mentorDialogue": [
+-      {
+-        "text": "很驚人，你已經走到了這裡。城市、房間、森林... 這些場景中的規則，你都一一辨認出來了。",
+-        "audio": "",
+-        "emotion": "gentle"
+-      },
+-      {
+-        "text": "這一次，魔王會用更混亂的方式考驗你。地點、主體、夥伴... 所有的線索會交織在一起。",
+-        "audio": "",
+-        "emotion": "mission"
+-      },
+-      {
+-        "text": "別被雜訊干擾。回想我們學過的：是在那裡做（で），還是在那裡有（に）？是誰在那裡（が），還是和誰一起（と）？",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "看清楚句子的流向。你已經不再是那個剛踏入試煉的新手了。去吧，讓這場複習成為你實力的證明。",
+-        "audio": "",
+-        "emotion": "encourage"
+-      }
+-    ]
++    "mentorDialogue": []
+   },
+   {
+     "id": "TO_AND",
+@@ -609,23 +287,7 @@
+       "で",
+       "も"
+     ],
+-    "mentorDialogue": [
+-      {
+-        "text": "還記得『と』嗎？我們曾經用它來表示跟誰一起行動。現在，我們要看它的另一面。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "當你只是想把兩個東西擺在一起，像是貓和狗、麵包和牛奶，也可以用『と』。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "這時候，它就像是一個小小的鉤子，把兩邊的名詞勾起來。先把它當成『和』來記就好。試試看找出這些被勾在一起的事物吧！",
+-        "audio": "",
+-        "emotion": "encourage"
+-      }
+-    ]
++    "mentorDialogue": []
+   },
+   {
+     "id": "NI_TARGET",
+@@ -644,13 +306,7 @@
+       "へ",
+       "と"
+     ],
+-    "mentorDialogue": [
+-      {
+-        "text": "即將開放，敬請期待。",
+-        "audio": "",
+-        "emotion": "explain"
+-      }
+-    ]
++    "mentorDialogue": []
+   },
+   {
+     "id": "KARA_SOURCE_START",
+@@ -670,28 +326,7 @@
+       "へ",
+       "に"
+     ],
+-    "mentorDialogue": [
+-      {
+-        "text": "你已經學過基本的『從』，現在要看得更細。起點不只是位置，還有時間。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "從家裡出發、從九點開始、從台北過來——這些都是清楚起點的用法。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "看到『から』時，先問：這個動作或狀態是從哪裡開始的？",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "掌握起點，句子的流向就會更清楚。你已經在路上了。",
+-        "audio": "",
+-        "emotion": "encourage"
+-      }
+-    ]
++    "mentorDialogue": []
+   },
+   {
+     "id": "MADE_LIMIT_END",
+@@ -711,28 +346,7 @@
+       "へ",
+       "に"
+     ],
+-    "mentorDialogue": [
+-      {
+-        "text": "有起點就有終點。『まで』就是替你的旅程或時間畫下句點的那個助詞。",
+-        "audio": "",
+-        "emotion": "mission"
+-      },
+-      {
+-        "text": "到車站為止、到三點為止、到家為止——它標記的是『到此結束』的位置。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "你可以把它想成『到』。看到它時，就去找那個邊界或截止點。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "起點和終點一起學，句子的時間與空間感就完整了。",
+-        "audio": "",
+-        "emotion": "encourage"
+-      }
+-    ]
++    "mentorDialogue": []
+   },
+   {
+     "id": "TO_COMPANION",
+@@ -752,28 +366,7 @@
+       "で",
+       "を"
+     ],
+-    "mentorDialogue": [
+-      {
+-        "text": "你學過『と』的並列用法，現在回到它最溫暖的意思：和誰一起。",
+-        "audio": "",
+-        "emotion": "warm"
+-      },
+-      {
+-        "text": "和朋友玩耍、和家人吃飯、和老師說話——這些都需要同伴。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "看到『と』時，找找看是不是有另一個人陪你一起完成這個動作。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "語言是拿來連人的。學會看懂同伴，句子就會活起來。",
+-        "audio": "",
+-        "emotion": "encourage"
+-      }
+-    ]
++    "mentorDialogue": []
+   },
+   {
+     "id": "DE_TOOL_MEANS",
+@@ -793,28 +386,7 @@
+       "と",
+       "へ"
+     ],
+-    "mentorDialogue": [
+-      {
+-        "text": "你已經知道『で』可以表示場所，但它還有一個實用的功能：工具與手段。",
+-        "audio": "",
+-        "emotion": "mission"
+-      },
+-      {
+-        "text": "用筷子吃、用日語說、搭巴士去——這些都是靠工具或方式完成的動作。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "看到『で』時，問問自己：這個動作是靠什麼完成的？",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "工具看得準，句子的邏輯就會更清晰。你已經不是新手了。",
+-        "audio": "",
+-        "emotion": "encourage"
+-      }
+-    ]
++    "mentorDialogue": []
+   },
+   {
+     "id": "BOSS_REVIEW_04",
+@@ -828,28 +400,7 @@
+       "友達と九時から三時まで勉強する"
+     ],
+     "choiceSet": [],
+-    "mentorDialogue": [
+-      {
+-        "text": "令人驚嘆，你已經走到了這一步。起點、終點、同伴、工具——這些世界的規則，你都逐一掌握了。",
+-        "audio": "",
+-        "emotion": "gentle"
+-      },
+-      {
+-        "text": "魔王這次會用更複雜的方式考驗你。時間與空間的流動、人與人之間的連結、工具與手段的運用，都會交織在一起。",
+-        "audio": "",
+-        "emotion": "mission"
+-      },
+-      {
+-        "text": "別被混亂迷惑。回想我們學過的：是從哪裡開始（から），還是到哪裡結束（まで）？是和誰一起（と），還是用什麼完成（で）？",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "你已經不再是那個剛踏入試煉的新手了。去吧，讓這場複習成為你實力的證明。",
+-        "audio": "",
+-        "emotion": "encourage"
+-      }
+-    ]
++    "mentorDialogue": []
+   },
+   {
+     "id": "BOSS_REVIEW_05",
+@@ -860,23 +411,7 @@
+     "rule": "綜合應用",
+     "examples": [],
+     "choiceSet": [],
+-    "mentorDialogue": [
+-      {
+-        "text": "你已經深入了深淵。這一次的考驗，將專注在你對『方向』與『存在』的感知。",
+-        "audio": "",
+-        "emotion": "mission"
+-      },
+-      {
+-        "text": "時間點、動作對象、存在地點，或是前進的方向，種種線索都會交錯。這不是靠猜測就能通過的關卡。",
+-        "audio": "",
+-        "emotion": "explain"
+-      },
+-      {
+-        "text": "去吧，展現你對時空坐標的掌握。",
+-        "audio": "",
+-        "emotion": "encourage"
+-      }
+-    ]
++    "mentorDialogue": []
+   },
+   {
+     "id": "YA_AND_OTHERS",
+diff --git a/assets/js/game.js b/assets/js/game.js
+index cdaa0c5..a2f09a4 100644
+--- a/assets/js/game.js
++++ b/assets/js/game.js
+@@ -393,6 +393,11 @@ const _jpApp = Vue.createApp({
+ 
+             checkGlobalEndingTriggers();
+ 
++            // ── Ambient animation ──
++            if (typeof MapAmbient !== 'undefined') {
++                Vue.nextTick(() => MapAmbient.activate(activeChapter.value));
++            }
++
+         };
+ 
+ 
+@@ -486,6 +491,7 @@ const _jpApp = Vue.createApp({
+             if (selectedStageToConfirm.value !== null) {
+                 const lv = selectedStageToConfirm.value;
+                 isBattleConfirmOpen.value = false;
++                if (typeof MapAmbient !== 'undefined') MapAmbient.deactivate();
+                 startLevel(lv, false);
+             }
+         };
+@@ -566,6 +572,11 @@ const _jpApp = Vue.createApp({
+             stopAllAudio();
+             playBgm();
+             checkGlobalEndingTriggers();
++
++            // ── Ambient animation ──
++            if (typeof MapAmbient !== 'undefined') {
++                Vue.nextTick(() => MapAmbient.activate(activeChapter.value));
++            }
+         };
+ 
+         // ---- [ CONSTANTS & SETTINGS ] ----
+@@ -856,10 +867,13 @@ const _jpApp = Vue.createApp({
+ 
+         // ================= [ MENTOR DIALOGUE ] =================
+         const setupMentorDialogue = (skill) => {
+-
+             currentMentorSkill.value = skill;
+ 
+-            mentorPages.value = fragmentMentorDialogue(skill.mentorDialogue);
++            // 優先讀取集中化 JSON 內的對話資料，保留原有 skill 內的作為 fallback
++            const centralizedData = MENTOR_AUDIO_MAP.value?.[skill.id];
++            const dialogueSource = centralizedData?.dialogue || skill.mentorDialogue;
++
++            mentorPages.value = fragmentMentorDialogue(dialogueSource);
+ 
+             mentorDialogueIndex.value = 0;
+ 
+@@ -6600,13 +6614,15 @@ const _jpApp = Vue.createApp({
+ 
+             if (enemyMatch) {
+ 
+-                // 最小替換：只換顯示用的名稱、圖片、稱號、大小
++                // 優先讀取 enemies.v1.json 的 hpMax，fallback 到舊 MONSTERS 表
++
++                const resolvedHp = enemyMatch.hpMax ?? mdef.hpMax;
+ 
+                 monster.value = {
+ 
+-                    hp: mdef.hpMax,
++                    hp: resolvedHp,
+ 
+-                    maxHp: mdef.hpMax,
++                    maxHp: resolvedHp,
+ 
+                     name: enemyMatch.name,
+ 
+diff --git a/index.html b/index.html
+index c3e8606..5331f53 100644
+--- a/index.html
++++ b/index.html
+@@ -196,6 +196,16 @@
+ 
+             // 11. 載入遊戲主程式
+ 
++            const s10b = document.createElement('script');
++
++            s10b.src = 'assets/js/map-ambient.js?v=' + v;
++
++            s10b.async = false;
++
++            document.head.appendChild(s10b);
++
++
++
+             const s11 = document.createElement('script');
+ 
+             s11.src = 'assets/js/game.js?v=' + v;
+@@ -1752,6 +1762,21 @@
+ 
+ 
+ 
++        /* ── Map Ambient: Chapter 1 sway ──────────────────────────────── */
++        @keyframes map-ambient-sway {
++            0%   { transform: translateX(0px) scale(1.005); }
++            25%  { transform: translateX(2px) scale(1.006); }
++            50%  { transform: translateX(-1px) scale(1.005); }
++            75%  { transform: translateX(1.5px) scale(1.006); }
++            100% { transform: translateX(0px) scale(1.005); }
++        }
++
++        /* Applied to map-nodes-container when chapter1 ambient is active */
++        .map-ambient-ch1 .map-base-img {
++            animation: map-ambient-sway 12s ease-in-out infinite;
++            transform-origin: center center;
++        }
++
+     </style>
+ 
+ </head>

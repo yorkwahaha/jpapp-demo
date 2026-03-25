@@ -1,5 +1,18 @@
 [
     {
+        "version": "26032501",
+        "date": "2026-03-25",
+        "title": "Map Ambient System & Data Cleanup Milestone",
+        "changes": [
+            "第一張地圖 ambient 動態背景完成（螢火蟲 / 飛鳥 / 微晃動）。",
+            "ambient 效果限制為僅在第一張地圖（新手村）生效，確保視覺調性準確。",
+            "map-ambient.js 結構整理完成，導入可擴充的 theme/config 骨架，方便後續各章節自定義特效。",
+            "舊資料安全清理：移除 earlyGamePools.v1.js 中 5 項確認無引用的舊常數。",
+            "技能資料瘦身：移除 skills.v1.json 中已集中化後的重複 mentorDialogue 欄位，提升載入效能。",
+            "保留必要對話：確認 KARA_FROM 對話尚未集中化並予以保留，同時驗證所有 fallback 邏輯運作正常。"
+        ]
+    },
+    {
         "version": "26032402",
         "date": "2026-03-24",
         "title": "Map UI & HUD Polish Milestone",

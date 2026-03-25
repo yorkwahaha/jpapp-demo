@@ -393,6 +393,11 @@ const _jpApp = Vue.createApp({
 
             checkGlobalEndingTriggers();
 
+            // ── Ambient animation ──
+            if (typeof MapAmbient !== 'undefined') {
+                Vue.nextTick(() => MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value));
+            }
+
         };
 
 
@@ -454,8 +459,15 @@ const _jpApp = Vue.createApp({
 
         const jumpToMapSegment = (chapKey, segIdx) => {
             isMapDropdownOpen.value = false;
-            if (chapKey !== activeChapter.value) activeChapter.value = chapKey;
+            if (chapKey !== activeChapter.value) {
+                activeChapter.value = chapKey;
+            }
             handleMapTabClick(segIdx);
+            
+            // Refresh ambient for new chapter
+            if (typeof MapAmbient !== 'undefined') {
+                Vue.nextTick(() => MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value));
+            }
         };
 
         const selectStageFromMap = (n) => {
@@ -486,6 +498,7 @@ const _jpApp = Vue.createApp({
             if (selectedStageToConfirm.value !== null) {
                 const lv = selectedStageToConfirm.value;
                 isBattleConfirmOpen.value = false;
+                if (typeof MapAmbient !== 'undefined') MapAmbient.deactivate();
                 startLevel(lv, false);
             }
         };
@@ -566,10 +579,15 @@ const _jpApp = Vue.createApp({
             stopAllAudio();
             playBgm();
             checkGlobalEndingTriggers();
+
+            // ── Ambient animation ──
+            if (typeof MapAmbient !== 'undefined') {
+                Vue.nextTick(() => MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value));
+            }
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26032402";
+        const APP_VERSION = window.APP_VERSION || "26032501";
 
         const appVersion = ref(APP_VERSION);
 
@@ -856,10 +874,13 @@ const _jpApp = Vue.createApp({
 
         // ================= [ MENTOR DIALOGUE ] =================
         const setupMentorDialogue = (skill) => {
-
             currentMentorSkill.value = skill;
 
-            mentorPages.value = fragmentMentorDialogue(skill.mentorDialogue);
+            // 優先讀取集中化 JSON 內的對話資料，保留原有 skill 內的作為 fallback
+            const centralizedData = MENTOR_AUDIO_MAP.value?.[skill.id];
+            const dialogueSource = centralizedData?.dialogue || skill.mentorDialogue;
+
+            mentorPages.value = fragmentMentorDialogue(dialogueSource);
 
             mentorDialogueIndex.value = 0;
 
@@ -1679,11 +1700,7 @@ const _jpApp = Vue.createApp({
         // --- 抽離遊戲常數 ---
 
         const {
-
-            MONSTER_NAMES, MONSTER_HP, GOLD_PER_HIT, EXP_PER_HIT,
-
-            POTION_HP, INITIAL_POTIONS, COMBO_PERFECT, PASS_SCORE, MONSTERS
-
+            MONSTER_HP, POTION_HP, INITIAL_POTIONS, MONSTERS
         } = pool.config || {};
 
 
@@ -6600,13 +6617,15 @@ const _jpApp = Vue.createApp({
 
             if (enemyMatch) {
 
-                // 最小替換：只換顯示用的名稱、圖片、稱號、大小
+                // 優先讀取 enemies.v1.json 的 hpMax，fallback 到舊 MONSTERS 表
+
+                const resolvedHp = enemyMatch.hpMax ?? mdef.hpMax;
 
                 monster.value = {
 
-                    hp: mdef.hpMax,
+                    hp: resolvedHp,
 
-                    maxHp: mdef.hpMax,
+                    maxHp: resolvedHp,
 
                     name: enemyMatch.name,
 

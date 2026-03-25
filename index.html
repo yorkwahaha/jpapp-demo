@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26032402'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26032501'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -70,7 +70,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26032402';
+            const v = window.APP_VERSION || '26032501';
 
 
 
@@ -195,6 +195,16 @@
 
 
             // 11. 載入遊戲主程式
+
+            const s10b = document.createElement('script');
+
+            s10b.src = 'assets/js/map-ambient.js?v=' + v;
+
+            s10b.async = false;
+
+            document.head.appendChild(s10b);
+
+
 
             const s11 = document.createElement('script');
 
@@ -1751,6 +1761,21 @@
         }
 
 
+
+        /* ── Map Ambient: Chapter 1 sway ──────────────────────────────── */
+        @keyframes map-ambient-sway {
+            0%   { transform: translateX(0px) scale(1.005); }
+            25%  { transform: translateX(2px) scale(1.006); }
+            50%  { transform: translateX(-1px) scale(1.005); }
+            75%  { transform: translateX(1.5px) scale(1.006); }
+            100% { transform: translateX(0px) scale(1.005); }
+        }
+
+        /* Applied to map-nodes-container when chapter1 ambient is active */
+        .map-ambient-ch1 .map-base-img {
+            animation: map-ambient-sway 12s ease-in-out infinite;
+            transform-origin: center center;
+        }
 
     </style>
 
