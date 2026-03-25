@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26032501'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26032601'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -70,7 +70,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26032501';
+            const v = window.APP_VERSION || '26032601';
 
 
 
@@ -1458,7 +1458,7 @@
 
             border-radius: 18px;
 
-            background-color: rgba(15, 23, 42, 0.34);
+            background-color: transparent;
 
             background-size: contain;
 
@@ -1466,7 +1466,7 @@
 
             background-repeat: no-repeat;
 
-            overflow: hidden;
+            overflow: visible;
 
         }
 
@@ -1612,8 +1612,6 @@
 
         .map-stage-node.state-unopened .map-stage-node-frame {
 
-            opacity: 0.82;
-
             border-color: rgba(148, 163, 184, 0.16);
 
         }
@@ -1622,7 +1620,7 @@
 
         .map-stage-node.state-unopened .map-stage-node-image-layer {
 
-            background: linear-gradient(180deg, rgba(51, 65, 85, 0.54), rgba(30, 41, 59, 0.68));
+            background: transparent;
 
         }
 
@@ -1666,7 +1664,7 @@
 
         .map-stage-node.state-opened .map-stage-node-image-layer {
 
-            background: linear-gradient(180deg, rgba(217, 119, 6, 0.18), rgba(71, 85, 105, 0.22));
+            background: transparent;
 
         }
 
@@ -1674,9 +1672,9 @@
 
         .map-stage-node.state-opened .map-stage-node-image-placeholder {
 
-            border-color: rgba(251, 191, 36, 0.26);
+            border-color: transparent;
 
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(251, 191, 36, 0.06));
+            background: transparent;
 
         }
 
@@ -1706,7 +1704,7 @@
 
         .map-stage-node.state-current .map-stage-node-image-layer {
 
-            background: linear-gradient(180deg, rgba(251, 191, 36, 0.18), rgba(59, 130, 246, 0.16));
+            background: transparent;
 
         }
 
@@ -1714,9 +1712,9 @@
 
         .map-stage-node.state-current .map-stage-node-image-placeholder {
 
-            border-color: rgba(251, 191, 36, 0.34);
+            border-color: transparent;
 
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(251, 191, 36, 0.08));
+            background: transparent;
 
         }
 
@@ -1775,6 +1773,28 @@
         .map-ambient-ch1 .map-base-img {
             animation: map-ambient-sway 12s ease-in-out infinite;
             transform-origin: center center;
+        }
+
+        /* Applied to map-nodes-container when highland_wind ambient is active */
+
+        .map-ambient-highland .map-base-img {
+
+            animation: map-ambient-sway 15s ease-in-out infinite;
+
+            transform-origin: center center;
+
+        }
+
+
+
+        /* Applied to map-nodes-container when icefield_wind ambient is active */
+
+        .map-ambient-ice .map-base-img {
+
+            animation: map-ambient-sway 22s ease-in-out infinite;
+
+            transform-origin: center center;
+
         }
 
     </style>
@@ -1889,7 +1909,7 @@
 
                             <div class="flex items-center justify-center gap-4 z-10">
 
-                                <button v-if="Number(n) <= 5" @click="selectStageFromMap(n)" :data-stage-node="n"
+                                <button @click="selectStageFromMap(n)" :data-stage-node="n"
 
                                     class="map-stage-node"
 
@@ -1897,11 +1917,29 @@
 
                                     :disabled="!isLevelUnlocked(n)">
 
+
+
+                                    <!-- Grade badge for cleared levels -->
+
+                                    <div v-if="isLevelCleared(n)" class="absolute -top-1 -left-1 z-30">
+
+                                        <span v-if="bestGrades[n]" :class="getGradeColor(bestGrades[n])"
+
+                                            class="grade-badge shadow-lg scale-110">{{ bestGrades[n] }}</span>
+
+                                        <span v-else class="text-xl drop-shadow-md">⭐</span>
+
+                                    </div>
+
+
+
                                     <div v-if="n === newUnlockLv"
 
                                         class="absolute -top-3 -right-1 bg-amber-500 text-slate-900 text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg z-20 animate-bounce">
 
                                         NEW</div>
+
+
 
                                     <div class="map-stage-node-visual">
 
@@ -1917,11 +1955,13 @@
 
                                                          class="map-stage-node-book-img"
 
-                                                         :class="{ 'opacity-30 grayscale': !isLevelUnlocked(n) }"
-
                                                          alt="">
 
-                                                    <div class="map-stage-node-image-label">{{ !isLevelUnlocked(n) ? 'UNOPENED' : isLevelCleared(n) ? 'OPENED' : 'CURRENT' }}</div>
+                                                    <!-- Special logic for Stage 36 unearned indicator -->
+
+                                                    <div v-if="Number(n) === 36 && !isLevelUnlocked(n)" class="map-stage-node-image-label" style="color:rgba(251,191,36,1)">{{ sRankCount }}/35 封印</div>
+
+                                                    <div v-else class="map-stage-node-image-label">{{ !isLevelUnlocked(n) ? 'UNOPENED' : isLevelCleared(n) ? 'OPENED' : 'CURRENT' }}</div>
 
                                                 </div>
 
@@ -1930,6 +1970,8 @@
                                         </div>
 
                                     </div>
+
+
 
                                     <div class="map-stage-node-plate">
 
@@ -1942,48 +1984,6 @@
                                 </button>
 
 
-
-                                <button v-else @click="selectStageFromMap(n)" :data-stage-node="n"
-
-                                    class="stage-node-btn relative" :class="{ 'new-unlock-glow': n === newUnlockLv }"
-
-                                    :disabled="!isLevelUnlocked(n)">
-
-                                    <div v-if="n === newUnlockLv"
-
-                                        class="absolute -top-3 -left-2 bg-amber-500 text-slate-900 text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg z-20 animate-bounce">
-
-                                        NEW</div>
-
-                                    <div class="node-icon">
-
-                                        <span v-if="!isLevelUnlocked(n)">🔒</span>
-
-                                        <div v-else-if="isLevelCleared(n)" class="flex items-center justify-center">
-
-                                            <span v-if="bestGrades[n]" :class="getGradeColor(bestGrades[n])"
-
-                                                class="grade-badge">{{ bestGrades[n] }}</span>
-
-                                            <span v-else>⭐</span>
-
-                                        </div>
-
-                                        <span v-else>🚩</span>
-
-                                    </div>
-
-                                    <div class="node-info text-left">
-
-                                        <div class="node-number">STAGE {{ String(n).padStart(2, '0') }}</div>
-
-                                        <div class="node-title">{{ getLevelTitle(n) }}</div>
-
-                                        <div v-if="Number(n) === 36 && !isLevelUnlocked(n)" class="node-number" style="margin-top:2px;color:rgba(251,191,36,0.7)">{{ sRankCount }}/35 封印解除</div>
-
-                                    </div>
-
-                                </button>
 
                             </div>
 

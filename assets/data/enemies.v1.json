@@ -57,7 +57,7 @@
     "id": "frost-roc", "name": "冰原巨鳥",
     "image": "assets/images/monsters/frost-roc.png", "imageHit": "assets/images/monsters/frost-roc2.png",
     "trait": "展翼時像暴風雪壓過天空，羽尖會抖落寒霜，連呼吸都像被凍住",
-    "spawnLevels": [10], "hpMax": 70, "size": 1.6, "posX": null, "posY": null
+    "spawnLevels": [15], "hpMax": 100, "size": 2.3, "posX": null, "posY": 30
   },
   {
     "id": "ember-imp", "name": "燼火小惡魔",
@@ -87,7 +87,7 @@
     "id": "orc-warlord", "name": "半獸人之王",
     "image": "assets/images/monsters/orc-warlord.png", "imageHit": "assets/images/monsters/orc-warlord2.png",
     "trait": "披著沉重戰甲，目光像鐵鎚一樣砸下來，光站在那裡就有王者般的壓迫感",
-    "spawnLevels": [15], "hpMax": 88, "size": 1.6, "posX": null, "posY": null
+    "spawnLevels": [10], "hpMax": 88, "size": 1.6, "posX": null, "posY": null
   },
   {
     "id": "shadow-hound", "name": "影跡獵犬",

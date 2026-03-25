@@ -1,5 +1,33 @@
 [
     {
+        "version": "26032601",
+        "date": "2026-03-26",
+        "title": "Icefield Formalization & Battle Background Data Milestone",
+        "changes": [
+            "第二張地圖正式化 + highland_wind 特效。",
+            "第三張地圖正式化 + icefield_wind 特效。",
+            "地圖配樂資料化實作：全章節補齊（1-A map.mp3 / 1-B map2.mp3 / 1-C map3.mp3）。",
+            "map-chapters.json 全 segments 補齊 mapBgm / themeKey 欄位。",
+            "Boss 配置對調與平衡：Lv10 半獸人王、Lv15 冰鳥。",
+            "Boss 專屬攻擊特效修正：Lv5 藤蔓、Lv10 重擊、Lv15 爪擊。",
+            "穩定性：修復 isBattleConfirmOpen 變數遺失導致的首頁崩潰問題。",
+            "戰鬥背景資料化：支援 levels.v1.json 指定 bgImage（L11～L14 使用 bg_lv13.png，L15 使用 bg_lv15.png）。",
+            "地圖視覺整理：移除節點背板與未通關淡化，書本圖示直接浮現於地圖。"
+        ]
+    },
+    {
+        "version": "26032502",
+        "date": "2026-03-25",
+        "title": "Highland Wind & Map Dynamic BGM Milestone",
+        "changes": [
+            "第二張地圖（山路高地）高地風感 Ambient 特效完成：冷色系粒子、強化水平風動與沉穩背景 sway。",
+            "地圖配樂資料化實作：移除硬編碼 BGM 邏輯，支援依據章節區段切換專屬音樂（1-A: map.mp3, 1-B: map2.mp3）。",
+            "地圖章節資料標準化：在 map-chapters.json 中補齊所有區段的 mapBgm 與 themeKey 欄位，奠定全區段資料驅動基礎。",
+            "BGM 切換邏輯精修：修復 playBgm() 殘留硬編碼以及手動切換分頁標籤時未觸發更換音樂的問題。",
+            "緊急 Hotfix：修復 Vue Setup 變數遺失導致的 isBattleConfirmOpen ReferenceError，恢復首頁載入與挑戰確認功能。"
+        ]
+    },
+    {
         "version": "26032501",
         "date": "2026-03-25",
         "title": "Map Ambient System & Data Cleanup Milestone",

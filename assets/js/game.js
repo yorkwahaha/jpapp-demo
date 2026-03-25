@@ -154,9 +154,19 @@ const _jpApp = Vue.createApp({
 
         const selectedSegmentIdx = ref(0);
 
+        const selectedStageToConfirm = ref(null);
+
         const isBattleConfirmOpen = ref(false);
 
-        const selectedStageToConfirm = ref(null);
+        const activeSegment = computed(() => {
+            const ch = mapChapters.value[activeChapter.value];
+            if (!ch || !ch.segments) return null;
+            return ch.segments[selectedSegmentIdx.value] || null;
+        });
+
+        const currentMapBgm = computed(() => {
+            return activeSegment.value?.mapBgm || 'assets/audio/bgm/map.mp3';
+        });
 
 
 
@@ -395,7 +405,7 @@ const _jpApp = Vue.createApp({
 
             // ── Ambient animation ──
             if (typeof MapAmbient !== 'undefined') {
-                Vue.nextTick(() => MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value));
+                Vue.nextTick(() => MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value, activeSegment.value?.themeKey));
             }
 
         };
@@ -455,6 +465,7 @@ const _jpApp = Vue.createApp({
                 return;
             }
             selectedSegmentIdx.value = idx;
+            playBgm();
         };
 
         const jumpToMapSegment = (chapKey, segIdx) => {
@@ -466,7 +477,7 @@ const _jpApp = Vue.createApp({
             
             // Refresh ambient for new chapter
             if (typeof MapAmbient !== 'undefined') {
-                Vue.nextTick(() => MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value));
+                Vue.nextTick(() => MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value, activeSegment.value?.themeKey));
             }
         };
 
@@ -582,12 +593,12 @@ const _jpApp = Vue.createApp({
 
             // ── Ambient animation ──
             if (typeof MapAmbient !== 'undefined') {
-                Vue.nextTick(() => MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value));
+                Vue.nextTick(() => MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value, activeSegment.value?.themeKey));
             }
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26032501";
+        const APP_VERSION = window.APP_VERSION || "26032601";
 
         const appVersion = ref(APP_VERSION);
 
@@ -2604,7 +2615,7 @@ const _jpApp = Vue.createApp({
 
             if (showMap.value && !showLevelSelect.value) {
 
-                expectedUrl = 'assets/audio/bgm/map.mp3';
+                expectedUrl = currentMapBgm.value;
 
             } else {
 
@@ -2772,7 +2783,7 @@ const _jpApp = Vue.createApp({
 
             if (bgmAudio.value && bgmAudio.value.paused) {
 
-                const expectedUrl = (showMap.value && !showLevelSelect.value) ? 'assets/audio/bgm/map.mp3' : (currentBattleBgmPick.value || (BGM_BASE + 'BGM_1.mp3'));
+                const expectedUrl = (showMap.value && !showLevelSelect.value) ? currentMapBgm.value : (currentBattleBgmPick.value || (BGM_BASE + 'BGM_1.mp3'));
 
                 const expectedAbs = new URL(expectedUrl, window.location.href).href;
 
@@ -3656,21 +3667,29 @@ const _jpApp = Vue.createApp({
 
                 if (isBoss) {
 
-                    if (currentLevel.value === 5) {
+                    const mid = monster.value.id;
+
+                    if (mid === 'man-eater-bloom') {
 
                         playBossVineAttackVfx();
 
                         playSfx('damage4');
 
-                    } else if (currentLevel.value === 15) {
+                    } else if (mid === 'orc-warlord') {
 
                         playBossSmashAttackVfx();
 
                         playSfx('damage3');
 
+                    } else if (mid === 'frost-roc' || mid === 'ice-bird') {
+
+                        playMonsterClawAttackVfx();
+
+                        playSfx('damage2');
+
                     } else {
 
-                        // 預設 (含 L10) 使用爪痕
+                        // Default for other bosses
 
                         playMonsterClawAttackVfx();
 
@@ -6623,6 +6642,8 @@ const _jpApp = Vue.createApp({
 
                 monster.value = {
 
+                    id: enemyMatch.id,
+
                     hp: resolvedHp,
 
                     maxHp: resolvedHp,
@@ -6669,9 +6690,13 @@ const _jpApp = Vue.createApp({
 
             }
 
-            const bgIdx = Math.floor(Math.random() * 6) + 1;
-
-            currentBg.value = `assets/images/bg_0${bgIdx}.jpg`;
+            // --- Background Assignment ---
+            if (config.bgImage && typeof config.bgImage === 'string' && config.bgImage.trim() !== '') {
+                currentBg.value = config.bgImage;
+            } else {
+                const bgIdx = Math.floor(Math.random() * 6) + 1;
+                currentBg.value = `assets/images/bg_0${bgIdx}.jpg`;
+            }
 
             pushBattleLog(monster.value.name + ' 出現了！', 'info');
 

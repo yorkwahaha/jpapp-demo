@@ -12,38 +12,123 @@
 
 window.MapAmbient = (() => {
 
-    // ── Theme definitions ──────────────────────────────────────────────────
+    const HIGHLAND_WIND = {
+
+        particles: {
+
+            colors: ['rgba(200, 240, 255, 0.40)', 'rgba(255, 255, 255, 0.35)', 'rgba(220, 245, 255, 0.25)'],
+
+            count: 8,
+
+            spawnYLimit: 0.8,
+
+            vxRange: 3.2,
+
+            vyBase: -0.12,
+
+            vyRange: -0.22,
+
+        },
+
+        sway: { class: 'map-ambient-highland' }
+
+    };
+
+
+
+    const ICEFIELD_WIND = {
+        particles: {
+            colors: [
+                'rgba(225, 245, 255, 0.65)', // icy blue-white
+                'rgba(255, 255, 255, 0.55)', // pure white snow
+                'rgba(200, 235, 255, 0.45)', // faint deep ice blue
+            ],
+            count: 32,                    // denser snow field
+            spawnYLimit: 1.0,             // spawn throughout (since falling)
+            vxBase: 12.0,                 // strong rightward wind
+            vxRange: 5.0,                 // variation
+            vyBase: 3.5,                  // falling downward
+            vyRange: 2.0,
+            isDirectional: true           // hint to skip oscillation
+        },
+        birds: null,                      // no birds in the freezing icefield
+        sway: { class: 'map-ambient-ice' }
+    };
+
+
+
     const MAP_AMBIENT_THEMES = {
-        'chapter1_0': { // Only for Chapter 1, Segment 0 (新手村)
+
+        'chapter1_0': { // Chapter 1, Segment 0 (新手村)
+
             particles: {
+
                 colors: [
+
                     'rgba(234, 255, 148, 0.95)',  // bright lime yellow
+
                     'rgba(253, 255, 100, 0.90)',  // warm firefly yellow
+
                     'rgba(190, 255, 120, 0.85)',  // soft green-yellow
+
                     'rgba(255, 230, 100, 0.80)',  // amber glow
+
                 ],
+
                 count: 18,
+
                 spawnYLimit: 0.7,             // spawn in upper 70%
+
                 vxRange: 0.45,
+
                 vyBase: -0.25,
+
                 vyRange: -0.45,
+
             },
+
             birds: {
+
                 color: 'rgba(30,35,40,0.85)',
+
                 maxOnScreen: 2,
+
                 interval: { min: 100, max: 200 }, 
+
                 firstInterval: { min: 60, max: 100 },
+
                 yBand: { min: 0.12, max: 0.38 },   
+
                 speed: { min: 1.3, max: 1.0 },     
+
                 lineWidth: 3.6,
+
                 baseSize: 8.5,
+
                 sizeRange: 6.0,
+
             },
+
             sway: {
+
                 class: 'map-ambient-ch1'
+
             }
-        }
-        // Any keys NOT defined here (e.g., chapter2_0, chapter1_1) will have NO ambient effects.
+
+        },
+
+        'highland_wind': HIGHLAND_WIND,
+
+        'icefield_wind': ICEFIELD_WIND,
+
+        'chapter1_1': HIGHLAND_WIND,  // Chapter 1, Segment 1 (山路高地)
+
+        'chapter1_2': ICEFIELD_WIND,  // Chapter 1, Segment 2 (冰原冰山)
+
+        'chapter2_0': HIGHLAND_WIND   // Future proofing for Chapter 2
+
+        // Any keys NOT defined here (e.g., chapter1_3) will have NO ambient effects.
+
     };
 
     // ── State ──────────────────────────────────────────────────────────────
@@ -65,16 +150,27 @@ window.MapAmbient = (() => {
     // ── Particle system ────────────────────────────────────────────────────
     function createParticle(w, h) {
         const cfg = theme.particles;
+        // Start position: cross whole screen or from the "windward" edge for new ones
+        const isInit = particles.length === 0;
+        
+        let x = Math.random() * w;
+        let y = Math.random() * (h * cfg.spawnYLimit);
+        
+        // If not init, spawn it slightly off-screen on the windward side
+        if (!isInit && (cfg.vxBase || 0) > 5) x = -40; // spawn left
+        if (!isInit && (cfg.vyBase || 0) > 1) y = Math.random() < 0.5 ? -40 : y; // spawn top or scattered
+
         return {
-            x: Math.random() * w,
-            y: Math.random() * (h * cfg.spawnYLimit),
+            x: x,
+            y: y,
             r: 3.0 + Math.random() * 4.0,
-            vx: (Math.random() - 0.5) * cfg.vxRange,
-            vy: cfg.vyBase + (Math.random() * cfg.vyRange),
+            vx: (cfg.vxBase || 0) + (Math.random() - 0.5) * cfg.vxRange,
+            vy: (cfg.vyBase || 0) + (Math.random() * cfg.vyRange),
             color: cfg.colors[Math.floor(Math.random() * cfg.colors.length)],
             alpha: 0,
             life: 0,
-            maxLife: 180 + Math.random() * 220,
+            maxLife: 150 + Math.random() * 200,
+            isDirectional: !!cfg.isDirectional
         };
     }
 
@@ -82,14 +178,22 @@ window.MapAmbient = (() => {
         for (let i = particles.length - 1; i >= 0; i--) {
             const p = particles[i];
             p.life++;
-            p.x += p.vx + Math.sin(p.life * 0.04) * 0.18; // subtle horizontal drift
+            
+            // Horizontal movement
+            let dx = p.vx;
+            if (!p.isDirectional) {
+                dx += Math.sin(p.life * 0.04) * 0.18; // only oscillate for "floating" themes
+            }
+            p.x += dx;
             p.y += p.vy;
 
             // fade in / out
             const t = p.life / p.maxLife;
             p.alpha = t < 0.15 ? t / 0.15 : t > 0.8 ? (1 - t) / 0.2 : 1;
 
-            if (p.life >= p.maxLife || p.y < -20) {
+            // Expanded removal logic for directional flow
+            const isOffScreen = p.x < -100 || p.x > w + 100 || p.y < -100 || p.y > h + 150;
+            if (p.life >= p.maxLife || isOffScreen) {
                 particles.splice(i, 1);
             }
         }
@@ -235,11 +339,11 @@ window.MapAmbient = (() => {
     let resizeObs = null;
 
     // ── Public API ─────────────────────────────────────────────────────────
-    function activate(chapterId, segmentIdx) {
+    function activate(chapterId, segmentIdx, themeKeyOverride) {
         deactivate(); // clean up any previous run (MUST do this before checking theme)
 
         // Only run if we have a theme for this specific segment
-        const themeKey = segmentIdx !== undefined ? `${chapterId}_${segmentIdx}` : chapterId;
+        const themeKey = themeKeyOverride || (segmentIdx !== undefined ? `${chapterId}_${segmentIdx}` : chapterId);
         theme = MAP_AMBIENT_THEMES[themeKey];
         if (!theme) return;
 

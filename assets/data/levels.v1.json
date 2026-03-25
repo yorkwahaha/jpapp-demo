@@ -176,7 +176,7 @@
   },
   {
     "id": "L10_BOSS",
-    "name": "魔王關：硬殼巨像",
+    "name": "魔王關：半獸人之王",
     "unlockSkills": [],
     "questionCount": 15,
     "rewardAbilityId": "GACHIGACHI",
@@ -211,6 +211,7 @@
     "focusParticle": "で",
     "focusLabel": "動作地點",
     "bgKey": "",
+    "bgImage": "assets/images/levels/bg_lv13.png",
     "bgm": null
   },
   {
@@ -231,6 +232,7 @@
     "focusParticle": "に",
     "focusLabel": "存在地點",
     "bgKey": "",
+    "bgImage": "assets/images/levels/bg_lv13.png",
     "bgm": null
   },
   {
@@ -272,11 +274,12 @@
     "focusParticle": "と",
     "focusLabel": "共同動作",
     "bgKey": "",
+    "bgImage": "assets/images/levels/bg_lv13.png",
     "bgm": null
   },
   {
     "id": "L15_BOSS",
-    "name": "魔王關：沉眠獸",
+    "name": "魔王關：冰原巨鳥",
     "unlockSkills": [
       "BOSS_REVIEW_03"
     ],
@@ -292,6 +295,7 @@
     "focusParticle": "Boss",
     "focusLabel": "複習",
     "bgKey": "",
+    "bgImage": "assets/images/levels/bg_lv15.png",
     "bgm": "BGM_boss.mp3"
   },
   {
