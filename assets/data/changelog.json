@@ -1,5 +1,18 @@
 [
     {
+        "version": "26032701",
+        "date": "2026-03-27",
+        "title": "Main Storyline Topic Reordering & Mentor Data Consolidation",
+        "changes": [
+            "主線 1~35 關主題正式重排完成，確保教學邏輯與難度曲線一致。",
+            "Boss 複習關機制優化：所有魔王關改為精確複習各章節前四關，對應最新主題組。",
+            "新增 / 補齊主題支援：NI_DESTINATION (落點)、GA_BUT (轉折)、MO_COMPLETE_NEGATION (全否定)、TO_CONDITIONAL (條件)。",
+            "mentor-dialogues.v1.json 全面整理：依據最新排序與導師語氣完成資料化對接。",
+            "Level 36 首次進入與隱藏王引導流程資料化整合，由 game.js 移除硬編碼並統一由 JSON 驅動。",
+            "本輪作業聚焦於資料結構優化與排序對齊，未更動 UI、環境特效或核心戰鬥邏輯。"
+        ]
+    },
+    {
         "version": "26032602",
         "date": "2026-03-26",
         "title": "Map UI Streamlining & Extended Audio Update",

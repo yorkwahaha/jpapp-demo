@@ -55,7 +55,120 @@ window.MapAmbient = (() => {
         sway: { class: 'map-ambient-ice' }
     };
 
+    const RUINS_MIST = {
+        particles: {
+            colors: [
+                'rgba(255, 255, 255, 0.40)', // mist accent
+                'rgba(101, 84, 19, 0.65)',   // brown leaf
+                'rgba(78, 91, 49, 0.60)',    // olive leaf
+                'rgba(120, 105, 75, 0.55)',  // tan leaf
+            ],
+            count: 8,                       
+            isLeafTheme: true,              // Enable leaf shapes for non-white colors
+            spawnYRange: [0.35, 0.95],      // Drift through middle and valley
+            vxRange: 1.5,
+            vxBase: 1.0,                    // Stronger horizontal wind
+            vyBase: 0.1,                    // Slight downward drift
+            vyRange: 0.2,
+        },
+        sway: { class: 'map-ambient-ruins' }
+    };
 
+    const ABYSS_BREATH = {
+        particles: {
+            colors: [
+                'rgba(56, 189, 248, 0.65)', // sky-blue saturated
+                'rgba(2, 132, 199, 0.50)',  // deep blue
+                'rgba(186, 230, 253, 0.40)', // ice-blue soft
+            ],
+            count: 18,                      
+            radiusRange: [1.0, 2.2],        // Smaller energy sparks
+            spawnYRange: [0.65, 0.85],      // Mid-depth in gorge
+            vxRange: 0.1,                   // Near-zero horizontal drift
+            vyBase: -9.0,                   // Extreme upward velocity (2x Ch 3 snow)
+            vyRange: -7.0,
+            isDirectional: true,            // Skip sine oscillation
+            gust: { duration: 3500, strength: 1.2 } // Rhythmic velocity pulses
+        },
+        glows: [
+            { id: 'entrance', x: 82, y: 35, size: 30, strength: 'strong' },
+            { id: 'left',     x: 25, y: 32, size: 24, strength: 'medium' },
+            { id: 'right',    x: 58, y: 48, size: 22, strength: 'soft' },
+            { id: 'updraft-1', x: 48, y: 88, size: 12, strength: 'updraft' },
+            { id: 'updraft-2', x: 22, y: 92, size: 10, strength: 'updraft-low' },
+            { id: 'updraft-3', x: 74, y: 85, size: 10, strength: 'updraft-low' }
+        ],
+        sway: { class: 'map-ambient-abyss' }
+    };
+
+    const SACRED_GLOW = {
+        particles: {
+            colors: [
+                'rgba(76, 29, 149, 0.45)', // dark purple (purple-900)
+                'rgba(153, 27, 27, 0.40)',  // evil red (red-900)
+                'rgba(0, 0, 0, 0.50)',      // pure void
+            ],
+            count: 4,                       // absolute minimum
+            spawnYLimit: 0.95,
+            vxRange: 0.20,
+            vyBase: -0.03,                  // thick, sluggish drift
+            vyRange: -0.10,
+        },
+        glows: [
+            { id: 'haze-throne',  x: 50, y: 20, size: 80, strength: 'haze-ultra' },
+            { id: 'haze-gate',    x: 68, y: 62, size: 65, strength: 'haze-heavy' },
+            { id: 'haze-library', x: 35, y: 82, size: 55, strength: 'haze-dark' },
+            // Area 1: Throne Spirits
+            { id: 'flame-t1', x: 52, y: 18, size: 24.5, strength: 'ghost-flame' },
+            { id: 'flame-t2', x: 48, y: 22, size: 25.5, strength: 'ghost-flame' },
+            { id: 'flame-t3', x: 55, y: 15, size: 25.0, strength: 'ghost-flame' },
+            // Area 2: Gate Spirits
+            { id: 'flame-g1', x: 72, y: 66, size: 26.0, strength: 'ghost-flame' },
+            { id: 'flame-g2', x: 65, y: 58, size: 14.8, strength: 'ghost-flame' },
+            // Area 3: Library/Fissure Spirits
+            { id: 'flame-l1', x: 38, y: 85, size: 15.2, strength: 'ghost-flame' },
+            { id: 'flame-l2', x: 32, y: 78, size: 16.5, strength: 'ghost-flame' },
+            { id: 'flame-l3', x: 28, y: 84, size: 14.6, strength: 'ghost-flame' }
+        ],
+        sway: { class: 'map-ambient-sacred' }
+    };
+
+    const SACRED_LIGHT = {
+        particles: {
+            colors: [
+                'rgba(255, 255, 255, 0.45)', // white dust
+                'rgba(254, 243, 199, 0.35)', // gold dust
+            ],
+            count: 4,                       // Minimal
+            spawnYLimit: 0.7,
+            vxRange: 0.15,
+            vyBase: -0.05,
+            vyRange: -0.15,
+        },
+        glows: [
+            { id: 'sky-pulse', x: 50, y: 50, size: 100, strength: 'sacred-pulse' },
+            { id: 'flash-top', x: 50, y: 8, size: 45, strength: 'cloud-flash' },
+            { id: 'flash-left', x: 12, y: 56, size: 40, strength: 'cloud-flash' },
+            { id: 'flash-right', x: 88, y: 32, size: 45, strength: 'cloud-flash' },
+            { id: 'flash-bottom-right', x: 82, y: 85, size: 38, strength: 'cloud-flash' }
+        ],
+        sway: { class: 'map-ambient-final' }
+    };
+
+    const VOID_THRONE = {
+        particles: {
+            colors: [
+                'rgba(220, 38, 38, 0.65)',  // ominous red pulse
+                'rgba(0, 0, 0, 0.45)',      // dark void
+            ],
+            count: 10,                      // Reduced but intense
+            spawnYRange: [0.35, 0.65],      // Concentrate near throne (y=0.67)
+            vxRange: 1.0,
+            vyBase: 0.05,
+            vyRange: 0.2,
+        },
+        sway: { class: 'map-ambient-void' }
+    };
 
     const MAP_AMBIENT_THEMES = {
 
@@ -121,9 +234,20 @@ window.MapAmbient = (() => {
 
         'icefield_wind': ICEFIELD_WIND,
 
-        'chapter1_1': HIGHLAND_WIND,  // Chapter 1, Segment 1 (山路高地)
+        'ruins_mist': RUINS_MIST,
 
+        'abyss_breath': ABYSS_BREATH,
+
+        'sacred_glow': SACRED_GLOW,
+        'final_sanctum': SACRED_LIGHT,
+        'void_throne': VOID_THRONE,
+        'chapter1_1': HIGHLAND_WIND,  // Chapter 1, Segment 1 (山路高地)
         'chapter1_2': ICEFIELD_WIND,  // Chapter 1, Segment 2 (冰原冰山)
+        'chapter1_3': RUINS_MIST,
+        'chapter1_4': ABYSS_BREATH,
+        'chapter1_5': SACRED_GLOW,
+        'chapter1_6': SACRED_LIGHT,
+        'chapter1_7': VOID_THRONE,
 
         'chapter2_0': HIGHLAND_WIND   // Future proofing for Chapter 2
 
@@ -154,23 +278,43 @@ window.MapAmbient = (() => {
         const isInit = particles.length === 0;
         
         let x = Math.random() * w;
-        let y = Math.random() * (h * cfg.spawnYLimit);
+        let y = 0;
+        
+        // Enhanced Y Spawning
+        if (cfg.spawnYRange) {
+            const [min, max] = cfg.spawnYRange;
+            y = (min + Math.random() * (max - min)) * h;
+        } else {
+            y = Math.random() * (h * (cfg.spawnYLimit || 1.0));
+        }
         
         // If not init, spawn it slightly off-screen on the windward side
-        if (!isInit && (cfg.vxBase || 0) > 5) x = -40; // spawn left
-        if (!isInit && (cfg.vyBase || 0) > 1) y = Math.random() < 0.5 ? -40 : y; // spawn top or scattered
+        if (!isInit && (cfg.vxBase || 0) > 1) x = -40; // spawn left for wind
+        if (!isInit && (cfg.vyBase || 0) > 1) {
+            if (!cfg.spawnYRange) y = -40; // only override Y if no range specified
+        }
+
+        const color = cfg.colors[Math.floor(Math.random() * cfg.colors.length)];
+        const isLeaf = !!cfg.isLeafTheme && !color.includes('255, 255, 255'); // white is mist
 
         return {
             x: x,
             y: y,
-            r: 3.0 + Math.random() * 4.0,
+            baseX: x, // for horizontal swing
+            r: cfg.radiusRange 
+                ? (cfg.radiusRange[0] + Math.random() * (cfg.radiusRange[1] - cfg.radiusRange[0]))
+                : (isLeaf ? (2.0 + Math.random() * 2.5) : (3.0 + Math.random() * 4.0)),
             vx: (cfg.vxBase || 0) + (Math.random() - 0.5) * cfg.vxRange,
             vy: (cfg.vyBase || 0) + (Math.random() * cfg.vyRange),
-            color: cfg.colors[Math.floor(Math.random() * cfg.colors.length)],
+            color: color,
             alpha: 0,
             life: 0,
-            maxLife: 150 + Math.random() * 200,
-            isDirectional: !!cfg.isDirectional
+            maxLife: 150 + Math.random() * 250,
+            isDirectional: !!cfg.isDirectional,
+            isLeaf: isLeaf,
+            rotation: Math.random() * Math.PI * 2,
+            rotationV: (Math.random() - 0.5) * 0.08,
+            swing: isLeaf ? (10 + Math.random() * 20) : 0
         };
     }
 
@@ -181,11 +325,27 @@ window.MapAmbient = (() => {
             
             // Horizontal movement
             let dx = p.vx;
-            if (!p.isDirectional) {
-                dx += Math.sin(p.life * 0.04) * 0.18; // only oscillate for "floating" themes
+            if (p.isLeaf) {
+                // Diagonal drift + horizontal swing
+                p.x += dx;
+                p.x += Math.sin(p.life * 0.05) * 0.5; // slight extra jitter
+                p.rotation += p.rotationV;
+            } else {
+                if (!p.isDirectional) {
+                    dx += Math.sin(p.life * 0.04) * 0.18; // only oscillate for "floating" themes
+                }
+                p.x += dx;
             }
-            p.x += dx;
-            p.y += p.vy;
+
+            let dy = p.vy;
+            if (theme.particles.gust) {
+                const gv = theme.particles.gust;
+                const cycle = Date.now() / gv.duration;
+                // Calculate pulse factor (1.0 to 1.0 + strength)
+                const phase = 0.5 + 0.5 * Math.sin(cycle * Math.PI * 2); 
+                dy *= (1.0 + phase * gv.strength);
+            }
+            p.y += dy;
 
             // fade in / out
             const t = p.life / p.maxLife;
@@ -208,17 +368,27 @@ window.MapAmbient = (() => {
             ctx.save();
             ctx.globalAlpha = p.alpha;
             
-            // Draw firefly: bright center with radial glow
-            const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 2);
-            gradient.addColorStop(0, '#ffffff');          // White hot center
-            gradient.addColorStop(0.2, p.color);          // Core color
-            gradient.addColorStop(1, 'rgba(0,0,0,0)');    // Soft fade out
-            
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            // Draw a slightly larger area to encompass the glow spread
-            ctx.arc(p.x, p.y, p.r * 2, 0, Math.PI * 2);
-            ctx.fill();
+            if (p.isLeaf) {
+                // Draw leaf: small rotated oval
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation);
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, p.r * 1.5, p.r * 0.6, 0, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // Draw firefly/mist mote: bright center with radial glow
+                const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 2);
+                gradient.addColorStop(0, '#ffffff');          // White hot center
+                gradient.addColorStop(0.2, p.color);          // Core color
+                gradient.addColorStop(1, 'rgba(0,0,0,0)');    // Soft fade out
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                // Draw a slightly larger area to encompass the glow spread
+                ctx.arc(p.x, p.y, p.r * 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
             ctx.restore();
         }
     }
@@ -355,6 +525,19 @@ window.MapAmbient = (() => {
                 return;
             }
 
+            // ── Glow Layer (Localized Pulses) ──
+            if (theme.glows) {
+                const glowLayer = document.createElement('div');
+                glowLayer.className = 'map-ambient-glow-layer';
+                theme.glows.forEach(g => {
+                    const dot = document.createElement('div');
+                    dot.className = `glow-pulse glow-${g.id} pulse-${g.strength || 'medium'}`;
+                    dot.style.cssText = `left:${g.x}%; top:${g.y}%; width:${g.size}%; height:${g.size}%;`;
+                    glowLayer.appendChild(dot);
+                });
+                container.appendChild(glowLayer);
+            }
+
             // ── Canvas layer ──
             canvas = document.createElement('canvas');
             canvas.id = 'map-ambient-canvas';
@@ -408,7 +591,14 @@ window.MapAmbient = (() => {
         active = false;
         if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
         if (resizeObs) { resizeObs.disconnect(); resizeObs = null; }
+        
+        // Remove Canvas
         if (canvas && canvas.parentNode) canvas.parentNode.removeChild(canvas);
+        
+        // Remove Glow Layer
+        const glowLayer = document.querySelector('.map-ambient-glow-layer');
+        if (glowLayer && glowLayer.parentNode) glowLayer.parentNode.removeChild(glowLayer);
+
         if (container && theme && theme.sway && theme.sway.class) {
             container.classList.remove(theme.sway.class);
         }
@@ -416,6 +606,7 @@ window.MapAmbient = (() => {
         ctx = null;
         container = null;
         particles = [];
+        theme = null; // Important: Clear theme after cleanup
         birds = [];
     }
 

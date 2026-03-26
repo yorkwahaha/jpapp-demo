@@ -371,6 +371,36 @@
     ]
   },
   {
+    "id": "BOSS_REVIEW_01",
+    "name": "魔王考驗：主題・所屬・發生・受詞",
+    "particle": "複習",
+    "rank": 3,
+    "meaning": "綜合複習 は、の、が、を",
+    "rule": "綜合應用",
+    "examples": [],
+    "choiceSet": []
+  },
+  {
+    "id": "BOSS_REVIEW_02",
+    "name": "魔王考驗：方向・也・時間・並列",
+    "particle": "複習",
+    "rank": 3,
+    "meaning": "綜合複習 へ、も、に、と",
+    "rule": "綜合應用",
+    "examples": [],
+    "choiceSet": []
+  },
+  {
+    "id": "BOSS_REVIEW_03",
+    "name": "魔王考驗：地點・存在・主體・同行",
+    "particle": "複習",
+    "rank": 3,
+    "meaning": "綜合複習 で、に、が、と",
+    "rule": "綜合應用",
+    "examples": [],
+    "choiceSet": []
+  },
+  {
     "id": "BOSS_REVIEW_04",
     "name": "魔王考驗：起點・終點・同行・手段",
     "particle": "複習",
@@ -481,6 +511,46 @@
     "rule": "原料で",
     "examples": ["木で作る", "布で作る"],
     "choiceSet": ["で", "に", "から", "を"]
+  },
+  {
+    "id": "NI_DESTINATION",
+    "name": "に・最終式：歸著點",
+    "particle": "に",
+    "rank": 2,
+    "meaning": "動作最後落到的位置",
+    "rule": "NにV",
+    "examples": ["いすに座る"],
+    "choiceSet": ["に", "で", "下", "を"]
+  },
+  {
+    "id": "GA_BUT",
+    "name": "が・第三式：轉折（但是）",
+    "particle": "が",
+    "rank": 2,
+    "meaning": "轉折連詞，連接前後句",
+    "rule": "Sentenceが、...",
+    "examples": ["安いが、おいしい"],
+    "choiceSet": ["が", "は", "に", "を"]
+  },
+  {
+    "id": "MO_COMPLETE_NEGATION",
+    "name": "も・第二式：全盤否定",
+    "particle": "も",
+    "rank": 2,
+    "meaning": "否定範圍內的所有事物",
+    "rule": "疑問詞/數量 + も + 否定",
+    "examples": ["何もない", "誰もいない"],
+    "choiceSet": ["も", "は", "が", "を"]
+  },
+  {
+    "id": "TO_CONDITIONAL",
+    "name": "と・第五式：條件引導（一...就...）",
+    "particle": "と",
+    "rank": 2,
+    "meaning": "表示自然結果或恆常條件",
+    "rule": "Sentenceと、...",
+    "examples": ["春になると、花が咲く"],
+    "choiceSet": ["と", "に", "が", "を"]
   },
   {
     "id": "FINAL_BOSS_35",

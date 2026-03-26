@@ -79,7 +79,10 @@
   {
     "id": "L5_BOSS",
     "name": "魔王關：語感守門人",
-    "unlockSkills": [],
+    "skillId": "BOSS_REVIEW_01",
+    "unlockSkills": [
+      "BOSS_REVIEW_01"
+    ],
     "questionCount": 15,
     "rewardAbilityId": "ODOODO",
     "boss": {
@@ -177,7 +180,10 @@
   {
     "id": "L10_BOSS",
     "name": "魔王關：半獸人之王",
-    "unlockSkills": [],
+    "skillId": "BOSS_REVIEW_02",
+    "unlockSkills": [
+      "BOSS_REVIEW_02"
+    ],
     "questionCount": 15,
     "rewardAbilityId": "GACHIGACHI",
     "boss": {
@@ -280,6 +286,7 @@
   {
     "id": "L15_BOSS",
     "name": "魔王關：冰原巨鳥",
+    "skillId": "BOSS_REVIEW_03",
     "unlockSkills": [
       "BOSS_REVIEW_03"
     ],
@@ -340,10 +347,10 @@
   },
   {
     "id": "L18",
-    "name": "石橋：同行",
-    "skillId": "TO_COMPANION",
+    "name": "石橋：落點",
+    "skillId": "NI_DESTINATION",
     "unlockSkills": [
-      "TO_COMPANION"
+      "NI_DESTINATION"
     ],
     "skillMix": {
       "newSkillWeight": 0.6,
@@ -353,8 +360,8 @@
     "boss": null,
     "levelNumber": 18,
     "levelName": "石橋",
-    "focusParticle": "と",
-    "focusLabel": "同行",
+    "focusParticle": "に",
+    "focusLabel": "落點",
     "bgKey": "",
     "bgm": null
   },
@@ -401,26 +408,7 @@
   },
   {
     "id": "L21",
-    "name": "幽暗入口：時間點",
-    "skillId": "NI_TIME",
-    "unlockSkills": [
-      "NI_TIME"
-    ],
-    "skillMix": {
-      "newSkillWeight": 0.6,
-      "oldSkillWeight": 0.4
-    },
-    "questionCount": 10,
-    "levelNumber": 21,
-    "levelName": "幽暗入口",
-    "focusParticle": "に",
-    "focusLabel": "時間",
-    "bgKey": "",
-    "bgm": null
-  },
-  {
-    "id": "L22",
-    "name": "骨骸路：對象",
+    "name": "幽暗入口：對象",
     "skillId": "NI_TARGET",
     "unlockSkills": [
       "NI_TARGET"
@@ -430,19 +418,38 @@
       "oldSkillWeight": 0.4
     },
     "questionCount": 10,
-    "levelNumber": 22,
-    "levelName": "骨骸路",
+    "levelNumber": 21,
+    "levelName": "幽暗入口",
     "focusParticle": "に",
     "focusLabel": "對象",
     "bgKey": "",
     "bgm": null
   },
   {
-    "id": "L23",
-    "name": "無盡長廊：存在",
-    "skillId": "NI_EXIST_PLACE",
+    "id": "L22",
+    "name": "骨骸路：轉折",
+    "skillId": "GA_BUT",
     "unlockSkills": [
-      "NI_EXIST_PLACE"
+      "GA_BUT"
+    ],
+    "skillMix": {
+      "newSkillWeight": 0.6,
+      "oldSkillWeight": 0.4
+    },
+    "questionCount": 10,
+    "levelNumber": 22,
+    "levelName": "骨骸路",
+    "focusParticle": "が",
+    "focusLabel": "轉折",
+    "bgKey": "",
+    "bgm": null
+  },
+  {
+    "id": "L23",
+    "name": "無盡長廊：全否定",
+    "skillId": "MO_COMPLETE_NEGATION",
+    "unlockSkills": [
+      "MO_COMPLETE_NEGATION"
     ],
     "skillMix": {
       "newSkillWeight": 0.6,
@@ -451,17 +458,17 @@
     "questionCount": 10,
     "levelNumber": 23,
     "levelName": "無盡長廊",
-    "focusParticle": "に",
-    "focusLabel": "存在",
+    "focusParticle": "も",
+    "focusLabel": "全否定",
     "bgKey": "",
     "bgm": null
   },
   {
     "id": "L24",
-    "name": "封印大門：方向",
-    "skillId": "HE_DIRECTION",
+    "name": "封印大門：條件",
+    "skillId": "TO_CONDITIONAL",
     "unlockSkills": [
-      "HE_DIRECTION"
+      "TO_CONDITIONAL"
     ],
     "skillMix": {
       "newSkillWeight": 0.6,
@@ -470,8 +477,8 @@
     "questionCount": 10,
     "levelNumber": 24,
     "levelName": "封印大門",
-    "focusParticle": "へ",
-    "focusLabel": "方向",
+    "focusParticle": "と",
+    "focusLabel": "條件",
     "bgKey": "",
     "bgm": null
   },

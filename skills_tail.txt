@@ -1,0 +1,5 @@
+    "rule": "全域綜合",
+    "examples": [],
+    "choiceSet": []
+  }
+]

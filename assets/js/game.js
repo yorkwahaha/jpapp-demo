@@ -495,12 +495,7 @@ const _jpApp = Vue.createApp({
                 saveMentorState();
                 setupMentorDialogue({
                     id: "L36_FIRST_ENTRY",
-                    name: "導師・優依",
-                    mentorDialogue: [
-                        { text: "你終於站在這裡了。這一刻是你用全部 35 道完美的試煉換來的。" },
-                        { text: "前方的深淵凝聚了你一路走來所有的記憶與力量。這是屬於你一個人的最終決戰。" },
-                        { text: "去吧。你已經不需要我了。" }
-                    ]
+                    name: "導師・優依"
                 });
                 return;
             }
@@ -601,7 +596,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26032602";
+        const APP_VERSION = window.APP_VERSION || "26032701";
 
         const appVersion = ref(APP_VERSION);
 
@@ -793,11 +788,9 @@ const _jpApp = Vue.createApp({
         // 分頁輔助：將多行對話切碎
 
         const fragmentMentorDialogue = (dialogues) => {
-
+            if (!Array.isArray(dialogues)) return [];
             const pages = [];
-
             dialogues.forEach(item => {
-
                 const text = item.text || "";
 
                 // 以標點符號初步斷句
@@ -892,7 +885,7 @@ const _jpApp = Vue.createApp({
 
             // 優先讀取集中化 JSON 內的對話資料，保留原有 skill 內的作為 fallback
             const centralizedData = MENTOR_AUDIO_MAP.value?.[skill.id];
-            const dialogueSource = centralizedData?.dialogue || skill.mentorDialogue;
+            const dialogueSource = centralizedData?.dialogue || skill.mentorDialogue || [];
 
             mentorPages.value = fragmentMentorDialogue(dialogueSource);
 
@@ -5735,88 +5728,41 @@ const _jpApp = Vue.createApp({
 
             }
 
+            else if (skillDef.id === 'BOSS_REVIEW_01') {
+                const reviewSkills = ['WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE', 'WO_OBJECT_BASIC'];
+                const chosenSkillId = pickOne(reviewSkills);
+                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab);
+            }
+            else if (skillDef.id === 'BOSS_REVIEW_02') {
+                const reviewSkills = ['HE_DIRECTION', 'MO_ALSO_BASIC', 'NI_TIME', 'TO_AND'];
+                const chosenSkillId = pickOne(reviewSkills);
+                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab);
+            }
+            else if (skillDef.id === 'BOSS_REVIEW_03') {
+                const reviewSkills = ['DE_ACTION_PLACE', 'NI_EXIST_PLACE', 'GA_EXIST_SUBJECT', 'TO_WITH'];
+                const chosenSkillId = pickOne(reviewSkills);
+                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab);
+            }
             else if (skillDef.id === 'BOSS_REVIEW_04') {
-
-                // Mixed review of から, まで, と, で
-
-                const reviewSkills = ['KARA_SOURCE_START', 'MADE_LIMIT_END', 'TO_COMPANION', 'DE_TOOL_MEANS'];
-
+                // Mixed review of から, まで, に(落點), で(工具)
+                const reviewSkills = ['KARA_SOURCE_START', 'MADE_LIMIT_END', 'NI_DESTINATION', 'DE_TOOL_MEANS'];
                 const chosenSkillId = pickOne(reviewSkills);
-
-                const fallbackSkill = { id: chosenSkillId };
-
                 return generateQuestionBySkill(chosenSkillId, blanks, db, vocab);
-
             }
-
-            else if (['NI_TIME', 'NI_TARGET', 'NI_EXIST_PLACE', 'YA_AND_OTHERS', 'NI_PURPOSE', 'TO_QUOTE', 'DE_SCOPE', 'KARA_REASON', 'YORI_COMPARE', 'NI_FREQUENCY', 'DE_MATERIAL', 'KARA_SOURCE_START', 'MADE_LIMIT_END', 'DE_TOOL_MEANS'].includes(skillDef.id)) {
-
-                const skillPool = (pool.skills?.[skillDef.id]) || {};
-
-                const combo = pickOne(skillPool.safeCombos || []);
-
-                if (combo) {
-
-                    const ans = skillDef.particle || 'に';
-
-                    const parts = combo.j.split(ans);
-
-                    q = makeParticleQuestion({
-
-                        chinese: combo.zh,
-
-                        leftText: combo.left || parts[0],
-
-                        leftRuby: combo.leftRuby || combo.r?.split(ans)[0] || parts[0],
-
-                        rightText: combo.right || parts.slice(1).join(ans),
-
-                        rightRuby: combo.rightRuby || combo.r?.split(ans).slice(1).join(ans) || parts.slice(1).join(ans),
-
-                        answer: ans,
-
-                        skillId: skillDef.id,
-
-                        grammarTip: tipText,
-
-                        choices: getChoices(skillDef.choiceSet || ["に", "へ", "で", "を", "や", "と"], ans)
-
-                    });
-
-                }
-
-            }
-
-
-
             else if (skillDef.id === 'BOSS_REVIEW_05') {
-
-                const reviewSkills = ['NI_TIME', 'NI_TARGET', 'NI_EXIST_PLACE', 'HE_DIRECTION'];
-
+                const reviewSkills = ['NI_TARGET', 'GA_BUT', 'MO_COMPLETE_NEGATION', 'TO_CONDITIONAL'];
                 const chosenSkillId = pickOne(reviewSkills);
-
                 return generateQuestionBySkill(chosenSkillId, blanks, db, vocab);
-
             }
-
             else if (skillDef.id === 'BOSS_REVIEW_06') {
-
                 const reviewSkills = ['YA_AND_OTHERS', 'DE_SCOPE', 'NI_PURPOSE', 'TO_QUOTE'];
-
                 const chosenSkillId = pickOne(reviewSkills);
-
                 return generateQuestionBySkill(chosenSkillId, blanks, db, vocab);
-
             }
-
             else if (skillDef.id === 'FINAL_BOSS_35') {
-
                 const reviewSkills = ['KARA_REASON', 'YORI_COMPARE', 'NI_FREQUENCY', 'DE_MATERIAL'];
-
                 const chosenSkillId = pickOne(reviewSkills);
-
                 return generateQuestionBySkill(chosenSkillId, blanks, db, vocab);
-
             }
 
             else if (skillDef.id === 'HIDDEN_BOSS_36') {

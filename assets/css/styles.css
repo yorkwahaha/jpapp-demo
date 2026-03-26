@@ -3985,3 +3985,521 @@ body.lock-scroll {
     top: 48px; /* Adjusted from 42px for better spacing */
 
 }
+
+
+/* Glow Layers for Independent Pulses (Ch 5+) */
+.map-ambient-glow-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 4; /* Below particles(5) and nodes(10) */
+    overflow: hidden;
+}
+
+.glow-pulse {
+    position: absolute;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    mix-blend-mode: screen;
+}
+
+/* Ch 5 Abyss Specifics: Cool Blue-White Crystal Glow */
+.map-ambient-abyss .glow-pulse {
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.75) 0%, rgba(14, 165, 233, 0.25) 50%, transparent 80%);
+    filter: blur(25px);
+    mix-blend-mode: screen;
+}
+
+.map-ambient-abyss .glow-entrance { animation: abyss-glow-entrance 4s ease-in-out infinite alternate; }
+.map-ambient-abyss .glow-left     { animation: abyss-glow-left 5s ease-in-out infinite alternate; animation-delay: -1s; }
+.map-ambient-abyss .glow-right    { animation: abyss-glow-right 6s ease-in-out infinite alternate; animation-delay: -3s; }
+
+
+
+/* Ch 5 Updraft / Rising Wisps */
+
+.glow-updraft-1, .glow-updraft-2, .glow-updraft-3 {
+
+    position: absolute;
+
+    width: 6% !important;
+
+    height: 30% !important;
+
+    transform: translateX(-50%);
+
+    mix-blend-mode: screen;
+
+}
+
+
+
+.pulse-updraft {
+
+    background: linear-gradient(to top, transparent, rgba(56, 189, 248, 0.5) 50%, transparent);
+
+}
+
+
+
+.pulse-updraft-low {
+
+    background: linear-gradient(to top, transparent, rgba(14, 165, 233, 0.3) 50%, transparent);
+
+}
+
+
+
+.map-ambient-abyss .glow-updraft-1 { animation: abyss-updraft-flow 2.2s cubic-bezier(0.1, 0, 0.4, 1) infinite; }
+
+.map-ambient-abyss .glow-updraft-2 { animation: abyss-updraft-flow 3.0s cubic-bezier(0.1, 0, 0.4, 1) infinite; animation-delay: -0.5s; }
+
+.map-ambient-abyss .glow-updraft-3 { animation: abyss-updraft-flow 3.8s cubic-bezier(0.1, 0, 0.4, 1) infinite; animation-delay: -1.5s; }
+
+
+
+@keyframes abyss-updraft-flow {
+
+    0% { transform: translateX(-50%) translateY(0) scaleX(0.7); opacity: 0; }
+
+    30% { opacity: 0.5; }
+
+    70% { opacity: 0.5; }
+
+    100% { transform: translateX(-50%) translateY(-240px) scaleX(1.3); opacity: 0; }
+
+}
+
+
+
+@keyframes abyss-glow-entrance {
+    0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.3; }
+    100% { transform: translate(-50%, -50%) scale(1.25); opacity: 0.95; }
+}
+
+@keyframes abyss-glow-left {
+    0% { transform: translate(-50%, -50%) scale(0.85); opacity: 0.2; }
+    100% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.75; }
+}
+
+@keyframes abyss-glow-right {
+    0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.2; }
+    100% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.65; }
+}
+
+
+
+/* Ch 6 Sacred Specifics: Red-Purple Ultra-Heavy Haze Masses */
+
+.map-ambient-sacred .glow-pulse {
+
+    mix-blend-mode: screen;
+
+    filter: blur(85px); /* Ultra heavy blur for massive clumpy presence */
+
+    border-radius: 20% 80% 40% 60% / 60% 40% 70% 30%; /* Extreme irregular clumpy mass */
+
+}
+
+
+
+.pulse-haze-ultra {
+
+    background: radial-gradient(circle, rgba(107, 33, 168, 0.65) 0%, rgba(76, 29, 149, 0.4) 50%, rgba(30, 10, 50, 0.2) 80%, transparent 100%);
+
+}
+
+
+
+.pulse-haze-heavy {
+
+    background: radial-gradient(circle, rgba(185, 28, 28, 0.50) 0%, rgba(127, 29, 29, 0.3) 60%, transparent 95%);
+
+}
+
+
+
+.pulse-haze-dark {
+
+    background: radial-gradient(circle, rgba(76, 29, 149, 0.60) 0%, rgba(15, 10, 20, 0.4) 70%, transparent 100%);
+
+}
+
+
+
+/* Haggard writhing animations for "living corruption" masses */
+
+.map-ambient-sacred .glow-haze-throne  { animation: sacred-haze-ultra-wriggle 12s ease-in-out infinite alternate; opacity: 0.85; }
+
+.map-ambient-sacred .glow-haze-gate    { animation: sacred-haze-ultra-wriggle 16s ease-in-out infinite alternate-reverse; animation-delay: -5s; opacity: 0.7; }
+
+.map-ambient-sacred .glow-haze-library { animation: sacred-haze-pulse 9s ease-in-out infinite alternate; animation-delay: -3s; opacity: 0.6; }
+
+
+
+@keyframes sacred-haze-ultra-wriggle {
+
+    0% { transform: translate(-50%, -50%) rotate(0deg) skew(0deg) scale(1.0); opacity: 0.55; }
+
+    50% { transform: translate(-46%, -54%) rotate(15deg) skew(12deg) scale(1.4); opacity: 0.9; }
+
+    100% { transform: translate(-54%, -46%) rotate(-10deg) skew(-8deg) scale(0.85); opacity: 0.55; }
+
+}
+
+
+
+@keyframes sacred-haze-pulse {
+
+    0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.45; }
+
+    100% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.85; }
+
+}
+
+
+
+/* Ch 6 Spirit Lights: Ghost Flames */
+
+.pulse-ghost-flame {
+    background: radial-gradient(circle,
+        rgba(255,255,255,0.98) 0%,
+        rgba(255,255,255,0.95) 10%,
+        rgba(255,120,220,0.95) 22%,
+        rgba(120,80,255,0.75) 42%,
+        rgba(70,20,120,0.18) 62%,
+        rgba(0,0,0,0) 72%);
+    box-shadow:
+        0 0 14px rgba(255,120,220,0.9),
+        0 0 28px rgba(120,80,255,0.75),
+        0 0 42px rgba(120,80,255,0.45);
+    filter: blur(0.2px);
+    border-radius: 50%;
+    mix-blend-mode: normal;
+    opacity: 0.9;
+    z-index: 6;
+}
+
+
+
+[class*="glow-flame-"] {
+
+    animation: ghost-flame-float 9s ease-in-out infinite alternate,
+
+               ghost-flame-flicker 4s ease-in-out infinite alternate;
+
+}
+
+
+
+.map-ambient-sacred .glow-flame-t2 { animation-delay: -2s, -1s; }
+
+.map-ambient-sacred .glow-flame-t3 { animation-delay: -4s, -2.5s; }
+
+.map-ambient-sacred .glow-flame-g2 { animation-delay: -1.5s, -0.8s; }
+
+.map-ambient-sacred .glow-flame-l2 { animation-delay: -6s, -3s; }
+
+.map-ambient-sacred .glow-flame-l3 { animation-delay: -3.5s, -1.2s; }
+
+
+
+@keyframes ghost-flame-float {
+    0%   { transform: translate(-50%, -50%) translateY(0) scale(0.96); }
+    50%  { transform: translate(-50%, -50%) translateY(-10px) scale(1.04); }
+    100% { transform: translate(-50%, -50%) translateY(-20px) scale(0.98); }
+}
+
+@keyframes ghost-flame-flicker {
+    0%   { opacity: 0.45; }
+    20%  { opacity: 0.95; }
+    45%  { opacity: 0.55; }
+    70%  { opacity: 1.0; }
+    100% { opacity: 0.7; }
+}
+
+
+
+/* ── Suble Background Motion (Handheld Camera Drift) — Ch 4, 5, 6 ── */
+
+.map-ambient-ruins .map-base-img,
+
+.map-ambient-abyss .map-base-img,
+
+.map-ambient-sacred .map-base-img {
+
+    will-change: transform;
+
+    transform-origin: center center;
+
+}
+
+
+
+/* Ch 4 Ruins: Horizontal Drift + Slight Sink (Misty Valley Feel) */
+
+.map-ambient-ruins .map-base-img {
+
+    animation: ruins-bg-drift 13s ease-in-out infinite alternate;
+
+}
+
+
+
+@keyframes ruins-bg-drift {
+
+    0% { transform: scale(1.005) translateX(0) translateY(0) rotate(0deg); }
+
+    50% { transform: scale(1.008) translateX(3px) translateY(2px) rotate(0.06deg); }
+
+    100% { transform: scale(1.005) translateX(-2px) translateY(1px) rotate(-0.04deg); }
+
+}
+
+
+
+/* Ch 5 Abyss: Vertical Chasm Breathing (Breezy Altitude Feel) */
+
+.map-ambient-abyss .map-base-img {
+
+    animation: abyss-bg-twitch 10s ease-in-out infinite alternate;
+
+}
+
+
+
+@keyframes abyss-bg-twitch {
+
+    0% { transform: scale(1.0) translateY(0); }
+
+    35% { transform: scale(1.012) translateY(-3.5px); }
+
+    70% { transform: scale(1.005) translateY(1.5px); }
+
+    100% { transform: scale(1.0) translateY(0); }
+
+}
+
+
+
+/* Ch 6 Sacred: Cursed Oppression (Heavy Scale + Slow Sway) */
+
+.map-ambient-sacred .map-base-img {
+
+    animation: sacred-bg-oppress 16s ease-in-out infinite alternate;
+
+}
+
+
+
+@keyframes sacred-bg-oppress {
+
+    0% { transform: scale(1.0) translateX(0) rotate(0deg); }
+
+    50% { transform: scale(1.018) translateX(3px) rotate(0.12deg); }
+
+    100% { transform: scale(1.0) translateX(-1px) rotate(-0.08deg); }
+
+}
+/* Ch 7 Final Sanctuary: Sacred Light Dynamics */
+
+.map-ambient-final .map-base-img {
+
+    will-change: transform;
+
+    transform-origin: center center;
+
+    animation: final-bg-drift 16s ease-in-out infinite alternate;
+
+}
+
+
+
+@keyframes final-bg-drift {
+
+    0% { transform: scale(1.008) translateX(0) translateY(0) rotate(0deg); }
+
+    100% { transform: scale(1.015) translateX(2.5px) translateY(1.5px) rotate(0.06deg); }
+
+}
+
+
+
+/* Whole Sky Pulse (Brightness Breathing - 7.5s cycle) */
+
+.pulse-sacred-pulse {
+
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, rgba(186, 230, 253, 0.1) 40%, transparent 80%);
+
+    mix-blend-mode: color-dodge;
+
+    filter: blur(40px);
+
+    animation: sacred-sky-breath 7.5s ease-in-out infinite alternate;
+
+}
+
+
+
+@keyframes sacred-sky-breath {
+
+    0% { opacity: 0.3; filter: brightness(1) blur(40px); }
+
+    50% { opacity: 0.85; filter: brightness(1.25) blur(30px); }
+
+    100% { opacity: 0.3; filter: brightness(1) blur(40px); }
+
+}
+
+
+
+/* Cloud Thunder Flashes (Irregular Bursts) */
+
+.pulse-cloud-flash {
+
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(186, 230, 253, 0.6) 30%, transparent 70%);
+
+    mix-blend-mode: screen;
+
+    filter: blur(25px);
+
+    opacity: 0;
+
+}
+
+
+
+.map-ambient-final .glow-flash-top          { animation: cloud-thunder-flash 8s linear infinite; animation-delay: -2s; }
+
+.map-ambient-final .glow-flash-left         { animation: cloud-thunder-flash 11s linear infinite; animation-delay: -5s; }
+
+.map-ambient-final .glow-flash-right        { animation: cloud-thunder-flash 14.5s linear infinite; animation-delay: -9s; }
+
+.map-ambient-final .glow-flash-bottom-right { animation: cloud-thunder-flash 18s linear infinite; animation-delay: -13s; }
+
+
+
+@keyframes cloud-thunder-flash {
+
+    0%, 84%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+
+    86% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.15); }
+
+    87% { opacity: 0.4; transform: translate(-50%, -50%) scale(1.1); }
+
+    89% { opacity: 0.95; transform: translate(-50%, -50%) scale(1.25); }
+
+    92% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+
+}
+
+
+
+.map-ambient-ch1, .map-ambient-highland, .map-ambient-ice, 
+.map-ambient-ruins, .map-ambient-abyss, .map-ambient-sacred, 
+.map-ambient-final, .map-ambient-void {
+    overflow: hidden;
+}
+
+/* Subtle Overlays & Main Visuals via :before/:after */
+.map-ambient-final::before, .map-ambient-void::before,
+.map-ambient-final::after, .map-ambient-void::after,
+.map-ambient-ruins::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 4;
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+
+/* Ch 4 Ruins/Valley: High-Visibility Drifting Mist Sweep */
+.map-ambient-ruins::before {
+    content: '';
+    position: absolute;
+    background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.55) 0%, transparent 80%);
+    width: 200%;
+    height: 50%;
+    top: 55%;
+    left: -200%;
+    opacity: 0.8;
+    filter: blur(50px);
+    animation: ruins-mist-sweep 16s linear infinite;
+    pointer-events: none;
+    z-index: 4;
+}
+
+.map-ambient-ruins::after {
+    background: radial-gradient(ellipse at center, rgba(230, 240, 255, 0.45) 0%, transparent 75%);
+    width: 180%;
+    height: 45%;
+    top: 50%;
+    left: -180%;
+    opacity: 0.6;
+    filter: blur(60px);
+    animation: ruins-mist-sweep 24s linear infinite;
+    animation-delay: -8s;
+}
+
+@keyframes ruins-mist-sweep {
+    0% { left: -200%; opacity: 0; transform: translateX(0); }
+    15% { opacity: 0.8; }
+    85% { opacity: 0.8; }
+    100% { left: 200%; opacity: 0; transform: translateX(50px); }
+}
+
+/* Ch 7 Final: Vertical Light Rays */
+.map-ambient-final::before {
+    background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 40px,
+        rgba(253, 224, 71, 0.08) 60px,
+        transparent 80px
+    );
+    opacity: 1;
+    animation: ambient-rays-flow 15s linear infinite;
+    filter: blur(8px);
+}
+
+.map-ambient-final::after {
+    background: radial-gradient(circle at center, rgba(253, 224, 71, 0.1) 0%, transparent 70%);
+    opacity: 1;
+    animation: ambient-pulse-soft 10s ease-in-out infinite alternate;
+}
+
+/* Ch 8 Void: Red Throne Surge */
+.map-ambient-void::before {
+    background: radial-gradient(circle at 50% 65%, rgba(153, 27, 27, 0.6) 0%, transparent 55%);
+    opacity: 1;
+    animation: ambient-core-surge 4s ease-in-out infinite alternate;
+    filter: blur(15px);
+}
+
+.map-ambient-void::after {
+    background: radial-gradient(circle at center, transparent 20%, rgba(0, 0, 0, 0.7) 100%);
+    opacity: 1;
+    animation: ambient-vignette-pulse 6s ease-in-out infinite alternate;
+}
+
+@keyframes ambient-rays-flow {
+    from { background-position: 0 0; }
+    to { background-position: 400px 0; }
+}
+
+@keyframes ambient-pulse-soft {
+    from { opacity: 0.4; transform: scale(1.0); }
+    to { opacity: 0.7; transform: scale(1.05); }
+}
+
+@keyframes ambient-core-surge {
+    0% { transform: scale(0.9); opacity: 0.4; }
+    100% { transform: scale(1.2); opacity: 0.8; }
+}
+
+@keyframes ambient-vignette-pulse {
+    0% { opacity: 0.5; }
+    100% { opacity: 0.9; }
+}
+
