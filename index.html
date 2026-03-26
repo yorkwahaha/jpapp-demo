@@ -1663,7 +1663,9 @@
 
 
 
-                            <div v-if="Number(n) > 5" class="node-landmark-label">{{ node.landmark }}</div>
+                            <!-- Top Label (Boss only) -->
+
+                            <div v-if="node.landmark && LEVEL_CONFIG[n]?.boss" class="node-landmark-label node-landmark-label--top">{{ node.landmark }}</div>
 
 
 
@@ -1721,7 +1723,7 @@
 
                                                     <div v-if="Number(n) === 36 && !isLevelUnlocked(n)" class="map-stage-node-image-label" style="color:rgba(251,191,36,1)">{{ sRankCount }}/35 封印</div>
 
-                                                    <div v-else class="map-stage-node-image-label">{{ !isLevelUnlocked(n) ? 'UNOPENED' : isLevelCleared(n) ? 'OPENED' : 'CURRENT' }}</div>
+
 
                                                 </div>
 
@@ -1747,161 +1749,233 @@
 
                             </div>
 
+
+
+                            <!-- Bottom Label (Normal nodes) -->
+
+                            <div v-if="node.landmark && !LEVEL_CONFIG[n]?.boss" class="node-landmark-label node-landmark-label--bottom">{{ node.landmark }}</div>
+
                         </div>
 
                     </template>
 
-                </div>
-
-            </div>
 
 
+                        <!-- [DESKTOP ONLY UI] (Anchored to map width) -->
 
-            <!-- ── FLOATING HEADER: map name dropdown ── -->
+                        <div class="map-ui-desktop-zone">
 
-            <div v-if="isMapDropdownOpen"
+                            <!-- ── FLOATING HEADER ── -->
 
-                class="fixed inset-0 z-[24]"
+                            <div v-if="isMapDropdownOpen" class="fixed inset-0 z-[24]" @click="isMapDropdownOpen = false"></div>
 
-                @click="isMapDropdownOpen = false">
+                            <div class="map-float-header" v-if="mapChapters && activeChapter && mapChapters[activeChapter]">
 
-            </div>
+                                <div class="map-name-btn" :class="{ 'map-name-btn--open': isMapDropdownOpen }" @click.stop="isMapDropdownOpen = !isMapDropdownOpen">
 
-            <div class="map-float-header" v-if="mapChapters && activeChapter && mapChapters[activeChapter]">
+                                    <span class="map-chapter-dot"></span>
 
-                <!-- map name badge + dropdown -->
+                                    <span class="map-chapter-name">{{ mapChapters[activeChapter].segments[selectedSegmentIdx]?.title || '地圖' }}</span>
 
-                <div class="map-name-btn"
+                                    <span class="map-name-chevron">{{ isMapDropdownOpen ? '▴' : '▾' }}</span>
 
-                    :class="{ 'map-name-btn--open': isMapDropdownOpen }"
+                                    <div v-if="isMapDropdownOpen" class="map-dropdown-panel" @click.stop>
 
-                    @click.stop="isMapDropdownOpen = !isMapDropdownOpen">
+                                        <template v-for="(chap, chapKey) in mapChapters" :key="'d_chap_' + chapKey">
 
-                    <span class="map-chapter-dot"></span>
+                                            <div v-if="chap.segments && chap.segments.length" class="map-dropdown-group">
 
-                    <span class="map-chapter-name">
+                                                <div v-if="Object.keys(mapChapters).length > 1" class="map-dropdown-chapter-label">{{ chap.title || chapKey }}</div>
 
-                        {{ mapChapters[activeChapter].segments[selectedSegmentIdx]?.title || '地圖' }}
+                                                <button v-for="(seg, idx) in chap.segments" :key="'drop_d_' + chapKey + '_' + idx"
 
-                    </span>
+                                                    class="map-dropdown-item" :class="{ 'map-dropdown-item--active': chapKey === activeChapter && selectedSegmentIdx === idx, 'map-dropdown-item--locked': !isSegmentUnlocked(idx) }"
 
-                    <span class="map-name-chevron">{{ isMapDropdownOpen ? '▴' : '▾' }}</span>
+                                                    @click="jumpToMapSegment(chapKey, idx)">
 
-                    <!-- dropdown panel -->
+                                                    <span class="map-dropdown-indicator">
 
-                    <div v-if="isMapDropdownOpen" class="map-dropdown-panel" @click.stop>
+                                                        <span v-if="!isSegmentUnlocked(idx)">🔒</span>
 
-                        <template v-for="(chap, chapKey) in mapChapters" :key="chapKey">
+                                                        <span v-else-if="chapKey === activeChapter && selectedSegmentIdx === idx" class="map-dropdown-dot map-dropdown-dot--active"></span>
 
-                            <div v-if="chap.segments && chap.segments.length"
+                                                        <span v-else class="map-dropdown-dot"></span>
 
-                                class="map-dropdown-group">
+                                                    </span>
 
-                                <div v-if="Object.keys(mapChapters).length > 1"
+                                                    <span class="map-dropdown-label">{{ isSegmentUnlocked(idx) ? (seg.title || String(idx + 1)) : '？？？' }}</span>
 
-                                    class="map-dropdown-chapter-label">{{ chap.title || chapKey }}</div>
+                                                </button>
 
-                                <button v-for="(seg, idx) in chap.segments"
+                                            </div>
 
-                                    :key="'drop_' + chapKey + '_' + idx"
+                                        </template>
 
-                                    class="map-dropdown-item"
+                                    </div>
 
-                                    :class="{
-
-                                        'map-dropdown-item--active': chapKey === activeChapter && selectedSegmentIdx === idx,
-
-                                        'map-dropdown-item--locked': !isSegmentUnlocked(idx)
-
-                                    }"
-
-                                    @click="jumpToMapSegment(chapKey, idx)">
-
-                                    <span class="map-dropdown-indicator">
-
-                                        <span v-if="!isSegmentUnlocked(idx)">🔒</span>
-
-                                        <span v-else-if="chapKey === activeChapter && selectedSegmentIdx === idx" class="map-dropdown-dot map-dropdown-dot--active"></span>
-
-                                        <span v-else class="map-dropdown-dot"></span>
-
-                                    </span>
-
-                                    <span class="map-dropdown-label">{{ isSegmentUnlocked(idx) ? (seg.title || String(idx + 1)) : '？？？' }}</span>
-
-                                </button>
+                                </div>
 
                             </div>
 
-                        </template>
+                            
+
+                            <!-- ── Hero avatar ── -->
+
+                            <div class="map-hud-avatar">
+
+                                <img src="assets/images/hero/hero_001.png" class="map-hud-avatar-img" alt="">
+
+                            </div>
+
+                            
+
+                            <!-- ── BOTTOM HUD ── -->
+
+                            <div class="map-hud-bottom">
+
+                                <div class="map-hud-bars">
+
+                                    <div class="map-hud-bar-row">
+
+                                        <span class="map-hud-bar-label">HP</span>
+
+                                        <div class="map-hud-bar-track"><div class="map-hud-bar-fill map-hud-bar-hp" :style="{ width: (player.hp / player.maxHp * 100) + '%' }"></div></div>
+
+                                        <span class="map-hud-bar-val">{{ player.hp }}</span>
+
+                                    </div>
+
+                                    <div class="map-hud-bar-row">
+
+                                        <span class="map-hud-bar-label map-hud-bar-label--sp">SP</span>
+
+                                        <div class="map-hud-bar-track map-hud-bar-track--sp"><div class="map-hud-bar-fill map-hud-bar-sp" style="width:100%"></div></div>
+
+                                        <span class="map-hud-bar-val map-hud-bar-val--sp">{{ spState ? spState.cur : 0 }}</span>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="map-hud-actions">
+
+                                    <button @click="isCodexOpen = true" class="map-hud-btn"><span>📖</span></button>
+
+                                    <button @click="isMenuOpen = true" class="map-hud-btn"><span>⚙️</span></button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
 
                     </div>
-
-                </div>
 
             </div>
 
 
 
-            <!-- ── Hero avatar (floats above HUD) ── -->
+            <!-- [MOBILE ONLY UI] (Anchored to screen viewport) -->
 
-            <div class="map-hud-avatar">
+            <div class="map-ui-mobile-zone">
 
-                <img src="assets/images/hero/hero_001.png" class="map-hud-avatar-img" alt="">
+                <!-- ── FLOATING HEADER ── -->
 
-            </div>
+                <div v-if="isMapDropdownOpen" class="fixed inset-0 z-[24]" @click="isMapDropdownOpen = false"></div>
 
-            <!-- ── BOTTOM HUD: HP · SP · skill book · settings ── -->
+                <div class="map-float-header" v-if="mapChapters && activeChapter && mapChapters[activeChapter]">
 
-            <div class="map-hud-bottom">
+                    <div class="map-name-btn" :class="{ 'map-name-btn--open': isMapDropdownOpen }" @click.stop="isMapDropdownOpen = !isMapDropdownOpen">
 
-                <div class="map-hud-bars">
+                        <span class="map-chapter-dot"></span>
 
-                    <div class="map-hud-bar-row">
+                        <span class="map-chapter-name">{{ mapChapters[activeChapter].segments[selectedSegmentIdx]?.title || '地圖' }}</span>
 
-                        <span class="map-hud-bar-label">HP</span>
+                        <span class="map-name-chevron">{{ isMapDropdownOpen ? '▴' : '▾' }}</span>
 
-                        <div class="map-hud-bar-track">
+                        <div v-if="isMapDropdownOpen" class="map-dropdown-panel" @click.stop>
 
-                            <div class="map-hud-bar-fill map-hud-bar-hp"
+                            <template v-for="(chap, chapKey) in mapChapters" :key="'m_chap_' + chapKey">
 
-                                :style="{ width: (player.hp / player.maxHp * 100) + '%' }"></div>
+                                <div v-if="chap.segments && chap.segments.length" class="map-dropdown-group">
+
+                                    <div v-if="Object.keys(mapChapters).length > 1" class="map-dropdown-chapter-label">{{ chap.title || chapKey }}</div>
+
+                                    <button v-for="(seg, idx) in chap.segments" :key="'drop_m_' + chapKey + '_' + idx"
+
+                                        class="map-dropdown-item" :class="{ 'map-dropdown-item--active': chapKey === activeChapter && selectedSegmentIdx === idx, 'map-dropdown-item--locked': !isSegmentUnlocked(idx) }"
+
+                                        @click="jumpToMapSegment(chapKey, idx)">
+
+                                        <span class="map-dropdown-indicator">
+
+                                            <span v-if="!isSegmentUnlocked(idx)">🔒</span>
+
+                                            <span v-else-if="chapKey === activeChapter && selectedSegmentIdx === idx" class="map-dropdown-dot map-dropdown-dot--active"></span>
+
+                                            <span v-else class="map-dropdown-dot"></span>
+
+                                        </span>
+
+                                        <span class="map-dropdown-label">{{ isSegmentUnlocked(idx) ? (seg.title || String(idx + 1)) : '？？？' }}</span>
+
+                                    </button>
+
+                                </div>
+
+                            </template>
 
                         </div>
-
-                        <span class="map-hud-bar-val">{{ player.hp }}</span>
-
-                    </div>
-
-                    <div class="map-hud-bar-row">
-
-                        <span class="map-hud-bar-label map-hud-bar-label--sp">SP</span>
-
-                        <div class="map-hud-bar-track map-hud-bar-track--sp">
-
-                            <div class="map-hud-bar-fill map-hud-bar-sp" style="width:100%"></div>
-
-                        </div>
-
-                        <span class="map-hud-bar-val map-hud-bar-val--sp">{{ spState ? spState.cur : 0 }}</span>
 
                     </div>
 
                 </div>
 
-                <div class="map-hud-actions">
+                
 
-                    <button @click="isCodexOpen = true" class="map-hud-btn" title="文法典">
+                <div class="map-hud-avatar">
 
-                        <span>📖</span>
+                    <img src="assets/images/hero/hero_001.png" class="map-hud-avatar-img" alt="">
 
-                    </button>
+                </div>
 
-                    <button @click="isMenuOpen = true" class="map-hud-btn" title="選單">
+                
 
-                        <span>⚙️</span>
+                <div class="map-hud-bottom">
 
-                    </button>
+                    <div class="map-hud-bars">
+
+                        <div class="map-hud-bar-row">
+
+                            <span class="map-hud-bar-label">HP</span>
+
+                            <div class="map-hud-bar-track"><div class="map-hud-bar-fill map-hud-bar-hp" :style="{ width: (player.hp / player.maxHp * 100) + '%' }"></div></div>
+
+                            <span class="map-hud-bar-val">{{ player.hp }}</span>
+
+                        </div>
+
+                        <div class="map-hud-bar-row">
+
+                            <span class="map-hud-bar-label map-hud-bar-label--sp">SP</span>
+
+                            <div class="map-hud-bar-track map-hud-bar-track--sp"><div class="map-hud-bar-fill map-hud-bar-sp" style="width:100%"></div></div>
+
+                            <span class="map-hud-bar-val map-hud-bar-val--sp">{{ spState ? spState.cur : 0 }}</span>
+
+                        </div>
+
+                    </div>
+
+                    <div class="map-hud-actions">
+
+                        <button @click="isCodexOpen = true" class="map-hud-btn"><span>📖</span></button>
+
+                        <button @click="isMenuOpen = true" class="map-hud-btn"><span>⚙️</span></button>
+
+                    </div>
 
                 </div>
 

@@ -3394,6 +3394,49 @@ body.lock-scroll {
     overflow: hidden;
 }
 
+/* Visibility Control */
+.map-ui-desktop-zone { display: none; }
+.map-ui-mobile-zone { display: block; }
+
+/* Desktop Fine-tuning (Anchored inside .map-nodes-container) */
+@media (min-width: 1024px) {
+    .map-ui-desktop-zone { display: block; }
+    .map-ui-mobile-zone { display: none; }
+
+    /* Ensure the map anchor container is not clamped to 400px on desktop graphical map */
+    .map-page-container .map-nodes-container {
+        max-width: none !important;
+        width: auto !important;
+    }
+
+    /* Reduce header inset slightly inside the anchor */
+    .map-ui-desktop-zone .map-float-header {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+
+    /* Reduce Hero Avatar size on desktop */
+    .map-ui-desktop-zone .map-hud-avatar-img {
+        height: 110px !important;
+    }
+
+    /* Adjust HUD left padding to match smaller avatar and center content */
+    .map-ui-desktop-zone .map-hud-bottom {
+        padding-left: 145px !important;
+        padding-right: 145px !important;
+        justify-content: center !important;
+    }
+
+    /* 1. Mentor Overlay Constraint (Keep desktop-only) */
+    .map-mentor-overlay {
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+        width: 100% !important;
+        max-width: 177.78vh !important; /* Match Map Height-based Width */
+    }
+}
+
 /* ── Floating Header ── */
 .map-float-header {
     position: absolute;
@@ -3599,6 +3642,11 @@ body.lock-scroll {
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     border-top: none;
+    pointer-events: none;
+}
+
+.map-hud-bottom > * {
+    pointer-events: auto;
 }
 
 .map-hud-avatar {
@@ -3907,4 +3955,33 @@ body.lock-scroll {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ── Node Landmark Labels ── */
+.node-landmark-label {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 11px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.8), 0 0 2px rgba(0, 0, 0, 1), 0 1px 2px rgba(0, 0, 0, 1);
+    z-index: 20;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.node-landmark-label--top {
+
+    bottom: 46px; /* Tightened from 54px */
+
+}
+
+
+
+.node-landmark-label--bottom {
+
+    top: 48px; /* Adjusted from 42px for better spacing */
+
 }

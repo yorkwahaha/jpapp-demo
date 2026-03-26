@@ -176,11 +176,37 @@ const _jpApp = Vue.createApp({
 
             if (!node) return {};
 
+            
+
+            const isDesktop = window.innerWidth >= 1024;
+
+            let x = node.x;
+
+            let y = node.y;
+
+
+
+            if (isDesktop) {
+
+                if (node.desktopX !== undefined) x = node.desktopX;
+
+                if (node.desktopY !== undefined) y = node.desktopY;
+
+            } else {
+
+                if (node.mobileX !== undefined) x = node.mobileX;
+
+                if (node.mobileY !== undefined) y = node.mobileY;
+
+            }
+
+
+
             return {
 
-                left: node.x + '%',
+                left: x + '%',
 
-                bottom: node.y + '%',
+                bottom: y + '%',
 
                 position: 'absolute',
 
@@ -7837,7 +7863,7 @@ const _jpApp = Vue.createApp({
 
             const colors = {
 
-                'S': 'text-purple-400 drop-shadow-[0_0_8px_rgba(192,132,252,0.8)]',
+                'S': 'text-purple-400 drop-shadow-[0_0_8px_rgba(192,132,252,0.8)] [text-shadow:0_0_2px_#000,0_0_4px_#000]',
 
                 'A': 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]',
 
