@@ -50,51 +50,28 @@ const _jpApp = Vue.createApp({
     setup() {
 
         onMounted(async () => {
-
-            const h = location.hostname;
-
-            const isLocal = h === 'localhost' || h === '127.0.0.1' || h === '0.0.0.0'
-
-                || /^192\.168\./.test(h) || /^10\./.test(h) || /^172\.(1[6-9]|2\d|3[01])\./.test(h);
-
-            if (!isLocal) return;
-
-
-
-            const path = 'config.local.js';
-
-            const script = document.createElement('script');
-
-            script.src = path;
-
-            script.onload = () => console.log(`[AZURE] config.local.js loaded`);
-
-            script.onerror = () => { };
-
-            document.head.appendChild(script);
-
-
-
-            // Load Map Chapter Data
-
+            // Load Map Chapter Data (Ensuring this runs on all environments)
             try {
-
                 const resp = await fetch('assets/data/map-chapters.json?v=' + (window.APP_VERSION || Date.now()));
-
                 if (resp.ok) {
-
                     mapChapters.value = await resp.json();
-
                     console.log('[MapData] chapters loaded');
-
                 }
-
             } catch (e) {
-
                 console.warn('[MapData] fetch error', e);
-
             }
 
+            const h = location.hostname;
+            const isLocal = h === 'localhost' || h === '127.0.0.1' || h === '0.0.0.0'
+                || /^192\.168\./.test(h) || /^10\./.test(h) || /^172\.(1[6-9]|2\d|3[01])\./.test(h);
+            if (!isLocal) return;
+
+            const path = 'config.local.js';
+            const script = document.createElement('script');
+            script.src = path;
+            script.onload = () => console.log(`[AZURE] config.local.js loaded`);
+            script.onerror = () => { };
+            document.head.appendChild(script);
         });
 
 
