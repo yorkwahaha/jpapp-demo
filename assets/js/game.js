@@ -619,7 +619,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26032701";
+        const APP_VERSION = window.APP_VERSION || "26032702";
 
         const appVersion = ref(APP_VERSION);
 
@@ -3268,7 +3268,7 @@ const _jpApp = Vue.createApp({
                 return;
             }
 
-            // 恢復被誤刪的 ATB 累進邏輯 (26032701)
+            // 恢復被誤刪的 ATB 累進邏輯 (26032702)
             timeLeft.value -= (0.1 / heroBuffs.enemyAtbMult) * speedMult;
 
             if (timeLeft.value <= 0) {
@@ -6015,7 +6015,7 @@ const _jpApp = Vue.createApp({
 
             // L10 固定 review pool（L6-9 的 skill）
 
-            const L10_REVIEW_POOL = ['HE_DIRECTION', 'MO_ALSO_BASIC', 'NO_POSSESSIVE', 'TO_AND'];
+            const L10_REVIEW_POOL = ['HE_DIRECTION', 'MO_ALSO_BASIC', 'NI_TIME', 'TO_AND'];
 
             const L15_REVIEW_POOL = ['DE_ACTION_PLACE', 'NI_EXIST_PLACE', 'GA_EXIST_SUBJECT', 'TO_WITH'];
 
