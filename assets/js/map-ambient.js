@@ -43,12 +43,14 @@ window.MapAmbient = (() => {
                 'rgba(255, 255, 255, 0.55)', // pure white snow
                 'rgba(200, 235, 255, 0.45)', // faint deep ice blue
             ],
-            count: 32,                    // denser snow field
+            count: 64,                    // denser snow field
             spawnYLimit: 1.0,             // spawn throughout (since falling)
             vxBase: 12.0,                 // strong rightward wind
             vxRange: 5.0,                 // variation
             vyBase: 3.5,                  // falling downward
             vyRange: 2.0,
+            lifeRange: [300, 500],        // longer life for full-screen travel
+            spawnOnAllEdges: true,        // spawn on left AND top to fill screen
             isDirectional: true           // hint to skip oscillation
         },
         birds: null,                      // no birds in the freezing icefield
@@ -301,14 +303,31 @@ window.MapAmbient = (() => {
         }
         
         // If not init, spawn it slightly off-screen on the windward side
-        if (!isInit && (cfg.vxBase || 0) > 1) x = -40; // spawn left for wind
-        if (!isInit && (cfg.vyBase || 0) > 1) {
-            if (!cfg.spawnYRange) y = -40; // only override Y if no range specified
+        if (!isInit) {
+            const hasWindX = (cfg.vxBase || 0) > 1;
+            const hasWindY = (cfg.vyBase || 0) > 1;
+
+            if (cfg.spawnOnAllEdges && (hasWindX || hasWindY)) {
+                // Blizzard/Storm mode: mix spawning on top and side edges
+                if (Math.random() < 0.5 && hasWindX) {
+                    x = -40;
+                    y = Math.random() * h;
+                } else if (hasWindY) {
+                    x = Math.random() * w;
+                    y = -40;
+                }
+            } else {
+                if (hasWindX) x = -40;
+                if (hasWindY && !cfg.spawnYRange) y = -40;
+            }
         }
 
         const color = cfg.colors[Math.floor(Math.random() * cfg.colors.length)];
         const isLeaf = !!cfg.isLeafTheme && !color.includes('255, 255, 255'); // white is mist
 
+        const maxLife = cfg.lifeRange 
+            ? (cfg.lifeRange[0] + Math.random() * (cfg.lifeRange[1] - cfg.lifeRange[0]))
+            : (150 + Math.random() * 250);
         return {
             x: x,
             y: y,
@@ -321,7 +340,7 @@ window.MapAmbient = (() => {
             color: color,
             alpha: 0,
             life: 0,
-            maxLife: 150 + Math.random() * 250,
+            maxLife: maxLife,
             isDirectional: !!cfg.isDirectional,
             isLeaf: isLeaf,
             rotation: Math.random() * Math.PI * 2,

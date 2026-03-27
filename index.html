@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26032702'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26032801'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -70,7 +70,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26032602';
+            const v = window.APP_VERSION || '26032702';
 
 
 
@@ -840,39 +840,39 @@
 
 
 
-        /* B Grade - Bronze Medal */
+        /* B Grade - Magical Silver-Blue Medal (Refined) */
 
         .text-orange-400.grade-badge,
 
         .text-amber-600.grade-badge {
 
-            background: linear-gradient(145deg, #fdba74, #fb923c, #f97316);
+            background: linear-gradient(145deg, #f8fafc, #cbd5e1, #64748b);
 
-            color: #4a1908;
+            color: #1e293b;
 
-            border: 2px solid #fed7aa;
+            border: 2.5px solid #f1f5f9;
 
             box-shadow:
 
-                0 0 12px rgba(251, 146, 60, 0.6),
+                0 0 16px rgba(148, 163, 184, 0.5),
 
-                0 0 6px rgba(251, 146, 60, 0.4),
+                0 0 8px rgba(148, 163, 184, 0.3),
 
                 0 4px 12px rgba(0, 0, 0, 0.5),
 
-                inset 0 2px 3px rgba(255, 255, 255, 0.4),
+                inset 0 2px 3px rgba(255, 255, 255, 0.6),
 
-                inset 0 -2px 4px rgba(234, 88, 12, 0.5);
+                inset 0 -2px 4px rgba(71, 85, 105, 0.4);
 
-            -webkit-text-stroke: 0.8px rgba(0,0,0,0.25);
+            -webkit-text-stroke: 0.8px rgba(0,0,0,0.2);
 
             text-shadow:
 
-                0 1px 2px rgba(255, 255, 255, 0.7),
+                0 1px 2px rgba(255, 255, 255, 0.8),
 
-                0 0 6px rgba(253, 186, 116, 0.7);
+                0 0 6px rgba(148, 163, 184, 0.5);
 
-            filter: brightness(1.15);
+            filter: brightness(1.2);
 
         }
 
@@ -1108,7 +1108,7 @@
 
         .text-amber-600.grade-badge {
 
-            color: #5f250c;
+            color: #334155;
 
         }
 
@@ -1863,27 +1863,20 @@
                             <div class="map-hud-bottom">
 
                                 <div class="map-hud-bars">
-
                                     <div class="map-hud-bar-row">
-
-                                        <span class="map-hud-bar-label">HP</span>
-
-                                        <div class="map-hud-bar-track"><div class="map-hud-bar-fill map-hud-bar-hp" :style="{ width: (player.hp / player.maxHp * 100) + '%' }"></div></div>
-
-                                        <span class="map-hud-bar-val">{{ player.hp }}</span>
-
+                                        <span class="hud-bar-label hud-bar-label--hp">HP</span>
+                                        <div class="map-hud-bar-track hud-bar-track">
+                                            <div class="hud-bar-fill hud-bar-hp-fill" :style="{ width: (player.hp / player.maxHp * 100) + '%' }"></div>
+                                        </div>
+                                        <span class="hud-bar-value">{{ player.hp }}</span>
                                     </div>
-
                                     <div class="map-hud-bar-row">
-
-                                        <span class="map-hud-bar-label map-hud-bar-label--sp">SP</span>
-
-                                        <div class="map-hud-bar-track map-hud-bar-track--sp"><div class="map-hud-bar-fill map-hud-bar-sp" style="width:100%"></div></div>
-
-                                        <span class="map-hud-bar-val map-hud-bar-val--sp">{{ spState ? spState.cur : 0 }}</span>
-
+                                        <span class="hud-bar-label hud-bar-label--sp">SP</span>
+                                        <div class="map-hud-bar-track hud-bar-track">
+                                            <div class="hud-bar-fill hud-bar-sp-fill" style="width:100%"></div>
+                                        </div>
+                                        <span class="hud-bar-value">{{ spState ? spState.cur : 0 }}</span>
                                     </div>
-
                                 </div>
 
                                 <div class="map-hud-actions">
@@ -1975,27 +1968,20 @@
                 <div class="map-hud-bottom">
 
                     <div class="map-hud-bars">
-
                         <div class="map-hud-bar-row">
-
-                            <span class="map-hud-bar-label">HP</span>
-
-                            <div class="map-hud-bar-track"><div class="map-hud-bar-fill map-hud-bar-hp" :style="{ width: (player.hp / player.maxHp * 100) + '%' }"></div></div>
-
-                            <span class="map-hud-bar-val">{{ player.hp }}</span>
-
+                            <span class="hud-bar-label hud-bar-label--hp">HP</span>
+                            <div class="map-hud-bar-track hud-bar-track">
+                                <div class="hud-bar-fill hud-bar-hp-fill" :style="{ width: (player.hp / player.maxHp * 100) + '%' }"></div>
+                            </div>
+                            <span class="hud-bar-value">{{ player.hp }}</span>
                         </div>
-
                         <div class="map-hud-bar-row">
-
-                            <span class="map-hud-bar-label map-hud-bar-label--sp">SP</span>
-
-                            <div class="map-hud-bar-track map-hud-bar-track--sp"><div class="map-hud-bar-fill map-hud-bar-sp" style="width:100%"></div></div>
-
-                            <span class="map-hud-bar-val map-hud-bar-val--sp">{{ spState ? spState.cur : 0 }}</span>
-
+                            <span class="hud-bar-label hud-bar-label--sp">SP</span>
+                            <div class="map-hud-bar-track hud-bar-track">
+                                <div class="hud-bar-fill hud-bar-sp-fill" style="width:100%"></div>
+                            </div>
+                            <span class="hud-bar-value">{{ spState ? spState.cur : 0 }}</span>
                         </div>
-
                     </div>
 
                     <div class="map-hud-actions">
@@ -3151,59 +3137,26 @@
                                 <!-- Center: HP/SP (Compacted) -->
 
                                 <div
-
                                     class="flex-1 flex flex-col justify-center gap-0.5 md:gap-1 max-w-[160px] md:max-w-xs mx-auto">
-
-                                    <div class="w-full flex items-center gap-1">
-
-                                        <span
-
-                                            class="text-[10px] md:text-[11px] font-black text-emerald-400 w-5 tracking-tighter drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">HP</span>
-
-                                        <div
-
-                                            class="flex-1 h-1 bg-slate-950 rounded-full border border-slate-700/60 overflow-hidden shadow-inner">
-
-                                            <div class="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-300"
-
-                                                :class="[{ 'bg-rose-500 from-rose-600 to-rose-400': hpBarDanger, 'animate-pulse': playerBlink }]"
-
+                                    <div class="w-full flex items-center gap-1.5">
+                                        <span class="hud-bar-label hud-bar-label--hp w-5">HP</span>
+                                        <div class="flex-1 h-1.5 hud-bar-track">
+                                            <div class="hud-bar-fill hud-bar-hp-fill transition-all duration-300"
+                                                :class="[{ 'danger': hpBarDanger, 'animate-pulse': playerBlink }]"
                                                 :style="{ width: (player.hp / player.maxHp * 100) + '%' }"></div>
-
                                         </div>
-
-                                        <span
-
-                                            class="text-[10px] font-mono font-bold text-slate-200 w-6 text-right drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
-
+                                        <span class="hud-bar-value w-6 text-right">
                                             {{ player.hp }}
-
                                         </span>
-
                                     </div>
-
-                                    <div class="w-full flex items-center gap-1">
-
-                                        <span
-
-                                            class="text-[10px] md:text-[11px] font-black text-cyan-400 w-5 tracking-tighter drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">SP</span>
-
-                                        <div
-
-                                            class="flex-1 h-1 bg-slate-950 rounded-full border border-slate-700/60 overflow-hidden shadow-inner">
-
-                                            <div class="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 transition-all duration-300"
-
+                                    <div class="w-full flex items-center gap-1.5">
+                                        <span class="hud-bar-label hud-bar-label--sp w-5">SP</span>
+                                        <div class="flex-1 h-1 hud-bar-track">
+                                            <div class="hud-bar-fill hud-bar-sp-fill transition-all duration-300"
                                                 style="width: 100%;"></div>
-
                                         </div>
-
-                                        <span
-
-                                            class="text-[10px] font-mono font-bold text-slate-200 w-6 text-right drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">MAX</span>
-
+                                        <span class="hud-bar-value w-6 text-right">MAX</span>
                                     </div>
-
                                 </div>
 
 
@@ -3215,37 +3168,28 @@
                                     class="flex-shrink-0 flex flex-nowrap items-center justify-end gap-2 md:gap-3 w-auto md:flex-none">
 
                                     <button @click="isInventoryOpen = true; pauseBattle();"
-
-                                        class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-800/80 border border-slate-600 flex items-center justify-center text-slate-300 shadow-inner hover:bg-slate-600 transition-all active:scale-95 group">
-
-                                        <span class="text-[15px] sm:text-[17px] group-hover:scale-110">🎒</span>
-
+                                        class="hud-tool-btn group" title="背包">
+                                        <span class="group-hover:scale-110">🎒</span>
                                     </button>
 
                                     <button @click="isSkillOpen = true; pauseBattle();"
-
-                                        class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-700/80 border border-emerald-600 flex items-center justify-center text-emerald-200 shadow-inner hover:bg-emerald-600 transition-all active:scale-95 group">
-
-                                        <span
-
-                                            class="text-[15px] sm:text-[17px] group-hover:scale-110 flex items-center justify-center">📖</span>
-
+                                        class="hud-tool-btn is-skill-ready group" title="秘笈本">
+                                        <span class="group-hover:scale-110">📖</span>
                                     </button>
 
                                     <button @click="usePotion()"
-
-                                        class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-700/80 border border-emerald-600 flex items-center justify-center text-emerald-200 shadow-inner hover:bg-emerald-600 transition-all active:scale-95 group">
-
-                                        <span class="text-[15px] sm:text-[17px] group-hover:scale-110">💊</span>
-
+                                        class="hud-tool-btn is-potion-ready group"
+                                        :class="{ 'is-disabled': inventory.potions <= 0 }" title="補血藥">
+                                        <span class="group-hover:scale-110">🧪</span>
+                                        <!-- Unified Potion Count Badge -->
+                                        <div v-if="inventory.potions > 0" class="hud-tool-badge">
+                                            <span>{{ inventory.potions }}</span>
+                                        </div>
                                     </button>
 
                                     <button @click="isMenuOpen = true; pauseBattle();"
-
-                                        class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-800/80 border border-slate-600 flex items-center justify-center text-slate-300 shadow-inner hover:bg-slate-600 transition-all active:scale-95 group">
-
-                                        <span class="text-[15px] sm:text-[17px] group-hover:scale-110">⚙️</span>
-
+                                        class="hud-tool-btn group" title="設定">
+                                        <span class="group-hover:scale-110">⚙️</span>
                                     </button>
 
                                 </div>
@@ -3473,6 +3417,43 @@
             </div>
 
 
+
+
+            <!-- Knowledge Card Animation Overlay -->
+            <transition name="fade">
+                <div v-if="isKnowledgeCardShowing" class="knowledge-card-overlay" :class="{ 'is-absorbing': isKnowledgeCardAbsorbing }" @click="closeKnowledgeCard">
+                    <div class="knowledge-card-container">
+                        <div class="card-magic-glow"></div>
+                        <div class="knowledge-card">
+                            <!-- Premium Sparkles -->
+                            <div class="card-sparkles">
+                                <div v-for="n in 8" :key="'s'+n" class="card-sparkle"></div>
+                            </div>
+                            
+                            <div class="card-header">
+                                <div class="particle-glamour">{{ activeKnowledgeCard?.particle }}</div>
+                            </div>
+                            
+                            <div class="card-body">
+                                <div class="card-topic-tag">{{ activeKnowledgeCard?.name.split('：')[1] || activeKnowledgeCard?.name }}</div>
+                                <p class="card-meaning">{{ activeKnowledgeCard?.meaning }}</p>
+                            </div>
+                            
+                            <div class="card-footer">
+                                點擊收錄至秘笈本
+                            </div>
+                            
+                            <!-- Inner Shine Effect -->
+                            <div class="card-inner-shine"></div>
+                        </div>
+                        
+                        <div v-if="isKnowledgeCardAbsorbing" class="card-absorb-particles">
+                            <div v-for="n in 12" :key="n" class="card-absorb-particle" 
+                                 :style="{ '--dx': (Math.random()*300-150)+'px', '--dy': (Math.random()*300-150)+'px' }"></div>
+                        </div>
+                    </div>
+                </div>
+            </transition>
 
             <!-- Skill Unlock Modal -->
 

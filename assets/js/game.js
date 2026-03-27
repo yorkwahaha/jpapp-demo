@@ -135,6 +135,12 @@ const _jpApp = Vue.createApp({
 
         const isBattleConfirmOpen = ref(false);
 
+        // --- Knowledge Card Unlock State ---
+        const pendingKnowledgeCards = ref([]);
+        const activeKnowledgeCard = ref(null);
+        const isKnowledgeCardShowing = ref(false);
+        const isKnowledgeCardAbsorbing = ref(false);
+
         const activeSegment = computed(() => {
             const ch = mapChapters.value[activeChapter.value];
             if (!ch || !ch.segments) return null;
@@ -612,14 +618,51 @@ const _jpApp = Vue.createApp({
             playBgm();
             checkGlobalEndingTriggers();
 
+            // [Knowledge Card Refined] Moved to grantRewards (victory moment)
             // ── Ambient animation ──
             if (typeof MapAmbient !== 'undefined') {
                 Vue.nextTick(() => MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value, activeSegment.value?.themeKey));
             }
         };
 
+        const triggerNextKnowledgeCard = () => {
+            if (pendingKnowledgeCards.value.length === 0) {
+                isKnowledgeCardShowing.value = false;
+                
+                // If there's a callback (e.g. from grantRewards), execute it
+                if (window._afterKnowledgeCards) {
+                    const cb = window._afterKnowledgeCards;
+                    window._afterKnowledgeCards = null;
+                    cb();
+                    return;
+                }
+
+                // Resume map ambient if triggered from map (legacy support or safety)
+                if (typeof MapAmbient !== 'undefined' && showMap.value) {
+                    Vue.nextTick(() => MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value, activeSegment.value?.themeKey));
+                }
+                return;
+            }
+            activeKnowledgeCard.value = pendingKnowledgeCards.value.shift();
+            isKnowledgeCardShowing.value = true;
+            isKnowledgeCardAbsorbing.value = false;
+            playSfx('skillpop'); // Play card pop sound
+        };
+
+        const closeKnowledgeCard = () => {
+            if (isKnowledgeCardAbsorbing.value) return;
+            isKnowledgeCardAbsorbing.value = true;
+            playSfx('skillget'); 
+            
+            // Wait for absorption animation to finish (matching CSS duration)
+            setTimeout(() => {
+                isKnowledgeCardShowing.value = false;
+                triggerNextKnowledgeCard();
+            }, 1200);
+        };
+
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26032702";
+        const APP_VERSION = window.APP_VERSION || "26032801";
 
         const appVersion = ref(APP_VERSION);
 
@@ -2231,31 +2274,20 @@ const _jpApp = Vue.createApp({
 
 
             const shortSfxPaths = {
-
                 hit: 'assets/audio/sfx_hit.mp3',
-
                 miss: 'assets/audio/mmiss.mp3',
-
                 potion: 'assets/audio/sfx_potion.mp3',
-
                 click: 'assets/audio/sfx_click.mp3',
-
                 damage: 'assets/audio/damage.mp3',
-
                 damage2: 'assets/audio/damage2.mp3',
-
                 damage3: 'assets/audio/damage3.mp3',
-
                 damage4: 'assets/audio/damage4.mp3',
-
                 fanfare: 'assets/audio/fanfare.mp3',
-
                 pop: 'assets/audio/pop.mp3',
-
                 win: 'assets/audio/win.mp3',
-
                 gameover: 'assets/audio/sfx_gameover.mp3',
-
+                skillpop: 'assets/audio/sfx/skillpop.mp3',
+                skillget: 'assets/audio/sfx/skillget.mp3',
             };
 
             const decodePromises = Object.entries(shortSfxPaths).map(async ([key, url]) => {
@@ -2862,11 +2894,10 @@ const _jpApp = Vue.createApp({
             fanfare: 'assets/audio/fanfare.mp3',
 
             pop: 'assets/audio/pop.mp3',
-
             win: 'assets/audio/win.mp3',
-
             gameover: 'assets/audio/sfx_gameover.mp3',
-
+            skillpop: 'assets/audio/sfx/skillpop.mp3',
+            skillget: 'assets/audio/sfx/skillget.mp3',
         };
 
         const _polyPool = new Map();
@@ -5840,6 +5871,8 @@ const _jpApp = Vue.createApp({
 
             window.heroMaxHP = player.value.maxHp;
 
+            inventory.value.potions = INITIAL_POTIONS;
+
             clearSpeedStatus();
 
 
@@ -5946,18 +5979,18 @@ const _jpApp = Vue.createApp({
                             // Pause and wait for mentor to finish
 
                             window._resumeAfterMentor = () => {
-
-                                isSkillUnlockModalOpen.value = true;
-
+                                // [Knowledge Card 1.0] Do not open old modal, it will show as Knowledge Card later
+                                // isSkillUnlockModalOpen.value = true;
                             };
 
                         } else {
-
-                            isSkillUnlockModalOpen.value = true;
-
+                            // isSkillUnlockModalOpen.value = true;
                         }
 
                     }
+
+                    // [Knowledge Card 1.0] Stage these for post-battle reward
+                    pendingKnowledgeCards.value.push(...newUnlocks.map(id => skillsAll.value[id]).filter(Boolean));
 
                 }
 
@@ -7282,6 +7315,10 @@ const _jpApp = Vue.createApp({
 
             totalGold.value += earnedGold.value; // <--- Accumulate totalGold
 
+            // Unconditional HP/SP Reset on Victory
+            player.value.hp = player.value.maxHp;
+            resetSP();
+
             pushBattleLog(`擊敗怪物！獲得 ${earnedExp.value} EXP 與 ${earnedGold.value} 金幣！`, 'buff');
 
             clearTimer();
@@ -7376,13 +7413,21 @@ const _jpApp = Vue.createApp({
 
                 
 
-                // 🌟 第二階段：死亡演出結束後，才開始數值遞增動畫
-
+                // 🌟 第二階段：死亡演出結束後，檢查是否有新技能知識卡需要播放
+                // 如果有卡片，播放完畢後才進入數字遞增環節
                 setTimeout(() => { 
 
-                    playSfx('fanfare'); 
+                    const proceedToTally = () => {
+                        playSfx('fanfare'); 
+                        startTallySequence();
+                    };
 
-                    startTallySequence();
+                    if (pendingKnowledgeCards.value.length > 0) {
+                        window._afterKnowledgeCards = proceedToTally;
+                        triggerNextKnowledgeCard();
+                    } else {
+                        proceedToTally();
+                    }
 
                 }, 800);
 
@@ -7632,21 +7677,7 @@ const _jpApp = Vue.createApp({
 
         const proceedToNextLevel = () => {
 
-            if (difficulty.value === 'easy') {
 
-                player.value.hp = 100;
-
-                inventory.value.potions = INITIAL_POTIONS;
-
-            } else {
-
-                player.value.hp = Math.min(100, player.value.hp + 50);
-
-            }
-
-
-
-            resetSP();
 
             currentLevel.value++;
 
@@ -7856,7 +7887,7 @@ const _jpApp = Vue.createApp({
 
                 'A': 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]',
 
-                'B': 'text-blue-400',
+                'B': 'text-slate-300 drop-shadow-[0_0_6px_rgba(148,163,184,0.7)] [text-shadow:0_0_2px_#000,0_0_4px_rgba(0,0,0,0.7)]',
 
                 'C': 'text-amber-400',
 
@@ -8165,7 +8196,9 @@ const _jpApp = Vue.createApp({
 
             isBattleConfirmOpen, selectedStageToConfirm, confirmAndStartBattle,
 
-            isMapMentorOpen, mentorPages, mentorDialogueIndex, displayedMentorText, isTypingMentor, nextMentorLine, finishMentorDialogue
+            isMapMentorOpen, mentorPages, mentorDialogueIndex, displayedMentorText, isTypingMentor, nextMentorLine, finishMentorDialogue,
+
+            pendingKnowledgeCards, activeKnowledgeCard, isKnowledgeCardShowing, isKnowledgeCardAbsorbing, triggerNextKnowledgeCard, closeKnowledgeCard
 
         };
 

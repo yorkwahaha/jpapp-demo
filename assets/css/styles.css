@@ -16,19 +16,22 @@ body {
 
 rt {
     font-size: 0.45em;
-    color: #fcd34d;
-    font-weight: normal;
+    color: #fbbf24; /* Warmer gold for better contrast */
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), 0 0 2px rgba(0, 0, 0, 0.4);
 }
 
 .particle-input {
-    border-bottom: 3px solid #f59e0b;
+    background: rgba(255, 255, 255, 0.05); /* Very subtle background to define the area */
+    border-bottom: 4px solid #fbbf24; /* Even brighter gold */
+    color: #fbbf24;
+    font-size: 20px;
     width: 3.5rem;
     text-align: center;
-    font-weight: bold;
-    background: rgba(30, 41, 59, 0.8);
-    color: #fef3c7;
-    border-radius: 0.25rem;
-    transition: all 0.2s;
+    border-radius: 4px 4px 0 0;
+    margin: 0 0.25rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.5); /* Stronger glow for visibility */
 }
 
 .particle-input:focus {
@@ -3700,57 +3703,72 @@ body.lock-scroll {
     gap: 6px;
 }
 
-.map-hud-bar-label {
-    font-size: 12px;
+/* ── Unified HUD Bar Styling (Map & Battle) ── */
+.hud-bar-label {
+    font-size: 11px;
     font-weight: 900;
     color: rgba(255, 255, 255, 0.95);
-    letter-spacing: 0.07em;
-    width: 16px;
-    text-align: right;
-    flex-shrink: 0;
+    letter-spacing: 0.08em;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    font-family: inherit;
+    line-height: 1;
 }
 
-.map-hud-bar-label--sp {
-    color: rgba(139, 250, 250, 0.88);
+.hud-bar-label--hp {
+    color: #34d399; /* emerald-400 */
 }
 
-.map-hud-bar-track {
-    flex: 1;
-    height: 5px;
-    background: rgba(255, 255, 255, 0.07);
-    border-radius: 4px;
-    overflow: hidden;
-    min-width: 0;
+.hud-bar-label--sp {
+    color: #22d3ee; /* cyan-400 */
 }
 
-.map-hud-bar-track--sp {
-    height: 3px;
-}
-
-.map-hud-bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 0.4s ease;
-}
-
-.map-hud-bar-hp {
-    background: linear-gradient(90deg, #dc2626, #f97316);
-    box-shadow: 0 0 6px rgba(220, 38, 38, 0.55);
-}
-
-.map-hud-bar-sp {
-    background: linear-gradient(90deg, #00d9f6, #5cf4f6);
-    box-shadow: 0 0 5px rgba(5, 198, 210, 0.45);
-}
-
-.map-hud-bar-val {
-    font-size: 12px;
-    font-weight: 900;
-    color: rgba(255, 255, 255, 0.72);
-    width: 24px;
+.hud-bar-value {
+    font-family: 'monospace';
+    font-weight: 800;
+    font-size: 11px;
+    color: rgba(226, 232, 240, 0.9);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.9);
+    line-height: 1;
     text-align: right;
     flex-shrink: 0;
     font-variant-numeric: tabular-nums;
+}
+
+.hud-bar-track {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.5);
+    position: relative;
+    min-height: 4px; /* Ensure visibility if no height class is present */
+}
+
+/* Map specific bar track sizing */
+.map-hud-bar-track {
+    height: 6px;
+    flex: 1;
+}
+
+.hud-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hud-bar-hp-fill {
+    background: linear-gradient(90deg, #059669, #34d399); /* Emerald Gradient */
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.45);
+}
+
+.hud-bar-hp-fill.danger {
+    background: linear-gradient(90deg, #dc2626, #f87171) !important;
+    box-shadow: 0 0 15px rgba(220, 38, 38, 0.6) !important;
+}
+
+.hud-bar-sp-fill {
+    background: linear-gradient(90deg, #0891b2, #22d3ee); /* Cyan Gradient */
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.35);
 }
 
 .map-hud-bar-val--sp {
@@ -4537,3 +4555,352 @@ body.lock-scroll {
     100% { opacity: 0.9; }
 }
 
+/* ── Knowledge Card Unlock Animation ── */
+/* ── Knowledge Card Unlock Animation 2.0 ── */
+.knowledge-card-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    background: rgba(8, 10, 24, 0.45);
+    backdrop-filter: blur(12px) brightness(0.85);
+    -webkit-backdrop-filter: blur(12px) brightness(0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1200px;
+    cursor: pointer;
+}
+
+.knowledge-card-container {
+    position: relative;
+    width: 290px;
+    height: 420px;
+    transform-style: preserve-3d;
+}
+
+.knowledge-card {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1625 0%, #2d1b4e 50%, #1a1625 100%);
+    border: 2px solid rgba(251, 191, 36, 0.6);
+    border-radius: 24px;
+    box-shadow: 
+        0 30px 70px rgba(0, 0, 0, 0.9),
+        inset 0 0 40px rgba(251, 191, 36, 0.1),
+        0 0 25px rgba(251, 191, 36, 0.2);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 30px 24px;
+    text-align: center;
+    animation: knowledge-card-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+               knowledge-card-float 4s ease-in-out infinite 0.7s;
+    backface-visibility: hidden;
+    user-select: none;
+}
+
+/* Sparkle Effects */
+.card-sparkles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.card-sparkle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #fff, 0 0 20px #fbbf24;
+    opacity: 0;
+    animation: sparkle-twinkle 3s infinite;
+}
+
+.card-sparkle:nth-child(1) { top: 15%; left: 20%; animation-delay: 0.2s; }
+.card-sparkle:nth-child(2) { top: 25%; right: 15%; animation-delay: 0.8s; }
+.card-sparkle:nth-child(3) { bottom: 30%; left: 15%; animation-delay: 1.5s; }
+.card-sparkle:nth-child(4) { bottom: 20%; right: 25%; animation-delay: 2.1s; }
+.card-sparkle:nth-child(5) { top: 50%; left: 10%; animation-delay: 0.5s; }
+.card-sparkle:nth-child(6) { top: 60%; right: 10%; animation-delay: 1.2s; }
+.card-sparkle:nth-child(7) { top: 10%; right: 40%; animation-delay: 2.5s; }
+.card-sparkle:nth-child(8) { bottom: 10%; left: 40%; animation-delay: 1.8s; }
+
+@keyframes sparkle-twinkle {
+    0%, 100% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+/* Inner Shine */
+.card-inner-shine {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent 45%, rgba(255,255,255,0.1) 50%, transparent 55%);
+    pointer-events: none;
+    z-index: 5;
+    animation: card-shine-sweep 4s infinite linear;
+}
+
+@keyframes card-shine-sweep {
+    0% { transform: translateX(-10%) translateY(-10%); }
+    100% { transform: translateX(10%) translateY(10%); }
+}
+
+.card-magic-glow {
+    position: absolute;
+    inset: -30px;
+    background: radial-gradient(circle at center, rgba(139, 92, 246, 0.4) 0%, transparent 70%);
+    filter: blur(25px);
+    z-index: -1;
+    animation: card-glow-pulse 3s ease-in-out infinite;
+}
+
+.card-header {
+    flex: 1.5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.particle-glamour {
+    font-size: 130px;
+    font-weight: 900;
+    color: #fbbf24;
+    text-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba(251, 191, 36, 0.4),
+        0 0 40px rgba(251, 191, 36, 0.2);
+    font-family: "Noto Serif JP", serif;
+    line-height: 1;
+    animation: particle-float 4s ease-in-out infinite;
+}
+
+@keyframes particle-float {
+    0%, 100% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.05); filter: brightness(1.2); }
+}
+
+.card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+}
+
+.card-topic-tag {
+    display: inline-block;
+    align-self: center;
+    padding: 4px 16px;
+    background: rgba(251, 191, 36, 0.15);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 99px;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #fbbf24;
+    letter-spacing: 2px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.card-meaning {
+    font-size: 1.2rem;
+    color: #e2e8f0;
+    line-height: 1.6;
+    font-weight: 500;
+    max-width: 90%;
+    margin: 0 auto;
+}
+
+.card-footer {
+    margin-top: 20px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: rgba(251, 191, 36, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    animation: footer-pulse 2s infinite ease-in-out;
+}
+
+@keyframes footer-pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+}
+
+/* Absorption State */
+.knowledge-card-overlay.is-absorbing .knowledge-card {
+    animation: knowledge-card-absorb 1.1s cubic-bezier(0.45, 0.05, 0.55, 0.95) forwards !important;
+}
+
+/* Keyframes */
+@keyframes knowledge-card-pop {
+    0% { transform: scale(0.3) rotateY(-40deg) rotateX(20deg); opacity: 0; }
+    100% { transform: scale(1) rotateY(0) rotateX(0); opacity: 1; }
+}
+
+@keyframes knowledge-card-float {
+    0%, 100% { transform: translateY(0) rotate(0); }
+    50% { transform: translateY(-15px) rotate(1deg); }
+}
+
+@keyframes card-glow-pulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+@keyframes knowledge-card-absorb {
+    0% {
+        transform: translate(0, 0) scale(1) rotate(0);
+    }
+    25% {
+        transform: translate(0, -30px) scale(1.1) rotate(-8deg);
+    }
+    100% {
+        /* Approximate target: bottom right HUD Codex icon area */
+        transform: translate(calc(50vw - 80px), calc(50vh - 80px)) scale(0.01) rotate(1080deg);
+        opacity: 0;
+        filter: brightness(3) blur(5px);
+    }
+}
+
+.card-absorb-particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.card-absorb-particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: #fbbf24;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #fbbf24;
+    animation: absorb-p-drift 1.1s ease-out forwards;
+}
+
+@keyframes absorb-p-drift {
+    to { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+}
+
+/* ── Battle HUD Utility Buttons (Unified Fantasy Glass) ── */
+.hud-tool-btn {
+    position: relative;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.4),
+        inset 0 0 12px rgba(255, 255, 255, 0.04);
+    cursor: pointer;
+    overflow: visible; /* Allow badge overflow */
+    padding: 0;
+}
+
+@media (min-width: 640px) {
+    .hud-tool-btn {
+        width: 44px;
+        height: 44px;
+    }
+}
+
+.hud-tool-btn:hover {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: rgba(255, 255, 255, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 
+        0 6px 20px rgba(0, 0, 0, 0.5),
+        inset 0 0 15px rgba(255, 255, 255, 0.08);
+}
+
+.hud-tool-btn:active {
+    transform: translateY(0) scale(0.92);
+    filter: brightness(0.85);
+}
+
+/* Icon refinement */
+.hud-tool-btn span {
+    font-size: 17px;
+    transition: transform 0.2s;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (min-width: 640px) {
+    .hud-tool-btn span {
+        font-size: 20px;
+    }
+}
+
+.hud-tool-btn:hover span {
+    transform: scale(1.1);
+}
+
+/* Potion Inventory Integration */
+.hud-tool-btn.is-potion-ready {
+    background: linear-gradient(135deg, rgba(5, 150, 105, 0.2), rgba(15, 23, 42, 0.7));
+    border-color: rgba(52, 211, 153, 0.4);
+    box-shadow: 
+        0 4px 15px rgba(16, 185, 129, 0.15),
+        inset 0 0 12px rgba(52, 211, 153, 0.06);
+}
+
+.hud-tool-btn.is-potion-ready:hover {
+    border-color: rgba(52, 211, 153, 0.6);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.25);
+}
+
+/* Skill Book Glow Integration */
+.hud-tool-btn.is-skill-ready {
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.2), rgba(15, 23, 42, 0.7));
+    border-color: rgba(129, 140, 248, 0.45);
+}
+
+/* Unified Badge Style */
+.hud-tool-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, #ef4444, #b91c1c);
+    border: 1.5px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+}
+
+.hud-tool-badge span {
+    color: #fff;
+    font-size: 10px !important;
+    font-weight: 900 !important;
+    transform: none !important; /* Prevent hover scale */
+    font-family: sans-serif;
+}
+
+/* Global Disabled State */
+.hud-tool-btn.is-disabled {
+    filter: grayscale(1) opacity(0.5);
+    cursor: not-allowed;
+    pointer-events: none;
+    transform: none !important;
+    box-shadow: none !important;
+}
