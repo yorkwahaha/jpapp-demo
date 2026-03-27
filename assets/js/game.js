@@ -490,15 +490,38 @@ const _jpApp = Vue.createApp({
                 if (typeof showStatusToast === 'function') showStatusToast('🔒 關卡尚未解鎖', { bg: 'rgba(0,0,0,0.7)', border: '#555', color: '#fff' });
                 return;
             }
-            if (lvNum === 36 && !mentorTutorialSeen.value.includes('L36_FIRST_ENTRY')) {
-                mentorTutorialSeen.value.push('L36_FIRST_ENTRY');
-                saveMentorState();
-                setupMentorDialogue({
-                    id: "L36_FIRST_ENTRY",
-                    name: "導師・優依"
-                });
-                return;
+
+            // [Auto-Mentor] First-time interaction trigger
+            const stageKey = `STAGE_INTRO_${lvNum}`;
+            const isManualReview = (lvNum === 36); // Special case for hidden stage
+            const tutorialKey = isManualReview ? 'L36_FIRST_ENTRY' : stageKey;
+
+            if (!mentorTutorialSeen.value.includes(tutorialKey) && hasMentor(lvNum)) {
+                const config = LEVEL_CONFIG.value[lvNum];
+                const skillId = config.skillId || (config.unlockSkills && config.unlockSkills[0]);
+                const skill = skillsAll.value[skillId];
+
+                if (skill || isManualReview) {
+                    // Mark as seen immediately (even if they skip) to prevent re-triggering every click
+                    mentorTutorialSeen.value.push(tutorialKey);
+                    saveMentorState();
+
+                    // Carry out the original intent (open confirm modal) after mentor finishes
+                    window._resumeAfterMentor = () => {
+                        selectedStageToConfirm.value = lvNum;
+                        isBattleConfirmOpen.value = true;
+                    };
+
+                    if (isManualReview) {
+                        setupMentorDialogue({ id: "L36_FIRST_ENTRY", name: "導師・優依" });
+                    } else {
+                        setupMentorDialogue(skill);
+                    }
+                    return; // Intercept: Wait for mentor
+                }
             }
+
+            // Normal flow: Straight to battle confirmation
             selectedStageToConfirm.value = lvNum;
             isBattleConfirmOpen.value = true;
         };
@@ -620,13 +643,13 @@ const _jpApp = Vue.createApp({
 
             feedbackStyle: 'oneesan',
 
-            ttsVoice: 'ja-JP-MayuNeural'
+            ttsVoice: 'ja-JP-Neural2-B'
 
         });
 
-        const VALID_TTS_VOICES = ['ja-JP-NanamiNeural', 'ja-JP-MayuNeural', 'ja-JP-NaokiNeural'];
+        const VALID_TTS_VOICES = ['ja-JP-Standard-A', 'ja-JP-Wavenet-A', 'ja-JP-Neural2-B', 'ja-JP-Wavenet-D'];
 
-        const DEFAULT_TTS_VOICE = 'ja-JP-MayuNeural';
+        const DEFAULT_TTS_VOICE = 'ja-JP-Neural2-B';
 
         const _settingsDefaults = { autoReadOnWrong: true, correctAdvanceDelayMs: null, wrongAdvanceDelayMs: null, enemyAttackMode: 'atb', feedbackStyle: 'oneesan', ttsVoice: DEFAULT_TTS_VOICE };
 
@@ -795,7 +818,7 @@ const _jpApp = Vue.createApp({
 
                 // 以標點符號初步斷句
 
-                const sentences = text.match(/[^。！？]+[。！？]?/g) || [text];
+                const sentences = text.match(/[^。！？]+[。！？]?[」』"']?/g) || [text];
 
 
 
@@ -809,7 +832,7 @@ const _jpApp = Vue.createApp({
 
                     // 若加進去會超過 2 句，或單句極長，就強迫入下一頁
 
-                    if (sentenceCount >= 2 || (currentPage.length + s.length > 60)) {
+                    if (sentenceCount >= 3 || (currentPage.length + s.length > 85)) {
 
                         if (currentPage) pages.push(currentPage.trim());
 
@@ -1803,8 +1826,11 @@ const _jpApp = Vue.createApp({
 
         const monsterHit = ref(false);
 
+        const monsterStunSeconds = ref(0); // 怪物處於受擊僵直的時間 (秒)
+
         const monsterHitImageFailed = ref(false); // 標記目前怪物是否缺乏 *2 受擊圖
 
+        const monsterIsEntering = ref(false); // 正在進場
         const monsterIsDying = ref(false); // 正在播放死亡動畫
 
         const monsterTrulyDead = ref(false); // 動畫結束，真正從畫面移除
@@ -3236,6 +3262,13 @@ const _jpApp = Vue.createApp({
 
             if (currentLevel.value === 36) speedMult = 1.15;
 
+            if (monsterStunSeconds.value > 0) {
+                // 每 100ms 扣除 0.1s
+                monsterStunSeconds.value = Math.max(0, monsterStunSeconds.value - 0.1);
+                return;
+            }
+
+            // 恢復被誤刪的 ATB 累進邏輯 (26032701)
             timeLeft.value -= (0.1 / heroBuffs.enemyAtbMult) * speedMult;
 
             if (timeLeft.value <= 0) {
@@ -3911,7 +3944,7 @@ const _jpApp = Vue.createApp({
 
             initAudio();
 
-            await speakAzure(m.sentenceText);
+            await speakCloudTts(m.sentenceText);
 
         };
 
@@ -5853,6 +5886,9 @@ const _jpApp = Vue.createApp({
 
             monsterHitImageFailed.value = false;
 
+            monsterIsEntering.value = true;
+            setTimeout(() => { monsterIsEntering.value = false; }, 800);
+
             monsterIsDying.value = false;
 
             monsterTrulyDead.value = false;
@@ -6753,7 +6789,7 @@ const _jpApp = Vue.createApp({
 
             voicePlayedForCurrentQuestion.value = true;
 
-            await speakAzure(cleanQuestionText);
+            await speakCloudTts(cleanQuestionText);
 
         };
 
@@ -6851,7 +6887,12 @@ const _jpApp = Vue.createApp({
 
                         lastPraiseText = text;
 
-                        playTtsKey(`ui.praise_${praiseIndex}`, text);
+                        if (praiseIndex <= 0) {
+                            playTtsKey(`ui.praise_${praiseIndex}`, text);
+                        } else {
+                            // 3回以上 combo 時直接走雲端/WebSpeech，避免 404 噪音
+                            speakCloudTts(text);
+                        }
 
                     }
 
@@ -7033,6 +7074,12 @@ const _jpApp = Vue.createApp({
 
                         monster.value.hp = Math.max(0, monster.value.hp - dmg);
 
+                        // Trigger hit feedback: sprite / anim / stun
+                        monsterHit.value = true;
+                        monsterHitImageFailed.value = false;
+                        monsterStunSeconds.value = 0.8; // 0.8s hit-stun
+                        setTimeout(() => { monsterHit.value = false; }, 400);
+
                         pushBattleLog(`造成 ${dmg} 點傷害！`, 'info');
 
 
@@ -7103,7 +7150,7 @@ const _jpApp = Vue.createApp({
 
                                 if (currentIndex.value === ttsQuestionIdx && hasSubmitted.value && !isCurrentCorrect.value && !monsterDead.value && !playerDead.value && !isFinished.value && !showLevelSelect.value) {
 
-                                    speakAzure(cleanQuestionText);
+                                    speakCloudTts(cleanQuestionText);
 
                                 }
 
@@ -7506,11 +7553,7 @@ const _jpApp = Vue.createApp({
             // 只有在受擊中、非錯誤狀態、且該怪物尚未被標記為缺乏 *2 圖時，嘗試切換
 
             if (monsterHit.value && !monsterHitImageFailed.value) {
-
                 if (monster.value.spriteHit) return monster.value.spriteHit;
-
-                if (monster.value.sprite.includes('.')) return monster.value.sprite.replace(/(\.[^.]+)$/, '2$1');
-
             }
 
             return monster.value.sprite;
@@ -8110,7 +8153,7 @@ const _jpApp = Vue.createApp({
             isMentorModalOpen, isMentorReplayOpen, isLevelJumpOpen, isAdvancedSettingsOpen, replaySpecificMentor, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
             displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,
             isMentorSkipPressing, startMentorSkipPress, cancelMentorSkipPress,
-            isMonsterImageError, handleMonsterImageError, handleMapImageError, currentMonsterSprite, monsterPositionStyle, monsterIsDying, monsterTrulyDead, monsterResultShown,
+            isMonsterImageError, handleMonsterImageError, handleMapImageError, currentMonsterSprite, monsterPositionStyle, monsterIsEntering, monsterIsDying, monsterTrulyDead, monsterResultShown,
             showMap, unlockedLevels, clearedLevels, showMentorChoice, selectedMapLevel,
             openMap, isLevelUnlocked, isLevelCleared, getStageNodeClass, getLevelTitle, hasMentor,
 

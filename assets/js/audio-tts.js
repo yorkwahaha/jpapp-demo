@@ -121,35 +121,43 @@ function stopWebSpeech() {
 
 
 
+const GOOGLE_TTS_WHITELIST = ['ja-JP-Standard-A', 'ja-JP-Wavenet-A', 'ja-JP-Neural2-B', 'ja-JP-Wavenet-D'];
+
+function migrateVoice(voice) {
+    if (!voice) return "ja-JP-Neural2-B";
+    if (GOOGLE_TTS_WHITELIST.includes(voice)) return voice;
+    // 處理舊 Azure 聲線遷移
+    if (voice.includes('MayuNeural') || voice.includes('NanamiNeural') || voice.includes('NaokiNeural')) {
+        console.log(`[TTS] Migrating legacy Azure voice: ${voice} -> ja-JP-Neural2-B`);
+        return "ja-JP-Neural2-B";
+    }
+    return "ja-JP-Neural2-B";
+}
+
 function getPreferredTtsVoice() {
-
     try {
-
         const raw = localStorage.getItem('jpRpgSettingsV1');
-
         if (raw) {
-
             const parsed = JSON.parse(raw);
-
-            if (parsed.ttsVoice && ['ja-JP-NanamiNeural', 'ja-JP-MayuNeural', 'ja-JP-NaokiNeural'].includes(parsed.ttsVoice)) {
-
-                return parsed.ttsVoice;
-
+            const originalVoice = parsed.ttsVoice;
+            const migratedVoice = migrateVoice(originalVoice);
+            
+            // 如果發生遷移且跟原值不同，寫回 localStorage 一勞永逸
+            if (originalVoice !== migratedVoice) {
+                parsed.ttsVoice = migratedVoice;
+                localStorage.setItem('jpRpgSettingsV1', JSON.stringify(parsed));
+                console.log(`[TTS] Settings migrated & saved: ${migratedVoice}`);
             }
-
+            return migratedVoice;
         }
-
     } catch (e) { }
-
-    return "ja-JP-MayuNeural";
-
+    return "ja-JP-Neural2-B";
 }
 
 
 
-async function playTtsKey(key, fallbackText, azureVoiceName = null) {
-
-    if (!azureVoiceName) azureVoiceName = getPreferredTtsVoice();
+async function playTtsKey(key, fallbackText, ttsVoiceName = null) {
+    if (!ttsVoiceName) ttsVoiceName = getPreferredTtsVoice();
 
     stopWebSpeech();
 
@@ -192,15 +200,10 @@ async function playTtsKey(key, fallbackText, azureVoiceName = null) {
 
 
     if (fallbackText) {
-
-        const azureSuccess = await speakAzure(fallbackText, azureVoiceName);
-
-        if (azureSuccess) {
-
-            return { used: "azure", key };
-
+        const cloudTtsSuccess = await speakCloudTts(fallbackText, ttsVoiceName);
+        if (cloudTtsSuccess) {
+            return { used: "cloud", key };
         }
-
     }
 
 
@@ -336,9 +339,8 @@ async function getSessionToken() {
 
 
 
-// 🌟 解鎖語速與語調控制的 speakAzure
-
-async function speakAzure(text, voiceShortName = null) {
+// ================= [ CLOUD TTS — GOOGLE/AZURE PROXY ] =================
+async function speakCloudTts(text, voiceShortName = null) {
 
     // 讀取自訂語速與語調 (預設為 1.0)
 
@@ -354,135 +356,68 @@ async function speakAzure(text, voiceShortName = null) {
 
             const parsed = JSON.parse(raw);
 
-            if (parsed.ttsVoice && !voiceShortName) voiceShortName = parsed.ttsVoice;
-
+            if (parsed.ttsVoice && !voiceShortName) {
+                const migrated = migrateVoice(parsed.ttsVoice);
+                if (migrated !== parsed.ttsVoice) {
+                    parsed.ttsVoice = migrated;
+                    localStorage.setItem('jpRpgSettingsV1', JSON.stringify(parsed));
+                    console.log(`[TTS] Session settings migrated & saved: ${migrated}`);
+                }
+                voiceShortName = migrated;
+            }
             if (parsed.ttsRate) customRate = String(parsed.ttsRate);
-
             if (parsed.ttsPitch) customPitch = String(parsed.ttsPitch);
-
         }
-
     } catch (e) { }
 
     if (!voiceShortName) voiceShortName = getPreferredTtsVoice();
+    voiceShortName = migrateVoice(voiceShortName);
 
 
 
-    const key = getAzureSpeechKey();
+    // Strip HTML tags for TTS (minimal safe)
+    const cleanText = text.replace(/<[^>]*>/g, '').trim();
 
-    const region = getAzureSpeechRegion();
-
-    const endpoint = region ? `https://${region}.tts.speech.microsoft.com/cognitiveservices/v1` : null;
-
-
-
-    if (!text) return false;
-
+    if (!cleanText) return false;
     stopWebSpeech();
-
     stopTtsAudio();
 
-
+    console.log(`[CLOUD TTS] start: ${cleanText.slice(0, 30)}...`);
 
     let res;
+    let retryCount = 0;
+    let success = false;
 
-
-
-    if (key) {
-
-        // 使用 prosody 標籤將語速與音調注入
-
-        const ssml =
-
-            `<speak version="1.0" xml:lang="ja-JP">
-
-  <voice name="${voiceShortName}">
-
-    <prosody rate="${customRate}" pitch="${customPitch}">
-
-      ${text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&apos;")}
-
-    </prosody>
-
-  </voice>
-
-</speak>`;
+    while (retryCount < 2 && !success) {
+        const token = await getSessionToken();
+        if (!token) return false;
 
         try {
-
-            res = await fetch(endpoint, {
-
+            res = await fetch(TTS_PROXY_URL, {
                 method: "POST",
-
                 headers: {
-
-                    "Ocp-Apim-Subscription-Key": key,
-
-                    "Content-Type": "application/ssml+xml",
-
-                    "X-Microsoft-OutputFormat": "audio-16khz-32kbitrate-mono-mp3"
-
+                    "Content-Type": "application/json",
+                    "X-Session-Token": token
                 },
-
-                body: ssml
-
+                body: JSON.stringify({
+                    text: cleanText,
+                    voice: voiceShortName,
+                    rate: customRate,
+                    pitch: customPitch
+                })
             });
-
+            if (res.status === 401) { sessionTokenData = null; retryCount++; continue; }
+            success = true;
         } catch (e) { return false; }
-
-    } else {
-
-        let retryCount = 0;
-
-        let success = false;
-
-        while (retryCount < 2 && !success) {
-
-            const token = await getSessionToken();
-
-            if (!token) return false;
-
-            try {
-
-                res = await fetch(TTS_PROXY_URL, {
-
-                    method: "POST",
-
-                    headers: {
-
-                        "Content-Type": "application/json",
-
-                        "X-Session-Token": token
-
-                    },
-
-                    body: JSON.stringify({
-
-                        text: text,
-
-                        voice: voiceShortName,
-
-                        rate: customRate,   // 🌟 傳遞自訂語速
-
-                        pitch: customPitch  // 🌟 傳遞自訂語調
-
-                    })
-
-                });
-
-                if (res.status === 401) { sessionTokenData = null; retryCount++; continue; }
-
-                success = true;
-
-            } catch (e) { return false; }
-
-        }
-
     }
 
 
 
-    if (!res || !res.ok) return false;
+    if (!res || !res.ok) {
+        const errorMsg = res ? await res.text() : "No response from worker";
+        console.error('[CLOUD TTS] server error:', res ? res.status : "unknown", errorMsg);
+        return false;
+    }
 
 
 

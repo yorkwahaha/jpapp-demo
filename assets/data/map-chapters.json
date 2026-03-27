@@ -10,10 +10,10 @@
         "mapBgm": "assets/audio/bgm/map.mp3",
         "themeKey": "chapter1_0",
         "nodes": {
-          "1": { "desktopX": 45, "desktopY": 25, "mobileX": 38, "mobileY": 24, "landmark": "新手村" },
-          "2": { "desktopX": 30, "desktopY": 50, "mobileX": 25, "mobileY": 52, "landmark": "村莊外圍" },
-          "3": { "desktopX": 63, "desktopY": 58, "mobileX": 60, "mobileY": 58, "landmark": "岔路口" },
-          "4": { "desktopX": 32, "desktopY": 70, "mobileX": 40, "mobileY": 75, "landmark": "森林入口" },
+          "1": { "desktopX": 46, "desktopY": 28, "mobileX": 38, "mobileY": 24, "landmark": "新手村" },
+          "2": { "desktopX": 35, "desktopY": 50, "mobileX": 25, "mobileY": 52, "landmark": "村莊外圍" },
+          "3": { "desktopX": 53, "desktopY": 60, "mobileX": 60, "mobileY": 58, "landmark": "岔路口" },
+          "4": { "desktopX": 43, "desktopY": 70, "mobileX": 40, "mobileY": 75, "landmark": "森林入口" },
           "5": { "desktopX": 50, "desktopY": 85, "mobileX": 75, "mobileY": 85, "landmark": "森林深處" }
         }
       },
@@ -24,11 +24,11 @@
         "mapBgm": "assets/audio/bgm/map2.mp3",
         "themeKey": "highland_wind",
         "nodes": {
-          "6": { "desktopX": 35, "desktopY": 20, "mobileX": 35, "mobileY": 20, "landmark": "高地入口" },
-          "7": { "desktopX": 35, "desktopY": 20, "mobileX": 87, "mobileY": 42, "landmark": "懸崖邊" },
-          "8": { "desktopX": 35, "desktopY": 20, "mobileX": 27, "mobileY": 52, "landmark": "山影小徑" },
-          "9": { "desktopX": 35, "desktopY": 20, "mobileX": 45, "mobileY": 72, "landmark": "巨石陣" },
-          "10": { "desktopX": 35, "desktopY": 20, "mobileX": 70, "mobileY": 90, "landmark": "獸人塔樓" }
+          "6": { "desktopX": 40, "desktopY": 20, "mobileX": 35, "mobileY": 20, "landmark": "高地入口" },
+          "7": { "desktopX": 70, "desktopY": 42, "mobileX": 87, "mobileY": 42, "landmark": "懸崖邊" },
+          "8": { "desktopX": 38, "desktopY": 52, "mobileX": 27, "mobileY": 52, "landmark": "山影小徑" },
+          "9": { "desktopX": 45, "desktopY": 72, "mobileX": 45, "mobileY": 72, "landmark": "巨石陣" },
+          "10": { "desktopX": 60, "desktopY": 90, "mobileX": 70, "mobileY": 90, "landmark": "獸人塔樓" }
         }
       },
       {
@@ -38,11 +38,11 @@
         "mapBgm": "assets/audio/bgm/Frozen_Labyrinth.mp3",
         "themeKey": "icefield_wind",
         "nodes": {
-          "11": { "desktopX": 35, "desktopY": 20, "mobileX": 88, "mobileY": 16, "landmark": "石橋" },
-          "12": { "desktopX": 35, "desktopY": 20, "mobileX": 27, "mobileY": 37, "landmark": "眺望平台" },
-          "13": { "desktopX": 35, "desktopY": 20, "mobileX": 70, "mobileY": 46, "landmark": "冰晶石柱" },
-          "14": { "desktopX": 35, "desktopY": 20, "mobileX": 40, "mobileY": 70, "landmark": "冰城牆下" },
-          "15": { "desktopX": 35, "desktopY": 20, "mobileX": 60, "mobileY": 93, "landmark": "冰鳥巢穴" }
+          "11": { "desktopX": 70, "desktopY": 16, "mobileX": 88, "mobileY": 16, "landmark": "石橋" },
+          "12": { "desktopX": 39, "desktopY": 37, "mobileX": 27, "mobileY": 37, "landmark": "眺望平台" },
+          "13": { "desktopX": 59, "desktopY": 46, "mobileX": 70, "mobileY": 46, "landmark": "冰晶石柱" },
+          "14": { "desktopX": 44, "desktopY": 70, "mobileX": 40, "mobileY": 70, "landmark": "冰城牆下" },
+          "15": { "desktopX": 56, "desktopY": 93, "mobileX": 60, "mobileY": 93, "landmark": "冰鳥巢穴" }
         }
       },
       {
@@ -52,11 +52,11 @@
         "mapBgm": "assets/audio/bgm/map3.mp3",
         "themeKey": "ruins_mist",
         "nodes": {
-          "16": { "desktopX": 35, "desktopY": 20, "mobileX": 80, "mobileY": 15, "landmark": "城門長廊" },
-          "17": { "desktopX": 35, "desktopY": 20, "mobileX": 20, "mobileY": 35, "landmark": "幽靜階梯" },
-          "18": { "desktopX": 35, "desktopY": 20, "mobileX": 50, "mobileY": 50, "landmark": "石橋" },
-          "19": { "desktopX": 35, "desktopY": 20, "mobileX": 58, "mobileY": 73, "landmark": "城內外苑" },
-          "20": { "desktopX": 35, "desktopY": 20, "mobileX": 90, "mobileY": 80, "landmark": "外廊出口" }
+          "16": { "desktopX": 65, "desktopY": 15, "mobileX": 80, "mobileY": 15, "landmark": "城門長廊" },
+          "17": { "desktopX": 20, "desktopY": 35, "mobileX": 20, "mobileY": 35, "landmark": "幽靜階梯" },
+          "18": { "desktopX": 50, "desktopY": 50, "mobileX": 50, "mobileY": 50, "landmark": "石橋" },
+          "19": { "desktopX": 58, "desktopY": 73, "mobileX": 58, "mobileY": 73, "landmark": "城內外苑" },
+          "20": { "desktopX": 75, "desktopY": 80, "mobileX": 90, "mobileY": 80, "landmark": "外廊出口" }
         }
       },
       {
@@ -66,11 +66,11 @@
         "mapBgm": "assets/audio/bgm/Naraku_he.mp3",
         "themeKey": "abyss_breath",
         "nodes": {
-          "21": { "desktopX": 35, "desktopY": 20, "mobileX": 60, "mobileY": 18, "landmark": "幽暗入口" },
-          "22": { "desktopX": 35, "desktopY": 20, "mobileX": 20, "mobileY": 30, "landmark": "骨骸路" },
-          "23": { "desktopX": 35, "desktopY": 20, "mobileX": 85, "mobileY": 52, "landmark": "無盡長廊" },
-          "24": { "desktopX": 35, "desktopY": 20, "mobileX": 28, "mobileY": 68, "landmark": "封印大門" },
-          "25": { "desktopX": 35, "desktopY": 20, "mobileX": 55, "mobileY": 83, "landmark": "深淵盡頭" }
+          "21": { "desktopX": 55, "desktopY": 18, "mobileX": 60, "mobileY": 18, "landmark": "幽暗入口" },
+          "22": { "desktopX": 33, "desktopY": 32, "mobileX": 20, "mobileY": 30, "landmark": "骨骸路" },
+          "23": { "desktopX": 70, "desktopY": 52, "mobileX": 85, "mobileY": 52, "landmark": "無盡長廊" },
+          "24": { "desktopX": 37, "desktopY": 68, "mobileX": 28, "mobileY": 68, "landmark": "深淵盡頭" },
+          "25": { "desktopX": 55, "desktopY": 83, "mobileX": 55, "mobileY": 83, "landmark": "封印大門" }
         }
       },
       {
@@ -80,11 +80,11 @@
         "mapBgm": "assets/audio/bgm/Skylords.mp3",
         "themeKey": "sacred_glow",
         "nodes": {
-          "26": { "desktopX": 35, "desktopY": 20, "mobileX": 35, "mobileY": 24, "landmark": "幻影長廊" },
-          "27": { "desktopX": 35, "desktopY": 20, "mobileX": 73, "mobileY": 39, "landmark": "禁忌書庫" },
-          "28": { "desktopX": 35, "desktopY": 20, "mobileX": 25, "mobileY": 53, "landmark": "抉擇之廳" },
-          "29": { "desktopX": 35, "desktopY": 20, "mobileX": 68, "mobileY": 65, "landmark": "獻祭廣場" },
-          "30": { "desktopX": 35, "desktopY": 20, "mobileX": 62, "mobileY": 83, "landmark": "王座之間" }
+          "26": { "desktopX": 38, "desktopY": 24, "mobileX": 35, "mobileY": 24, "landmark": "幻影長廊" },
+          "27": { "desktopX": 61, "desktopY": 39, "mobileX": 73, "mobileY": 39, "landmark": "禁忌書庫" },
+          "28": { "desktopX": 36, "desktopY": 54, "mobileX": 25, "mobileY": 53, "landmark": "抉擇之廳" },
+          "29": { "desktopX": 60, "desktopY": 64, "mobileX": 68, "mobileY": 65, "landmark": "獻祭廣場" },
+          "30": { "desktopX": 57, "desktopY": 81, "mobileX": 62, "mobileY": 83, "landmark": "王座之間" }
         }
       },
       {
@@ -94,11 +94,11 @@
         "mapBgm": "assets/audio/bgm/Lonely_Justice.mp3",
         "themeKey": "final_sanctum",
         "nodes": {
-          "31": { "desktopX": 35, "desktopY": 20, "mobileX": 18, "mobileY": 22, "landmark": "起源石碑" },
-          "32": { "desktopX": 35, "desktopY": 20, "mobileX": 88, "mobileY": 38, "landmark": "試煉迴廊" },
-          "33": { "desktopX": 35, "desktopY": 20, "mobileX": 24, "mobileY": 47, "landmark": "神域祭壇" },
-          "34": { "desktopX": 35, "desktopY": 20, "mobileX": 64, "mobileY": 56, "landmark": "禁忌鍛爐" },
-          "35": { "desktopX": 35, "desktopY": 20, "mobileX": 50, "mobileY": 70, "landmark": "世界之巔" }
+          "31": { "desktopX": 31, "desktopY": 22, "mobileX": 18, "mobileY": 22, "landmark": "起源石碑" },
+          "32": { "desktopX": 72, "desktopY": 36, "mobileX": 88, "mobileY": 38, "landmark": "試煉迴廊" },
+          "33": { "desktopX": 38, "desktopY": 46, "mobileX": 24, "mobileY": 47, "landmark": "神域祭壇" },
+          "34": { "desktopX": 56, "desktopY": 54, "mobileX": 64, "mobileY": 56, "landmark": "禁忌鍛爐" },
+          "35": { "desktopX": 50, "desktopY": 70, "mobileX": 50, "mobileY": 70, "landmark": "世界之巔" }
         }
       },
       {
@@ -108,7 +108,7 @@
         "mapBgm": "assets/audio/bgm/Ancient_memories.mp3",
         "themeKey": "void_throne",
         "nodes": {
-          "36": { "desktopX": 35, "desktopY": 20, "mobileX": 54, "mobileY": 48, "landmark": "真正的終結" }
+          "36": { "desktopX": 52, "desktopY": 48, "mobileX": 54, "mobileY": 48, "landmark": "真正的終結" }
         }
       }
     ]

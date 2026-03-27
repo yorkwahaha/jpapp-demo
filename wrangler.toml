@@ -1,13 +1,18 @@
 name = "jpapp-tts-proxy"
-main = "worker/azure-tts.js"
+main = "worker/google-tts.js"
 compatibility_date = "2024-03-20"
+preview_urls = true
 
-# Note: You must configure AZURE_KEY, AZURE_REGION, and CLIENT_TOKEN via `wrangler secret put`
+# Configure secrets via `wrangler secret put`, e.g. GOOGLE_API_KEY, CLIENT_TOKEN
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "79138047540a434c84132753f4e1b2df"
 
 [[durable_objects.bindings]]
 name = "RATE_LIMITER"
 class_name = "RateLimiter"
 
 [[migrations]]
-tag = "v1" # Needs to be unique for each migration
-new_classes = ["RateLimiter"]
+tag = "v1"
+new_sqlite_classes = ["RateLimiter"]

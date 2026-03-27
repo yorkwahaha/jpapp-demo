@@ -167,6 +167,17 @@ window.MapAmbient = (() => {
             vyBase: 0.05,
             vyRange: 0.2,
         },
+        stones: {
+            count: 12,
+            colors: [
+                'rgba(20, 20, 25, 1)',   // deep charcoal (solid)
+                'rgba(35, 35, 40, 1)',   // dark grey (solid)
+                'rgba(50, 50, 55, 0.7)', // mid grey (translucent)
+                'rgba(25, 25, 30, 0.9)'  // obsidian
+            ],
+            sizeRange: [5, 42],
+            spawnYRange: [0.1, 0.9]
+        },
         sway: { class: 'map-ambient-void' }
     };
 
@@ -264,6 +275,7 @@ window.MapAmbient = (() => {
     let birds = [];
     let birdTimer = 0;
     let birdInterval = 0;
+    let stones = [];
     let theme = null;
     let container = null;
     let active = false;
@@ -472,6 +484,83 @@ window.MapAmbient = (() => {
         for (const b of birds) drawBird(b);
     }
 
+    // ── Stone system ───────────────────────────────────────────────────────
+    function createStone(w, h) {
+        const cfg = theme.stones;
+        const size = cfg.sizeRange[0] + Math.random() * (cfg.sizeRange[1] - cfg.sizeRange[0]);
+        
+        let x = Math.random() * w;
+        if (size > 22) {
+            // Avoid central throne area [0.38w, 0.62w]
+            while (x > w * 0.38 && x < w * 0.62) x = Math.random() * w;
+        }
+        const y = (cfg.spawnYRange[0] + Math.random() * (cfg.spawnYRange[1] - cfg.spawnYRange[0])) * h;
+        
+        const vertices = [];
+        const vStyle = Math.floor(Math.random() * 3); // 0: Elongated, 1: Jagged, 2: Shard
+        const vCount = (vStyle === 2) ? 3 + Math.floor(Math.random() * 2) : 5 + Math.floor(Math.random() * 3);
+        
+        for(let i=0; i<vCount; i++) {
+            const angle = (i / vCount) * Math.PI * 2;
+            let dist = 0.6 + Math.random() * 0.5;
+            if (vStyle === 1) dist = 0.4 + Math.random() * 0.8; // Jagged
+            let vx = Math.cos(angle) * dist;
+            let vy = Math.sin(angle) * dist;
+            if (vStyle === 0) vx *= 1.5; // Elongated
+            vertices.push({ x: vx, y: vy });
+        }
+
+        const isSolid = Math.random() < 0.6;
+        let opacity = isSolid ? (0.85 + Math.random() * 0.15) : (0.35 + Math.random() * 0.25);
+        
+        // Pick darker colors for solid ones
+        let color = cfg.colors[Math.floor(Math.random() * cfg.colors.length)];
+        if (isSolid && color.includes('0.7')) color = cfg.colors[0]; 
+
+        const isRotating = (size > 28 && Math.random() < 0.4);
+
+        return {
+            x, y, baseX: x, baseY: y, size, vertices,
+            opacity,
+            rotation: Math.random() * Math.PI * 2,
+            rotationV: isRotating ? (Math.random() - 0.5) * 0.006 : 0, 
+            phaseX: Math.random() * Math.PI * 2,
+            phaseY: Math.random() * Math.PI * 2,
+            ampX: (isSolid ? 8 : 12) + Math.random() * 10,
+            ampY: (isSolid ? 18 : 25) + Math.random() * 15,
+            speedX: 0.001 + Math.random() * 0.0012,
+            speedY: 0.0008 + Math.random() * 0.001,
+            color: color
+        };
+    }
+
+    function stepStones() {
+        const now = Date.now();
+        for (const s of stones) {
+            s.x = s.baseX + Math.sin(now * s.speedX + s.phaseX) * s.ampX;
+            s.y = s.baseY + Math.sin(now * s.speedY + s.phaseY) * s.ampY;
+            s.rotation += s.rotationV;
+        }
+    }
+
+    function drawStones() {
+        for (const s of stones) {
+            ctx.save();
+            ctx.globalAlpha = s.opacity;
+            ctx.translate(s.x, s.y);
+            ctx.rotate(s.rotation);
+            ctx.fillStyle = s.color;
+            ctx.beginPath();
+            ctx.moveTo(s.vertices[0].x * s.size, s.vertices[0].y * s.size);
+            for(let i=1; i<s.vertices.length; i++) {
+                ctx.lineTo(s.vertices[i].x * s.size, s.vertices[i].y * s.size);
+            }
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+    }
+
     // ── Main loop ──────────────────────────────────────────────────────────
     function loop(ts) {
         if (!active) return;
@@ -494,6 +583,11 @@ window.MapAmbient = (() => {
             updateBirdTimer(w, h);
             stepBirds();
             drawBirds();
+        }
+
+        if (theme.stones) {
+            stepStones();
+            drawStones();
         }
     }
 
@@ -568,7 +662,15 @@ window.MapAmbient = (() => {
             // ── Initialize ──
             particles = [];
             birds = [];
+            stones = [];
             birdTimer = 0;
+
+            if (theme.stones) {
+                for(let i=0; i<theme.stones.count; i++) {
+                    stones.push(createStone(canvas.width, canvas.height));
+                }
+            }
+
             if (theme.birds) {
                 const bCfg = theme.birds;
                 birdInterval = bCfg.firstInterval.min + Math.floor(Math.random() * bCfg.firstInterval.max);
@@ -608,6 +710,7 @@ window.MapAmbient = (() => {
         particles = [];
         theme = null; // Important: Clear theme after cleanup
         birds = [];
+        stones = [];
     }
 
     // ── Expose ─────────────────────────────────────────────────────────────

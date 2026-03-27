@@ -21,13 +21,13 @@ window.addEventListener("keydown", (e) => {
 
         const cqt = currentQuestionNode ? currentQuestionNode.textContent.trim().replace(/[_ ]/g, '').replace(/（.*?）|\(.*?\)/g, '') : "質問が見つかりません";
 
-        speakAzure(cqt);
+        speakCloudTts(cqt);
 
     }
 
     if (e.key && e.key.toLowerCase() === "o") {
 
-        playTtsKey("narration.support_001", "かっこいいよ！大好き！愛してる。", "ja-JP-MayuNeural");
+        playTtsKey("narration.support_001", "かっこいいよ！大好き！愛してる。", "ja-JP-Neural2-B");
 
     }
 
