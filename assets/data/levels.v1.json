@@ -217,7 +217,7 @@
     "focusParticle": "で",
     "focusLabel": "動作地點",
     "bgKey": "",
-    "bgImage": "assets/images/levels/bg_lv13.png",
+    "bgImage": "",
     "bgm": null
   },
   {
@@ -238,7 +238,7 @@
     "focusParticle": "に",
     "focusLabel": "存在地點",
     "bgKey": "",
-    "bgImage": "assets/images/levels/bg_lv13.png",
+    "bgImage": "",
     "bgm": null
   },
   {
@@ -259,7 +259,7 @@
     "focusParticle": "が",
     "focusLabel": "存在主體",
     "bgKey": "",
-    "bgImage": "assets/images/levels/bg_lv13.png",
+    "bgImage": "",
     "bgm": null
   },
   {
@@ -280,7 +280,7 @@
     "focusParticle": "と",
     "focusLabel": "共同動作",
     "bgKey": "",
-    "bgImage": "assets/images/levels/bg_lv13.png",
+    "bgImage": "",
     "bgm": null
   },
   {
@@ -716,6 +716,6 @@
     "focusParticle": "Boss",
     "focusLabel": "極限",
     "bgKey": "",
-    "bgm": "BGM_boss.mp3"
+    "bgm": "Final_Judgement_2.mp3"
   }
 ]

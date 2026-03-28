@@ -1,0 +1,9 @@
+3436: .map-ui-desktop-zone .map-float-header {
+3464: .map-float-header {
+3478: .map-float-header>* {
+4225: animation: ghost-flame-float 9s ease-in-out infinite alternate,
+4245: @keyframes ghost-flame-float {
+4598: knowledge-card-float 4s ease-in-out infinite 0.7s;
+4681: animation: particle-float 4s ease-in-out infinite;
+4684: @keyframes particle-float {
+4746: @keyframes knowledge-card-float {

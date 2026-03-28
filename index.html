@@ -1881,9 +1881,8 @@
 
                                 <div class="map-hud-actions">
 
-                                    <button @click="isCodexOpen = true" class="map-hud-btn"><span>📖</span></button>
-
-                                    <button @click="isMenuOpen = true" class="map-hud-btn"><span>⚙️</span></button>
+                                    <button @click="isCodexOpen = true; playSfx('uiPop');" class="map-hud-btn"><span>📖</span></button>
+                                    <button @click="isMenuOpen = true; playSfx('uiPop');" class="map-hud-btn"><span>⚙️</span></button>
 
                                 </div>
 
@@ -1894,7 +1893,7 @@
 
 
                     </div>
-
+                </transition>
             </div>
 
 
@@ -2004,7 +2003,7 @@
 
                     class="fixed inset-0 z-[100] flex items-center justify-center px-8 bg-slate-950/[0.05] backdrop-blur-[2px]"
 
-                    @click="isBattleConfirmOpen = false">
+                    @click="isBattleConfirmOpen = false; playSfx('click');">
 
                     <div class="w-full max-w-xs confirm-modal-glass rounded-[2rem] overflow-hidden" @click.stop
 
@@ -2066,7 +2065,7 @@
 
                         <div class="flex items-center p-4 gap-2 bg-black/10">
 
-                            <button @click="isBattleConfirmOpen = false"
+                            <button @click="isBattleConfirmOpen = false; playSfx('click');"
 
                                 class="basis-1/3 px-6 py-2.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 rounded-xl text-white/60 text-xs font-black transition-all active:scale-95 uppercase tracking-widest">
 
@@ -2434,8 +2433,7 @@
 
                     <div class="flex justify-end mt-5 pt-4 border-t border-white/10">
 
-                        <button @click="isAdvancedSettingsOpen = false"
-
+                        <button @click="isAdvancedSettingsOpen = false; playSfx('click');"
                             class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95">關閉</button>
 
                     </div>
@@ -2449,8 +2447,7 @@
             <div v-if="isMenuOpen"
 
                 class="modal-overlay fixed inset-0 z-[5000] flex items-center justify-center p-4"
-
-                @click.self="isMenuOpen = false">
+                @click.self="isMenuOpen = false; playSfx('click');">
 
                 <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
 
@@ -2464,8 +2461,7 @@
 
                                 class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2">MENU</span></h2>
 
-                        <button @click="isMenuOpen = false"
-
+                        <button @click="isMenuOpen = false; playSfx('click');"
                             class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
 
                     </div>
@@ -2518,16 +2514,14 @@
 
                         </div>
 
-                        <button @click="isAdvancedSettingsOpen = true; isMenuOpen = false;"
-
+                        <button @click="isAdvancedSettingsOpen = true; isMenuOpen = false; playSfx('uiPop');"
                             class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 hover:bg-indigo-500/20 border border-white/10 text-slate-200 text-sm font-bold shadow transition-all group">
 
                             <span class="group-hover:rotate-45 transition-transform duration-500">⚙️</span> 進階設定
 
                         </button>
 
-                        <button @click="openChangelog(); isMenuOpen = false;"
-
+                        <button @click="openChangelog(); isMenuOpen = false; playSfx('uiPop');"
                             class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-400/20 text-indigo-100 text-sm font-bold transition-all">
 
                             📋 更新日誌
@@ -2561,8 +2555,7 @@
             <!-- ── 更新日誌（地圖頁可用） ── -->
 
             <div v-if="isChangelogOpen" class="fixed inset-0 z-[6000] flex items-center justify-center p-4"
-
-                @click.self="isChangelogOpen = false">
+                @click.self="isChangelogOpen = false; playSfx('click');">
 
                 <div class="absolute inset-0 bg-slate-950/50 backdrop-blur-md pointer-events-none"></div>
 
@@ -2572,7 +2565,7 @@
 
                         <h2 class="text-2xl font-black text-indigo-300 tracking-[0.1em] drop-shadow-lg">更新日誌 <span class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2 uppercase">CHANGELOG</span></h2>
 
-                        <button @click="isChangelogOpen = false" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
+                        <button @click="isChangelogOpen = false; playSfx('click');" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
 
                     </div>
 
@@ -2622,7 +2615,7 @@
 
                     <div class="flex justify-end pt-5 mt-3 border-t border-white/10 flex-shrink-0">
 
-                        <button @click="isChangelogOpen = false" class="px-8 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95">關閉</button>
+                        <button @click="isChangelogOpen = false; playSfx('click');" class="px-8 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95">關閉</button>
 
                     </div>
 
@@ -2799,8 +2792,6 @@
                         {{ praiseToast.text }}
 
                     </div>
-
-                </transition>
 
             </div>
 
@@ -3167,12 +3158,12 @@
 
                                     class="flex-shrink-0 flex flex-nowrap items-center justify-end gap-2 md:gap-3 w-auto md:flex-none">
 
-                                    <button @click="isInventoryOpen = true; pauseBattle();"
+                                    <button @click="isInventoryOpen = true; pauseBattle(); playSfx('uiPop');"
                                         class="hud-tool-btn group" title="背包">
                                         <span class="group-hover:scale-110">🎒</span>
                                     </button>
 
-                                    <button @click="isSkillOpen = true; pauseBattle();"
+                                    <button @click="isSkillOpen = true; pauseBattle(); playSfx('uiPop');"
                                         class="hud-tool-btn is-skill-ready group" title="秘笈本">
                                         <span class="group-hover:scale-110">📖</span>
                                     </button>
@@ -3187,7 +3178,7 @@
                                         </div>
                                     </button>
 
-                                    <button @click="isMenuOpen = true; pauseBattle();"
+                                    <button @click="isMenuOpen = true; pauseBattle(); playSfx('uiPop');"
                                         class="hud-tool-btn group" title="設定">
                                         <span class="group-hover:scale-110">⚙️</span>
                                     </button>
@@ -3242,22 +3233,14 @@
 
                                     }}</span></div>
 
-                            <div class="flex justify-between items-center"><span
-
-                                    class="text-slate-400 text-xs">獲得經驗值</span><span
-
-                                    class="text-blue-400 font-mono font-bold">+{{ animatedExp }}</span></div>
-
-                            <div class="flex justify-between items-center"><span
-
-                                    class="text-slate-400 text-xs">獲得金幣</span><span
-
-                                    class="text-amber-400 font-mono font-bold">+{{ animatedGold }}</span></div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-400 text-xs">獲得經驗值</span>
+                                <span class="text-blue-400 font-mono font-bold">+{{ animatedExp }}</span>
+                            </div>
 
                         </div>
 
-                        <button @click="isMistakesOpen = true"
-
+                        <button @click="isMistakesOpen = true; playSfx('uiPop');"
                             class="w-full py-3 rounded-xl bg-slate-800 text-slate-300 font-bold text-sm hover:bg-slate-700 transition-colors border border-slate-600 mb-3">📒
 
                             查看題目</button>
@@ -3296,8 +3279,7 @@
 
                             class="w-full py-4 rounded-xl bg-emerald-600 text-white font-black text-lg shadow-[0_4px_0_#065f46] active:translate-y-1 active:shadow-none transition-all mb-3">重新開始</button>
 
-                        <button @click="isMistakesOpen = true"
-
+                        <button @click="isMistakesOpen = true; playSfx('uiPop');"
                             class="w-full py-3 rounded-xl bg-slate-800 text-slate-300 font-bold text-sm hover:bg-slate-700 transition-colors border border-slate-600">📒
 
                             查看題目</button>
@@ -3457,7 +3439,7 @@
 
             <!-- Skill Unlock Modal -->
 
-            <div v-if="isSkillUnlockModalOpen" class="modal-overlay" @click.self="isSkillUnlockModalOpen = false"
+            <div v-if="isSkillUnlockModalOpen" class="modal-overlay" @click.self="isSkillUnlockModalOpen = false; playSfx('click');"
 
                 style="z-index: 100;">
 
@@ -3493,7 +3475,7 @@
 
                         </button>
 
-                        <button @click="isSkillUnlockModalOpen = false; resumeBattle();"
+                        <button @click="isSkillUnlockModalOpen = false; resumeBattle(); playSfx('click');"
 
                             class="px-4 py-3 rounded bg-[#2a1c15] hover:bg-[#3e2723] text-amber-600 hover:text-amber-500 text-base font-bold shadow-lg transition-colors border border-amber-900/50">
 
@@ -3541,7 +3523,7 @@
 
 
 
-                        <button @click="confirmAbilityUnlockAndContinue"
+                        <button @click="confirmAbilityUnlockAndContinue(); playSfx('click');"
 
                             class="w-full py-4 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-900 font-black text-xl rounded-xl shadow-[0_4px_0_#92400e] active:shadow-none active:translate-y-1 transition-all">
 
@@ -3639,15 +3621,14 @@
 
             <div v-if="isCodexOpen"
 
-                class="modal-overlay fixed inset-0 z-[2000] flex items-center justify-center p-4 md:p-8"
-
-                @click.self="isCodexOpen = false; if (!isSkillOpen) resumeBattle();">
+                class="modal-overlay codex-modal-v1 fixed inset-0 z-[2000] flex items-center justify-center p-4 md:p-8"
+                @click.self="isCodexOpen = false; if (!isSkillOpen) resumeBattle(); playSfx('click');">
 
                 <div class="absolute inset-0 bg-slate-950/20 backdrop-blur-md pointer-events-none"></div>
 
                 <div
 
-                    class="relative w-full max-w-4xl h-full max-h-[85vh] glass-panel modal-panel !bg-indigo-950/40 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
+                    class="relative w-full max-w-4xl h-full max-h-[85vh] glass-panel modal-panel codex-panel !bg-indigo-950/40 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
 
 
 
@@ -3659,8 +3640,7 @@
 
                                 class="text-[10px] font-bold opacity-20 tracking-[0.4em] ml-3">CODEX</span></h2>
 
-                        <button @click="isCodexOpen = false; if (!isSkillOpen) resumeBattle();"
-
+                        <button @click="isCodexOpen = false; if (!isSkillOpen) resumeBattle(); playSfx('click');"
                             class="absolute top-1/2 -translate-y-1/2 right-8 text-amber-400/40 hover:text-amber-300 transition-all active:scale-90 p-1.5 focus:outline-none">
 
                             <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3681,52 +3661,41 @@
 
                         <div v-for="skill in skillsWithUnlockLevel" :key="skill.id" :id="'skill-card-' + skill.id">
 
+                            <!-- Unlocked Card -->
                             <div v-if="unlockedSkillIds.includes(skill.id)"
-
-                                :class="['border rounded pointer-events-auto transition-all duration-300 shadow-md', expandedSkillId === skill.id ? 'border-amber-500/30 shadow-[0_0_20px_rgba(251,191,36,0.1)] bg-amber-900/20' : 'bg-[#3e2723]/40 border-amber-900/20']">
-
+                                class="codex-card codex-card--unlocked"
+                                :class="{ 'codex-card--expanded': expandedSkillId === skill.id }">
                                 <button @click="expandedSkillId = expandedSkillId === skill.id ? null : skill.id"
-
-                                    class="w-full text-left px-4 py-3 flex justify-between items-center hover:bg-white/5 transition-colors rounded">
-
-                                    <span class="font-bold text-lg text-amber-400/90 tracking-wide">{{ skill.name
-
-                                        }}</span>
-
-                                    <span class="text-amber-600/80">{{ expandedSkillId === skill.id ? '▼' : '▶'
-
-                                        }}</span>
-
+                                    class="w-full text-left px-4 py-4 flex justify-between items-center hover:bg-white/5 transition-colors">
+                                    <div class="flex items-center">
+                                        <span class="codex-particle-badge">{{ skill.particle || '技' }}</span>
+                                        <span class="codex-card-title">{{ skill.name }}</span>
+                                    </div>
+                                    <span class="text-amber-600/60 text-sm font-bold">{{ expandedSkillId === skill.id ? '收合 ▲' : '詳情 ▼' }}</span>
                                 </button>
 
                                 <div v-if="expandedSkillId === skill.id"
-
-                                    class="p-4 pt-2 text-base space-y-3 bg-[#1e110a]/40 border-t border-amber-900/50">
-
-                                    <div v-if="skill.meaning"><span
-
-                                            class="text-emerald-500 font-bold mr-2">含義</span><span
-
-                                            class="text-amber-100/90 leading-relaxed">{{ skill.meaning }}</span></div>
-
-                                    <div v-if="skill.rule"><span class="text-blue-400 font-bold mr-2">句型</span><span
-
-                                            class="text-amber-100/90 leading-relaxed">{{ skill.rule }}</span></div>
-
+                                    class="p-5 pt-2 text-base space-y-4 bg-black/20 border-t border-white/5">
+                                    <div v-if="skill.meaning" class="flex items-start">
+                                        <span class="codex-label codex-label--meaning">含義</span>
+                                        <p class="text-amber-50/90 leading-relaxed flex-1">{{ skill.meaning }}</p>
+                                    </div>
+                                    <div v-if="skill.rule" class="flex items-start">
+                                        <span class="codex-label codex-label--rule">句型</span>
+                                        <code class="text-amber-50/90 leading-relaxed flex-1 font-mono opacity-90">{{ skill.rule }}</code>
+                                    </div>
                                 </div>
-
                             </div>
 
-                            <div v-else
-
-                                class="bg-slate-900/40 border border-white/5 rounded p-4 flex items-center justify-between pointer-events-none opacity-80 grayscale filter shadow-inner">
-
-                                <span class="font-bold text-slate-400 text-lg flex items-center gap-2">🔒 未習得</span>
-
-                                <span class="text-xs font-bold text-amber-800/40">{{ skill.unlockLevel ? '第 ' +
-
-                                    skill.unlockLevel + ' 關習得' : '未安排' }}</span>
-
+                            <!-- Locked Card -->
+                            <div v-else class="codex-card codex-card--locked p-4 flex items-center justify-between pointer-events-none">
+                                <div class="flex items-center">
+                                    <span class="codex-lock-icon">🔒</span>
+                                    <span class="font-bold text-slate-400/80">尚未習得</span>
+                                </div>
+                                <span class="codex-unlock-tip">
+                                    {{ skill.unlockLevel ? '第 ' + skill.unlockLevel + ' 關解鎖' : '探索中' }}
+                                </span>
                             </div>
 
                         </div>
@@ -3742,8 +3711,7 @@
             <!-- Menu -->
 
             <div v-if="isMenuOpen" class="modal-overlay fixed inset-0 z-[5000] flex items-center justify-center p-4"
-
-                @click.self="isMenuOpen = false; resumeBattle();">
+                @click.self="isMenuOpen = false; resumeBattle(); playSfx('click');">
 
                 <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
 
@@ -3757,8 +3725,7 @@
 
                                 class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2">MENU</span></h2>
 
-                        <button @click="isMenuOpen = false; resumeBattle();"
-
+                        <button @click="isMenuOpen = false; resumeBattle(); playSfx('click');"
                             class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
 
                     </div>
@@ -3906,10 +3873,8 @@
             <!-- Advanced Settings -->
 
             <div v-if="isAdvancedSettingsOpen"
-
                 class="modal-overlay fixed inset-0 z-[5000] flex items-center justify-center p-4"
-
-                @click.self="isAdvancedSettingsOpen = false; resumeBattle();">
+                @click.self="isAdvancedSettingsOpen = false; resumeBattle(); playSfx('click');">
 
                 <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
 
@@ -3923,8 +3888,7 @@
 
                                 class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2">SETTINGS</span></h2>
 
-                        <button @click="isAdvancedSettingsOpen = false; resumeBattle();"
-
+                        <button @click="isAdvancedSettingsOpen = false; resumeBattle(); playSfx('click');"
                             class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
 
                     </div>
@@ -4091,12 +4055,10 @@
 
                     <div class="grid grid-cols-2 gap-3 mt-6 pt-4 border-t border-white/10">
 
-                        <button @click="isAdvancedSettingsOpen = false; isMenuOpen = true;"
-
+                        <button @click="isAdvancedSettingsOpen = false; isMenuOpen = true; playSfx('click');"
                             class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-bold border border-white/5 transition-all">返回主選單</button>
 
-                        <button @click="isAdvancedSettingsOpen = false; resumeBattle();"
-
+                        <button @click="isAdvancedSettingsOpen = false; resumeBattle(); playSfx('click');"
                             class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95">關閉全部</button>
 
                     </div>
@@ -4110,8 +4072,7 @@
             <!-- Mentor Replay -->
 
             <div v-if="isMentorReplayOpen" class="fixed inset-0 z-[5000] flex items-center justify-center p-4"
-
-                @click.self="isMentorReplayOpen = false; resumeBattle();">
+                @click.self="isMentorReplayOpen = false; resumeBattle(); playSfx('click');">
 
                 <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
 
@@ -4127,8 +4088,7 @@
 
                         </h2>
 
-                        <button @click="isMentorReplayOpen = false; resumeBattle();"
-
+                        <button @click="isMentorReplayOpen = false; resumeBattle(); playSfx('click');"
                             class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
 
                     </div>
@@ -4173,8 +4133,7 @@
 
                     <div class="flex justify-end pt-5 mt-3 border-t border-white/10 shrink-0">
 
-                        <button @click="isMentorReplayOpen = false; resumeBattle()"
-
+                        <button @click="isMentorReplayOpen = false; resumeBattle(); playSfx('click');"
                             class="px-8 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold shadow-lg transition-all active:scale-95">關閉</button>
 
                     </div>
@@ -4188,8 +4147,7 @@
             <!-- Level Jump (Redesigned as Mission Cards) -->
 
             <div v-if="isLevelJumpOpen" class="fixed inset-0 z-[5000] flex items-center justify-center p-4 md:p-8"
-
-                @click.self="isLevelJumpOpen = false; resumeBattle();">
+                @click.self="isLevelJumpOpen = false; resumeBattle(); playSfx('click');">
 
                 <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
 
@@ -4205,8 +4163,7 @@
 
                         </h2>
 
-                        <button @click="isLevelJumpOpen = false; resumeBattle();"
-
+                        <button @click="isLevelJumpOpen = false; resumeBattle(); playSfx('click');"
                             class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
 
                     </div>
@@ -4291,8 +4248,7 @@
 
                     <div class="flex justify-end pt-5 mt-3 border-t border-white/10 shrink-0">
 
-                        <button @click="isLevelJumpOpen = false; resumeBattle()"
-
+                        <button @click="isLevelJumpOpen = false; resumeBattle(); playSfx('click');"
                             class="px-8 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold shadow-lg transition-all active:scale-95">關閉</button>
 
                     </div>
@@ -4323,8 +4279,7 @@
 
                         </h2>
 
-                        <button @click="isChangelogOpen = false"
-
+                        <button @click="isChangelogOpen = false; playSfx('click');"
                             class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
 
                     </div>
@@ -4401,8 +4356,7 @@
 
                     <div class="flex justify-end pt-5 mt-3 border-t border-white/10 flex-shrink-0">
 
-                        <button @click="isChangelogOpen = false"
-
+                        <button @click="isChangelogOpen = false; playSfx('click');"
                             class="px-8 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95">關閉</button>
 
                     </div>
@@ -4415,8 +4369,7 @@
 
             <!-- Mistakes -->
 
-            <div v-if="isMistakesOpen" class="modal-overlay backdrop-blur-sm" @click.self="isMistakesOpen = false"
-
+            <div v-if="isMistakesOpen" class="modal-overlay backdrop-blur-sm" @click.self="isMistakesOpen = false; playSfx('click');"
                 style="z-index: 5000; background: rgba(15, 23, 42, 0.1);">
 
                 <div
@@ -4497,8 +4450,7 @@
 
                         </button>
 
-                        <button @click="isMistakesOpen = false"
-
+                        <button @click="isMistakesOpen = false; playSfx('click');"
                             class="flex-1 px-3 py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold shadow-lg transition-transform active:scale-95">關閉</button>
 
                     </div>
@@ -4535,7 +4487,7 @@
 
             <!-- Inventory -->
 
-            <div v-if="isInventoryOpen" class="modal-overlay" @click.self="isInventoryOpen = false; resumeBattle();">
+            <div v-if="isInventoryOpen" class="modal-overlay" @click.self="isInventoryOpen = false; resumeBattle(); playSfx('click');">
 
                 <div class="modal-panel w-[400px]">
 
@@ -4609,8 +4561,7 @@
 
                     <div class="flex gap-2">
 
-                        <button @click="isInventoryOpen = false; resumeBattle();"
-
+                        <button @click="isInventoryOpen = false; resumeBattle(); playSfx('click');"
                             class="w-full px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold shadow-md">關閉</button>
 
                     </div>

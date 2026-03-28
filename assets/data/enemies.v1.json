@@ -2,151 +2,151 @@
   {
     "id": "glow-slime", "name": "微光史萊姆",
     "image": "assets/images/monsters/glow-slime.png", "imageHit": null,
-    "trait": "身體散著淡淡藍光，靠近時會發出啵啵聲",
+    "trait": "体からほのかに青い光を放ち、近づくとポコポコという音が聞こえる",
     "spawnLevels": [1], "hpMax": 60, "size": 1.0, "posX": null, "posY": null
   },
   {
     "id": "moss-boar", "name": "苔牙野豬",
     "image": "assets/images/monsters/moss-boar.png", "imageHit": null,
-    "trait": "背上沾滿濕苔與落葉，衝撞前會低聲噴氣",
-    "spawnLevels": [2], "hpMax": 100, "size": 1.0, "posX": null, "posY": null
+    "trait": "背中には湿った苔や落ち葉がびっしりと付着しており、突進する前には低く鼻を鳴らす",
+    "spawnLevels": [2], "hpMax": 100, "size": 2.0, "posX": null, "posY": null
   },
   {
     "id": "rune-moth", "name": "符紋蛾",
     "image": "assets/images/monsters/rune-moth.png", "imageHit": null,
     "trait": "翅面浮著像文字碎片般的紋路，飛行時會灑下淡金粉末",
-    "spawnLevels": [3], "hpMax": 120, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [3], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
   },
   {
     "id": "mist-bat", "name": "霧羽蝠",
     "image": "assets/images/monsters/mist-bat.png", "imageHit": null,
     "trait": "總在薄霧裡忽隱忽現，翅膀一振就像夜風掠過耳邊",
-    "spawnLevels": [4], "hpMax": 120, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [4], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
   },
   {
     "id": "man-eater-bloom", "name": "食人花之母",
     "image": "assets/images/monsters/man-eater-bloom.png", "imageHit": "assets/images/monsters/man-eater-bloom2.png",
     "trait": "巨大的花瓣一張一合，甜膩香氣裡藏著會把獵物慢慢吞下去的耐心",
-    "spawnLevels": [5], "hpMax": 200, "size": 1.5, "posX": null, "posY": null
+    "spawnLevels": [5], "hpMax": 400, "size": 1.5, "posX": null, "posY": null
   },
   {
     "id": "ash-goblin", "name": "灰枝小鬼",
     "image": "assets/images/monsters/ash-goblin.png", "imageHit": "assets/images/monsters/ash-goblin2.png",
     "trait": "披著破布與枯枝，眼神鬼祟，最愛躲在陰影裡偷襲",
-    "spawnLevels": [6], "hpMax": 100, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [6], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
   },
   {
     "id": "shell-sprout", "name": "殼芽獸",
     "image": "assets/images/monsters/shell-sprout.png", "imageHit": null,
     "trait": "背甲像剛長出的樹芽，移動慢，但意外地很耐打",
-    "spawnLevels": [7], "hpMax": 180, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [7], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
   },
   {
     "id": "forest-cat", "name": "林影妖貓",
     "image": "assets/images/monsters/forest-cat.png", "imageHit": null,
     "trait": "步伐輕得像沒踩到地面，尾巴一甩就不見蹤影",
-    "spawnLevels": [8], "hpMax": 100, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [8], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
   },
   {
     "id": "stone-mimic", "name": "岩殼擬怪",
     "image": "assets/images/monsters/stone-mimic.png", "imageHit": null,
     "trait": "蜷起身子時像一塊不起眼的石頭，張眼後才知道被盯上了",
-    "spawnLevels": [9], "hpMax": 230, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [9], "hpMax": 250, "size": 1.0, "posX": null, "posY": null
   },
   {
     "id": "frost-roc", "name": "冰原巨鳥",
     "image": "assets/images/monsters/frost-roc.png", "imageHit": "assets/images/monsters/frost-roc2.png",
     "trait": "展翼時像暴風雪壓過天空，羽尖會抖落寒霜，連呼吸都像被凍住",
-    "spawnLevels": [15], "hpMax": 280, "size": 2.3, "posX": null, "posY": 30
+    "spawnLevels": [15], "hpMax": 500, "size": 2.3, "posX": null, "posY": 30
   },
   {
     "id": "ember-imp", "name": "燼火小惡魔",
     "image": "assets/images/monsters/ember-imp.png", "imageHit": null,
     "trait": "耳尖與尾端閃著火星，脾氣暴躁，笑聲比火還惱人",
-    "spawnLevels": [11], "hpMax": 100, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [11], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
   },
   {
     "id": "shore-wisp", "name": "潮燈幼靈",
     "image": "assets/images/monsters/shore-wisp.png", "imageHit": null,
     "trait": "像漂在岸邊的微弱燈火，忽遠忽近，讓人很難抓準距離",
-    "spawnLevels": [12], "hpMax": 100, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [12], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
   },
   {
     "id": "thorn-wolf", "name": "棘原狼",
     "image": "assets/images/monsters/thorn-wolf.png", "imageHit": null,
     "trait": "毛皮間夾著細刺，奔跑時像一團貼地掠過的灰影",
-    "spawnLevels": [13], "hpMax": 140, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [13], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
   },
   {
     "id": "moon-jelly", "name": "月沫水母",
     "image": "assets/images/monsters/moon-jelly.png", "imageHit": null,
     "trait": "半透明的身體像月光融進水裡，安靜時反而更讓人發毛",
-    "spawnLevels": [14], "hpMax": 120, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [14], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
   },
   {
     "id": "orc-warlord", "name": "半獸人之王",
     "image": "assets/images/monsters/orc-warlord.png", "imageHit": "assets/images/monsters/orc-warlord2.png",
     "trait": "披著沉重戰甲，目光像鐵鎚一樣砸下來，光站在那裡就有王者般的壓迫感",
-    "spawnLevels": [10], "hpMax": 250, "size": 1.6, "posX": null, "posY": null
+    "spawnLevels": [10], "hpMax": 500, "size": 1.6, "posX": null, "posY": null
   },
   {
     "id": "shadow-hound", "name": "影跡獵犬",
     "image": "assets/images/monsters/slime.png", "imageHit": null,
     "trait": "潛伏在影子裡的獵食者，腳步聲極輕",
-    "spawnLevels": [16], "hpMax": 200, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [16], "hpMax": 250, "size": 1.0, "posX": null, "posY": null
   },
   {
     "id": "void-spirit", "name": "虛空靈體",
     "image": "assets/images/monsters/slime.png", "imageHit": null,
     "trait": "沒有實體的靈魂，散發著令人不安的寒氣",
-    "spawnLevels": [17], "hpMax": 200, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [17], "hpMax": 250, "size": 1.0, "posX": null, "posY": null
   },
   {
     "id": "dark-knight", "name": "漆黑騎士",
     "image": "assets/images/monsters/slime.png", "imageHit": null,
     "trait": "穿著鏽跡斑斑的鎧甲，手中的長劍依舊鋒利",
-    "spawnLevels": [18], "hpMax": 300, "size": 1.1, "posX": null, "posY": null
+    "spawnLevels": [18], "hpMax": 600, "size": 1.1, "posX": null, "posY": null
   },
   {
     "id": "abyss-eyeball", "name": "深淵之眼",
     "image": "assets/images/monsters/slime.png", "imageHit": null,
     "trait": "無數眼球凝視著你，讓人感到毛骨悚然",
-    "spawnLevels": [19], "hpMax": 300, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [19], "hpMax": 600, "size": 1.0, "posX": null, "posY": null
   },
   {
     "id": "abyss-lord", "name": "深淵領主",
     "image": "assets/images/monsters/slime.png", "imageHit": null,
     "trait": "支配深淵的強大存在，散發著壓倒性的魔力",
-    "spawnLevels": [20], "hpMax": 500, "size": 1.8, "posX": null, "posY": null
+    "spawnLevels": [20], "hpMax": 800, "size": 1.8, "posX": null, "posY": null
   },
   {
     "id": "gloom-crawler", "name": "幽暗爬行者",
     "image": "assets/images/monsters/slime.png", "imageHit": null,
     "trait": "在岩壁縫隙中穿梭的怪物，動作極其敏捷",
-    "spawnLevels": [21], "hpMax": 100, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [21], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
   },
   {
     "id": "skeletal-warrior", "name": "骷髏戰士",
     "image": "assets/images/monsters/slime.png", "imageHit": null,
     "trait": "白骨構成的士兵，即使粉碎也會再次重組",
-    "spawnLevels": [22], "hpMax": 100, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [22], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
   },
   {
     "id": "wraith", "name": "怨靈",
     "image": "assets/images/monsters/slime.png", "imageHit": null,
     "trait": "帶著強烈的執念而無法超脫，尖叫聲能震懾靈魂",
-    "spawnLevels": [23], "hpMax": 100, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [23], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
   },
   {
     "id": "demon-gatekeeper", "name": "煉獄守門人",
     "image": "assets/images/monsters/slime.png", "imageHit": null,
     "trait": "守護著通往更深處的門戶，力量驚人",
-    "spawnLevels": [24], "hpMax": 300, "size": 1.2, "posX": null, "posY": null
+    "spawnLevels": [24], "hpMax": 220, "size": 1.2, "posX": null, "posY": null
   },
   {
     "id": "lord-of-darkness", "name": "暗影主宰",
-    "image": "assets/images/monsters/slime.png", "imageHit": null,
+    "image": "assets/images/monsters/lord-of-darkness.png", "imageHit": null,
     "trait": "操縱陰影的大師，能將光芒徹底吞噬",
-    "spawnLevels": [25], "hpMax": 350, "size": 2.0, "posX": null, "posY": null
+    "spawnLevels": [25], "hpMax": 2000, "size": 2.0, "posX": null, "posY": null
   }
 ]

@@ -3,6 +3,61 @@
 
 window.__sp = { cur: 20, max: 20 };
 
+window.spawnFloatingDamage = function(target, amount) {
+    const vfxLayer = document.getElementById('global-vfx-layer');
+    if (!vfxLayer) return;
+
+    let targetEl;
+    if (target === 'player') {
+        targetEl = document.querySelector('#playerStatusBar') || document.querySelector('.hero-avatar') || document.querySelector('.hud-bg');
+    } else {
+        targetEl = document.querySelector('#monsterStatusBar') || document.querySelector('.monster-img-boss') || document.querySelector('.monster-img-normal') || document.querySelector('.monster-breath');
+    }
+
+    let x, y;
+    if (targetEl) {
+        const rect = targetEl.getBoundingClientRect();
+        if (target === 'monster') {
+            x = rect.left + rect.width / 2;
+            y = rect.top + rect.height * 0.65;
+        } else {
+            x = rect.left + rect.width * 0.85;
+            y = rect.top - 10;
+        }
+    } else {
+        x = window.innerWidth / 2;
+        y = target === 'player' ? window.innerHeight - 150 : window.innerHeight / 2 - 50;
+    }
+
+    const el = document.createElement('div');
+    el.className = `floating-dmg-ui floating-dmg-${target}`;
+    
+    let fontSize = 14 + (amount * 0.9);
+    fontSize = Math.min(Math.max(fontSize, 14), 48);
+    
+    const dir = Math.random() > 0.5 ? 1 : -1;
+    const dx = (Math.random() * 45 + 35) * dir;
+    const dy = (Math.random() * -15 - 5);
+    const bounce1 = Math.random() * 15 + 10;
+    const rot = (Math.random() * 20 - 10);
+
+    el.style.setProperty('--dx', `${dx}px`);
+    el.style.setProperty('--dy', `${dy}px`);
+    el.style.setProperty('--bounce1', `${bounce1}px`);
+    el.style.setProperty('--rot', `${rot}deg`);
+
+    const ox = (Math.random() - 0.5) * 20;
+    const oy = (Math.random() - 0.5) * 10;
+
+    el.style.left = `${x + ox}px`;
+    el.style.top = `${y + oy}px`;
+    el.style.fontSize = `${fontSize}px`;
+    el.innerHTML = `-${amount}`;
+
+    vfxLayer.appendChild(el);
+    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 1200);
+};
+
 
 
 window.updateSpUI = function () {
@@ -244,7 +299,9 @@ const _jpApp = Vue.createApp({
 
                     unlockedAbilityIds: unlockedAbilityIds.value,
 
-                    gold: totalGold.value
+                    gold: totalGold.value,
+
+                    lastViewedMap: { chapter: activeChapter.value, segment: selectedSegmentIdx.value }
 
                 };
 
@@ -279,6 +336,13 @@ const _jpApp = Vue.createApp({
                     if (parsed.unlockedAbilityIds) _pendingAbilityIds = parsed.unlockedAbilityIds;
 
                     if (typeof parsed.gold === 'number') totalGold.value = parsed.gold;
+
+                    if (parsed.lastViewedMap && isSegmentUnlocked(parsed.lastViewedMap.segment)) {
+                        activeChapter.value = parsed.lastViewedMap.chapter || 'chapter1';
+                        selectedSegmentIdx.value = parsed.lastViewedMap.segment;
+                    } else {
+                        autoSelectSegment();
+                    }
 
                 }
 
@@ -370,7 +434,20 @@ const _jpApp = Vue.createApp({
 
             showLevelSelect.value = false;
 
-            autoSelectSegment();
+            const maxUnlocked = Math.max(...unlockedLevels.value, 1);
+            const latestSegIdx = Math.floor((maxUnlocked - 1) / 5);
+
+            if (newUnlockLv.value) {
+                const justUnlockedSegIdx = Math.floor((newUnlockLv.value - 1) / 5);
+                if (justUnlockedSegIdx > selectedSegmentIdx.value && selectedSegmentIdx.value === latestSegIdx - 1) {
+                    selectedSegmentIdx.value = justUnlockedSegIdx;
+                    activeChapter.value = 'chapter1'; 
+                }
+            } else if (!isSegmentUnlocked(selectedSegmentIdx.value)) {
+                autoSelectSegment();
+            }
+
+            saveProgression();
 
             showMap.value = true;
 
@@ -474,6 +551,7 @@ const _jpApp = Vue.createApp({
                 return;
             }
             selectedSegmentIdx.value = idx;
+            saveProgression();
             playBgm();
         };
 
@@ -484,6 +562,8 @@ const _jpApp = Vue.createApp({
             }
             handleMapTabClick(segIdx);
             
+            saveProgression();
+
             // Refresh ambient for new chapter
             if (typeof MapAmbient !== 'undefined') {
                 Vue.nextTick(() => MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value, activeSegment.value?.themeKey));
@@ -514,6 +594,7 @@ const _jpApp = Vue.createApp({
 
                     // Carry out the original intent (open confirm modal) after mentor finishes
                     window._resumeAfterMentor = () => {
+                        playSfx('uiPop'); // Added feedback for battle confirm
                         selectedStageToConfirm.value = lvNum;
                         isBattleConfirmOpen.value = true;
                     };
@@ -529,6 +610,7 @@ const _jpApp = Vue.createApp({
 
             // Normal flow: Straight to battle confirmation
             selectedStageToConfirm.value = lvNum;
+            playSfx('uiPop'); // Added for stage selection from map
             isBattleConfirmOpen.value = true;
         };
 
@@ -604,7 +686,22 @@ const _jpApp = Vue.createApp({
         const returnToMap = () => {
             isFinished.value = true;
             showLevelSelect.value = false;
-            autoSelectSegment();
+            
+            const maxUnlocked = Math.max(...unlockedLevels.value, 1);
+            const latestSegIdx = Math.floor((maxUnlocked - 1) / 5);
+
+            if (newUnlockLv.value) {
+                const justUnlockedSegIdx = Math.floor((newUnlockLv.value - 1) / 5);
+                if (justUnlockedSegIdx > selectedSegmentIdx.value && selectedSegmentIdx.value === latestSegIdx - 1) {
+                    selectedSegmentIdx.value = justUnlockedSegIdx;
+                    activeChapter.value = 'chapter1'; 
+                }
+            } else if (!isSegmentUnlocked(selectedSegmentIdx.value)) {
+                autoSelectSegment();
+            }
+
+            saveProgression();
+
             showMap.value = true;
             monsterResultShown.value = false;
             monsterTrulyDead.value = false;
@@ -813,9 +910,10 @@ const _jpApp = Vue.createApp({
 
         const isSkillUnlockModalOpen = ref(false);
 
+        // [ CODEX - STATE ]
         const isCodexOpen = ref(false);
-
         const expandedSkillId = ref(null);
+        // [ /CODEX - STATE ]
 
         const MENTOR_SEEN_KEY = 'jpRpgMentorSeenV1';
 
@@ -966,11 +1064,9 @@ const _jpApp = Vue.createApp({
                 isMentorModalOpen.value = false;
 
             } else {
-
+                playSfx('uiPop'); // Added sound for mentor modal
                 isMentorModalOpen.value = true;
-
                 isMapMentorOpen.value = false;
-
             }
 
             
@@ -1279,65 +1375,42 @@ const _jpApp = Vue.createApp({
 
 
 
+        // [ CODEX - COMPUTED ]
         const skillsWithUnlockLevel = computed(() => {
-
             const unlocked = [];
-
             const locked = [];
-
             SKILLS.value.forEach(s => {
-
                 if (unlockedSkillIds.value.includes(s.id)) unlocked.push(s);
-
                 else locked.push(s);
-
             });
-
             unlocked.sort((a, b) => {
-
                 if (a.particle !== b.particle) return (a.particle || '').localeCompare(b.particle || '', 'ja');
-
                 return (a.rank || 0) - (b.rank || 0);
-
             });
-
             locked.sort((a, b) => {
-
                 const lA = skillUnlockMap.value[a.id] || 999;
-
                 const lB = skillUnlockMap.value[b.id] || 999;
-
                 if (lA !== lB) return lA - lB;
-
                 if (a.particle !== b.particle) return (a.particle || '').localeCompare(b.particle || '', 'ja');
-
                 return (a.rank || 0) - (b.rank || 0);
-
             });
-
             return [...unlocked, ...locked].map(s => ({ 
-
                 ...s,
-
                 unlockLevel: skillUnlockMap.value[s.id]
-
             }));
-
-        }); // Fix: added }); to properly close the computed() call
-
-
-
-        window.addEventListener('keydown', (e) => {
-
-            if (e.key === 'Escape' && isCodexOpen.value) {
-
-                isCodexOpen.value = false;
-
-                resumeBattle();
-
-            }
-
         });
+        // [ /CODEX - COMPUTED ]
+
+
+
+        // [ CODEX - GLOBAL EVENTS ]
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isCodexOpen.value) {
+                isCodexOpen.value = false;
+                resumeBattle();
+            }
+        });
+        // [ /CODEX - GLOBAL EVENTS ]
 
 
 
@@ -1510,9 +1583,15 @@ const _jpApp = Vue.createApp({
 
 
 
-        function openSkillOverlay() { isSkillOpen.value = true; }
+        function openSkillOverlay() { 
+            playSfx('uiPop'); // Added feedback for skill reveal
+            isSkillOpen.value = true; 
+        }
 
-        function closeSkillOverlay() { isSkillOpen.value = false; }
+        function closeSkillOverlay() { 
+            playSfx('click'); 
+            isSkillOpen.value = false; 
+        }
 
 
 
@@ -1906,10 +1985,11 @@ const _jpApp = Vue.createApp({
         const audioCtx = ref(null);
 
         const masterGain = ref(null);
-
         const bgmGain = ref(null);
-
         const sfxGain = ref(null);
+        // [ FUTURE - NARRATOR / TTS ]
+        // const narratorGain = ref(null); // Suggest adding this for sister's voice
+        // [ /FUTURE ]
 
 
 
@@ -2008,7 +2088,7 @@ const _jpApp = Vue.createApp({
 
                 if (!window._battlePopPlayed) {
 
-                    playSfx('pop');
+                    playSfx('battlePop');
 
                     window._battlePopPlayed = true;
 
@@ -2037,11 +2117,9 @@ const _jpApp = Vue.createApp({
         const openCodexTo = (skillId) => {
 
             isSkillUnlockModalOpen.value = false;
-
             expandedSkillId.value = skillId;
-
+            playSfx('uiPop'); // Added sound for codex
             isCodexOpen.value = true;
-
             pauseBattle();
 
             setTimeout(() => {
@@ -2188,9 +2266,8 @@ const _jpApp = Vue.createApp({
                 damage: 'assets/audio/damage.mp3',
 
                 fanfare: 'assets/audio/fanfare.mp3',
-
-                pop: 'assets/audio/pop.mp3',
-
+                uiPop: 'assets/audio/pop.mp3',       // Lightweight for menus
+                battlePop: 'assets/audio/pop2.mp3', // Heavy for monsters/combat
                 win: 'assets/audio/win.mp3',
 
                 gameover: 'assets/audio/sfx_gameover.mp3'
@@ -2199,7 +2276,7 @@ const _jpApp = Vue.createApp({
 
 
 
-            const criticalAssets = [BGM_BASE + 'BGM_1.mp3', BGM_BASE + 'BGM_2.mp3', BGM_BASE + 'BGM_3.mp3', BGM_BASE + 'BGM_4.mp3', BGM_BASE + 'BGM_boss.mp3', 'assets/audio/bgm/map.mp3', sfxPaths.click, sfxPaths.pop];
+            const criticalAssets = [BGM_BASE + 'BGM_1.mp3', BGM_BASE + 'BGM_2.mp3', BGM_BASE + 'BGM_3.mp3', BGM_BASE + 'BGM_4.mp3', BGM_BASE + 'BGM_boss.mp3', 'assets/audio/bgm/map.mp3', sfxPaths.click, sfxPaths.uiPop, sfxPaths.battlePop];
 
             const promises = [];
 
@@ -2874,31 +2951,24 @@ const _jpApp = Vue.createApp({
         const POLY = 4;
 
         const _uiSfxSrcMap = {
-
             hit: 'assets/audio/sfx_hit.mp3',
-
-            miss: 'assets/audio/mmiss.mp3',
-
+            miss: 'assets/audio/sfx_miss.mp3', // Standardized from mmiss.mp3
             potion: 'assets/audio/sfx_potion.mp3',
-
             click: 'assets/audio/sfx_click.mp3',
-
             damage: 'assets/audio/damage.mp3',
-
             damage2: 'assets/audio/damage2.mp3',
-
             damage3: 'assets/audio/damage3.mp3',
-
             damage4: 'assets/audio/damage4.mp3',
-
             fanfare: 'assets/audio/fanfare.mp3',
-
-            pop: 'assets/audio/pop.mp3',
+            bossClear: 'assets/audio/fanfare.mp3', // Map missing bossClear to fanfare
+            uiPop: 'assets/audio/pop.mp3',
+            battlePop: 'assets/audio/pop2.mp3',
             win: 'assets/audio/win.mp3',
             gameover: 'assets/audio/sfx_gameover.mp3',
             skillpop: 'assets/audio/sfx/skillpop.mp3',
             skillget: 'assets/audio/sfx/skillget.mp3',
         };
+
 
         const _polyPool = new Map();
 
@@ -2962,80 +3032,67 @@ const _jpApp = Vue.createApp({
 
 
 
+        const SFX_SCALES = {
+            fanfare: 0.6,    // Refined lower for comfort
+            bossClear: 0.6,
+            win: 0.7,        // Refined lower for comfort
+            gameover: 0.8,
+            skillget: 0.8,
+            uiPop: 1.0,      // Default for UI
+            battlePop: 0.9,  // Slightly lower for heavy assets
+            hit: 0.9,
+            damage: 0.95
+        };
+
         const playSfx = (name) => {
-
             if (!audioInited.value) {
-
                 initAudioCtx().then(() => { initAudio().then(() => playSfx(name)); });
-
                 return;
-
             }
-
             if (_voiceLockUntil > Date.now() && (name === 'damage' || name === 'miss')) return;
 
-
-
             const src = _uiSfxSrcMap[name];
-
             if (!src) return;
 
-
-
-            if (bgmGain.value && !isMuted.value && name !== 'click' && name !== 'pop') {
-
+            // BGM Ducking logic
+            if (bgmGain.value && !isMuted.value && name !== 'click' && name !== 'uiPop' && name !== 'battlePop') {
                 const b = bgmVolume.value;
-
                 const bScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMentorModalOpen.value || isMistakesOpen.value) ? 0.35 : 1.0;
-
                 clearTimeout(window._bgmDuckTimer);
-
                 window._bgmDuckTimer = setTimeout(() => {
-
                     if (bgmGain.value && !isMuted.value) {
-
                         bgmGain.value.gain.setTargetAtTime(b * bScale * 0.3, audioCtx.value.currentTime, 0.15);
-
                         setTimeout(() => {
-
                             if (bgmGain.value && !isMuted.value) {
-
                                 const vs = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMentorModalOpen.value || isMistakesOpen.value) ? 0.35 : 1.0;
-
                                 bgmGain.value.gain.setTargetAtTime(b * vs, audioCtx.value.currentTime, 0.4);
-
                             }
-
                         }, 1200);
-
                     }
-
                 }, 80);
-
             }
 
-
-
             const rawBuf = bufferPool.get(src);
-
             if (rawBuf && audioCtx.value) {
-
                 const doPlay = () => {
-
                     const playDecoded = (decoded) => {
-
                         try {
-
                             const bsn = audioCtx.value.createBufferSource();
-
                             bsn.buffer = decoded;
-
-                            bsn.connect(sfxGain.value || masterGain.value);
-
+                            
+                            // Normalization / Scaling
+                            const scale = SFX_SCALES[name] || 1.0;
+                            if (scale !== 1.0) {
+                                const tempGain = audioCtx.value.createGain();
+                                tempGain.gain.value = scale;
+                                bsn.connect(tempGain);
+                                tempGain.connect(sfxGain.value || masterGain.value);
+                            } else {
+                                bsn.connect(sfxGain.value || masterGain.value);
+                            }
+                            
                             bsn.start(0);
-
                         } catch (e) { }
-
                     };
 
                     if (rawBuf instanceof AudioBuffer) {
@@ -3779,7 +3836,7 @@ const _jpApp = Vue.createApp({
 
                 player.value.hp = Math.max(0, player.value.hp - dmg);
 
-                pushBattleLog(`怪物攻擊 -${dmg} HP`, 'dmg');
+                window.spawnFloatingDamage('player', dmg);
 
                 flashHeroHit(player.value.hp / player.value.maxHp);
 
@@ -4349,46 +4406,47 @@ const _jpApp = Vue.createApp({
 
 
 
+        const getHistoricalSkills = (upToLevel) => {
+            const historical = new Set();
+            for (let i = 1; i < upToLevel; i++) {
+                const cfg = LEVEL_CONFIG.value[i];
+                if (cfg && cfg.unlockSkills) {
+                    cfg.unlockSkills.forEach(s => {
+                        // 排除魔王複習 ID 或特殊的非教學 ID
+                        if (s && !s.startsWith('BOSS_REVIEW') && !s.startsWith('FINAL') && !s.startsWith('HIDDEN')) {
+                            historical.add(s);
+                        }
+                    });
+                }
+            }
+            return Array.from(historical);
+        };
+
         const pickSkillForNormalLevel = (levelId) => {
-
             const config = LEVEL_CONFIG.value[levelId] || {};
+            const newSkills = (config.unlockSkills || []).filter(id => {
+                const s = skillsAll.value[id];
+                return s && s.particle !== '複習'; // 排除純複習 ID 作為新技能
+            });
 
-            const configUnlock = config.unlockSkills || [];
-
-            const newSkills = configUnlock.filter(id => unlockedSkillIds.value.includes(id));
-
-            const oldSkills = unlockedSkillIds.value.filter(id => !newSkills.includes(id));
-
-
+            // 舊技能池：嚴格限制為「本關卡之前」已教過的技能
+            const oldSkills = getHistoricalSkills(levelId);
 
             let poolToUse = [];
-
-            // 優先讀取 config 中的比例，若無則使用全域常數
-
             const newSkillWeight = config.skillMix?.newSkillWeight ?? DEFAULT_NEW_SKILL_RATIO;
 
-
-
             if (newSkills.length > 0 && oldSkills.length > 0) {
-
                 poolToUse = Math.random() < newSkillWeight ? newSkills : oldSkills;
-
             } else if (newSkills.length > 0) {
-
                 poolToUse = newSkills;
-
             } else if (oldSkills.length > 0) {
-
                 poolToUse = oldSkills;
-
             } else {
-
-                return null;
-
+                // Fallback: 如果連歷史都沒有，只好從全域已解鎖中撈 (極端防呆)
+                poolToUse = unlockedSkillIds.value.length > 0 ? unlockedSkillIds.value : ['WA_TOPIC_BASIC'];
             }
 
             return poolToUse[Math.floor(Math.random() * poolToUse.length)];
-
         };
 
 
@@ -4408,59 +4466,53 @@ const _jpApp = Vue.createApp({
 
 
             if (lv === 5) {
+                let fullQueue = [];
+                for (let i = 0; i < 5; i++) {
+                    const block = [...level5Pool].sort(() => Math.random() - 0.5);
+                    fullQueue = fullQueue.concat(block);
+                }
+                bossSkillQueue = fullQueue;
+            } else if (lv % 5 === 0 && lv > 5 && config.skillId !== 'HIDDEN_BOSS_36') {
+                // 第 10, 15, 20... 關魔王：80% 當前地圖 + 20% 歷史舊題
+                const currentMapSkills = [];
+                for (let i = lv - 4; i < lv; i++) {
+                    const c = LEVEL_CONFIG.value[i];
+                    if (c && c.unlockSkills) currentMapSkills.push(...c.unlockSkills);
+                }
+                const historicalSkills = getHistoricalSkills(lv - 4); // 排除當前地圖
 
                 let fullQueue = [];
-
-                // 每 4 題為一組，確保各出現一次，重複 5 次共 20 題 (覆蓋 15 題需求)
-
-                for (let i = 0; i < 5; i++) {
-
-                    const block = [...level5Pool].sort(() => Math.random() - 0.5);
-
-                    fullQueue = fullQueue.concat(block);
-
+                // 產生 20 題的循環 (確保 15 題戰鬥需求)
+                for (let i = 0; i < 20; i++) {
+                    if (Math.random() < 0.8 && currentMapSkills.length > 0) {
+                        fullQueue.push(currentMapSkills[Math.floor(Math.random() * currentMapSkills.length)]);
+                    } else if (historicalSkills.length > 0) {
+                        fullQueue.push(historicalSkills[Math.floor(Math.random() * historicalSkills.length)]);
+                    } else {
+                        // 防呆 fallback
+                        fullQueue.push(currentMapSkills[0] || 'WA_TOPIC_BASIC');
+                    }
                 }
-
                 bossSkillQueue = fullQueue;
-
             } else if (config.skillId && config.skillId === 'HIDDEN_BOSS_36') {
-
                 const generateTieredSkillQueue = () => {
-
                     const tier3 = ['KARA_REASON', 'YORI_COMPARE', 'NI_FREQUENCY', 'DE_MATERIAL', 'TO_QUOTE', 'NI_PURPOSE'];
-
                     const tier2 = ['KARA_SOURCE_START', 'MADE_LIMIT_END', 'TO_COMPANION', 'DE_TOOL_MEANS', 'HE_DIRECTION', 'NI_TARGET'];
-
                     const tier1 = ['NI_TIME', 'NI_EXIST_PLACE', 'YA_AND_OTHERS', 'WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE'];
 
-
-
                     const pickN = (arr, n) => {
-
                         let res = [];
-
                         for(let i=0; i<n; i++) res.push(arr[Math.floor(Math.random() * arr.length)]);
-
                         return res;
-
                     };
-
                     const mix = [...pickN(tier3, 15), ...pickN(tier2, 9), ...pickN(tier1, 6)];
-
                     return mix.sort(() => Math.random() - 0.5);
-
                 };
-
                 bossSkillQueue = generateTieredSkillQueue();
-
             } else if (config.skillId && (config.skillId.startsWith('BOSS_REVIEW') || config.skillId === 'FINAL_BOSS_35')) {
-
                 bossSkillQueue = [config.skillId];
-
             } else {
-
                 bossSkillQueue = [...unlockedIds].sort(() => Math.random() - 0.5);
-
             }
 
         };
@@ -4797,6 +4849,63 @@ const _jpApp = Vue.createApp({
 
 
             let q = null;
+
+            // --- Shuffle Bag Injection ---
+            const tipTextObj = (skillDef.meaning || '') + (skillDef.rule ? ' / ' + skillDef.rule : '');
+            let tryCombos = undefined;
+            if (pool.skills && pool.skills[skillDef.id]) {
+                const sPool = pool.skills[skillDef.id];
+                tryCombos = sPool.safeCombos;
+            }
+            if (tryCombos && Array.isArray(tryCombos) && tryCombos.length > 0 && tryCombos[0].left !== undefined) {
+                window._skillQuestionBags = window._skillQuestionBags || {};
+                window._lastQuestionBySkill = window._lastQuestionBySkill || {};
+
+                if (!window._skillQuestionBags[skillId] || window._skillQuestionBags[skillId].length === 0) {
+                    let newBag = [...tryCombos].sort(() => Math.random() - 0.5);
+                    const lastQ = window._lastQuestionBySkill[skillId];
+                    if (lastQ && newBag.length > 1 && newBag[newBag.length - 1].j === lastQ.j) {
+                        const temp = newBag[newBag.length - 1];
+                        newBag[newBag.length - 1] = newBag[0];
+                        newBag[0] = temp;
+                    }
+                    window._skillQuestionBags[skillId] = newBag;
+                }
+
+                const picked = window._skillQuestionBags[skillId].pop();
+                window._lastQuestionBySkill[skillId] = picked;
+
+                const particleAns = skillDef.particle || "の";
+                const choicesOptions = skillDef.choiceSet || ["の", "は", "が", "を", "に", "へ", "で", "と", "も", "から", "まで", "や", "より"];
+                
+                let excludeChoices = [];
+                if (skillId === 'HE_DEST' || skillId === 'HE_DIRECTION') excludeChoices = ['に'];
+                
+                let finalChoices = undefined;
+                if (Number(blanks ?? 1) === 1) {
+                    finalChoices = getChoices(choicesOptions, particleAns);
+                    if (excludeChoices.length > 0) {
+                        finalChoices = finalChoices.filter(c => !excludeChoices.includes(c));
+                        const currentSet = new Set(finalChoices);
+                        const candidates = choicesOptions.filter(p => !excludeChoices.includes(p) && !currentSet.has(p));
+                        while (finalChoices.length < getChoiceCountForLevel(currentLevel.value) && candidates.length > 0) {
+                            finalChoices.push(candidates.splice(Math.floor(Math.random() * candidates.length), 1)[0]);
+                        }
+                    }
+                }
+
+                return makeParticleQuestion({
+                    chinese: picked.zh,
+                    leftText: picked.left,
+                    leftRuby: picked.leftRuby,
+                    rightText: picked.right,
+                    rightRuby: picked.rightRuby,
+                    answer: particleAns,
+                    skillId: skillId,
+                    grammarTip: tipTextObj,
+                    choices: finalChoices
+                });
+            }
 
             if (skillDef.id === 'NO_POSSESS' || skillDef.id === 'NO_POSSESSIVE') {
 
@@ -5366,18 +5475,12 @@ const _jpApp = Vue.createApp({
 
                 const skillPool = (pool.skills?.DE_ACTION_PLACE) || {};
 
-                const safeCombos = skillPool.safeCombos || [
-
+                const safeCombos = (skillPool.safeCombos && skillPool.safeCombos.length > 0) ? skillPool.safeCombos : [
                     { p: { j: "教室", r: "きょうしつ", zh: "教室" }, v: { j: "勉強する", r: "べんきょうする", zh: "讀書" } }
-
                 ];
 
-
-
-                const combo = pickOne(safeCombos);
-
+                const combo = pickOne(safeCombos) || safeCombos[0];
                 const p = combo.p;
-
                 const v = combo.v;
 
 
@@ -5410,22 +5513,14 @@ const _jpApp = Vue.createApp({
 
                 const skillPool = (pool.skills?.TO_AND) || {};
 
-                const safeCombos = skillPool.safeCombos || [
-
+                const safeCombos = (skillPool.safeCombos && skillPool.safeCombos.length > 0) ? skillPool.safeCombos : [
                     { a: { j: "犬", r: "いぬ", zh: "狗" }, b: { j: "猫", r: "ねこ", zh: "貓" } },
-
                     { a: { j: "パン", r: "ぱん", zh: "麵包" }, b: { j: "牛乳", r: "ぎゅうにゅう", zh: "牛奶" } },
-
                     { a: { j: "本", r: "ほん", zh: "書" }, b: { j: "ペン", r: "ぺん", zh: "筆" } }
-
                 ];
 
-
-
-                const combo = pickOne(safeCombos);
-
+                const combo = pickOne(safeCombos) || safeCombos[0];
                 const a = combo.a;
-
                 const b = combo.b;
 
 
@@ -5458,15 +5553,11 @@ const _jpApp = Vue.createApp({
 
                 const skillPool = (pool.skills?.TO_WITH) || {};
 
-                const xList = skillPool.people || [{ j: "友達", r: "ともだち", zh: "朋友" }];
+                const xList = (skillPool.people && skillPool.people.length > 0) ? skillPool.people : [{ j: "友達", r: "ともだち", zh: "朋友" }];
+                const vList = (skillPool.actions && skillPool.actions.length > 0) ? skillPool.actions : [{ j: "話す", r: "はなす", zh: "說話" }];
 
-                const vList = skillPool.actions || [{ j: "話す", r: "はなす", zh: "說話" }];
-
-
-
-                const x = pickOne(xList);
-
-                const v = pickOne(vList);
+                const x = pickOne(xList) || xList[0];
+                const v = pickOne(vList) || vList[0];
 
 
 
@@ -6012,7 +6103,7 @@ const _jpApp = Vue.createApp({
 
                         if (!window._battlePopPlayed) {
 
-                            playSfx('pop');
+                            playSfx('uiPop');
 
                             window._battlePopPlayed = true;
 
@@ -6724,7 +6815,7 @@ const _jpApp = Vue.createApp({
 
                 if (!window._battlePopPlayed) {
 
-                    playSfx('pop');
+                    playSfx('battlePop');
 
                     window._battlePopPlayed = true;
 
@@ -6879,9 +6970,7 @@ const _jpApp = Vue.createApp({
             if (style === 'combat') {
 
                 if ([3, 5, 7, 10, 15, 20].includes(combo)) {
-
-                    if (_isMobileSfx) playUiSfx('pop'); else playSfx('pop');
-
+                    if (_isMobileSfx) playUiSfx('battlePop'); else playSfx('battlePop');
                 }
 
             } else if (style === 'oneesan') {
@@ -7113,7 +7202,7 @@ const _jpApp = Vue.createApp({
                         monsterStunSeconds.value = 0.8; // 0.8s hit-stun
                         setTimeout(() => { monsterHit.value = false; }, 400);
 
-                        pushBattleLog(`造成 ${dmg} 點傷害！`, 'info');
+                        window.spawnFloatingDamage('monster', dmg);
 
 
 
@@ -7319,7 +7408,7 @@ const _jpApp = Vue.createApp({
             player.value.hp = player.value.maxHp;
             resetSP();
 
-            pushBattleLog(`擊敗怪物！獲得 ${earnedExp.value} EXP 與 ${earnedGold.value} 金幣！`, 'buff');
+            pushBattleLog(`擊敗怪物！獲得 ${earnedExp.value} EXP`, 'buff');
 
             clearTimer();
 
@@ -7722,7 +7811,7 @@ const _jpApp = Vue.createApp({
                     // 如果是新習得，則跳出 Modal
 
                     pendingLevelUpAbility.value = rewardedSkill;
-
+                    playSfx('uiPop'); // Added for boss ability unlock
                     isAbilityUnlockModalOpen.value = true;
 
                     // 暫存下一關資訊，等玩家按確認

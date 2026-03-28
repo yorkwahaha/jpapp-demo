@@ -8,8 +8,17 @@ window.__attachDebugTools = function (refs) {
         levelTitle, player, monster, currentQuestion,
         startLevel, retryLevel, initGame, goHome, generateQuestionBySkill,
         mentorTutorialSeen, saveMentorState, skillsAll, setupMentorDialogue,
-        pauseBattle, db, VOCAB
+        pauseBattle, db, VOCAB, unlockedSkillIds
     } = refs || {};
+
+    // --- Audit State ---
+    let auditData = {
+        isRunning: false,
+        counts: {},
+        samples: [],
+        startTime: null
+    };
+    let _originalGenerate = null;
 
 
             function safeMaxLevel() {
@@ -445,39 +454,176 @@ window.__attachDebugTools = function (refs) {
 
 
                 replayMentor(skillId) {
-
                     const skill = skillsAll.value[skillId];
-
                     if (!skill) {
-
                         console.warn(`[jpDebug] Skill ID "${skillId}" not found.`);
-
                         return;
-
                     }
-
                     if (!skill.mentorDialogue) {
-
                         console.warn(`[jpDebug] Skill "${skillId}" has no mentor dialogue.`);
-
                         return;
+                    }
+                    setupMentorDialogue(skill);
+                    pauseBattle();
+                    console.log(`[jpDebug] Replaying mentor dialogue for: ${skillId}`);
+                },
 
+                // --- Audit Tools ---
+
+                auditStart() {
+                    if (auditData.isRunning) {
+                        console.warn("[jpDebug.audit] Audit is already running.");
+                        return;
+                    }
+                    auditData.isRunning = true;
+                    auditData.startTime = new Date();
+                    console.log("[jpDebug.audit] Audit started. Recording questions...");
+                },
+
+                auditRecord(skillId, questionObj) {
+                    if (!auditData.isRunning) return;
+                    auditData.counts[skillId] = (auditData.counts[skillId] || 0) + 1;
+                    auditData.samples.push({
+                        time: new Date().toLocaleTimeString(),
+                        skillId,
+                        chinese: questionObj?.chinese || '?'
+                    });
+                    if (auditData.samples.length > 100) auditData.samples.shift();
+                },
+
+                auditReport() {
+                    const total = Object.values(auditData.counts).reduce((a, b) => a + b, 0);
+                    if (total === 0) {
+                        console.log("[jpDebug.audit] No data recorded yet.");
+                        return;
                     }
 
-                    setupMentorDialogue(skill);
+                    const levelId = currentLevel.value;
+                    const config = LEVEL_CONFIG.value[levelId] || {};
+                    const newSkills = config.unlockSkills || [];
+                    
+                    const getHistArr = (lv) => {
+                        const h = new Set();
+                        for(let i=1; i<lv; i++) {
+                            const c = LEVEL_CONFIG.value[i];
+                            if(c?.unlockSkills) c.unlockSkills.forEach(s => {
+                                if(s && !s.startsWith('BOSS_REVIEW') && !s.startsWith('FINAL') && !s.startsWith('HIDDEN')) h.add(s);
+                            });
+                        }
+                        return Array.from(h);
+                    };
+                    const histSet = new Set(getHistArr(levelId));
 
-                    pauseBattle();
+                    const rows = Object.entries(auditData.counts).map(([id, count]) => {
+                        let type = "Unexpected";
+                        if (newSkills.includes(id)) type = "New";
+                        else if (histSet.has(id)) type = "Historical";
+                        else if (id.startsWith('BOSS_REVIEW')) type = "BossPool";
 
-                    console.log(`[jpDebug] Replaying mentor dialogue for: ${skillId}`);
+                        return {
+                            Skill: id,
+                            Type: type,
+                            Count: count,
+                            Percent: ((count / total) * 100).toFixed(1) + "%"
+                        };
+                    }).sort((a, b) => b.Count - a.Count);
 
+                    console.log(`[jpDebug.audit] Report for Level ${levelId} (Total: ${total})`);
+                    console.table(rows);
+                    console.log("[jpDebug.audit] Recent Samples:", auditData.samples.slice(-5));
+                    return rows;
+                },
+
+                auditStop() {
+                    if (!auditData.isRunning) return;
+                    this.auditReport();
+                    auditData.isRunning = false;
+                    console.log("[jpDebug.audit] Audit stopped.");
+                },
+
+                auditReset() {
+                    auditData.counts = {};
+                    auditData.samples = [];
+                    console.log("[jpDebug.audit] Audit data reset.");
+                },
+
+                async auditLevelSkills(levelId, sampleCount = 100) {
+                    console.log(`[jpDebug.audit] Sampling Level ${levelId} for ${sampleCount} questions...`);
+                    const config = LEVEL_CONFIG.value[levelId];
+                    if (!config) {
+                        console.error("[jpDebug.audit] Invalid Level ID");
+                        return;
+                    }
+
+                    const counts = {};
+                    const isBoss = levelId % 5 === 0 || config.isBoss;
+
+                    const getHistArr = (lv) => {
+                        const h = new Set();
+                        for(let i=1; i<lv; i++) {
+                            const c = LEVEL_CONFIG.value[i];
+                            if(c?.unlockSkills) c.unlockSkills.forEach(s => {
+                                if(s && !s.startsWith('BOSS_REVIEW') && !s.startsWith('FINAL') && !s.startsWith('HIDDEN')) h.add(s);
+                            });
+                        }
+                        return Array.from(h);
+                    };
+
+                    const newSkills = (config.unlockSkills || []).filter(id => {
+                        const s = skillsAll.value[id];
+                        return s && s.particle !== '複習';
+                    });
+                    const oldSkills = getHistArr(levelId);
+                    const weight = config.skillMix?.newSkillWeight ?? 0.5;
+
+                    if (isBoss) {
+                        if (levelId === 5) {
+                            const pool = ['WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE', 'WO_OBJECT_BASIC'];
+                            for(let i=0; i<sampleCount; i++) {
+                                const sid = pool[Math.floor(Math.random()*pool.length)];
+                                counts[sid] = (counts[sid] || 0) + 1;
+                            }
+                        } else {
+                            const curMap = [];
+                            for(let i=levelId-4; i<levelId; i++) if(LEVEL_CONFIG.value[i]?.unlockSkills) curMap.push(...LEVEL_CONFIG.value[i].unlockSkills);
+                            const hist = getHistArr(levelId - 4);
+                            for(let i=0; i<sampleCount; i++) {
+                                let sid;
+                                if (Math.random() < 0.8 && curMap.length > 0) sid = curMap[Math.floor(Math.random()*curMap.length)];
+                                else if (hist.length > 0) sid = hist[Math.floor(Math.random()*hist.length)];
+                                else sid = 'WA_TOPIC_BASIC';
+                                counts[sid] = (counts[sid] || 0) + 1;
+                            }
+                        }
+                    } else {
+                        for (let i = 0; i < sampleCount; i++) {
+                            let sid;
+                            if (newSkills.length > 0 && oldSkills.length > 0) sid = (Math.random() < weight) ? newSkills[Math.floor(Math.random()*newSkills.length)] : oldSkills[Math.floor(Math.random()*oldSkills.length)];
+                            else if (newSkills.length > 0) sid = newSkills[Math.floor(Math.random()*newSkills.length)];
+                            else sid = oldSkills[Math.floor(Math.random()*oldSkills.length)] || 'WA_TOPIC_BASIC';
+                            counts[sid] = (counts[sid] || 0) + 1;
+                        }
+                    }
+
+                    const histSet = new Set(getHistArr(levelId));
+                    const rows = Object.entries(counts).map(([id, count]) => {
+                        let type = "Unexpected/Future";
+                        if (newSkills.includes(id)) type = "New (Target)";
+                        else if (histSet.has(id)) type = "Historical (Old)";
+                        else if (id.startsWith('BOSS_REVIEW')) type = "BossPool";
+                        return { Skill: id, Type: type, Count: count, Percent: ((count / sampleCount) * 100).toFixed(1) + "%" };
+                    }).sort((a, b) => b.Count - a.Count);
+                    console.log(`[jpDebug.audit] Sample Analysis for Level ${levelId} (N=${sampleCount})`);
+                    console.table(rows);
+                    return rows;
                 },
 
 
 
                 skill(skillId) {
-
-                    return makeOneSkillQuestion(skillId);
-
+                    const q = makeOneSkillQuestion(skillId);
+                    if (q && auditData.isRunning) this.auditRecord(skillId, q);
+                    return q;
                 },
 
 
@@ -711,81 +857,27 @@ window.__attachDebugTools = function (refs) {
 
 
                 help() {
-
                     const msg = `
-
 jpDebug commands:
-
 - goLevel(4)
-
-- jpDebug.goLevel(4)
-
-- jpDebug.retry()
-
-- jpDebug.next()
-
-- jpDebug.prev()
-
+- jpDebug.retry() / next() / prev()
 - jpDebug.skill('MO_ALSO_BASIC')
-
-- jpDebug.skillLines('KARA_SOURCE_START', 20)
-
-- jpDebug.skillLines('MADE_LIMIT_END', 20)
-
-- jpDebug.skillLines('TO_COMPANION', 20)
-
-- jpDebug.skillLines('DE_TOOL_MEANS', 20)
-
-- jpDebug.skillLines('BOSS_REVIEW_04', 20)
-
 - jpDebug.skillLines('NI_TIME', 20)
+- jpDebug.state() / home() / levels()
 
-- jpDebug.skillLines('NI_TARGET', 20)
+Audit Tools (Question Distribution):
+- jpDebug.auditLevelSkills(6, 100) : Simulate Level 6, sample 100 times.
+- jpDebug.auditStart() : Start recording current play sessions.
+- jpDebug.auditReport() : Show stats for current play session.
+- jpDebug.auditStop() : Stop recording and show report.
+- jpDebug.auditReset() : Clear data.
 
-- jpDebug.skillLines('NI_EXIST_PLACE', 20)
-
-- jpDebug.skillLines('HE_DIRECTION', 20)
-
-- jpDebug.skillLines('BOSS_REVIEW_05', 20)
-
-- jpDebug.skillLines('YA_AND_OTHERS', 20)
-
-- jpDebug.skillLines('DE_SCOPE', 20)
-
-- jpDebug.skillLines('NI_PURPOSE', 20)
-
-- jpDebug.skillLines('TO_QUOTE', 20)
-
-- jpDebug.skillLines('BOSS_REVIEW_06', 20)
-
-- jpDebug.skillLines('KARA_REASON', 20)
-
-- jpDebug.skillLines('YORI_COMPARE', 20)
-
-- jpDebug.skillLines('NI_FREQUENCY', 20)
-
-- jpDebug.skillLines('DE_MATERIAL', 20)
-
-- jpDebug.skillLines('FINAL_BOSS_35', 20)
-
-- jpDebug.skillLines('HIDDEN_BOSS_36', 20)
-
-- jpDebug.state()
-
-- jpDebug.home()
-
-- jpDebug.levels()
-
+Mentor/Tutorial:
 - jpDebug.resetMentorTutorials()
-
 - jpDebug.replayMentor('WA_TOPIC_BASIC')
-
       `.trim();
-
                     console.log(msg);
-
                     return msg;
-
                 }
 
             };
