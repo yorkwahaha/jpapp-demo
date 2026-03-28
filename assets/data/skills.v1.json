@@ -525,7 +525,7 @@
     "meaning": "動作最後落到的位置",
     "rule": "NにV",
     "examples": ["いすに座る"],
-    "choiceSet": ["に", "で", "下", "を"]
+    "choiceSet": ["に", "で", "と", "を"]
   },
   {
     "id": "GA_BUT",
