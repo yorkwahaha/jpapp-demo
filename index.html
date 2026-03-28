@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26032801'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26032901'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -2656,20 +2656,19 @@
                         class="absolute top-[20dvh] left-0 w-full h-[50dvh] flex items-center justify-center z-10 pointer-events-none">
 
                         <div v-if="!monsterTrulyDead"
-
                             class="flex flex-col items-center relative transition-all duration-300 pointer-events-auto"
-
                             :style="monsterPositionStyle"
-
                             :class="{ 
-
-                                hit: monsterHit, 
-
                                 'monster-death-anim': monsterIsDying && currentLevel % 5 !== 0,
-
                                 'boss-death-anim': monsterIsDying && currentLevel % 5 === 0
-
                             }">
+
+                            <!-- Hit Animation Wrapper: Isolates hit/shake from base position transform to prevent jumping -->
+                            <div class="flex flex-col items-center"
+                                :class="{ 
+                                    hit: monsterHit,
+                                    'hit-boss': monsterHit && currentLevel % 5 === 0
+                                }">
 
 
 
@@ -2736,8 +2735,8 @@
 
 
                             <div id="monsterStatusBar" class="w-full flex justify-center gap-1 mt-1 min-h-[22px]"></div>
-
                         </div>
+                    </div>
 
                     </div>
 

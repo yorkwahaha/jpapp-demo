@@ -759,7 +759,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26032801";
+        const APP_VERSION = window.APP_VERSION || "26032901";
 
         const appVersion = ref(APP_VERSION);
 
@@ -2960,7 +2960,7 @@ const _jpApp = Vue.createApp({
             damage3: 'assets/audio/damage3.mp3',
             damage4: 'assets/audio/damage4.mp3',
             fanfare: 'assets/audio/fanfare.mp3',
-            bossClear: 'assets/audio/fanfare.mp3', // Map missing bossClear to fanfare
+            bossClear: '', // Map missing bossClear to fanfare
             uiPop: 'assets/audio/pop.mp3',
             battlePop: 'assets/audio/pop2.mp3',
             win: 'assets/audio/win.mp3',
@@ -6933,7 +6933,7 @@ const _jpApp = Vue.createApp({
 
         let lastPraiseText = '';
 
-        const ONEESAN_PRAISES = ['せいかい！', 'ナイス！', 'いいね！', 'すごい！', 'えぐっ！', 'まじか！', '天才か！'];
+        const ONEESAN_PRAISES = ['せいかい！', 'ナイス！', 'いいね！', 'すごい！', 'かっこいい！', 'まじか！', 'さいこう！'];
 
 
 

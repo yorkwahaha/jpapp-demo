@@ -95,6 +95,7 @@
     "focusParticle": "Boss",
     "focusLabel": "複習",
     "bgKey": "",
+    "bgImage": "assets/images/levels/bg_lv5.png",
     "bgm": "BGM_boss.mp3"
   },
   {
@@ -716,6 +717,7 @@
     "focusParticle": "Boss",
     "focusLabel": "極限",
     "bgKey": "",
-    "bgm": "Final_Judgement_2.mp3"
+    "bgImage": "assets/images/levels/bg_lv36.png",
+    "bgm": "Do_not_go_against_me.mp3"
   }
 ]

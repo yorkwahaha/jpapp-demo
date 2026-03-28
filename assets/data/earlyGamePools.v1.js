@@ -1510,11 +1510,11 @@ window.EARLY_GAME_POOLS = {
                 {
                     "j": "彼と会う",
                     "r": "かれとあう",
-                    "zh": "和他見面(需用に，這裡改行く)",
+                    "zh": "和他見面",
                     "left": "彼",
                     "leftRuby": "かれ",
-                    "right": "行く",
-                    "rightRuby": "いく"
+                    "right": "会う",
+                    "rightRuby": "あう"
                 },
                 {
                     "j": "彼女と来る",

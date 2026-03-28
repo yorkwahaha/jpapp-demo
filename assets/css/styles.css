@@ -206,6 +206,42 @@ rt {
 
 @keyframes hit {
     0% {
+        transform: scale(1) translateY(0);
+        filter: brightness(1);
+    }
+
+    20% {
+        transform: scale(1.08) translateY(-4px) rotate(1deg);
+        filter: brightness(2) contrast(1.2);
+    }
+
+    100% {
+        transform: scale(1) translateY(0) rotate(0);
+        filter: brightness(1);
+    }
+}
+
+@keyframes hit-boss {
+    0% {
+        transform: scale(1) translateY(0);
+        filter: brightness(1);
+    }
+
+    20% {
+        transform: scale(1.02) translateY(-2px) rotate(0.5deg);
+        filter: brightness(1.6) contrast(1.1);
+    }
+
+    100% {
+        transform: scale(1) translateY(0) rotate(0);
+        filter: brightness(1);
+    }
+}
+
+/* Original block remains below for manual removal or overlapping */
+@keyframes OLD_HIT {
+
+    0% {
         transform: scale(1);
         filter: brightness(1);
     }
