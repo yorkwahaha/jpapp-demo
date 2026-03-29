@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26032901'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26033001'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -2165,98 +2165,134 @@
 
             </transition>
 
-            <!-- ── 招式圖鑑 Codex （地圖頁可用） ── -->
-
+            <!-- ── 秘笈本 Codex（地圖頁可用） ── -->
             <div v-if="isCodexOpen"
-
-                class="modal-overlay fixed inset-0 z-[2000] flex items-center justify-center p-4 md:p-8"
-
-                @click.self="isCodexOpen = false">
-
-                <div class="absolute inset-0 bg-slate-950/20 backdrop-blur-md pointer-events-none"></div>
-
-                <div
-
-                    class="relative w-full max-w-4xl h-full max-h-[85vh] glass-panel modal-panel !bg-indigo-950/40 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
-
-                    <div class="text-center py-6 border-b border-white/10 shadow-lg relative z-10 bg-black/10">
-
-                        <h2 class="text-2xl font-[900] text-amber-400 tracking-[0.2em] drop-shadow-xl"
-
-                            style="text-shadow: 0 4px 12px rgba(0,0,0,0.5);"> 招式圖鑑 <span
-
-                                class="text-[10px] font-bold opacity-20 tracking-[0.4em] ml-3">CODEX</span></h2>
-
-                        <button @click="isCodexOpen = false"
-
-                            class="absolute top-1/2 -translate-y-1/2 right-8 text-amber-400/40 hover:text-amber-300 transition-all active:scale-90 p-1.5 focus:outline-none">
-
-                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-
-                                    d="M6 18L18 6M6 6l12 12"></path>
-
-                            </svg>
-
-                        </button>
-
-                    </div>
-
-                    <div class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar relative z-10 space-y-4">
-
-                        <div v-for="skill in skillsWithUnlockLevel" :key="skill.id" :id="'skill-card-' + skill.id">
-
-                            <div v-if="unlockedSkillIds.includes(skill.id)"
-
-                                :class="['border rounded pointer-events-auto transition-all duration-300 shadow-md', expandedSkillId === skill.id ? 'border-amber-500/30 shadow-[0_0_20px_rgba(251,191,36,0.1)] bg-amber-900/20' : 'bg-[#3e2723]/40 border-amber-900/20']">
-
-                                <button @click="expandedSkillId = expandedSkillId === skill.id ? null : skill.id"
-
-                                    class="w-full text-left px-4 py-3 flex justify-between items-center hover:bg-white/5 transition-colors rounded">
-
-                                    <span class="font-bold text-lg text-amber-400/90 tracking-wide">{{ skill.name }}</span>
-
-                                    <span class="text-amber-600/80">{{ expandedSkillId === skill.id ? '▼' : '▶' }}</span>
-
-                                </button>
-
-                                <div v-if="expandedSkillId === skill.id"
-
-                                    class="p-4 pt-2 text-base space-y-3 bg-[#1e110a]/40 border-t border-amber-900/50">
-
-                                    <div v-if="skill.meaning"><span
-
-                                            class="text-emerald-500 font-bold mr-2">含義</span><span
-
-                                            class="text-amber-100/90 leading-relaxed">{{ skill.meaning }}</span></div>
-
-                                    <div v-if="skill.rule"><span class="text-blue-400 font-bold mr-2">句型</span><span
-
-                                            class="text-amber-100/90 leading-relaxed">{{ skill.rule }}</span></div>
-
-                                </div>
-
-                            </div>
-
-                            <div v-else
-
-                                class="bg-slate-900/40 border border-white/5 rounded p-4 flex items-center justify-between pointer-events-none opacity-80 grayscale filter shadow-inner">
-
-                                <span class="font-bold text-slate-400 text-lg flex items-center gap-2">🔒 未習得</span>
-
-                                <span class="text-xs font-bold text-amber-800/40">{{ skill.unlockLevel ? '第 ' +
-
-                                    skill.unlockLevel + ' 關習得' : '未安排' }}</span>
-
-                            </div>
-
+                class="modal-overlay fixed inset-0 z-[2000] flex items-center justify-center p-3 sm:p-6"
+                @click.self="isCodexOpen = false; flippedCardId = null; playSfx('click')">
+                <div class="absolute inset-0 bg-black/72 backdrop-blur-sm pointer-events-none"></div>
+                <div class="codex-book relative w-full sm:max-w-4xl flex flex-col">
+                    <div class="codex-book-header flex-shrink-0 flex items-center justify-between px-5 py-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">📖</span>
+                            <div><h2 class="codex-book-title">秘笈本</h2><p class="codex-book-subtitle">CODEX</p></div>
                         </div>
-
+                        <button @click="isCodexOpen = false; flippedCardId = null; playSfx('click')" class="codex-close-btn">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
                     </div>
-
+                    <div class="codex-spread flex-1 min-h-0 flex overflow-hidden">
+                        <div class="flex flex-1 min-w-0 overflow-hidden">
+                        <div class="codex-book-page flex flex-1 items-center justify-center overflow-y-auto p-4 sm:p-8">
+                            <div v-if="codexPageSkills[0]" :id="'skill-card-' + codexPageSkills[0].id" class="flex justify-center w-full">
+                                <div v-if="unlockedSkillIds.includes(codexPageSkills[0].id)"
+                                    class="codex-flip-card"
+                                    :class="{ 'codex-flip-card--highlight': expandedSkillId === codexPageSkills[0].id }"
+                                    @click="flippedCardId = (flippedCardId === codexPageSkills[0].id ? null : codexPageSkills[0].id); playCardFlip()">
+                                    <div class="codex-flip-inner" :class="{ 'is-flipped': flippedCardId === codexPageSkills[0].id }">
+                                        <div class="codex-face codex-face-front">
+                                            <div class="flex justify-center"><span class="codex-particle-badge-lg">{{ (codexPageSkills[0].particle || '技').length <= 3 ? (codexPageSkills[0].particle || '技') : '技' }}</span></div>
+                                            <h3 class="codex-face-name">{{ codexPageSkills[0].name.split('：')[1] || codexPageSkills[0].name }}</h3>
+                                            <p class="codex-face-meaning-text">{{ codexPageSkills[0].meaning || '—' }}</p>
+                                            <div class="codex-face-rule-block"><span class="codex-label-mini codex-label-mini--rule">句型</span><code class="codex-face-rule-code ml-2">{{ codexPageSkills[0].rule || '—' }}</code></div>
+                                            <p class="codex-flip-hint">翻面查看 ↺</p>
+                                        </div>
+                                        <div class="codex-face codex-face-back">
+                                            <div class="codex-back-id-row">
+                                                <span class="codex-particle-badge" style="width:26px;height:26px;font-size:0.72rem">{{ (codexPageSkills[0].particle || '技').length <= 3 ? (codexPageSkills[0].particle || '技') : '技' }}</span>
+                                                <span class="codex-back-id-name">{{ codexPageSkills[0].name.split('：')[1] || codexPageSkills[0].name }}</span>
+                                            </div>
+                                            <div class="codex-back-section">
+                                                <span class="codex-label-mini codex-label-mini--formula">公式</span>
+                                                <code class="codex-back-formula-code">{{ codexPageSkills[0].rule || '—' }}</code>
+                                            </div>
+                                            <div v-if="codexPageSkills[0].examples && codexPageSkills[0].examples.length" class="codex-back-section">
+                                                <span class="codex-label-mini codex-label-mini--example">例句</span>
+                                                <ul class="codex-back-examples-list">
+                                                    <li v-for="ex in codexPageSkills[0].examples.slice(0,2)" class="codex-back-example-item">{{ ex }}</li>
+                                                </ul>
+                                            </div>
+                                            <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
+                                            <div v-if="codexPageSkills[0].tip" class="codex-back-tip-block">
+                                                <span class="codex-label-mini codex-label-mini--tip">提醒</span>
+                                                <p class="codex-back-tip-text">{{ codexPageSkills[0].tip }}</p>
+                                            </div>
+                                            <p class="codex-flip-hint mt-auto">← 返回正面</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-else class="codex-locked-card">
+                                    <div class="flex items-center gap-2"><span>🔒</span><span class="font-bold text-slate-500/70 text-sm">尚未習得</span></div>
+                                    <span class="codex-unlock-tip">{{ codexPageSkills[0].unlockLevel ? '第 ' + codexPageSkills[0].unlockLevel + ' 關解鎖' : '探索中' }}</span>
+                                </div>
+                            </div>
+                            <div v-else class="codex-page-empty"><p class="text-amber-900/40 text-sm">此章節尚無技能</p></div>
+                        </div>
+                        <div class="codex-spine hidden sm:block flex-shrink-0"></div>
+                        <div class="codex-book-page codex-book-page--right hidden sm:flex flex-1 items-center justify-center overflow-y-auto p-8">
+                            <div v-if="codexNextSkill" :id="'skill-card-r-' + codexNextSkill.id" class="flex justify-center w-full">
+                                <div v-if="unlockedSkillIds.includes(codexNextSkill.id)"
+                                    class="codex-flip-card"
+                                    :class="{ 'codex-flip-card--highlight': expandedSkillId === codexNextSkill.id }"
+                                    @click="flippedCardId = (flippedCardId === codexNextSkill.id ? null : codexNextSkill.id); playCardFlip()">
+                                    <div class="codex-flip-inner" :class="{ 'is-flipped': flippedCardId === codexNextSkill.id }">
+                                        <div class="codex-face codex-face-front">
+                                            <div class="flex justify-center"><span class="codex-particle-badge-lg">{{ (codexNextSkill.particle || '技').length <= 3 ? (codexNextSkill.particle || '技') : '技' }}</span></div>
+                                            <h3 class="codex-face-name">{{ codexNextSkill.name.split('：')[1] || codexNextSkill.name }}</h3>
+                                            <p class="codex-face-meaning-text">{{ codexNextSkill.meaning || '—' }}</p>
+                                            <div class="codex-face-rule-block"><span class="codex-label-mini codex-label-mini--rule">句型</span><code class="codex-face-rule-code ml-2">{{ codexNextSkill.rule || '—' }}</code></div>
+                                            <p class="codex-flip-hint">翻面查看 ↺</p>
+                                        </div>
+                                        <div class="codex-face codex-face-back">
+                                            <div class="codex-back-id-row">
+                                                <span class="codex-particle-badge" style="width:26px;height:26px;font-size:0.72rem">{{ (codexNextSkill.particle || '技').length <= 3 ? (codexNextSkill.particle || '技') : '技' }}</span>
+                                                <span class="codex-back-id-name">{{ codexNextSkill.name.split('：')[1] || codexNextSkill.name }}</span>
+                                            </div>
+                                            <div class="codex-back-section">
+                                                <span class="codex-label-mini codex-label-mini--formula">公式</span>
+                                                <code class="codex-back-formula-code">{{ codexNextSkill.rule || '—' }}</code>
+                                            </div>
+                                            <div v-if="codexNextSkill.examples && codexNextSkill.examples.length" class="codex-back-section">
+                                                <span class="codex-label-mini codex-label-mini--example">例句</span>
+                                                <ul class="codex-back-examples-list">
+                                                    <li v-for="ex in codexNextSkill.examples.slice(0,2)" class="codex-back-example-item">{{ ex }}</li>
+                                                </ul>
+                                            </div>
+                                            <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
+                                            <div v-if="codexNextSkill.tip" class="codex-back-tip-block">
+                                                <span class="codex-label-mini codex-label-mini--tip">提醒</span>
+                                                <p class="codex-back-tip-text">{{ codexNextSkill.tip }}</p>
+                                            </div>
+                                            <p class="codex-flip-hint mt-auto">← 返回正面</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-else class="codex-locked-card">
+                                    <div class="flex items-center gap-2"><span>🔒</span><span class="font-bold text-slate-500/70 text-sm">尚未習得</span></div>
+                                    <span class="codex-unlock-tip">{{ codexNextSkill.unlockLevel ? '第 ' + codexNextSkill.unlockLevel + ' 關解鎖' : '探索中' }}</span>
+                                </div>
+                            </div>
+                            <div v-else class="codex-page-fin text-center">
+                                <div class="text-amber-900/35 text-3xl mb-2">✦</div>
+                                <p class="text-amber-900/30 text-xs tracking-[0.3em]">— 終 —</p>
+                            </div>
+                        </div>
+                        </div>
+                        <div class="codex-tab-strip flex-shrink-0">
+                            <button v-for="ch in codexChapterList" :key="ch.key"
+                                @click="codexChapter = ch.key; codexPage = 0; flippedCardId = null"
+                                :class="['codex-tab-item', codexChapter === ch.key ? 'codex-tab-item--active' : '']">{{ ch.label }}</button>
+                        </div>
+                    </div>
+                    <div class="codex-page-nav flex-shrink-0 flex items-center justify-between px-4 py-2">
+                        <button @click="codexPage = Math.max(0, codexPage - 1); flippedCardId = null" :disabled="codexPage === 0" class="codex-nav-btn">← 前頁</button>
+                        <div class="codex-page-indicator flex items-baseline gap-1">
+                            <span class="text-amber-900/55 text-xs">第</span>
+                            <span class="codex-page-num">{{ codexPage + 1 }}</span>
+                            <span class="text-amber-900/55 text-xs">頁 / 共 {{ codexTotalPages }} 頁</span>
+                        </div>
+                        <button @click="codexPage = Math.min(codexTotalPages - 1, codexPage + 1); flippedCardId = null" :disabled="codexPage >= codexTotalPages - 1" class="codex-nav-btn">後頁 →</button>
+                    </div>
                 </div>
-
             </div>
 
             <!-- ── 進階設定（地圖頁可用） ── -->
@@ -3143,9 +3179,9 @@
                                         <span class="hud-bar-label hud-bar-label--sp w-5">SP</span>
                                         <div class="flex-1 h-1 hud-bar-track">
                                             <div class="hud-bar-fill hud-bar-sp-fill transition-all duration-300"
-                                                style="width: 100%;"></div>
+                                                :style="{ width: (spState.cur / spState.max * 100) + '%' }"></div>
                                         </div>
-                                        <span class="hud-bar-value w-6 text-right">MAX</span>
+                                        <span class="hud-bar-value w-6 text-right">{{ spState.cur }}</span>
                                     </div>
                                 </div>
 
@@ -3196,7 +3232,7 @@
 
             <!-- [L7] Result Overlay -->
 
-            <div v-if="monsterResultShown || playerDead"
+            <div v-if="(monsterResultShown || playerDead) && !isDefeated"
 
                 class="absolute inset-0 z-[100] flex items-center justify-center result-screen-backdrop pointer-events-auto px-4">
 
@@ -3269,24 +3305,26 @@
 
 
                     <div v-if="playerDead" class="w-full">
-
                         <div class="text-6xl mb-4 drop-shadow-lg">💀</div>
-
                         <h2 class="text-2xl font-black text-rose-500 mb-6 tracking-widest">敗北...</h2>
-
                         <button @click="revive"
-
                             class="w-full py-4 rounded-xl bg-emerald-600 text-white font-black text-lg shadow-[0_4px_0_#065f46] active:translate-y-1 active:shadow-none transition-all mb-3">重新開始</button>
-
                         <button @click="isMistakesOpen = true; playSfx('uiPop');"
                             class="w-full py-3 rounded-xl bg-slate-800 text-slate-300 font-bold text-sm hover:bg-slate-700 transition-colors border border-slate-600">📒
-
                             查看題目</button>
-
                     </div>
-
                 </div>
+            </div>
 
+            <!-- 💀 Defeat Overlay -->
+            <div id="defeatOverlay" class="fixed inset-0 z-[99] flex flex-col items-center justify-center gap-10 pointer-events-auto hidden bg-black/40 backdrop-blur-[2px]">
+                <div class="text-8xl font-black text-rose-600/80 tracking-[0.2em] transform -rotate-12 select-none pointer-events-none animate-pulse"
+                     style="text-shadow: 0 0 40px rgba(225,29,72,0.6), 0 10px 20px rgba(0,0,0,0.8);">
+                    敗北
+                </div>
+                <button @click="defeatReturn()" class="px-10 py-3 rounded-2xl bg-slate-800/90 border border-slate-500 text-white font-bold text-lg tracking-widest shadow-xl hover:bg-slate-700 active:scale-95 transition-all">
+                    回首頁
+                </button>
             </div>
 
 
@@ -3297,7 +3335,8 @@
 
                 class="fixed md:absolute bottom-0 left-4 md:left-1/2 md:-translate-x-1/2 md:ml-[-180px] z-[45] pointer-events-none"
 
-                style="width: clamp(110px, 7vw, 160px); height: clamp(110px, 7vw, 160px); margin-bottom: clamp(135px, 18dvh, 160px);">
+                style="width: clamp(110px, 7vw, 160px); height: clamp(110px, 7vw, 160px);"
+                :style="{ marginBottom: HERO_VISUAL_CONFIG.battle.marginBottom }">
 
                 <img src="assets/images/hero/hero_neutral.png"
 
@@ -3616,93 +3655,134 @@
 
 
 
-            <!-- Codex -->
-
+            <!-- ── 秘笈本 Codex（戰鬥頁可用） ── -->
             <div v-if="isCodexOpen"
-
-                class="modal-overlay codex-modal-v1 fixed inset-0 z-[2000] flex items-center justify-center p-4 md:p-8"
-                @click.self="isCodexOpen = false; if (!isSkillOpen) resumeBattle(); playSfx('click');">
-
-                <div class="absolute inset-0 bg-slate-950/20 backdrop-blur-md pointer-events-none"></div>
-
-                <div
-
-                    class="relative w-full max-w-4xl h-full max-h-[85vh] glass-panel modal-panel codex-panel !bg-indigo-950/40 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
-
-
-
-                    <div class="text-center py-6 border-b border-white/10 shadow-lg relative z-10 bg-black/10">
-
-                        <h2 class="text-2xl font-[900] text-amber-400 tracking-[0.2em] drop-shadow-xl"
-
-                            style="text-shadow: 0 4px 12px rgba(0,0,0,0.5);">招式圖鑑 <span
-
-                                class="text-[10px] font-bold opacity-20 tracking-[0.4em] ml-3">CODEX</span></h2>
-
-                        <button @click="isCodexOpen = false; if (!isSkillOpen) resumeBattle(); playSfx('click');"
-                            class="absolute top-1/2 -translate-y-1/2 right-8 text-amber-400/40 hover:text-amber-300 transition-all active:scale-90 p-1.5 focus:outline-none">
-
-                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-
-                                    d="M6 18L18 6M6 6l12 12"></path>
-
-                            </svg>
-
-                        </button>
-
-                    </div>
-
-
-
-                    <div class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar relative z-10 space-y-4">
-
-                        <div v-for="skill in skillsWithUnlockLevel" :key="skill.id" :id="'skill-card-' + skill.id">
-
-                            <!-- Unlocked Card -->
-                            <div v-if="unlockedSkillIds.includes(skill.id)"
-                                class="codex-card codex-card--unlocked"
-                                :class="{ 'codex-card--expanded': expandedSkillId === skill.id }">
-                                <button @click="expandedSkillId = expandedSkillId === skill.id ? null : skill.id"
-                                    class="w-full text-left px-4 py-4 flex justify-between items-center hover:bg-white/5 transition-colors">
-                                    <div class="flex items-center">
-                                        <span class="codex-particle-badge">{{ skill.particle || '技' }}</span>
-                                        <span class="codex-card-title">{{ skill.name }}</span>
-                                    </div>
-                                    <span class="text-amber-600/60 text-sm font-bold">{{ expandedSkillId === skill.id ? '收合 ▲' : '詳情 ▼' }}</span>
-                                </button>
-
-                                <div v-if="expandedSkillId === skill.id"
-                                    class="p-5 pt-2 text-base space-y-4 bg-black/20 border-t border-white/5">
-                                    <div v-if="skill.meaning" class="flex items-start">
-                                        <span class="codex-label codex-label--meaning">含義</span>
-                                        <p class="text-amber-50/90 leading-relaxed flex-1">{{ skill.meaning }}</p>
-                                    </div>
-                                    <div v-if="skill.rule" class="flex items-start">
-                                        <span class="codex-label codex-label--rule">句型</span>
-                                        <code class="text-amber-50/90 leading-relaxed flex-1 font-mono opacity-90">{{ skill.rule }}</code>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Locked Card -->
-                            <div v-else class="codex-card codex-card--locked p-4 flex items-center justify-between pointer-events-none">
-                                <div class="flex items-center">
-                                    <span class="codex-lock-icon">🔒</span>
-                                    <span class="font-bold text-slate-400/80">尚未習得</span>
-                                </div>
-                                <span class="codex-unlock-tip">
-                                    {{ skill.unlockLevel ? '第 ' + skill.unlockLevel + ' 關解鎖' : '探索中' }}
-                                </span>
-                            </div>
-
+                class="modal-overlay fixed inset-0 z-[2000] flex items-center justify-center p-3 sm:p-6"
+                @click.self="closeCodex(); if (!isSkillOpen) resumeBattle(); playSfx('click')">
+                <div class="absolute inset-0 bg-black/72 backdrop-blur-sm pointer-events-none"></div>
+                <div class="codex-book relative w-full sm:max-w-4xl flex flex-col">
+                    <div class="codex-book-header flex-shrink-0 flex items-center justify-between px-5 py-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">📖</span>
+                            <div><h2 class="codex-book-title">秘笈本</h2><p class="codex-book-subtitle">CODEX</p></div>
                         </div>
-
+                        <button @click="closeCodex(); if (!isSkillOpen) resumeBattle(); playSfx('click')" class="codex-close-btn">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
                     </div>
-
+                    <div class="codex-spread flex-1 min-h-0 flex overflow-hidden">
+                        <div class="flex flex-1 min-w-0 overflow-hidden">
+                        <div class="codex-book-page flex flex-1 items-center justify-center overflow-y-auto p-4 sm:p-8">
+                            <div v-if="codexPageSkills[0]" :id="'skill-card-' + codexPageSkills[0].id" class="flex justify-center w-full">
+                                <div v-if="unlockedSkillIds.includes(codexPageSkills[0].id)"
+                                    class="codex-flip-card"
+                                    :class="{ 'codex-flip-card--highlight': expandedSkillId === codexPageSkills[0].id }"
+                                    @click="flippedCardId = (flippedCardId === codexPageSkills[0].id ? null : codexPageSkills[0].id); playCardFlip()">
+                                    <div class="codex-flip-inner" :class="{ 'is-flipped': flippedCardId === codexPageSkills[0].id }">
+                                        <div class="codex-face codex-face-front">
+                                            <div class="flex justify-center"><span class="codex-particle-badge-lg">{{ (codexPageSkills[0].particle || '技').length <= 3 ? (codexPageSkills[0].particle || '技') : '技' }}</span></div>
+                                            <h3 class="codex-face-name">{{ codexPageSkills[0].name.split('：')[1] || codexPageSkills[0].name }}</h3>
+                                            <p class="codex-face-meaning-text">{{ codexPageSkills[0].meaning || '—' }}</p>
+                                            <div class="codex-face-rule-block"><span class="codex-label-mini codex-label-mini--rule">句型</span><code class="codex-face-rule-code ml-2">{{ codexPageSkills[0].rule || '—' }}</code></div>
+                                            <p class="codex-flip-hint">翻面查看 ↺</p>
+                                        </div>
+                                        <div class="codex-face codex-face-back">
+                                            <div class="codex-back-id-row">
+                                                <span class="codex-particle-badge" style="width:26px;height:26px;font-size:0.72rem">{{ (codexPageSkills[0].particle || '技').length <= 3 ? (codexPageSkills[0].particle || '技') : '技' }}</span>
+                                                <span class="codex-back-id-name">{{ codexPageSkills[0].name.split('：')[1] || codexPageSkills[0].name }}</span>
+                                            </div>
+                                            <div class="codex-back-section">
+                                                <span class="codex-label-mini codex-label-mini--formula">公式</span>
+                                                <code class="codex-back-formula-code">{{ codexPageSkills[0].rule || '—' }}</code>
+                                            </div>
+                                            <div v-if="codexPageSkills[0].examples && codexPageSkills[0].examples.length" class="codex-back-section">
+                                                <span class="codex-label-mini codex-label-mini--example">例句</span>
+                                                <ul class="codex-back-examples-list">
+                                                    <li v-for="ex in codexPageSkills[0].examples.slice(0,2)" class="codex-back-example-item">{{ ex }}</li>
+                                                </ul>
+                                            </div>
+                                            <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
+                                            <div v-if="codexPageSkills[0].tip" class="codex-back-tip-block">
+                                                <span class="codex-label-mini codex-label-mini--tip">提醒</span>
+                                                <p class="codex-back-tip-text">{{ codexPageSkills[0].tip }}</p>
+                                            </div>
+                                            <p class="codex-flip-hint mt-auto">← 返回正面</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-else class="codex-locked-card">
+                                    <div class="flex items-center gap-2"><span>🔒</span><span class="font-bold text-slate-500/70 text-sm">尚未習得</span></div>
+                                    <span class="codex-unlock-tip">{{ codexPageSkills[0].unlockLevel ? '第 ' + codexPageSkills[0].unlockLevel + ' 關解鎖' : '探索中' }}</span>
+                                </div>
+                            </div>
+                            <div v-else class="codex-page-empty"><p class="text-amber-900/40 text-sm">此章節尚無技能</p></div>
+                        </div>
+                        <div class="codex-spine hidden sm:block flex-shrink-0"></div>
+                        <div class="codex-book-page codex-book-page--right hidden sm:flex flex-1 items-center justify-center overflow-y-auto p-8">
+                            <div v-if="codexNextSkill" :id="'skill-card-r-' + codexNextSkill.id" class="flex justify-center w-full">
+                                <div v-if="unlockedSkillIds.includes(codexNextSkill.id)"
+                                    class="codex-flip-card"
+                                    :class="{ 'codex-flip-card--highlight': expandedSkillId === codexNextSkill.id }"
+                                    @click="flippedCardId = (flippedCardId === codexNextSkill.id ? null : codexNextSkill.id); playCardFlip()">
+                                    <div class="codex-flip-inner" :class="{ 'is-flipped': flippedCardId === codexNextSkill.id }">
+                                        <div class="codex-face codex-face-front">
+                                            <div class="flex justify-center"><span class="codex-particle-badge-lg">{{ (codexNextSkill.particle || '技').length <= 3 ? (codexNextSkill.particle || '技') : '技' }}</span></div>
+                                            <h3 class="codex-face-name">{{ codexNextSkill.name.split('：')[1] || codexNextSkill.name }}</h3>
+                                            <p class="codex-face-meaning-text">{{ codexNextSkill.meaning || '—' }}</p>
+                                            <div class="codex-face-rule-block"><span class="codex-label-mini codex-label-mini--rule">句型</span><code class="codex-face-rule-code ml-2">{{ codexNextSkill.rule || '—' }}</code></div>
+                                            <p class="codex-flip-hint">翻面查看 ↺</p>
+                                        </div>
+                                        <div class="codex-face codex-face-back">
+                                            <div class="codex-back-id-row">
+                                                <span class="codex-particle-badge" style="width:26px;height:26px;font-size:0.72rem">{{ (codexNextSkill.particle || '技').length <= 3 ? (codexNextSkill.particle || '技') : '技' }}</span>
+                                                <span class="codex-back-id-name">{{ codexNextSkill.name.split('：')[1] || codexNextSkill.name }}</span>
+                                            </div>
+                                            <div class="codex-back-section">
+                                                <span class="codex-label-mini codex-label-mini--formula">公式</span>
+                                                <code class="codex-back-formula-code">{{ codexNextSkill.rule || '—' }}</code>
+                                            </div>
+                                            <div v-if="codexNextSkill.examples && codexNextSkill.examples.length" class="codex-back-section">
+                                                <span class="codex-label-mini codex-label-mini--example">例句</span>
+                                                <ul class="codex-back-examples-list">
+                                                    <li v-for="ex in codexNextSkill.examples.slice(0,2)" class="codex-back-example-item">{{ ex }}</li>
+                                                </ul>
+                                            </div>
+                                            <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
+                                            <div v-if="codexNextSkill.tip" class="codex-back-tip-block">
+                                                <span class="codex-label-mini codex-label-mini--tip">提醒</span>
+                                                <p class="codex-back-tip-text">{{ codexNextSkill.tip }}</p>
+                                            </div>
+                                            <p class="codex-flip-hint mt-auto">← 返回正面</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-else class="codex-locked-card">
+                                    <div class="flex items-center gap-2"><span>🔒</span><span class="font-bold text-slate-500/70 text-sm">尚未習得</span></div>
+                                    <span class="codex-unlock-tip">{{ codexNextSkill.unlockLevel ? '第 ' + codexNextSkill.unlockLevel + ' 關解鎖' : '探索中' }}</span>
+                                </div>
+                            </div>
+                            <div v-else class="codex-page-fin text-center">
+                                <div class="text-amber-900/35 text-3xl mb-2">✦</div>
+                                <p class="text-amber-900/30 text-xs tracking-[0.3em]">— 終 —</p>
+                            </div>
+                        </div>
+                        </div>
+                        <div class="codex-tab-strip flex-shrink-0">
+                            <button v-for="ch in codexChapterList" :key="ch.key"
+                                @click="codexChapter = ch.key; codexPage = 0; flippedCardId = null"
+                                :class="['codex-tab-item', codexChapter === ch.key ? 'codex-tab-item--active' : '']">{{ ch.label }}</button>
+                        </div>
+                    </div>
+                    <div class="codex-page-nav flex-shrink-0 flex items-center justify-between px-4 py-2">
+                        <button @click="codexPage = Math.max(0, codexPage - 1); flippedCardId = null" :disabled="codexPage === 0" class="codex-nav-btn">← 前頁</button>
+                        <div class="codex-page-indicator flex items-baseline gap-1">
+                            <span class="text-amber-900/55 text-xs">第</span>
+                            <span class="codex-page-num">{{ codexPage + 1 }}</span>
+                            <span class="text-amber-900/55 text-xs">頁 / 共 {{ codexTotalPages }} 頁</span>
+                        </div>
+                        <button @click="codexPage = Math.min(codexTotalPages - 1, codexPage + 1); flippedCardId = null" :disabled="codexPage >= codexTotalPages - 1" class="codex-nav-btn">後頁 →</button>
+                    </div>
                 </div>
-
             </div>
 
 

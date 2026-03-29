@@ -618,6 +618,93 @@ window.__attachDebugTools = function (refs) {
                     return rows;
                 },
 
+                auditChoices(levelId, n = 20) {
+                    const config = LEVEL_CONFIG.value[levelId];
+                    if (!config) {
+                        console.error("[jpDebug.auditChoices] Invalid Level ID");
+                        return;
+                    }
+
+                    const results = [];
+                    const validParticles = ['は', 'の', 'が', 'を', 'に', 'へ', 'も', 'で', 'と', 'から', 'まで', 'や', 'より'];
+
+                    const originalLevel = currentLevel.value;
+                    currentLevel.value = levelId;
+
+                    try {
+                        for (let i = 0; i < n; i++) {
+                            // Use existing logic to pick a skill for this level
+                            const newSkills = config.unlockSkills || [];
+                            const getHistArr = (lv) => {
+                                const h = new Set();
+                                for(let j=1; j<lv; j++) {
+                                    const c = LEVEL_CONFIG.value[j];
+                                    if(c?.unlockSkills) c.unlockSkills.forEach(s => {
+                                        if(s && !s.startsWith('BOSS_REVIEW') && !s.startsWith('FINAL') && !s.startsWith('HIDDEN')) h.add(s);
+                                    });
+                                }
+                                return Array.from(h);
+                            };
+                            const oldSkills = getHistArr(levelId);
+                            
+                            const isBoss = levelId % 5 === 0 || config.isBoss;
+                            let sid;
+                            if (isBoss) {
+                                if (levelId === 5) {
+                                    const pool = ['WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE', 'WO_OBJECT_BASIC'];
+                                    sid = pool[Math.floor(Math.random()*pool.length)];
+                                } else {
+                                    const curMap = [];
+                                    for(let j=levelId-4; j<levelId; j++) if(LEVEL_CONFIG.value[j]?.unlockSkills) curMap.push(...LEVEL_CONFIG.value[j].unlockSkills);
+                                    const hist = getHistArr(Math.max(1, levelId - 4));
+                                    if (Math.random() < 0.8 && curMap.length > 0) sid = curMap[Math.floor(Math.random()*curMap.length)];
+                                    else if (hist.length > 0) sid = hist[Math.floor(Math.random()*hist.length)];
+                                    else sid = 'WA_TOPIC_BASIC';
+                                }
+                            } else {
+                                const weight = config.skillMix?.newSkillWeight ?? 0.5;
+                                if (newSkills.length > 0 && oldSkills.length > 0) sid = (Math.random() < weight) ? newSkills[Math.floor(Math.random()*newSkills.length)] : oldSkills[Math.floor(Math.random()*oldSkills.length)];
+                                else if (newSkills.length > 0) sid = newSkills[Math.floor(Math.random()*newSkills.length)];
+                                else sid = oldSkills[Math.floor(Math.random()*oldSkills.length)] || 'WA_TOPIC_BASIC';
+                            }
+
+                            const q = makeOneSkillQuestion(sid);
+                            if (!q) continue;
+
+                            const warnings = [];
+                            const choices = q.choices || [];
+                            const ans = q.answer || '';
+                            const isParticleQ = validParticles.includes(ans);
+
+                            if (choices.length === 0) warnings.push("EMPTY choices");
+                            choices.forEach(c => {
+                                if (!c || String(c).trim() === "") warnings.push(`Empty string in choices`);
+                                if (String(c).length > 12) warnings.push(`Fragment? (len:${c.length}): "${c}"`);
+                                if (isParticleQ && !validParticles.includes(c)) warnings.push(`Non-particle distractor: "${c}"`);
+                                if (ans.length <= 2 && !/[\u4e00-\u9fa5]/.test(ans) && /[\u4e00-\u9fa5]/.test(c)) {
+                                    warnings.push(`Kanji in particle choice: "${c}"`);
+                                }
+                            });
+
+                            results.push({
+                                i: i + 1,
+                                skill: sid,
+                                prompt: q.chinese || '?',
+                                sentence: `${q.leftText || ''}【${ans}】${q.rightText || ''}`,
+                                answer: ans,
+                                choices: choices.join(' / '),
+                                warning: warnings.length > 0 ? warnings.join(', ') : '-'
+                            });
+                        }
+                    } finally {
+                        currentLevel.value = originalLevel;
+                    }
+
+                    console.log(`[jpDebug.auditChoices] Simulation for Level ${levelId} (N=${results.length})`);
+                    console.table(results);
+                    return results;
+                },
+
 
 
                 skill(skillId) {

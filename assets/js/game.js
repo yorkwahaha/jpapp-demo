@@ -124,7 +124,7 @@ const _jpApp = Vue.createApp({
             const path = 'config.local.js';
             const script = document.createElement('script');
             script.src = path;
-            script.onload = () => console.log(`[AZURE] config.local.js loaded`);
+            script.onload = () => { if (window.__DEBUG__) console.log(`[AZURE] config.local.js loaded`); };
             script.onerror = () => { };
             document.head.appendChild(script);
         });
@@ -195,6 +195,37 @@ const _jpApp = Vue.createApp({
         const activeKnowledgeCard = ref(null);
         const isKnowledgeCardShowing = ref(false);
         const isKnowledgeCardAbsorbing = ref(false);
+
+        // --- オノマトペ Skills (unlocked on boss clear) ---
+        const unlockedOnomatopeIds = ref([]);
+
+        // --- Hero Visual Data Configuration ---
+        // battle.marginBottom: CSS string applied to #heroAvatar margin-bottom (e.g. '24px' or 'clamp(135px,18dvh,160px)')
+        // map.src: image path for .map-hud-avatar-img elements
+        // thresholds: hp-based steady-state expression; hpPct is lower bound (>= value uses expression)
+        const HERO_VISUAL_CONFIG = {
+            battle: {
+                marginBottom: '500px'
+            },
+            map: {
+                src: 'assets/images/hero/hero_001.png'
+            },
+            thresholds: [
+                { hpPct: 0.8, expression: 'neutral' },
+                { hpPct: 0.4, expression: 'ase' },
+                { hpPct: 0.0, expression: 'lose' }
+            ]
+        };
+
+        const BOSS_ONOMATOPE_MAP = {
+            5:  { id: 'ODOODO',     particle: 'おど', name: 'おどおど',     meaning: '敋方攻擊準備時間延長 30%',    isOnomatope: true, cost: 5, duration: 3 },
+            10: { id: 'GACHIGACHI', particle: 'がち', name: 'がちがち',   meaning: '玩家受傷減少 40%',           isOnomatope: true, cost: 5, duration: 2 },
+            15: { id: 'UTOUTO',     particle: 'うと', name: 'うとうと',     meaning: '敋人入眠，直到受到攻擊為止', isOnomatope: true, cost: 5 },
+            20: { id: 'JIWAJIWA',   particle: 'じわ', name: 'じわじわ',    meaning: '5 題內每答對恢復 6% HP',     isOnomatope: true, cost: 5, duration: 5 },
+            25: { id: 'WAKUWAKU',   particle: 'わく', name: 'わくわく',    meaning: '3 題內正確攻擊傷害 +20%',   isOnomatope: true, cost: 5, duration: 3 },
+            30: { id: 'MORIMORI',   particle: 'もり', name: 'もりもり',    meaning: '8 題內每答對額外恢復 1 SP', isOnomatope: true, cost: 4, duration: 8 },
+            35: { id: 'GIRAGIRA',   particle: 'ぎら', name: 'ぎらぎら',    meaning: '3 次必定命中且傷害 +35%',   isOnomatope: true, cost: 8, duration: 3 },
+        };
 
         const activeSegment = computed(() => {
             const ch = mapChapters.value[activeChapter.value];
@@ -299,6 +330,8 @@ const _jpApp = Vue.createApp({
 
                     unlockedAbilityIds: unlockedAbilityIds.value,
 
+                    unlockedOnomatopeIds: unlockedOnomatopeIds.value,
+
                     gold: totalGold.value,
 
                     lastViewedMap: { chapter: activeChapter.value, segment: selectedSegmentIdx.value }
@@ -334,6 +367,8 @@ const _jpApp = Vue.createApp({
                     if (parsed.bestGrades) bestGrades.value = parsed.bestGrades;
 
                     if (parsed.unlockedAbilityIds) _pendingAbilityIds = parsed.unlockedAbilityIds;
+
+                    if (parsed.unlockedOnomatopeIds) unlockedOnomatopeIds.value = parsed.unlockedOnomatopeIds;
 
                     if (typeof parsed.gold === 'number') totalGold.value = parsed.gold;
 
@@ -403,19 +438,13 @@ const _jpApp = Vue.createApp({
                         const playPromise = bgmAudio.value.play();
 
                         if (playPromise !== undefined) {
-
                             playPromise.catch(e => {
-
+                                if (e.name === 'AbortError') return; 
                                 console.warn('[BGM] openMap sync play failed', e.name, e.message);
-
                                 if (typeof needsUserGestureToResumeBgm !== 'undefined') {
-
                                     needsUserGestureToResumeBgm.value = true;
-
                                 }
-
                             });
-
                         }
 
                     }
@@ -759,7 +788,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26032901";
+        const APP_VERSION = window.APP_VERSION || "26033001";
 
         const appVersion = ref(APP_VERSION);
 
@@ -913,6 +942,9 @@ const _jpApp = Vue.createApp({
         // [ CODEX - STATE ]
         const isCodexOpen = ref(false);
         const expandedSkillId = ref(null);
+        const codexPage = ref(0);
+        const codexChapter = ref('all');
+        const flippedCardId = ref(null);
         // [ /CODEX - STATE ]
 
         const MENTOR_SEEN_KEY = 'jpRpgMentorSeenV1';
@@ -1399,6 +1431,42 @@ const _jpApp = Vue.createApp({
                 unlockLevel: skillUnlockMap.value[s.id]
             }));
         });
+
+        const CODEX_PER_PAGE = 1;
+
+        const codexBaseSkills = computed(() =>
+            skillsWithUnlockLevel.value.filter(s =>
+                s.particle && !s.particle.startsWith('複習') && s.particle !== '極限' && s.id !== 'TO_COMPANION'
+            )
+        );
+
+        const codexChapterList = computed(() => {
+            const seen = new Set();
+            const list = [{ key: 'all', label: '全部' }];
+            codexBaseSkills.value.forEach(s => {
+                const p = s.particle || '技';
+                if (!seen.has(p)) { seen.add(p); list.push({ key: p, label: p }); }
+            });
+            return list;
+        });
+
+        const codexFilteredSkills = computed(() => {
+            if (codexChapter.value === 'all') return codexBaseSkills.value;
+            return codexBaseSkills.value.filter(s => (s.particle || '技') === codexChapter.value);
+        });
+
+        const codexTotalPages = computed(() =>
+            Math.max(1, Math.ceil(codexFilteredSkills.value.length / CODEX_PER_PAGE))
+        );
+
+        const codexPageSkills = computed(() => {
+            const start = codexPage.value * CODEX_PER_PAGE;
+            return codexFilteredSkills.value.slice(start, start + CODEX_PER_PAGE);
+        });
+
+        const codexNextSkill = computed(() =>
+            codexFilteredSkills.value[codexPage.value + 1] || null
+        );
         // [ /CODEX - COMPUTED ]
 
 
@@ -1491,6 +1559,20 @@ const _jpApp = Vue.createApp({
 
                     skillUnlockMap.value = tempMap;
 
+                    // Codex 修復：從 clearedLevels 重建 unlockedSkillIds
+                    // 確保重新整頁後 Codex 仍正確顯示已解鎖條目（而非全部 🔒 未習得）
+                    unlockedSkillIds.value = [];
+                    clearedLevels.value.forEach(lv => {
+                        const cfg = LEVEL_CONFIG.value[lv];
+                        if (cfg?.unlockSkills) {
+                            cfg.unlockSkills.forEach(id => {
+                                if (!unlockedSkillIds.value.includes(id)) {
+                                    unlockedSkillIds.value.push(id);
+                                }
+                            });
+                        }
+                    });
+
                 }
 
             } catch (e) { }
@@ -1545,7 +1627,8 @@ const _jpApp = Vue.createApp({
 
         _pendingAbilityIds = null;
 
-        const spState = window.__sp;
+        const spState = reactive(window.__sp);
+        window.__sp = spState;
 
         const allAbilities = ref([]);
 
@@ -1845,6 +1928,13 @@ const _jpApp = Vue.createApp({
 
             window.__initCornerMenu?.(watch, showLevelSelect, isFinished);
 
+            // Apply HERO_VISUAL_CONFIG.map.src to map avatar images
+            nextTick(() => {
+                document.querySelectorAll('.map-hud-avatar-img').forEach(img => {
+                    img.src = HERO_VISUAL_CONFIG.map.src;
+                });
+            });
+
         });
 
 
@@ -1917,6 +2007,8 @@ const _jpApp = Vue.createApp({
         const currentLevel = ref(1);
 
         const isFinished = ref(false);
+
+        const isDefeated = ref(false);
 
         const isNextBtnVisible = ref(false);
 
@@ -2115,35 +2207,20 @@ const _jpApp = Vue.createApp({
 
 
         const openCodexTo = (skillId) => {
-
             isSkillUnlockModalOpen.value = false;
             expandedSkillId.value = skillId;
-            playSfx('uiPop'); // Added sound for codex
+            flippedCardId.value = null;
+            codexChapter.value = 'all';
+            const idx = skillsWithUnlockLevel.value.findIndex(s => s.id === skillId);
+            codexPage.value = idx >= 0 ? Math.floor(idx / CODEX_PER_PAGE) : 0;
+            playSfx('uiPop');
             isCodexOpen.value = true;
             pauseBattle();
+        };
 
-            setTimeout(() => {
-
-                const el = document.getElementById('skill-card-' + skillId);
-
-                if (el) {
-
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-                    const card = el.querySelector('.bg-\\[\\#3e2723\\]\\/60') || el.firstElementChild;
-
-                    if (card) {
-
-                        card.classList.add('flash-card');
-
-                        setTimeout(() => card.classList.remove('flash-card'), 800);
-
-                    }
-
-                }
-
-            }, 100);
-
+        const closeCodex = () => {
+            isCodexOpen.value = false;
+            flippedCardId.value = null;
         };
 
 
@@ -2662,14 +2739,36 @@ const _jpApp = Vue.createApp({
 
 
 
-        const handleGameOver = () => {
+        const defeatReturn = () => {
+            const sc = document.getElementById('battleScene');
+            if (sc) sc.classList.remove('grayscale-filter');
+            const ov = document.getElementById('defeatOverlay');
+            if (ov) ov.classList.add('hidden');
+            player.value.hp = player.value.maxHp;
+            resetSP();
+            setHeroAvatar('neutral');
+            clearSpeedStatus();
+            stopAllAudio();
+            isDefeated.value = false;
+            showLevelSelect.value = true;
+        };
 
+        const handleGameOver = () => {
+            isDefeated.value = true;
             setHeroAvatar('lose');
 
+            // 🌚 Apply grayscale filter to battle scene
+            const scene = document.getElementById('battleScene');
+            if (scene) scene.classList.add('grayscale-filter');
+
+            // 💀 Show defeat overlay with manual return button
+            const overlay = document.getElementById('defeatOverlay');
+            if (overlay) overlay.classList.remove('hidden');
+
             try { if (bgmAudio.value) { bgmAudio.value.pause(); try { bgmAudio.value.currentTime = 0; } catch (_) { } } } catch (_) { }
-
+            clearTimer();
+            if (pauseTimerId) { clearInterval(pauseTimerId); pauseTimerId = null; }
             playSfx('gameover');
-
         };
 
 
@@ -2885,23 +2984,25 @@ const _jpApp = Vue.createApp({
 
 
         watch(() => player.value.hp, (newHp) => {
-
             const el = document.getElementById('heroAvatar');
-
             const ratio = newHp / player.value.maxHp;
-
+            
             if (el && el.dataset.state !== 'hit' && el.dataset.state !== 'lose' && el.dataset.state !== 'win') {
-
-                setHeroAvatar(ratio <= 0.4 ? 'scary' : 'neutral');
-
+                // Use data-driven thresholds
+                let targetExpression = 'neutral';
+                for (const t of HERO_VISUAL_CONFIG.thresholds) {
+                    if (ratio >= t.hpPct) {
+                        targetExpression = t.expression;
+                        break;
+                    }
+                    targetExpression = t.expression; // Fallback to lower threshold
+                }
+                setHeroAvatar(targetExpression);
             }
 
             window.heroHP = newHp;
-
             window.heroMaxHP = player.value.maxHp;
-
             updateHeroStatusBar();
-
         });
 
 
@@ -2967,6 +3068,7 @@ const _jpApp = Vue.createApp({
             gameover: 'assets/audio/sfx_gameover.mp3',
             skillpop: 'assets/audio/sfx/skillpop.mp3',
             skillget: 'assets/audio/sfx/skillget.mp3',
+            cardFlip: 'assets/audio/sfx/card-flip.mp3',
         };
 
 
@@ -4043,11 +4145,119 @@ const _jpApp = Vue.createApp({
         // ================= [ QUESTION GENERATION ] =================
         const ALL_PARTICLES = ['は', 'が', 'を', 'に', 'で', 'へ', 'と'];
 
-        const DEFAULT_NEW_SKILL_RATIO = 0.6;
+        // --- 出題比例資料化設定 ---
+        // normal.newRatio: 一般關新技能題比例 (0~1)，其餘為舊題
+        // boss.sameMapRatio: 魔王關同張地圖題比例，其餘為前地圖歷史題
+        // hiddenBoss.tierWeights: L36 各層難度比例 [tier3, tier2, tier1]
+        const QUESTION_MIX_CONFIG = {
+            normal:     { newRatio: 0.5 },
+            boss:       { sameMapRatio: 0.8 },
+            hiddenBoss: { tierWeights: [0.5, 0.3, 0.2] }
+        };
+
+        // cycleFill(arr, n): 用無放回循環補齊 n 個元素（每輪內不重複）
+        const cycleFill = (arr, n) => {
+            if (!arr || arr.length === 0) return [];
+            let res = [];
+            while (res.length < n) {
+                const block = [...arr].sort(() => Math.random() - 0.5);
+                res.push(...block);
+            }
+            return res.slice(0, n);
+        };
+
+        // buildSlotBag(newRatio, total): 產生確定性比例的 'new'/'old' 序列並 shuffle
+        const buildSlotBag = (newRatio, total) => {
+            const newCount = Math.round(newRatio * total);
+            const oldCount = total - newCount;
+            const bag = [...Array(newCount).fill('new'), ...Array(oldCount).fill('old')];
+            for (let i = bag.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [bag[i], bag[j]] = [bag[j], bag[i]];
+            }
+            return bag;
+        };
+
+        // _normalSlotBag: 每次 initGame 重新建立，pickSkillForNormalLevel 消費
+        let _normalSlotBag = [];
+        // _normalSlotRetrySkill: dedup retry 時保存 skillId，避免重複消費 slot bag
+        let _normalSlotRetrySkill = null;
+        // _forceOldNext: new skill combo 枯竭時，強制下次 pickSkillForNormalLevel 從 old pool 補位
+        let _forceOldNext = false;
 
         const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
         const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
+
+        // debug: window.__debugQMix() 在戰鬥中呼叫，依關卡模式輸出正確欄位
+        window.__debugQMix = () => {
+            const qs = questions?.value;
+            if (!qs || qs.length === 0) { console.warn('[QMix] 尚無題庫'); return; }
+            const lv = currentLevel?.value || 0;
+            const cfg = LEVEL_CONFIG.value[lv] || {};
+            const total = qs.length;
+
+            // skill 分布（所有模式共用）
+            const skillCount = {};
+            qs.forEach(q => {
+                const sid = q.skillId || 'FALLBACK';
+                skillCount[sid] = (skillCount[sid] || 0) + 1;
+            });
+
+            // 題面重複偵測（所有模式共用）
+            const fps = qs.map(q => q.segments?.map(s => s.isBlank ? '□' : s.text).join('') || '');
+            const dupCount = fps.length - new Set(fps).size;
+
+            const pct = (n) => `${n}(${(n / total * 100).toFixed(1)}%)`;
+
+            const isL36 = cfg.skillId === 'HIDDEN_BOSS_36';
+            const isBoss = !isL36 && isBossLevel(lv);
+
+            if (isL36) {
+                // L36 隱藏魔王：按 tier 歸類
+                const tier3 = new Set(['KARA_REASON', 'YORI_COMPARE', 'NI_FREQUENCY', 'DE_MATERIAL', 'TO_QUOTE', 'NI_PURPOSE']);
+                const tier2 = new Set(['KARA_SOURCE_START', 'MADE_LIMIT_END', 'TO_COMPANION', 'DE_TOOL_MEANS', 'HE_DIRECTION', 'NI_TARGET']);
+                const tier1 = new Set(['NI_TIME', 'NI_EXIST_PLACE', 'YA_AND_OTHERS', 'WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE']);
+                let nT3 = 0, nT2 = 0, nT1 = 0, nOther = 0;
+                qs.forEach(q => {
+                    const sid = q.skillId || '';
+                    if (tier3.has(sid))      nT3++;
+                    else if (tier2.has(sid)) nT2++;
+                    else if (tier1.has(sid)) nT1++;
+                    else                     nOther++;
+                });
+                console.log(`[QMix] L36 (HiddenBoss) | Total:${total} Tier3:${pct(nT3)} Tier2:${pct(nT2)} Tier1:${pct(nT1)} Other:${nOther} | Dup:${dupCount}`);
+
+            } else if (isBoss) {
+                // 魔王關：sameMap (lv-4 ~ lv-1) vs previousMap
+                const sameMapIds = new Set();
+                for (let i = lv - 4; i < lv; i++) {
+                    (LEVEL_CONFIG.value[i]?.unlockSkills || []).forEach(id => sameMapIds.add(id));
+                }
+                let nSame = 0, nPrev = 0, nFallback = 0;
+                qs.forEach(q => {
+                    const sid = q.skillId || 'FALLBACK';
+                    if (sid === 'FALLBACK')       nFallback++;
+                    else if (sameMapIds.has(sid)) nSame++;
+                    else                          nPrev++;
+                });
+                console.log(`[QMix] L${lv} (Boss) | Total:${total} SameMap:${pct(nSame)} PrevMap:${pct(nPrev)} Fallback:${nFallback} | Dup:${dupCount}`);
+
+            } else {
+                // 一般關：new (本關 unlockSkills) vs old
+                const newIds = new Set(cfg.unlockSkills || []);
+                let nNew = 0, nOld = 0, nFallback = 0;
+                qs.forEach(q => {
+                    const sid = q.skillId || 'FALLBACK';
+                    if (sid === 'FALLBACK')    nFallback++;
+                    else if (newIds.has(sid))  nNew++;
+                    else                       nOld++;
+                });
+                console.log(`[QMix] L${lv} (Normal) | Total:${total} New:${pct(nNew)} Old:${pct(nOld)} Fallback:${nFallback} | Dup:${dupCount}`);
+            }
+
+            console.table(skillCount);
+        };
 
 
 
@@ -4423,6 +4633,21 @@ const _jpApp = Vue.createApp({
         };
 
         const pickSkillForNormalLevel = (levelId) => {
+            // dedup retry：直接回傳前一題的 skillId，不重複消費 slot bag
+            if (_normalSlotRetrySkill !== null) {
+                const sid = _normalSlotRetrySkill;
+                _normalSlotRetrySkill = null;
+                return sid;
+            }
+            // new skill combo 枯竭：不消費 bag slot，直接從 old pool 隨機補位
+            if (_forceOldNext) {
+                _forceOldNext = false;
+                const oldPool = getHistoricalSkills(levelId);
+                if (oldPool.length > 0) return oldPool[Math.floor(Math.random() * oldPool.length)];
+                const all = unlockedSkillIds.value;
+                return all.length > 0 ? all[Math.floor(Math.random() * all.length)] : 'WA_TOPIC_BASIC';
+            }
+
             const config = LEVEL_CONFIG.value[levelId] || {};
             const newSkills = (config.unlockSkills || []).filter(id => {
                 const s = skillsAll.value[id];
@@ -4433,10 +4658,18 @@ const _jpApp = Vue.createApp({
             const oldSkills = getHistoricalSkills(levelId);
 
             let poolToUse = [];
-            const newSkillWeight = config.skillMix?.newSkillWeight ?? DEFAULT_NEW_SKILL_RATIO;
+
+            // 消費 slot bag（確定性比例）；若 bag 已空則退回 Bernoulli 試驗
+            let useNew;
+            if (_normalSlotBag.length > 0) {
+                useNew = _normalSlotBag.shift() === 'new';
+            } else {
+                const r = config.skillMix?.newSkillWeight ?? QUESTION_MIX_CONFIG.normal.newRatio;
+                useNew = Math.random() < r;
+            }
 
             if (newSkills.length > 0 && oldSkills.length > 0) {
-                poolToUse = Math.random() < newSkillWeight ? newSkills : oldSkills;
+                poolToUse = useNew ? newSkills : oldSkills;
             } else if (newSkills.length > 0) {
                 poolToUse = newSkills;
             } else if (oldSkills.length > 0) {
@@ -4473,7 +4706,7 @@ const _jpApp = Vue.createApp({
                 }
                 bossSkillQueue = fullQueue;
             } else if (lv % 5 === 0 && lv > 5 && config.skillId !== 'HIDDEN_BOSS_36') {
-                // 第 10, 15, 20... 關魔王：80% 當前地圖 + 20% 歷史舊題
+                // 第 10, 15, 20... 關魔王：確定性比例 sameMap / prevMap
                 const currentMapSkills = [];
                 for (let i = lv - 4; i < lv; i++) {
                     const c = LEVEL_CONFIG.value[i];
@@ -4481,31 +4714,25 @@ const _jpApp = Vue.createApp({
                 }
                 const historicalSkills = getHistoricalSkills(lv - 4); // 排除當前地圖
 
-                let fullQueue = [];
-                // 產生 20 題的循環 (確保 15 題戰鬥需求)
-                for (let i = 0; i < 20; i++) {
-                    if (Math.random() < 0.8 && currentMapSkills.length > 0) {
-                        fullQueue.push(currentMapSkills[Math.floor(Math.random() * currentMapSkills.length)]);
-                    } else if (historicalSkills.length > 0) {
-                        fullQueue.push(historicalSkills[Math.floor(Math.random() * historicalSkills.length)]);
-                    } else {
-                        // 防呆 fallback
-                        fullQueue.push(currentMapSkills[0] || 'WA_TOPIC_BASIC');
-                    }
-                }
-                bossSkillQueue = fullQueue;
+                const total = 20;
+                const sameMapCount = Math.round(QUESTION_MIX_CONFIG.boss.sameMapRatio * total);
+                const prevMapCount = total - sameMapCount;
+                const prevPool = historicalSkills.length > 0 ? historicalSkills : currentMapSkills;
+                const sameMapSlots = cycleFill(currentMapSkills, sameMapCount);
+                const prevMapSlots = cycleFill(prevPool, prevMapCount);
+                bossSkillQueue = [...sameMapSlots, ...prevMapSlots].sort(() => Math.random() - 0.5);
             } else if (config.skillId && config.skillId === 'HIDDEN_BOSS_36') {
+                // L36 隱藏魔王：三層難度比例，無放回循環補齊（不允許同 skill 連續重複）
                 const generateTieredSkillQueue = () => {
                     const tier3 = ['KARA_REASON', 'YORI_COMPARE', 'NI_FREQUENCY', 'DE_MATERIAL', 'TO_QUOTE', 'NI_PURPOSE'];
                     const tier2 = ['KARA_SOURCE_START', 'MADE_LIMIT_END', 'TO_COMPANION', 'DE_TOOL_MEANS', 'HE_DIRECTION', 'NI_TARGET'];
                     const tier1 = ['NI_TIME', 'NI_EXIST_PLACE', 'YA_AND_OTHERS', 'WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE'];
-
-                    const pickN = (arr, n) => {
-                        let res = [];
-                        for(let i=0; i<n; i++) res.push(arr[Math.floor(Math.random() * arr.length)]);
-                        return res;
-                    };
-                    const mix = [...pickN(tier3, 15), ...pickN(tier2, 9), ...pickN(tier1, 6)];
+                    const [w3, w2, w1] = QUESTION_MIX_CONFIG.hiddenBoss.tierWeights;
+                    const total = 30;
+                    const t3c = Math.round(w3 * total);
+                    const t2c = Math.round(w2 * total);
+                    const t1c = total - t3c - t2c;
+                    const mix = [...cycleFill(tier3, t3c), ...cycleFill(tier2, t2c), ...cycleFill(tier1, t1c)];
                     return mix.sort(() => Math.random() - 0.5);
                 };
                 bossSkillQueue = generateTieredSkillQueue();
@@ -4616,7 +4843,7 @@ const _jpApp = Vue.createApp({
 
 
         /** 依 skillId 生成單道助詞題（包含所有 if/else 助詞都合邏輯分支）。回傳 question object 或 null。 */
-        const generateQuestionBySkill = (skillId, blanks, db, vocab) => {
+        const generateQuestionBySkill = (skillId, blanks, db, vocab, forceTargetCount = null) => {
 
             // 向下相容 MO_ALSO_BASIC
 
@@ -4766,84 +4993,106 @@ const _jpApp = Vue.createApp({
 
                 choices
 
-            }) => ({
+            }) => {
+                // Diagnostic tracing for choice counts
+                if ((skillId === 'HE_DEST' || skillId === 'HE_DIRECTION') && window.__DEBUG__) {
+                    console.debug(`[ChoiceTrace-FINAL] ${skillId}: length=${choices ? choices.length : 0}`, {
+                        prompt: chinese,
+                        sentence: `${leftText}【${answer}】${rightText}`,
+                        choices: choices
+                    });
+                }
 
-                chinese,
+                return {
 
-                leftText,   // For debug tools
+                    chinese,
 
-                rightText,  // For debug tools
+                    leftText,   // For debug tools
 
-                segments: [
+                    rightText,  // For debug tools
 
-                    seg(leftText, leftRuby),
+                    segments: [
 
-                    { isBlank: true, blankIndex: 0 },
+                        seg(leftText, leftRuby),
 
-                    seg(rightText, rightRuby)
+                        { isBlank: true, blankIndex: 0 },
 
-                ],
+                        seg(rightText, rightRuby)
 
-                answers: [[answer]],
+                    ],
 
-                grammarTip,
+                    answers: [[answer]],
 
-                skillId,
+                    grammarTip,
 
-                choices
+                    skillId,
 
-            });
+                    choices
+
+                };
+            };
 
 
 
             const getChoices = (defaultChoices, correctAns) => {
-
                 const targetCount = getChoiceCountForLevel(currentLevel.value);
+                const validParticles = ['は', 'の', 'が', 'を', 'に', 'へ', 'も', 'で', 'と', 'から', 'まで', 'や', 'より'];
 
-                let safePool = [...(skillDef.choiceSet || defaultChoices)];
+                // [Refined Safety Patch] Context-aware filtering
+                const isParticleSkill = skillDef.particle && validParticles.includes(skillDef.particle);
+                const rawPool = [...(skillDef.choiceSet || defaultChoices)];
 
+                let safePool = rawPool.filter(p => {
+                    if (!p || typeof p !== 'string') return false;
+                    if (isParticleSkill) {
+                        // Strict mode for particle-based skills
+                        return validParticles.includes(p);
+                    } else {
+                        // General safety for non-particle skills (Vocabulary/Conjugation etc.)
+                        if (p.length === 0) return false;
+                        if (p.length > 12) return false;
+                        // Exclude Kanji/Chinese if the correct answer is a pure Kana particle
+                        const isChinese = /[\u4e00-\u9fa5]/.test(p);
+                        const ansIsJapanese = !/[\u4e00-\u9fa5]/.test(correctAns || '');
+                        if (isChinese && ansIsJapanese) return false;
+                        return true;
+                    }
+                });
 
+                // Logging filtered items (low-noise debug)
+                const filteredOut = rawPool.filter(p => !safePool.includes(p) && p !== correctAns);
+                if (filteredOut.length > 0) {
+                    console.debug(`[ChoiceFilter] Skill:${skillDef.id} Filtered:`, filteredOut, "From:", rawPool);
+                }
 
                 if (correctAns && !safePool.includes(correctAns)) {
-
                     safePool.push(correctAns);
-
                 }
 
-
+                // Backfill logic (Only for particle skills)
+                if (safePool.length < targetCount && isParticleSkill) {
+                    const fallback = ['は', 'の', 'が', 'を', 'に', 'で', 'と'].filter(p => !safePool.includes(p));
+                    while (safePool.length < targetCount && fallback.length > 0) {
+                        safePool.push(fallback.shift());
+                    }
+                }
 
                 safePool = safePool.sort(() => Math.random() - 0.5);
-
                 let selected = [];
 
-
-
                 if (correctAns) {
-
                     selected.push(correctAns);
-
                     safePool = safePool.filter(x => x !== correctAns);
-
                 }
-
-
 
                 const needed = targetCount - selected.length;
-
                 if (safePool.length >= needed) {
-
                     selected = selected.concat(safePool.slice(0, needed));
-
                 } else {
-
                     selected = selected.concat(safePool);
-
                 }
 
-
-
                 return selected.sort(() => Math.random() - 0.5);
-
             };
 
 
@@ -4883,23 +5132,50 @@ const _jpApp = Vue.createApp({
                 
                 let finalChoices = undefined;
                 if (Number(blanks ?? 1) === 1) {
+                    // For HE_DIRECTION/HE_DEST, allow forceTargetCount to override level default
+                    const targetCount = forceTargetCount ?? getChoiceCountForLevel(currentLevel.value);
+                    
                     finalChoices = getChoices(choicesOptions, particleAns);
                     if (excludeChoices.length > 0) {
                         finalChoices = finalChoices.filter(c => !excludeChoices.includes(c));
+                    }
+
+                    // Redundant fill to ensure targetCount is met
+                    if (finalChoices.length < targetCount) {
                         const currentSet = new Set(finalChoices);
                         const candidates = choicesOptions.filter(p => !excludeChoices.includes(p) && !currentSet.has(p));
-                        while (finalChoices.length < getChoiceCountForLevel(currentLevel.value) && candidates.length > 0) {
+                        while (finalChoices.length < targetCount && candidates.length > 0) {
                             finalChoices.push(candidates.splice(Math.floor(Math.random() * candidates.length), 1)[0]);
                         }
+                    }
+
+                    // [Failsafe] HE_DIRECTION final hardfill
+                    if ((skillId === 'HE_DEST' || skillId === 'HE_DIRECTION') && finalChoices.length < targetCount) {
+                        const emgPool = ["は", "が", "の", "も", "と", "で", "を", "へ"];
+                        const currentSet = new Set(finalChoices);
+                        for (const p of emgPool) {
+                            if (finalChoices.length >= 4) break;
+                            if (p !== 'に' && !currentSet.has(p)) {
+                                finalChoices.push(p);
+                                currentSet.add(p);
+                            }
+                        }
+                    }
+
+                    if ((skillId === 'HE_DEST' || skillId === 'HE_DIRECTION') && window.__DEBUG__) {
+                        console.debug(`[ChoiceTrace-BRANCH-BAG] ${skillId} generated with ${finalChoices.length} choices`, {
+                            sentence: (picked.left || '') + '【へ】' + (picked.right || ''),
+                            choices: finalChoices
+                        });
                     }
                 }
 
                 return makeParticleQuestion({
                     chinese: picked.zh,
-                    leftText: picked.left,
-                    leftRuby: picked.leftRuby,
-                    rightText: picked.right,
-                    rightRuby: picked.rightRuby,
+                    leftText: picked.left || picked.j,
+                    leftRuby: picked.leftRuby || picked.r,
+                    rightText: picked.right || picked.v,
+                    rightRuby: picked.rightRuby || picked.vr || picked.v,
                     answer: particleAns,
                     skillId: skillId,
                     grammarTip: tipTextObj,
@@ -5338,31 +5614,41 @@ const _jpApp = Vue.createApp({
 
 
                     // Choice generation: explicitly exclude 'に' but maintain count
-
-                    const targetCount = getChoiceCountForLevel(currentLevel.value);
-
-                    const allSafeParticles = ["へ", "を", "は", "が", "の", "も", "と"];
-
+                    const targetCount = forceTargetCount ?? getChoiceCountForLevel(currentLevel.value);
+                    const allSafeParticles = ["へ", "を", "は", "が", "の", "も", "と", "で"];
                     let finalChoices = getChoices(allSafeParticles, 'へ').filter(c => c !== 'に');
 
-
-
                     // If filtering 'に' made us short, fill back up
-
                     if (finalChoices.length < targetCount) {
-
                         const currentSet = new Set(finalChoices);
-
-                        const candidates = allSafeParticles.filter(p => p !== 'に' && !currentSet.has(p));
-
+                        const candidates = allSafeParticles.filter(p => !currentSet.has(p));
                         while (finalChoices.length < targetCount && candidates.length > 0) {
-
                             const extra = candidates.splice(Math.floor(Math.random() * candidates.length), 1)[0];
-
                             finalChoices.push(extra);
-
                         }
+                    }
 
+                    // [Foolproof Final Backfill] Ensure targetCount is met
+                    if ((skillDef.id === 'HE_DEST' || skillDef.id === 'HE_DIRECTION') && finalChoices.length < targetCount) {
+                        const fallbackList = ["は", "が", "の", "も", "と", "で", "を", "へ"];
+                        const currentSet = new Set(finalChoices);
+                        for (const p of fallbackList) {
+                            if (finalChoices.length >= targetCount) break;
+                            if (p !== 'に' && !currentSet.has(p)) {
+                                finalChoices.push(p);
+                                currentSet.add(p);
+                            }
+                        }
+                    }
+
+                    // Diagnostic debug for HE_DIRECTION
+                    if (finalChoices.length !== 4 && window.__DEBUG__) {
+                        console.debug(`[ChoiceCountError] ${skillDef.id}: length=${finalChoices.length}`, {
+                            prompt: picked.zh,
+                            sentence: (left || '') + '【へ】' + (right || ''),
+                            choices: finalChoices,
+                            count: finalChoices.length
+                        });
                     }
 
 
@@ -5886,38 +6172,38 @@ const _jpApp = Vue.createApp({
             else if (skillDef.id === 'BOSS_REVIEW_01') {
                 const reviewSkills = ['WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE', 'WO_OBJECT_BASIC'];
                 const chosenSkillId = pickOne(reviewSkills);
-                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab);
+                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab, forceTargetCount);
             }
             else if (skillDef.id === 'BOSS_REVIEW_02') {
                 const reviewSkills = ['HE_DIRECTION', 'MO_ALSO_BASIC', 'NI_TIME', 'TO_AND'];
                 const chosenSkillId = pickOne(reviewSkills);
-                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab);
+                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab, forceTargetCount);
             }
             else if (skillDef.id === 'BOSS_REVIEW_03') {
                 const reviewSkills = ['DE_ACTION_PLACE', 'NI_EXIST_PLACE', 'GA_EXIST_SUBJECT', 'TO_WITH'];
                 const chosenSkillId = pickOne(reviewSkills);
-                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab);
+                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab, forceTargetCount);
             }
             else if (skillDef.id === 'BOSS_REVIEW_04') {
                 // Mixed review of から, まで, に(落點), で(工具)
                 const reviewSkills = ['KARA_SOURCE_START', 'MADE_LIMIT_END', 'NI_DESTINATION', 'DE_TOOL_MEANS'];
                 const chosenSkillId = pickOne(reviewSkills);
-                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab);
+                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab, forceTargetCount);
             }
             else if (skillDef.id === 'BOSS_REVIEW_05') {
                 const reviewSkills = ['NI_TARGET', 'GA_BUT', 'MO_COMPLETE_NEGATION', 'TO_CONDITIONAL'];
                 const chosenSkillId = pickOne(reviewSkills);
-                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab);
+                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab, forceTargetCount);
             }
             else if (skillDef.id === 'BOSS_REVIEW_06') {
                 const reviewSkills = ['YA_AND_OTHERS', 'DE_SCOPE', 'NI_PURPOSE', 'TO_QUOTE'];
                 const chosenSkillId = pickOne(reviewSkills);
-                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab);
+                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab, forceTargetCount);
             }
             else if (skillDef.id === 'FINAL_BOSS_35') {
                 const reviewSkills = ['KARA_REASON', 'YORI_COMPARE', 'NI_FREQUENCY', 'DE_MATERIAL'];
                 const chosenSkillId = pickOne(reviewSkills);
-                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab);
+                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab, forceTargetCount);
             }
 
             else if (skillDef.id === 'HIDDEN_BOSS_36') {
@@ -5926,7 +6212,7 @@ const _jpApp = Vue.createApp({
 
                 const chosenSkillId = pickSkillForBoss();
 
-                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab);
+                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab, forceTargetCount);
 
             }
 
@@ -6019,6 +6305,12 @@ const _jpApp = Vue.createApp({
 
             monsterResultShown.value = false;
 
+            isDefeated.value = false;
+            const _sc = document.getElementById('battleScene');
+            if (_sc) _sc.classList.remove('grayscale-filter');
+            const _ov = document.getElementById('defeatOverlay');
+            if (_ov) _ov.classList.add('hidden');
+
             isMistakesOpen.value = false;
 
             isMenuOpen.value = false;
@@ -6080,8 +6372,8 @@ const _jpApp = Vue.createApp({
 
                     }
 
-                    // [Knowledge Card 1.0] Stage these for post-battle reward
-                    pendingKnowledgeCards.value.push(...newUnlocks.map(id => skillsAll.value[id]).filter(Boolean));
+                    // [Knowledge Card 1.0] Stage these for post-battle reward (複習類對戰卡不顯示)
+                    pendingKnowledgeCards.value.push(...newUnlocks.map(id => skillsAll.value[id]).filter(s => s && s.particle !== '複習'));
 
                 }
 
@@ -6126,6 +6418,23 @@ const _jpApp = Vue.createApp({
             const blanks = config.blanks;
 
             const qList = [];
+
+            // 一般關：預建確定性比例 slot bag（L1/L2/boss 關不使用）
+            const _isBossOrSpecial = isBossLevel(lv) || lv === 1 || lv === 2;
+            _normalSlotBag = _isBossOrSpecial ? [] : buildSlotBag(QUESTION_MIX_CONFIG.normal.newRatio, 100);
+            _normalSlotRetrySkill = null;
+            _forceOldNext = false;
+            // boss 關每次進入都重建 queue，避免舊關卡的 stale 技能汙染（e.g. L10 → L36）
+            if (isBossLevel(lv)) {
+                bossSkillQueue = [];
+                startBossQueue(unlockedSkillIds.value, lv);
+            }
+
+            // 題面去重：同一輪內不出現相同句子
+            const _seenSentences = new Set();
+            let _deupRetries = 0;
+            const _MAX_DEDUP_RETRIES = 60;
+            let _currentSlotRetries = 0; // per-slot 計數，枯竭時轉 old pool
 
             let reviewCycle = { remainingReview: 1, remainingL2: 3, lastWasReview: false };
 
@@ -6291,7 +6600,9 @@ const _jpApp = Vue.createApp({
 
                     if (isReview) currentLevel.value = 1;
 
-                    q = generateQuestionBySkill(skillId, blanks, db, VOCAB.value);
+                    // Pass forceTargetCount=4 if this is a Boss Level context (lv 5, 10, 15, 20...)
+                    const forceTC = (lv % 5 === 0) ? 4 : null;
+                    q = generateQuestionBySkill(skillId, blanks, db, VOCAB.value, forceTC);
 
                     if (isReview) {
 
@@ -6691,6 +7002,29 @@ const _jpApp = Vue.createApp({
 
 
 
+                // 題面去重：若已出現過相同句子，且還有重試額度，退回重抽
+                if (q) {
+                    const fp = q.segments?.map(s => s.isBlank ? '□' : s.text).join('') || '';
+                    if (fp && _seenSentences.has(fp) && _deupRetries < _MAX_DEDUP_RETRIES) {
+                        _deupRetries++;
+                        if (!_isBossOrSpecial) {
+                            _currentSlotRetries++;
+                            if (_currentSlotRetries >= 15) {
+                                // new skill combo 枯竭：轉向 old pool 補位，保持 Dup:0
+                                _normalSlotRetrySkill = null;
+                                _forceOldNext = true;
+                                _currentSlotRetries = 0;
+                            } else {
+                                _normalSlotRetrySkill = skillId;
+                            }
+                        }
+                        i--; // 退回此 slot，重新生成
+                        continue;
+                    }
+                    if (fp) _seenSentences.add(fp);
+                }
+                _normalSlotRetrySkill = null;
+                _currentSlotRetries = 0; // 成功 push，重置 per-slot retry 計數
                 qList.push(q);
 
             }
@@ -6741,7 +7075,7 @@ const _jpApp = Vue.createApp({
 
 
 
-            const isBossLevel = (lv % 5 === 0);
+            const _isBossLv = (lv % 5 === 0);
 
             if (enemyMatch) {
 
@@ -6765,7 +7099,7 @@ const _jpApp = Vue.createApp({
 
                     trait: enemyMatch.trait,
 
-                    size: enemyMatch.size || (isBossLevel ? 1.2 : 1),
+                    size: enemyMatch.size || (_isBossLv ? 1.2 : 1),
 
                     posX: enemyMatch.posX ?? null,
 
@@ -6789,7 +7123,7 @@ const _jpApp = Vue.createApp({
 
                     trait: mdef.trait,
 
-                    size: isBossLevel ? 1.2 : 1,
+                    size: _isBossLv ? 1.2 : 1,
 
                     posX: null,
 
@@ -7106,6 +7440,9 @@ const _jpApp = Vue.createApp({
 
                     playCorrectFeedback(comboCount.value + 1);
 
+                    // 🔋 SP Reward: +1 on correct answer
+                    regenSP();
+
 
 
                     const isPlayerMiss = Math.random() < 0.05;
@@ -7167,10 +7504,6 @@ const _jpApp = Vue.createApp({
                         comboCount.value++;
 
                         if (comboCount.value > maxComboCount.value) maxComboCount.value = comboCount.value;
-
-                        regenSP();
-
-
 
                         const timeTaken = (Date.now() - questionStartTime) / 1000;
 
@@ -7480,6 +7813,15 @@ const _jpApp = Vue.createApp({
 
                     newUnlockLv.value = null;
 
+                }
+
+                // Grant オノマトペ skill on first-time boss clear
+                if (isBoss && BOSS_ONOMATOPE_MAP[currentLevel.value]) {
+                    const ono = BOSS_ONOMATOPE_MAP[currentLevel.value];
+                    if (!unlockedOnomatopeIds.value.includes(ono.id)) {
+                        unlockedOnomatopeIds.value.push(ono.id);
+                        pendingKnowledgeCards.value.push({ ...ono });
+                    }
                 }
 
                 saveProgression();
@@ -7902,6 +8244,12 @@ const _jpApp = Vue.createApp({
 
         const revive = () => {
 
+            isDefeated.value = false;
+            const _sc = document.getElementById('battleScene');
+            if (_sc) _sc.classList.remove('grayscale-filter');
+            const _ov = document.getElementById('defeatOverlay');
+            if (_ov) _ov.classList.add('hidden');
+
             setHeroAvatar('neutral');
 
             clearSpeedStatus();
@@ -8267,8 +8615,8 @@ const _jpApp = Vue.createApp({
         return {
             isNextBtnVisible,
             animatedExp, animatedGold,
-            uiMenuOpen, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, stageLog, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, playMistakeVoice, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
-            allAbilities, unlockedAbilityIds, skillList, castAbility, spState, handleReload, settings, shouldShowNextButton, praiseToast,
+            uiMenuOpen, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, stageLog, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, playMistakeVoice, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, CODEX_PER_PAGE, closeCodex, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
+            allAbilities, unlockedAbilityIds, skillList, castAbility, spState, handleReload, settings, shouldShowNextButton, praiseToast, isDefeated, defeatReturn, HERO_VISUAL_CONFIG,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
             isMentorModalOpen, isMentorReplayOpen, isLevelJumpOpen, isAdvancedSettingsOpen, replaySpecificMentor, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
             displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,
@@ -8287,7 +8635,9 @@ const _jpApp = Vue.createApp({
 
             isMapMentorOpen, mentorPages, mentorDialogueIndex, displayedMentorText, isTypingMentor, nextMentorLine, finishMentorDialogue,
 
-            pendingKnowledgeCards, activeKnowledgeCard, isKnowledgeCardShowing, isKnowledgeCardAbsorbing, triggerNextKnowledgeCard, closeKnowledgeCard
+            pendingKnowledgeCards, activeKnowledgeCard, isKnowledgeCardShowing, isKnowledgeCardAbsorbing, triggerNextKnowledgeCard, closeKnowledgeCard,
+            unlockedOnomatopeIds, BOSS_ONOMATOPE_MAP,
+            playCardFlip: () => playSfx('cardFlip')
 
         };
 
