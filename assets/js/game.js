@@ -3,8 +3,8 @@
 
 window.__sp = { cur: 20, max: 20 };
 
-window.spawnFloatingDamage = function(target, amount) {
-    const vfxLayer = document.getElementById('global-vfx-layer');
+window.spawnFloatingDamage = function(target, amount, type = 'hp') {
+    const vfxLayer = (typeof window.getVfxLayer === 'function') ? window.getVfxLayer() : document.getElementById('global-vfx-layer');
     if (!vfxLayer) return;
 
     let targetEl;
@@ -32,7 +32,22 @@ window.spawnFloatingDamage = function(target, amount) {
     const el = document.createElement('div');
     el.className = `floating-dmg-ui floating-dmg-${target}`;
     
-    let fontSize = 14 + (amount * 0.9);
+    // Type-based styling
+    if (type === 'sp') {
+        el.classList.add('floating-dmg-sp');
+        el.style.color = '#60a5fa'; // Blue-400
+        el.style.textShadow = '0 0 15px rgba(59, 130, 246, 0.6), 0 2px 4px rgba(0,0,0,0.8)';
+    } else if (amount < 0) {
+        el.classList.add('floating-dmg-heal');
+        el.style.color = '#4ade80'; // Emerald-400
+        el.style.textShadow = '0 0 15px rgba(16, 185, 129, 0.6), 0 2px 4px rgba(0,0,0,0.8)';
+    } else if (target === 'player') {
+        // Red color for hero damage
+        el.style.color = '#ef4444'; // Red-500
+        el.style.textShadow = '0 0 10px rgba(239, 68, 68, 0.5), 0 2px 4px rgba(0,0,0,0.8)';
+    }
+
+    let fontSize = 14 + (Math.abs(amount) * 0.9);
     fontSize = Math.min(Math.max(fontSize, 14), 48);
     
     const dir = Math.random() > 0.5 ? 1 : -1;
@@ -52,7 +67,15 @@ window.spawnFloatingDamage = function(target, amount) {
     el.style.left = `${x + ox}px`;
     el.style.top = `${y + oy}px`;
     el.style.fontSize = `${fontSize}px`;
-    el.innerHTML = `-${amount}`;
+    
+    // Display value
+    if (type === 'sp') {
+        el.innerHTML = `+${Math.abs(amount)}`;
+    } else if (amount < 0) {
+        el.innerHTML = `+${Math.abs(amount)}`;
+    } else {
+        el.innerHTML = `-${amount}`;
+    }
 
     vfxLayer.appendChild(el);
     setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 1200);
@@ -218,13 +241,13 @@ const _jpApp = Vue.createApp({
         };
 
         const BOSS_ONOMATOPE_MAP = {
-            5:  { id: 'ODOODO',     particle: 'おど', name: 'おどおど',     meaning: '敋方攻擊準備時間延長 30%',    isOnomatope: true, cost: 5, duration: 3 },
-            10: { id: 'GACHIGACHI', particle: 'がち', name: 'がちがち',   meaning: '玩家受傷減少 40%',           isOnomatope: true, cost: 5, duration: 2 },
-            15: { id: 'UTOUTO',     particle: 'うと', name: 'うとうと',     meaning: '敋人入眠，直到受到攻擊為止', isOnomatope: true, cost: 5 },
-            20: { id: 'JIWAJIWA',   particle: 'じわ', name: 'じわじわ',    meaning: '5 題內每答對恢復 6% HP',     isOnomatope: true, cost: 5, duration: 5 },
-            25: { id: 'WAKUWAKU',   particle: 'わく', name: 'わくわく',    meaning: '3 題內正確攻擊傷害 +20%',   isOnomatope: true, cost: 5, duration: 3 },
-            30: { id: 'MORIMORI',   particle: 'もり', name: 'もりもり',    meaning: '8 題內每答對額外恢復 1 SP', isOnomatope: true, cost: 4, duration: 8 },
-            35: { id: 'GIRAGIRA',   particle: 'ぎら', name: 'ぎらぎら',    meaning: '3 次必定命中且傷害 +35%',   isOnomatope: true, cost: 8, duration: 3 },
+            5:  { id: 'ODOODO',     particle: 'おど', name: 'おどおど',     meaning: '影響敵方 3 次攻擊（減速 30%）',    isOnomatope: true, cost: 5, duration: 3 },
+            10: { id: 'GACHIGACHI', particle: 'がち', name: 'がちがち',   meaning: '抵禦敵方 3 次攻擊（減傷 40%）',           isOnomatope: true, cost: 5, duration: 3 },
+            15: { id: 'UTOUTO',     particle: 'うと', name: 'うとうと',     meaning: '敵人入眠，此期間我方攻擊必定命中', isOnomatope: true, cost: 5 },
+            20: { id: 'JIWAJIWA',   particle: 'じわ', name: 'じわじわ',    meaning: '6 回合內每回合恢復 HP +6',     isOnomatope: true, cost: 5, duration: 6 },
+            25: { id: 'WAKUWAKU',   particle: 'わく', name: 'わくわく',    meaning: '6 次攻擊閃避率提升至 50%',   isOnomatope: true, cost: 5, duration: 6 },
+            30: { id: 'MORIMORI',   particle: 'もり', name: 'もりもり',    meaning: '8 回合內每回合恢復 SP +1', isOnomatope: true, cost: 4, duration: 8 },
+            35: { id: 'GIRAGIRA',   particle: 'ぎら', name: 'ぎらぎら',    meaning: '3 次攻擊必定命中且傷害 +50%',   isOnomatope: true, cost: 8, duration: 3 },
         };
 
         const activeSegment = computed(() => {
@@ -1222,16 +1245,9 @@ const _jpApp = Vue.createApp({
             // Inner helper for TTS fallback
             const playTtsFallback = () => {
                 if (typeof speakCloudTts === 'function' && text) {
-                    // 語言判定判定：姐姐台詞預設為中文。
-                    // 只有當假名 (Kana) 數量超過 3 個，且比例超過 15% 或總長度極短時，才判定為日文例句。
-                    // 這能避免中文解說中夾雜少量日文單詞（如：は 助詞）時被誤判為日文音讀。
-                    const kanaMatches = text.match(/[\u3040-\u309F\u30A0-\u30FF]/g) || [];
-                    const kanaCount = kanaMatches.length;
-                    const isJapanese = kanaCount > 2 && (kanaCount / text.length > 0.15 || text.length < 10);
-                    
-                    const voice = isJapanese ? 'ja-JP-Neural2-B' : 'zh-TW-Neural2-B';
-                    // console.log(`[MentorAudio] Falling back to TTS (${isJapanese ? 'JA' : 'ZH'}):`, text.slice(0, 20));
-                    speakCloudTts(text, voice);
+                    // 導師說明頁固定使用中文 TTS，避免因內文包含日文例句而被誤判為全頁日文語音。
+                    // 未來若需處理中日混讀，可再於 TTS Worker 層面處理。
+                    speakCloudTts(text, 'zh-TW-Neural2-B');
                 }
             };
 
@@ -1689,43 +1705,52 @@ const _jpApp = Vue.createApp({
 
         const applyTurnLogic = () => {
 
-            // ODODO：怪物減速
+            // Turn-based logic (JIWAJIWA, MORIMORI, WAKUWAKU remain here)
 
-            if (heroBuffs.odoodoTurns > 0) {
-
-                heroBuffs.odoodoTurns--;
-
-
-
-                if (heroBuffs.odoodoTurns <= 0) {
-
-                    heroBuffs.odoodoTurns = 0;
-
-                    heroBuffs.enemyAtbMult = 1.0;
-
-
-
-                    if (typeof pushBattleLog === 'function') {
-
-                        pushBattleLog("オドオド 效果結束（怪物速度恢復）", 'info');
-
+            // MORIMORI：SP 每回合恢復
+            if (heroBuffs.morimoriTurns > 0) {
+                heroBuffs.morimoriTurns--;
+                if (window.regenSP) {
+                    window.regenSP();
+                    // 視覺回饋：藍色 +1
+                    if (typeof window.spawnFloatingDamage === 'function') {
+                        window.spawnFloatingDamage('player', 1, 'sp');
                     }
-
                 }
-
+                if (heroBuffs.morimoriTurns <= 0) {
+                    heroBuffs.morimoriTurns = 0;
+                    if (typeof pushBattleLog === 'function') {
+                        pushBattleLog("モリモリ 效果結束（SP 恢復停止）", 'info');
+                    }
+                }
             }
 
-
-
-            // GACHIGACHI：玩家硬化減傷
-            if (heroBuffs.gachigachiTurns > 0) {
-                heroBuffs.gachigachiTurns--;
-                if (heroBuffs.gachigachiTurns <= 0) {
-                    heroBuffs.gachigachiTurns = 0;
-                    heroBuffs.enemyDmgMult = 1.0;
-                    if (typeof pushBattleLog === 'function') {
-                        pushBattleLog("ガチガチ 效果結束（你的硬化狀態解除）", 'info');
+            // JIWAJIWA：HP 每回合恢復
+            if (heroBuffs.jiwajiwaTurns > 0) {
+                heroBuffs.jiwajiwaTurns--;
+                const healAmt = 6;
+                const oldHp = player.value.hp;
+                player.value.hp = Math.min(player.value.maxHp, player.value.hp + healAmt);
+                const actualHeal = player.value.hp - oldHp;
+                if (actualHeal > 0) {
+                    pushBattleLog(`ジワジワ：恢復了 ${actualHeal} 點 HP！`, 'buff');
+                    if (typeof window.spawnFloatingDamage === 'function') {
+                        window.spawnFloatingDamage('player', -actualHeal); 
                     }
+                }
+                if (heroBuffs.jiwajiwaTurns <= 0) {
+                    heroBuffs.jiwajiwaTurns = 0;
+                    pushBattleLog("ジワジワ 效果結束（再生停止）", 'info');
+                }
+            }
+
+            // WAKUWAKU：回合遞減 (增強邏輯在 checkAnswer)
+            if (heroBuffs.wakuwakuTurns > 0) {
+                heroBuffs.wakuwakuTurns--;
+                if (heroBuffs.wakuwakuTurns <= 0) {
+                    heroBuffs.wakuwakuTurns = 0;
+                    heroBuffs.wakuwakuStacks = 0;
+                    pushBattleLog("ワクワク 效果結束（鬥志冷卻）", 'info');
                 }
             }
 
@@ -1831,7 +1856,7 @@ const _jpApp = Vue.createApp({
 
                 heroBuffs.odoodoTurns = 3;
 
-                showStatusToast('🐌 怪物遲緩！×3回合', {
+                showStatusToast('🐌 怪物遲緩！×3次攻擊', {
 
                     bg: 'rgba(163,230,53,0.92)',
 
@@ -1843,7 +1868,7 @@ const _jpApp = Vue.createApp({
 
                 if (typeof pushBattleLog === 'function') {
 
-                    pushBattleLog(`使用了技能：${skill.name}！怪物減速三回合！`, 'buff');
+                    pushBattleLog(`使用了技能：${skill.name}！怪物減速（持續 3 次攻擊）！`, 'buff');
 
                 }
 
@@ -1851,9 +1876,9 @@ const _jpApp = Vue.createApp({
 
                 heroBuffs.enemyDmgMult = 0.6;
 
-                heroBuffs.gachigachiTurns = 2;
+                heroBuffs.gachigachiTurns = 3;
 
-                showStatusToast('🛡️ 身體硬化！×2回合', {
+                showStatusToast('🛡️ 身體硬化！×3次攻擊', {
 
                     bg: 'rgba(148,163,184,0.92)',
 
@@ -1865,7 +1890,7 @@ const _jpApp = Vue.createApp({
 
                 if (typeof pushBattleLog === 'function') {
 
-                    pushBattleLog(`使用了技能：${skill.name}！你進入硬化狀態，受到的傷害減少兩回合！`, 'buff');
+                    pushBattleLog(`使用了技能：${skill.name}！你進入硬化狀態（抵禦 3 次攻擊）！`, 'buff');
 
                 }
 
@@ -1885,7 +1910,7 @@ const _jpApp = Vue.createApp({
 
                 if (typeof pushBattleLog === 'function') {
 
-                    pushBattleLog(`使用了技能：${skill.name}！怪物睡著了！`, 'buff');
+                    pushBattleLog(`使用了技能：${skill.name}！怪物睡著了（玩家攻擊必定命中）！`, 'buff');
 
                 }
 
@@ -1893,13 +1918,48 @@ const _jpApp = Vue.createApp({
                 heroBuffs.giragiraTurns = 3;
 
                 if (typeof updateHeroStatusBar === 'function') updateHeroStatusBar();
-                showStatusToast('✨ 鋒芒畢露！傷害突破上限！', {
+                showStatusToast('✨ 鋒芒畢露！傷害提高 50%！', {
                     bg: 'rgba(251,191,36,0.92)',
                     border: '#f59e0b',
                     color: '#451a03'
                 });
                 if (typeof pushBattleLog === 'function') {
-                    pushBattleLog("使用了 ギラギラ：3 次攻擊內傷害 +35% 且可突破上限！", 'buff');
+                    pushBattleLog("使用了 ギラギラ：3 次攻擊內傷害 +50% 且必定命中！", 'buff');
+                }
+            } else if (id === 'MORIMORI') {
+                heroBuffs.morimoriTurns = 8;
+                if (typeof updateHeroStatusBar === 'function') updateHeroStatusBar();
+                showStatusToast('🍊 活力十足！SP持續恢復 ×8回合', {
+                    bg: 'rgba(251,146,60,0.92)',
+                    border: '#f97316',
+                    color: '#431407'
+                });
+                if (typeof pushBattleLog === 'function') {
+                    pushBattleLog(`使用了 ${skill.name}：8 回合內每回合恢復 SP +1！`, 'buff');
+                }
+            } else if (id === 'JIWAJIWA') {
+                heroBuffs.jiwajiwaTurns = 6;
+                if (typeof updateHeroStatusBar === 'function') updateHeroStatusBar();
+                showStatusToast('🍃 慢慢康復！HP持續恢復 ×6回合', {
+                    bg: 'rgba(34,197,94,0.92)',
+                    border: '#22c55e',
+                    color: '#052e16'
+                });
+                if (typeof pushBattleLog === 'function') {
+                    pushBattleLog(`使用了 ${skill.name}：6 回合內每回合恢復 HP +6！`, 'buff');
+                }
+            } else if (id === 'WAKUWAKU') {
+                // Overhauled: Now grants 50% evasion for next 6 attacks (Speed Potion effect)
+                evasionBuffAttacksLeft.value = 6;
+                heroBuffs.wakuwakuTurns = 6;
+                if (typeof setSpeedStatus === 'function') setSpeedStatus(25000); 
+                showStatusToast('⚡ 感覺輕盈！ (閃避上升)', {
+                    bg: 'rgba(8,145,178,0.92)',
+                    border: '#0891b2',
+                    color: '#083344'
+                });
+                if (typeof pushBattleLog === 'function') {
+                    pushBattleLog(`使用了 ${skill.name}：接下來 6 次攻擊期間自身閃避率提升到 50%！`, 'buff');
                 }
             } else {
 
@@ -2443,6 +2503,10 @@ const _jpApp = Vue.createApp({
                 damage2: 'assets/audio/damage2.mp3',
                 damage3: 'assets/audio/damage3.mp3',
                 damage4: 'assets/audio/damage4.mp3',
+                damage5: 'assets/audio/damage5.mp3',
+                damage6: 'assets/audio/damage6.mp3',
+                damage7: 'assets/audio/damage7.mp3',
+                damage8: 'assets/audio/damage8.mp3',
                 fanfare: 'assets/audio/fanfare.mp3',
                 pop: 'assets/audio/pop.mp3',
                 win: 'assets/audio/win.mp3',
@@ -3068,6 +3132,10 @@ const _jpApp = Vue.createApp({
             damage2: 'assets/audio/damage2.mp3',
             damage3: 'assets/audio/damage3.mp3',
             damage4: 'assets/audio/damage4.mp3',
+            damage5: 'assets/audio/damage5.mp3',
+            damage6: 'assets/audio/damage6.mp3',
+            damage7: 'assets/audio/damage7.mp3',
+            damage8: 'assets/audio/damage8.mp3',
             fanfare: 'assets/audio/fanfare.mp3',
             bossClear: '', // Map missing bossClear to fanfare
             uiPop: 'assets/audio/pop.mp3',
@@ -3829,6 +3897,253 @@ const _jpApp = Vue.createApp({
 
 
 
+        // L20 ruin-guardian: 城塞受困
+        const playBossChainSwipeVfx = () => {
+
+            if (_isBossSpecialAttackPlaying) return;
+            _isBossSpecialAttackPlaying = true;
+
+            const vfxLayer = getVfxLayer();
+            if (!vfxLayer) { _isBossSpecialAttackPlaying = false; return; }
+
+            const group = document.createElement('div');
+            group.className = 'boss-fortress-group';
+            vfxLayer.appendChild(group);
+
+            // 邊緣壓迫 vignette
+            const vig = document.createElement('div');
+            vig.className = 'boss-vfx-fortress-vignette';
+            group.appendChild(vig);
+
+            // 四方鎖鏈向中心收束（略微錯開）
+            ['left', 'right', 'top', 'bottom'].forEach((dir, i) => {
+                const c = document.createElement('div');
+                c.className = 'boss-fortress-chain boss-fortress-chain-' + dir;
+                c.style.animationDelay = (0.05 * i) + 's';
+                group.appendChild(c);
+            });
+
+            // 600ms 收束完成：震動 + 邊緣鎖定感（無中心爆炸）
+            setTimeout(() => {
+                bossScreenShake.value = true;
+                setTimeout(() => { bossScreenShake.value = false; }, 450);
+
+                const lock = document.createElement('div');
+                lock.className = 'boss-vfx-fortress-lock';
+                group.appendChild(lock);
+            }, 600);
+
+            setTimeout(() => {
+                if (vfxLayer.contains(group)) vfxLayer.removeChild(group);
+                _isBossSpecialAttackPlaying = false;
+            }, 1450);
+
+        };
+
+
+
+        // L25 dark-knight: 虛空X字斬
+        const playBossVoidCrossSlashVfx = () => {
+
+            if (_isBossSpecialAttackPlaying) return;
+            _isBossSpecialAttackPlaying = true;
+
+            const vfxLayer = getVfxLayer();
+            if (!vfxLayer) { _isBossSpecialAttackPlaying = false; return; }
+
+            const group = document.createElement('div');
+            group.className = 'boss-cross-group';
+            vfxLayer.appendChild(group);
+
+            // 前搖：黑紫 vignette
+            const vignette = document.createElement('div');
+            vignette.className = 'boss-vfx-void-vignette';
+            group.appendChild(vignette);
+
+            setTimeout(() => {
+                // 第一刀：左上→右下 (rotate 45deg)
+                const slash1 = document.createElement('div');
+                slash1.className = 'boss-vfx-xslash-a';
+                group.appendChild(slash1);
+
+                // 第二刀：右上→左下 (rotate -45deg)，略延遲
+                setTimeout(() => {
+                    const slash2 = document.createElement('div');
+                    slash2.className = 'boss-vfx-xslash-b';
+                    group.appendChild(slash2);
+
+                    // 交叉完成：震動 + 小型交點火花
+                    bossScreenShake.value = true;
+                    setTimeout(() => { bossScreenShake.value = false; }, 350);
+
+                    setTimeout(() => {
+                        const spark = document.createElement('div');
+                        spark.className = 'boss-vfx-xslash-spark';
+                        group.appendChild(spark);
+                    }, 80);
+
+                }, 130);
+
+            }, 300);
+
+            setTimeout(() => {
+                if (vfxLayer.contains(group)) vfxLayer.removeChild(group);
+                _isBossSpecialAttackPlaying = false;
+            }, 1450);
+
+        };
+
+
+
+        // L30 crimson-throne-lord: 星辰崩壞
+        const playBossStarCollapseVfx = () => {
+            if (_isBossSpecialAttackPlaying) return;
+            _isBossSpecialAttackPlaying = true;
+            const vfxLayer = getVfxLayer();
+            if (!vfxLayer) { _isBossSpecialAttackPlaying = false; return; }
+
+            const group = document.createElement('div');
+            group.className = 'boss-starcollapse-group';
+            vfxLayer.appendChild(group);
+
+            const vig = document.createElement('div');
+            vig.className = 'boss-vfx-arcane-vignette';
+            group.appendChild(vig);
+
+            const ring1 = document.createElement('div');
+            ring1.className = 'boss-vfx-magic-ring boss-magic-ring-outer';
+            group.appendChild(ring1);
+
+            const ring2 = document.createElement('div');
+            ring2.className = 'boss-vfx-magic-ring boss-magic-ring-inner';
+            group.appendChild(ring2);
+
+            setTimeout(() => {
+                bossScreenShake.value = true;
+                setTimeout(() => { bossScreenShake.value = false; }, 380);
+
+                const flash = document.createElement('div');
+                flash.className = 'boss-vfx-star-flash';
+                group.appendChild(flash);
+
+                const scatter = document.createElement('div');
+                scatter.className = 'boss-vfx-star-scatter';
+                group.appendChild(scatter);
+            }, 900);
+
+            setTimeout(() => {
+                if (vfxLayer.contains(group)) vfxLayer.removeChild(group);
+                _isBossSpecialAttackPlaying = false;
+            }, 1550);
+        };
+
+
+
+        // L35 celestial-throne-arbiter: 審判羽刑
+        const playBossDualJudgementVfx = () => {
+            if (_isBossSpecialAttackPlaying) return;
+            _isBossSpecialAttackPlaying = true;
+            const vfxLayer = getVfxLayer();
+            if (!vfxLayer) { _isBossSpecialAttackPlaying = false; return; }
+
+            const group = document.createElement('div');
+            group.className = 'boss-featherjudge-group';
+            vfxLayer.appendChild(group);
+
+            // 上方壓迫光暈
+            const vig = document.createElement('div');
+            vig.className = 'boss-vfx-featherjudge-vignette';
+            group.appendChild(vig);
+
+            // 黑白雙翼展開剪影
+            const wings = document.createElement('div');
+            wings.className = 'boss-vfx-judge-wings';
+            group.appendChild(wings);
+
+            // 前搖後羽刃落下
+            setTimeout(() => {
+                const feathers = [
+                    { cls: 'feather-white', delay: 0.00, x: '18%', rot:  10 },
+                    { cls: 'feather-dark',  delay: 0.07, x: '32%', rot:  -7 },
+                    { cls: 'feather-white', delay: 0.13, x: '48%', rot:   5 },
+                    { cls: 'feather-dark',  delay: 0.04, x: '62%', rot: -12 },
+                    { cls: 'feather-white', delay: 0.10, x: '76%', rot:   8 },
+                    { cls: 'feather-dark',  delay: 0.02, x: '26%', rot:  -5 },
+                    { cls: 'feather-white', delay: 0.16, x: '56%', rot:  11 },
+                ];
+                feathers.forEach(fd => {
+                    const f = document.createElement('div');
+                    f.className = 'boss-vfx-feather ' + fd.cls;
+                    f.style.left = fd.x;
+                    f.style.animationDelay = fd.delay + 's';
+                    f.style.setProperty('--frot', fd.rot + 'deg');
+                    group.appendChild(f);
+                });
+
+                // 命中：短暫裁決閃光 + shake
+                setTimeout(() => {
+                    bossScreenShake.value = true;
+                    setTimeout(() => { bossScreenShake.value = false; }, 320);
+
+                    const flash = document.createElement('div');
+                    flash.className = 'boss-vfx-featherjudge-flash';
+                    group.appendChild(flash);
+                }, 420);
+
+            }, 280);
+
+            setTimeout(() => {
+                if (vfxLayer.contains(group)) vfxLayer.removeChild(group);
+                _isBossSpecialAttackPlaying = false;
+            }, 1550);
+        };
+
+
+
+        // L36 void-throne-lord: 虛無侵蝕
+        const playBossVoidErosionVfx = () => {
+            console.debug('[VFX] entered L36 void-erosion');
+            if (_isBossSpecialAttackPlaying) return;
+            _isBossSpecialAttackPlaying = true;
+            const vfxLayer = getVfxLayer();
+            if (!vfxLayer) { _isBossSpecialAttackPlaying = false; return; }
+
+            const group = document.createElement('div');
+            group.className = 'boss-void-erosion-group';
+            vfxLayer.appendChild(group);
+
+            const erosion = document.createElement('div');
+            erosion.className = 'boss-vfx-void-erosion';
+            group.appendChild(erosion);
+
+            const tendrils = document.createElement('div');
+            tendrils.className = 'boss-vfx-void-tendrils';
+            group.appendChild(tendrils);
+
+            setTimeout(() => {
+                const blackout = document.createElement('div');
+                blackout.className = 'boss-vfx-void-blackout';
+                group.appendChild(blackout);
+            }, 500);
+
+            // 雙段不穩震動
+            setTimeout(() => {
+                bossScreenShake.value = true;
+                setTimeout(() => { bossScreenShake.value = false; }, 160);
+                setTimeout(() => {
+                    bossScreenShake.value = true;
+                    setTimeout(() => { bossScreenShake.value = false; }, 280);
+                }, 230);
+            }, 520);
+
+            setTimeout(() => {
+                if (vfxLayer.contains(group)) vfxLayer.removeChild(group);
+                _isBossSpecialAttackPlaying = false;
+            }, 1600);
+        };
+
+
+
         const runPauseTimerLogic = () => {
 
             wrongAnswerPauseCountdown.value--;
@@ -3850,25 +4165,36 @@ const _jpApp = Vue.createApp({
 
 
         const applyMonsterAttack = () => {
+            // Buff counters based on monster attacks
+            if (heroBuffs.odoodoTurns > 0) {
+                heroBuffs.odoodoTurns--;
+                if (heroBuffs.odoodoTurns <= 0) {
+                    heroBuffs.odoodoTurns = 0;
+                    heroBuffs.enemyAtbMult = 1.0;
+                    if (typeof pushBattleLog === 'function') pushBattleLog("オドオド 效果結束（怪物速度恢復）", 'info');
+                }
+            }
+            if (heroBuffs.gachigachiTurns > 0) {
+                heroBuffs.gachigachiTurns--;
+                if (heroBuffs.gachigachiTurns <= 0) {
+                    heroBuffs.gachigachiTurns = 0;
+                    heroBuffs.enemyDmgMult = 1.0;
+                    if (typeof pushBattleLog === 'function') pushBattleLog("ガチガチ 效果結束（硬化解除）", 'info');
+                }
+            }
 
             let isMiss = Math.random() < 0.05;
 
-
-
             if (evasionBuffAttacksLeft.value > 0) {
-
                 isMiss = Math.random() < 0.50;
-
                 evasionBuffAttacksLeft.value--;
+                heroBuffs.wakuwakuTurns = evasionBuffAttacksLeft.value;
+                if (typeof updateHeroStatusBar === 'function') updateHeroStatusBar();
 
                 if (evasionBuffAttacksLeft.value <= 0) {
-
                     if (evasionBuffTimerId) { clearTimeout(evasionBuffTimerId); evasionBuffTimerId = null; }
-
                     clearSpeedStatus();
-
                 }
-
             }
 
 
@@ -3891,39 +4217,53 @@ const _jpApp = Vue.createApp({
 
             } else {
 
-                const isBoss = (currentLevel.value % 5 === 0);
+                const isBoss = (currentLevel.value % 5 === 0) || currentLevel.value === 36;
 
                 if (isBoss) {
 
                     const mid = monster.value.id;
 
+                    let _attackType = 'claw-default';
+
                     if (mid === 'man-eater-bloom') {
-
+                        _attackType = 'vine';
                         playBossVineAttackVfx();
-
-                        playSfx('damage4');
-
+                        playSfx('damage1');
                     } else if (mid === 'orc-warlord') {
-
+                        _attackType = 'smash';
                         playBossSmashAttackVfx();
-
+                        playSfx('damage2');
+                    } else if (mid === 'frost-roc') {
+                        _attackType = 'claw-roc';
+                        playMonsterClawAttackVfx();
                         playSfx('damage3');
-
-                    } else if (mid === 'frost-roc' || mid === 'ice-bird') {
-
-                        playMonsterClawAttackVfx();
-
-                        playSfx('damage2');
-
+                    } else if (mid === 'ruin-guardian') {
+                        _attackType = 'chain-swipe';
+                        playBossChainSwipeVfx();
+                        playSfx('damage4');
+                    } else if (mid === 'dark-knight') {
+                        _attackType = 'void-cross-slash';
+                        playBossVoidCrossSlashVfx();
+                        playSfx('damage5');
+                    } else if (mid === 'crimson-throne-lord') {
+                        _attackType = 'star-collapse';
+                        playBossStarCollapseVfx();
+                        playSfx('damage6');
+                    } else if (mid === 'celestial-throne-arbiter') {
+                        _attackType = 'dual-judgement';
+                        playBossDualJudgementVfx();
+                        playSfx('damage7');
+                    } else if (mid === 'void-throne-lord') {
+                        _attackType = 'void-erosion';
+                        playBossVoidErosionVfx();
+                        playSfx('damage8');
                     } else {
-
-                        // Default for other bosses
-
+                        _attackType = 'claw-default';
                         playMonsterClawAttackVfx();
-
                         playSfx('damage2');
-
                     }
+
+                    console.debug('[BOSS-DISPATCH] level=' + currentLevel.value + ' enemyId=' + (mid || 'UNDEFINED') + ' attackType=' + _attackType);
 
                 } else {
 
@@ -6271,6 +6611,10 @@ const _jpApp = Vue.createApp({
 
             heroBuffs.gachigachiTurns = 0;
             heroBuffs.giragiraTurns = 0;
+            heroBuffs.morimoriTurns = 0;
+            heroBuffs.jiwajiwaTurns = 0;
+            heroBuffs.wakuwakuTurns = 0;
+            heroBuffs.wakuwakuStacks = 0;
             heroBuffs.monsterSleep = false;
 
             evasionBuffAttacksLeft.value = 0;
@@ -7454,7 +7798,7 @@ const _jpApp = Vue.createApp({
 
 
 
-                    const isPlayerMiss = (heroBuffs.giragiraTurns > 0) ? false : (Math.random() < 0.05);
+                    const isPlayerMiss = (heroBuffs.giragiraTurns > 0 || heroBuffs.monsterSleep) ? false : (Math.random() < 0.05);
 
                     if (isPlayerMiss) {
 
@@ -7520,7 +7864,9 @@ const _jpApp = Vue.createApp({
                         else if (timeTaken >= 10) baseDmg = 5;
                         else baseDmg = Math.round(20 - ((timeTaken - 2) / 8) * 15);
 
-                        let dmg = baseDmg;
+                        // 加入 ±1 隨機浮動
+                        const jitter = Math.floor(Math.random() * 3) - 1; // -1, 0, 1
+                        let dmg = baseDmg + jitter;
                         // GIRAGIRA Bonus & Cap Bypass
                         if (heroBuffs.giragiraTurns > 0) {
                             dmg = Math.round(baseDmg * 1.5);
@@ -7540,6 +7886,7 @@ const _jpApp = Vue.createApp({
                                 }
                             }
                         }
+
 
 
 
@@ -8635,6 +8982,7 @@ const _jpApp = Vue.createApp({
             isNextBtnVisible,
             animatedExp, animatedGold,
             uiMenuOpen, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, stageLog, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, playMistakeVoice, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, CODEX_PER_PAGE, closeCodex, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
+            heroBuffs,
             allAbilities, unlockedAbilityIds, skillList, castAbility, spState, handleReload, settings, shouldShowNextButton, praiseToast, isDefeated, defeatReturn, HERO_VISUAL_CONFIG,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
             isMentorModalOpen, isMentorReplayOpen, isLevelJumpOpen, isAdvancedSettingsOpen, replaySpecificMentor, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,

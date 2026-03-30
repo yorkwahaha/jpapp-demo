@@ -60,7 +60,7 @@
 
         rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/styles.css?v=26033001">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26033010">
 
 
 
@@ -70,7 +70,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26033001';
+            const v = window.APP_VERSION || '26033010';
 
 
 
@@ -2833,8 +2833,11 @@
                                     hit: monsterHit,
                                     'hit-boss': monsterHit && currentLevel % 5 === 0
                                 }">
-
-
+                                <div v-if="heroBuffs.monsterSleep" class="zzz-indicator-wrap z-50">
+                                    <div class="zzz-item text-3xl" style="animation-delay: 0s; top: 0; left: 0;">Z</div>
+                                    <div class="zzz-item text-2xl" style="animation-delay: 1s; top: 10px; left: 10px;">z</div>
+                                    <div class="zzz-item text-xl" style="animation-delay: 2s; top: 20px; left: 20px;">z</div>
+                                </div>
 
                             <!-- Monster Image -->
 
@@ -3321,10 +3324,6 @@
 
                                     class="flex-shrink-0 flex flex-nowrap items-center justify-end gap-2 md:gap-3 w-auto md:flex-none">
 
-                                    <button @click="isInventoryOpen = true; pauseBattle(); playSfx('uiPop');"
-                                        class="hud-tool-btn group" title="背包">
-                                        <span class="group-hover:scale-110">🎒</span>
-                                    </button>
 
                                     <button @click="isSkillOpen = true; pauseBattle(); playSfx('uiPop');"
                                         class="hud-tool-btn is-skill-ready group" title="秘笈本">
@@ -3710,7 +3709,7 @@
 
                     class="glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-lg shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col max-h-[90vh]">
 
-                    <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
+                    <div class="flex justify-between items-center mb-3 border-b border-white/10 pb-2">
 
                         <h2 class="text-2xl font-black text-amber-400 tracking-[0.15em] drop-shadow-lg">技能 <span
 
@@ -3732,11 +3731,11 @@
 
 
 
-                    <div class="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+                    <div class="flex-1 overflow-y-auto pr-2 space-y-2 custom-scrollbar">
 
                         <div v-for="skill in skillList" :key="skill.id" @click="castAbility(skill.id)"
 
-                            class="group relative bg-slate-900/60 border border-slate-700 hover:border-amber-500/50 rounded-xl p-3 flex gap-4 cursor-pointer transition-all hover:bg-slate-800"
+                            class="group relative bg-slate-900/60 border border-slate-700 hover:border-amber-500/50 rounded-xl p-2.5 flex gap-3 cursor-pointer transition-all hover:bg-slate-800"
 
                             :class="{ 'opacity-50 grayscale cursor-not-allowed': spState.cur < skill.cost || playerDead || monsterDead }">
 

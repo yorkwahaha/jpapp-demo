@@ -3039,6 +3039,589 @@ body.lock-scroll {
     -webkit-backdrop-filter: blur(20px) saturate(160%);
 }
 
+/* -------- L20 ruin-guardian: 城塞受困 -------- */
+.boss-fortress-group {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 25;
+    overflow: hidden;
+}
+
+.boss-vfx-fortress-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center,
+        transparent 20%,
+        rgba(25, 10, 2, 0.75) 100%
+    );
+    animation: fortress-vignette 1.3s ease-out forwards;
+}
+
+@keyframes fortress-vignette {
+    0%   { opacity: 0; }
+    15%  { opacity: 1; }
+    60%  { opacity: 0.8; }
+    100% { opacity: 0; }
+}
+
+/* 鎖鏈共用樣式 */
+.boss-fortress-chain {
+    position: absolute;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            #0d0400 0px,  #0d0400 5px,
+            #3b1506 5px,  #7c3000 14px,
+            #c06010 14px, #e88020 20px,
+            #f5a820 20px, #e88020 26px,
+            #c06010 26px, #7c3000 35px,
+            #3b1506 35px, #0d0400 44px,
+            #0d0400 44px, #0d0400 50px
+        ),
+        linear-gradient(180deg,
+            #1a0800 0%, #7c3000 30%, #d47010 50%, #7c3000 70%, #1a0800 100%
+        );
+    background-blend-mode: multiply;
+    box-shadow:
+        0 0 20px 7px rgba(160, 70, 10, 0.85),
+        0 0 50px 16px rgba(0, 0, 0, 0.65);
+    opacity: 0;
+}
+
+/* 左右橫向鎖鏈 */
+.boss-fortress-chain-left,
+.boss-fortress-chain-right {
+    height: 58px;
+    width: 58%;
+    top: 50%;
+    transform: translateY(-50%);
+    border-top: 4px solid #fde68a;
+    border-bottom: 4px solid #92400e;
+}
+
+.boss-fortress-chain-left {
+    left: -60%;
+    animation: fortress-from-left 0.55s ease-out forwards;
+}
+
+.boss-fortress-chain-right {
+    right: -60%;
+    animation: fortress-from-right 0.55s ease-out forwards;
+}
+
+/* 上下縱向鎖鏈 */
+.boss-fortress-chain-top,
+.boss-fortress-chain-bottom {
+    width: 58px;
+    height: 58%;
+    left: 50%;
+    transform: translateX(-50%);
+    background:
+        repeating-linear-gradient(
+            0deg,
+            #0d0400 0px,  #0d0400 5px,
+            #3b1506 5px,  #7c3000 14px,
+            #c06010 14px, #e88020 20px,
+            #f5a820 20px, #e88020 26px,
+            #c06010 26px, #7c3000 35px,
+            #3b1506 35px, #0d0400 44px,
+            #0d0400 44px, #0d0400 50px
+        ),
+        linear-gradient(90deg,
+            #1a0800 0%, #7c3000 30%, #d47010 50%, #7c3000 70%, #1a0800 100%
+        );
+    background-blend-mode: multiply;
+    border-left: 4px solid #fde68a;
+    border-right: 4px solid #92400e;
+}
+
+.boss-fortress-chain-top {
+    top: -60%;
+    animation: fortress-from-top 0.55s ease-out forwards;
+}
+
+.boss-fortress-chain-bottom {
+    bottom: -60%;
+    animation: fortress-from-bottom 0.55s ease-out forwards;
+}
+
+@keyframes fortress-from-left {
+    0%   { left: -60%;  opacity: 1; }
+    80%  { left: 6%;    opacity: 1; }
+    100% { left: 6%;    opacity: 0.9; }
+}
+
+@keyframes fortress-from-right {
+    0%   { right: -60%; opacity: 1; }
+    80%  { right: 6%;   opacity: 1; }
+    100% { right: 6%;   opacity: 0.9; }
+}
+
+@keyframes fortress-from-top {
+    0%   { top: -60%;    opacity: 1; }
+    80%  { top: 6%;      opacity: 1; }
+    100% { top: 6%;      opacity: 0.9; }
+}
+
+@keyframes fortress-from-bottom {
+    0%   { bottom: -60%; opacity: 1; }
+    80%  { bottom: 6%;   opacity: 1; }
+    100% { bottom: 6%;   opacity: 0.9; }
+}
+
+/* 鎖定還魂：邊緣加深後淡出，無中心爆炸 */
+.boss-vfx-fortress-lock {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center,
+        transparent 10%,
+        rgba(30, 12, 2, 0.5) 55%,
+        rgba(15, 5, 0, 0.82) 100%
+    );
+    animation: fortress-lock 0.75s ease-out forwards;
+}
+
+@keyframes fortress-lock {
+    0%   { opacity: 0; }
+    20%  { opacity: 1; }
+    55%  { opacity: 0.9; }
+    100% { opacity: 0; }
+}
+
+/* -------- L25 lord-of-darkness: 虛空十字斬 -------- */
+.boss-cross-group {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 25;
+}
+
+.boss-vfx-void-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center,
+        rgba(10, 0, 30, 0.1) 20%,
+        rgba(46, 16, 101, 0.85) 100%
+    );
+    animation: void-vignette 1.4s ease-out forwards;
+}
+
+@keyframes void-vignette {
+    0%   { opacity: 0; }
+    18%  { opacity: 1; }
+    55%  { opacity: 0.85; }
+    100% { opacity: 0; }
+}
+
+/* 交點火花：小圓形白紫閃光，無方塊感 */
+.boss-vfx-xslash-spark {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0.3);
+    background: radial-gradient(circle,
+        rgba(255, 255, 255, 0.98) 0%,
+        rgba(216, 180, 254, 0.85) 28%,
+        rgba(139, 92, 246, 0.55) 58%,
+        transparent 78%
+    );
+    box-shadow:
+        0 0 10px 5px rgba(255, 255, 255, 0.7),
+        0 0 24px 10px rgba(139, 92, 246, 0.75),
+        0 0 50px 18px rgba(109, 40, 217, 0.4);
+    animation: xslash-spark 0.55s ease-out forwards;
+}
+
+@keyframes xslash-spark {
+    0%   { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+    12%  { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+    40%  { transform: translate(-50%, -50%) scale(1.0); opacity: 0.85; }
+    100% { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
+}
+
+/* X字斬共用樣式：兩刀均從中心展開 */
+.boss-vfx-xslash-a,
+.boss-vfx-xslash-b {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 160vmax;
+    height: 26px;
+    transform-origin: center center;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(109, 40, 217, 0.6) 15%,
+        rgba(139, 92, 246, 0.95) 35%,
+        rgba(255, 255, 255, 1) 50%,
+        rgba(139, 92, 246, 0.95) 65%,
+        rgba(109, 40, 217, 0.6) 85%,
+        transparent 100%
+    );
+    box-shadow:
+        0 0 0 2px rgba(196, 181, 253, 0.65),
+        0 0 14px 7px rgba(139, 92, 246, 0.9),
+        0 0 35px 16px rgba(109, 40, 217, 0.65),
+        0 0 70px 28px rgba(76, 29, 149, 0.4);
+}
+
+/* 殘影層 */
+.boss-vfx-xslash-a::before,
+.boss-vfx-xslash-b::before {
+    content: '';
+    position: absolute;
+    inset: -8px 0;
+    background: linear-gradient(90deg,
+        transparent 5%,
+        rgba(139, 92, 246, 0.2) 30%,
+        rgba(196, 181, 253, 0.3) 50%,
+        rgba(139, 92, 246, 0.2) 70%,
+        transparent 95%
+    );
+    filter: blur(6px);
+}
+
+/* 左上→右下 */
+.boss-vfx-xslash-a {
+    animation: xslash-a-draw 0.7s ease-out forwards;
+}
+
+@keyframes xslash-a-draw {
+    0%   { transform: translate(-50%, -50%) rotate(45deg) scaleX(0);   opacity: 1; }
+    38%  { transform: translate(-50%, -50%) rotate(45deg) scaleX(1);   opacity: 1; }
+    65%  { transform: translate(-50%, -50%) rotate(45deg) scaleX(1);   opacity: 0.85; }
+    100% { transform: translate(-50%, -50%) rotate(45deg) scaleX(1);   opacity: 0; }
+}
+
+/* 右上→左下，略延遲 */
+.boss-vfx-xslash-b {
+    animation: xslash-b-draw 0.7s ease-out forwards;
+}
+
+@keyframes xslash-b-draw {
+    0%   { transform: translate(-50%, -50%) rotate(-45deg) scaleX(0);  opacity: 0; }
+    5%   { opacity: 1; }
+    38%  { transform: translate(-50%, -50%) rotate(-45deg) scaleX(1);  opacity: 1; }
+    65%  { transform: translate(-50%, -50%) rotate(-45deg) scaleX(1);  opacity: 0.85; }
+    100% { transform: translate(-50%, -50%) rotate(-45deg) scaleX(1);  opacity: 0; }
+}
+
+/* 交點爆閃：更大、更炸 */
+.boss-vfx-cross-flash {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 160px;
+    height: 160px;
+    transform: translate(-50%, -50%) scale(0.2);
+    background: radial-gradient(circle,
+        rgba(255, 255, 255, 1) 0%,
+        rgba(220, 210, 255, 1) 15%,
+        rgba(167, 139, 250, 0.9) 35%,
+        rgba(109, 40, 217, 0.6) 60%,
+        transparent 80%
+    );
+    box-shadow:
+        0 0 30px 15px rgba(196, 181, 253, 0.8),
+        0 0 80px 35px rgba(109, 40, 217, 0.5);
+    animation: cross-flash 0.65s ease-out forwards;
+}
+
+@keyframes cross-flash {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+    15%  { opacity: 1; transform: translate(-50%, -50%) scale(1.8); }
+    45%  { opacity: 0.9; transform: translate(-50%, -50%) scale(2.0); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(2.8); }
+}
+
+/* -------- L30 crimson-throne-lord: 星辰崩壞 -------- */
+.boss-starcollapse-group {
+    position: absolute; inset: 0;
+    pointer-events: none; z-index: 25;
+    overflow: hidden;
+}
+
+.boss-vfx-arcane-vignette {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center,
+        rgba(10, 5, 30, 0.1) 20%,
+        rgba(23, 10, 80, 0.8) 100%
+    );
+    animation: arcane-vignette 1.5s ease-out forwards;
+}
+
+@keyframes arcane-vignette {
+    0%   { opacity: 0; }
+    15%  { opacity: 1; }
+    65%  { opacity: 0.85; }
+    100% { opacity: 0; }
+}
+
+.boss-vfx-magic-ring {
+    position: absolute;
+    top: 50%; left: 50%;
+    border-radius: 50%;
+    border-style: solid;
+}
+
+.boss-magic-ring-outer {
+    width: 230px; height: 230px;
+    border-width: 4px;
+    border-color: rgba(96, 165, 250, 0.95) rgba(147, 197, 253, 0.4) rgba(59, 130, 246, 0.85) transparent;
+    box-shadow: 0 0 18px 6px rgba(59, 130, 246, 0.55), inset 0 0 18px 5px rgba(59, 130, 246, 0.25);
+    animation: magic-ring-outer 1.05s ease-in forwards;
+}
+
+@keyframes magic-ring-outer {
+    0%   { transform: translate(-50%, -50%) rotate(0deg)   scale(1.5);  opacity: 0.5; }
+    18%  { opacity: 1; }
+    65%  { transform: translate(-50%, -50%) rotate(280deg) scale(1.0);  opacity: 1; }
+    88%  { transform: translate(-50%, -50%) rotate(370deg) scale(0.25); opacity: 0.7; }
+    100% { transform: translate(-50%, -50%) rotate(410deg) scale(0);    opacity: 0; }
+}
+
+.boss-magic-ring-inner {
+    width: 145px; height: 145px;
+    border-width: 3px;
+    border-color: rgba(216, 180, 254, 0.9) transparent rgba(139, 92, 246, 0.75) rgba(167, 139, 250, 0.5);
+    box-shadow: 0 0 14px 5px rgba(139, 92, 246, 0.55), inset 0 0 14px 4px rgba(139, 92, 246, 0.25);
+    animation: magic-ring-inner 0.95s ease-in forwards;
+}
+
+@keyframes magic-ring-inner {
+    0%   { transform: translate(-50%, -50%) rotate(0deg)    scale(1.2);  opacity: 0.6; }
+    18%  { opacity: 1; }
+    65%  { transform: translate(-50%, -50%) rotate(-220deg) scale(0.85); opacity: 1; }
+    88%  { transform: translate(-50%, -50%) rotate(-320deg) scale(0.2);  opacity: 0.6; }
+    100% { transform: translate(-50%, -50%) rotate(-360deg) scale(0);    opacity: 0; }
+}
+
+.boss-vfx-star-flash {
+    position: absolute; top: 50%; left: 50%;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0.2);
+    background: radial-gradient(circle,
+        rgba(255, 255, 255, 1) 0%,
+        rgba(186, 230, 253, 0.95) 20%,
+        rgba(59, 130, 246, 0.75) 50%,
+        transparent 78%
+    );
+    box-shadow:
+        0 0 20px 8px rgba(255, 255, 255, 0.7),
+        0 0 50px 20px rgba(96, 165, 250, 0.6),
+        0 0 90px 35px rgba(59, 130, 246, 0.35);
+    animation: star-flash 0.7s ease-out forwards;
+}
+
+@keyframes star-flash {
+    0%   { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
+    12%  { transform: translate(-50%, -50%) scale(2.0); opacity: 1; }
+    40%  { transform: translate(-50%, -50%) scale(1.7); opacity: 0.9; }
+    100% { transform: translate(-50%, -50%) scale(1.0); opacity: 0; }
+}
+
+.boss-vfx-star-scatter {
+    position: absolute; inset: 0;
+    background:
+        radial-gradient(circle 3px at 30% 25%, rgba(186, 230, 253, 0.9) 0%, transparent 100%),
+        radial-gradient(circle 4px at 68% 20%, rgba(255, 255, 255, 0.85) 0%, transparent 100%),
+        radial-gradient(circle 3px at 78% 55%, rgba(147, 197, 253, 0.9) 0%, transparent 100%),
+        radial-gradient(circle 4px at 22% 65%, rgba(255, 255, 255, 0.8) 0%, transparent 100%),
+        radial-gradient(circle 3px at 55% 80%, rgba(186, 230, 253, 0.85) 0%, transparent 100%),
+        radial-gradient(circle 2px at 42% 15%, rgba(255, 255, 255, 0.9) 0%, transparent 100%);
+    animation: star-scatter 0.9s ease-out forwards;
+}
+
+@keyframes star-scatter {
+    0%   { opacity: 0; transform: scale(0.5); }
+    15%  { opacity: 1; transform: scale(1.0); }
+    60%  { opacity: 0.7; }
+    100% { opacity: 0; transform: scale(1.4); }
+}
+
+/* -------- L35 celestial-throne-arbiter: 審判羽刑 -------- */
+.boss-featherjudge-group {
+    position: absolute; inset: 0;
+    pointer-events: none; z-index: 25;
+    overflow: hidden;
+}
+
+/* 神聖壓迫：上方白光，下方暗影 */
+.boss-vfx-featherjudge-vignette {
+    position: absolute; inset: 0;
+    background:
+        linear-gradient(180deg,
+            rgba(230, 230, 255, 0.6) 0%,
+            rgba(180, 170, 230, 0.2) 28%,
+            transparent 55%
+        ),
+        radial-gradient(ellipse at center 85%,
+            rgba(5, 0, 20, 0.45) 0%, transparent 70%
+        );
+    animation: featherjudge-vignette 1.5s ease-out forwards;
+}
+
+@keyframes featherjudge-vignette {
+    0%   { opacity: 0; }
+    14%  { opacity: 1; }
+    65%  { opacity: 0.85; }
+    100% { opacity: 0; }
+}
+
+/* 雙翼剪影：上方中央向兩側展開 */
+.boss-vfx-judge-wings {
+    position: absolute;
+    top: -8%;
+    left: 50%;
+    width: 200px; height: 85px;
+    transform: translateX(-50%) scaleX(0.15);
+    background:
+        radial-gradient(ellipse 75% 100% at 28% 85%,
+            rgba(15, 8, 45, 0.88) 0%, transparent 72%),
+        radial-gradient(ellipse 75% 100% at 72% 85%,
+            rgba(15, 8, 45, 0.88) 0%, transparent 72%),
+        radial-gradient(ellipse 40% 60% at 50% 95%,
+            rgba(200, 190, 255, 0.35) 0%, transparent 80%);
+    animation: judge-wings-open 0.85s ease-out forwards;
+}
+
+@keyframes judge-wings-open {
+    0%   { transform: translateX(-50%) scaleX(0.15); opacity: 0; width: 200px; }
+    22%  { opacity: 1; }
+    55%  { transform: translateX(-50%) scaleX(1.0);  opacity: 0.92; width: 200px; }
+    80%  { transform: translateX(-50%) scaleX(1.15); opacity: 0.7;  width: 240px; }
+    100% { transform: translateX(-50%) scaleX(1.2);  opacity: 0;    width: 260px; }
+}
+
+/* 羽刃底部樣式 */
+.boss-vfx-feather {
+    position: absolute;
+    top: -14%;
+    width: 11px;
+    height: 88px;
+    border-radius: 5px 5px 3px 3px;
+    transform: rotate(var(--frot, 8deg));
+    animation: feather-fall 0.52s ease-in forwards;
+}
+
+.feather-white {
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, 0.98) 0%,
+        rgba(215, 210, 255, 0.9) 50%,
+        rgba(170, 160, 240, 0.55) 100%
+    );
+    box-shadow:
+        0 0 7px 3px rgba(255, 255, 255, 0.7),
+        0 0 18px 5px rgba(200, 195, 255, 0.4);
+}
+
+.feather-dark {
+    background: linear-gradient(180deg,
+        rgba(12, 4, 35, 0.97) 0%,
+        rgba(55, 18, 100, 0.88) 50%,
+        rgba(28, 8, 55, 0.55) 100%
+    );
+    box-shadow:
+        0 0 7px 3px rgba(109, 40, 217, 0.65),
+        0 0 18px 5px rgba(76, 20, 130, 0.35);
+}
+
+@keyframes feather-fall {
+    0%   { top: -14%; opacity: 1; }
+    12%  { opacity: 1; }
+    68%  { top: 72%;  opacity: 0.8; }
+    85%  { top: 78%;  opacity: 0.4; }
+    100% { top: 83%;  opacity: 0; }
+}
+
+/* 裁決閃光：神聖白紫圓形，不爆開 */
+.boss-vfx-featherjudge-flash {
+    position: absolute; top: 50%; left: 50%;
+    width: 78px; height: 78px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0.3);
+    background: radial-gradient(circle,
+        rgba(255, 255, 255, 1) 0%,
+        rgba(220, 215, 255, 0.88) 28%,
+        rgba(110, 85, 210, 0.55) 60%,
+        transparent 80%
+    );
+    box-shadow:
+        0 0 10px 5px rgba(255, 255, 255, 0.75),
+        0 0 26px 10px rgba(180, 160, 255, 0.5),
+        0 0 48px 16px rgba(109, 40, 217, 0.3);
+    animation: featherjudge-flash 0.52s ease-out forwards;
+}
+
+@keyframes featherjudge-flash {
+    0%   { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+    10%  { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+    38%  { transform: translate(-50%, -50%) scale(1.1); opacity: 0.85; }
+    100% { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
+}
+
+/* -------- L36 void-throne-lord: 虛無侵蝕 -------- */
+.boss-void-erosion-group {
+    position: absolute; inset: 0;
+    pointer-events: none; z-index: 25;
+    overflow: hidden;
+}
+
+.boss-vfx-void-erosion {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center,
+        rgba(5, 0, 10, 0.1) 10%,
+        rgba(5, 0, 10, 0.65) 45%,
+        rgba(2, 0, 5, 0.96) 80%,
+        rgba(0, 0, 0, 1) 100%
+    );
+    animation: void-erosion-spread 1.55s ease-out forwards;
+}
+
+@keyframes void-erosion-spread {
+    0%   { opacity: 0; }
+    28%  { opacity: 0.85; }
+    52%  { opacity: 1; }
+    72%  { opacity: 0.9; }
+    100% { opacity: 0.15; }
+}
+
+.boss-vfx-void-tendrils {
+    position: absolute; inset: 0;
+    background:
+        radial-gradient(ellipse 120% 28% at 50% 0%,
+            rgba(80, 0, 130, 0.55) 0%, transparent 65%),
+        radial-gradient(ellipse 120% 28% at 50% 100%,
+            rgba(55, 0, 90, 0.55) 0%, transparent 65%),
+        radial-gradient(ellipse 28% 120% at 0% 50%,
+            rgba(80, 0, 130, 0.55) 0%, transparent 65%),
+        radial-gradient(ellipse 28% 120% at 100% 50%,
+            rgba(55, 0, 90, 0.55) 0%, transparent 65%);
+    animation: void-tendrils-in 1.55s ease-out forwards;
+}
+
+@keyframes void-tendrils-in {
+    0%   { opacity: 0; }
+    22%  { opacity: 1; }
+    58%  { opacity: 0.9; }
+    100% { opacity: 0; }
+}
+
+.boss-vfx-void-blackout {
+    position: absolute; inset: 0;
+    background: rgba(0, 0, 0, 0.88);
+    animation: void-blackout-pulse 0.72s ease-out forwards;
+}
+
+@keyframes void-blackout-pulse {
+    0%   { opacity: 0; }
+    14%  { opacity: 1; }
+    28%  { opacity: 0.88; }
+    100% { opacity: 0; }
+}
+
 .question-card {
     background: rgba(15, 23, 42, 0.25) !important;
 }
@@ -5505,4 +6088,34 @@ body.lock-scroll {
 @keyframes defeat-fade-in {
     0% { opacity: 0; transform: scale(1.5); }
     100% { opacity: 1; transform: scale(1); }
+}
+
+/* [UTOUTO] Sleep Visuals */
+@keyframes zzz-float {
+    0% { transform: translate(0, 0) scale(0.7); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: translate(30px, -60px) scale(1.2); opacity: 0; }
+}
+
+.zzz-indicator-wrap {
+    position: absolute;
+    top: -0.5rem;
+    right: -1rem;
+    pointer-events: none;
+    z-index: 50;
+    user-select: none;
+}
+
+.zzz-item {
+    position: absolute;
+    font-family: 'serif';
+    font-weight: 950;
+    color: #f8fafc; 
+    text-shadow: 
+        0 0 10px rgba(168, 85, 247, 0.8), 
+        0 0 20px rgba(59, 130, 246, 0.4), 
+        -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 
+        0 4px 8px rgba(0, 0, 0, 0.8);
+    animation: zzz-float 3s infinite linear;
+    opacity: 0;
 }
