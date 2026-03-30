@@ -205,7 +205,7 @@ const _jpApp = Vue.createApp({
         // thresholds: hp-based steady-state expression; hpPct is lower bound (>= value uses expression)
         const HERO_VISUAL_CONFIG = {
             battle: {
-                marginBottom: '500px'
+                marginBottom: '150px'
             },
             map: {
                 src: 'assets/images/hero/hero_001.png'
@@ -1194,69 +1194,78 @@ const _jpApp = Vue.createApp({
 
 
         const stopMentorAudio = () => {
+            // Also stop TTS background audios
+            if (typeof stopTtsAudio === 'function') stopTtsAudio();
+            if (typeof stopWebSpeech === 'function') stopWebSpeech();
 
             if (currentMentorAudio) {
-
                 try {
-
                     currentMentorAudio.pause();
-
                     currentMentorAudio.currentTime = 0;
-
                 } catch (e) { }
-
                 currentMentorAudio = null;
-
             }
 
             if (typeof restoreMapBgmAfterVoice === 'function') restoreMapBgmAfterVoice();
-
         };
 
 
 
-        const playMentorAudioForCurrentPage = () => {
-
+        const playMentorAudioForCurrentPage = async () => {
             stopMentorAudio();
 
             if (!currentMentorSkill.value) return;
 
+            const text = currentMentorLine.value || "";
             const path = getMentorAudioPath(currentMentorSkill.value.id, mentorDialogueIndex.value);
 
-            if (!path) return;
+            // Inner helper for TTS fallback
+            const playTtsFallback = () => {
+                if (typeof speakCloudTts === 'function' && text) {
+                    // 語言判定判定：姐姐台詞預設為中文。
+                    // 只有當假名 (Kana) 數量超過 3 個，且比例超過 15% 或總長度極短時，才判定為日文例句。
+                    // 這能避免中文解說中夾雜少量日文單詞（如：は 助詞）時被誤判為日文音讀。
+                    const kanaMatches = text.match(/[\u3040-\u309F\u30A0-\u30FF]/g) || [];
+                    const kanaCount = kanaMatches.length;
+                    const isJapanese = kanaCount > 2 && (kanaCount / text.length > 0.15 || text.length < 10);
+                    
+                    const voice = isJapanese ? 'ja-JP-Neural2-B' : 'zh-TW-Neural2-B';
+                    // console.log(`[MentorAudio] Falling back to TTS (${isJapanese ? 'JA' : 'ZH'}):`, text.slice(0, 20));
+                    speakCloudTts(text, voice);
+                }
+            };
 
+            if (!path) {
+                playTtsFallback();
+                return;
+            }
 
+            // Check if local file exists before playing (to avoid 404 console spam)
+            try {
+                const res = await fetch(path, { method: 'HEAD' });
+                if (!res.ok) {
+                    playTtsFallback();
+                    return;
+                }
 
-            const audio = new Audio(path);
+                const audio = new Audio(path);
+                audio.volume = masterVolume.value * Math.max(0.1, bgmVolume.value);
+                currentMentorAudio = audio;
 
-            audio.volume = masterVolume.value * Math.max(0.1, bgmVolume.value); // Mentor audio follows BGM/Master volume
+                audio.addEventListener('ended', () => {
+                    if (typeof restoreMapBgmAfterVoice === 'function') restoreMapBgmAfterVoice();
+                });
 
-            currentMentorAudio = audio;
-
-
-
-            audio.addEventListener('ended', () => {
-
-                if (typeof restoreMapBgmAfterVoice === 'function') restoreMapBgmAfterVoice();
-
-            });
-
-
-
-            audio.play().then(() => {
-
-                if (typeof duckMapBgmForVoice === 'function') duckMapBgmForVoice();
-
-            }).catch(err => {
-
-                console.warn("[MentorAudio] Play failed or file missing:", path);
-
-                currentMentorAudio = null;
-
-                if (typeof restoreMapBgmAfterVoice === 'function') restoreMapBgmAfterVoice();
-
-            });
-
+                audio.play().then(() => {
+                    if (typeof duckMapBgmForVoice === 'function') duckMapBgmForVoice();
+                }).catch(err => {
+                    console.warn("[MentorAudio] Play failed (possibly blocked):", path);
+                    playTtsFallback();
+                });
+            } catch (e) {
+                // Fetch failed or other error
+                playTtsFallback();
+            }
         };
 
 
@@ -1709,29 +1718,15 @@ const _jpApp = Vue.createApp({
 
 
             // GACHIGACHI：玩家硬化減傷
-
             if (heroBuffs.gachigachiTurns > 0) {
-
                 heroBuffs.gachigachiTurns--;
-
-
-
                 if (heroBuffs.gachigachiTurns <= 0) {
-
                     heroBuffs.gachigachiTurns = 0;
-
                     heroBuffs.enemyDmgMult = 1.0;
-
-
-
                     if (typeof pushBattleLog === 'function') {
-
                         pushBattleLog("ガチガチ 效果結束（你的硬化狀態解除）", 'info');
-
                     }
-
                 }
-
             }
 
 
@@ -1894,6 +1889,18 @@ const _jpApp = Vue.createApp({
 
                 }
 
+            } else if (id === 'GIRAGIRA') {
+                heroBuffs.giragiraTurns = 3;
+
+                if (typeof updateHeroStatusBar === 'function') updateHeroStatusBar();
+                showStatusToast('✨ 鋒芒畢露！傷害突破上限！', {
+                    bg: 'rgba(251,191,36,0.92)',
+                    border: '#f59e0b',
+                    color: '#451a03'
+                });
+                if (typeof pushBattleLog === 'function') {
+                    pushBattleLog("使用了 ギラギラ：3 次攻擊內傷害 +35% 且可突破上限！", 'buff');
+                }
             } else {
 
                 if (typeof pushBattleLog === 'function') {
@@ -3053,6 +3060,7 @@ const _jpApp = Vue.createApp({
 
         const _uiSfxSrcMap = {
             hit: 'assets/audio/sfx_hit.mp3',
+            hit2: 'assets/audio/sfx_hit2.mp3',
             miss: 'assets/audio/sfx_miss.mp3', // Standardized from mmiss.mp3
             potion: 'assets/audio/sfx_potion.mp3',
             click: 'assets/audio/sfx_click.mp3',
@@ -3126,7 +3134,7 @@ const _jpApp = Vue.createApp({
 
 
 
-        const _prewarmUiSfx = () => { _getOrCreatePoly('hit'); _getOrCreatePoly('miss'); };
+        const _prewarmUiSfx = () => { _getOrCreatePoly('hit'); _getOrCreatePoly('hit2'); _getOrCreatePoly('miss'); };
 
         document.addEventListener('pointerdown', _prewarmUiSfx, { once: true, capture: true });
 
@@ -3143,6 +3151,7 @@ const _jpApp = Vue.createApp({
             uiPop: 1.0,      // Default for UI
             battlePop: 0.9,  // Slightly lower for heavy assets
             hit: 0.9,
+            hit2: 0.9,
             damage: 0.95
         };
 
@@ -6261,7 +6270,7 @@ const _jpApp = Vue.createApp({
             heroBuffs.odoodoTurns = 0;
 
             heroBuffs.gachigachiTurns = 0;
-
+            heroBuffs.giragiraTurns = 0;
             heroBuffs.monsterSleep = false;
 
             evasionBuffAttacksLeft.value = 0;
@@ -7445,7 +7454,7 @@ const _jpApp = Vue.createApp({
 
 
 
-                    const isPlayerMiss = Math.random() < 0.05;
+                    const isPlayerMiss = (heroBuffs.giragiraTurns > 0) ? false : (Math.random() < 0.05);
 
                     if (isPlayerMiss) {
 
@@ -7482,8 +7491,8 @@ const _jpApp = Vue.createApp({
 
 
                         // 🌟 子彈抵達瞬間！完美同步播放打擊音效
-
-                        if (_isMobileSfx) playUiSfx('hit'); else playSfx('hit');
+                        const currentHitSfx = (heroBuffs.giragiraTurns > 0) ? 'hit2' : 'hit';
+                        if (_isMobileSfx) playUiSfx(currentHitSfx); else playSfx(currentHitSfx);
 
 
 
@@ -7506,14 +7515,31 @@ const _jpApp = Vue.createApp({
                         if (comboCount.value > maxComboCount.value) maxComboCount.value = comboCount.value;
 
                         const timeTaken = (Date.now() - questionStartTime) / 1000;
+                        let baseDmg = 20;
+                        if (timeTaken <= 2) baseDmg = 20;
+                        else if (timeTaken >= 10) baseDmg = 5;
+                        else baseDmg = Math.round(20 - ((timeTaken - 2) / 8) * 15);
 
-                        let dmg = 20;
+                        let dmg = baseDmg;
+                        // GIRAGIRA Bonus & Cap Bypass
+                        if (heroBuffs.giragiraTurns > 0) {
+                            dmg = Math.round(baseDmg * 1.5);
+                            heroBuffs.giragiraTurns--;
 
-                        if (timeTaken <= 2) dmg = 20;
+                            
+                            // UI Update Trigger
+                            if (typeof updateHeroStatusBar === 'function') updateHeroStatusBar();
 
-                        else if (timeTaken >= 10) dmg = 5;
-
-                        else dmg = Math.round(20 - ((timeTaken - 2) / 8) * 15);
+                            pushBattleLog(`ギラギラ：鋒芒畢露！造成 ${dmg} 點必命中傷害！`, 'buff');
+                            
+                            if (heroBuffs.giragiraTurns <= 0) {
+                                heroBuffs.giragiraTurns = 0;
+                                if (typeof updateHeroStatusBar === 'function') updateHeroStatusBar();
+                                if (typeof pushBattleLog === 'function') {
+                                    pushBattleLog("ギラギラ 效果結束（鋒芒收斂）", 'info');
+                                }
+                            }
+                        }
 
 
 
@@ -7815,14 +7841,7 @@ const _jpApp = Vue.createApp({
 
                 }
 
-                // Grant オノマトペ skill on first-time boss clear
-                if (isBoss && BOSS_ONOMATOPE_MAP[currentLevel.value]) {
-                    const ono = BOSS_ONOMATOPE_MAP[currentLevel.value];
-                    if (!unlockedOnomatopeIds.value.includes(ono.id)) {
-                        unlockedOnomatopeIds.value.push(ono.id);
-                        pendingKnowledgeCards.value.push({ ...ono });
-                    }
-                }
+                // Boss ability rewards are now handled in the tally sequence via rewardAbilityId
 
                 saveProgression();
 

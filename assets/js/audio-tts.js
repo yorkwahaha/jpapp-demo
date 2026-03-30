@@ -121,11 +121,18 @@ function stopWebSpeech() {
 
 
 
-const GOOGLE_TTS_WHITELIST = ['ja-JP-Standard-A', 'ja-JP-Wavenet-A', 'ja-JP-Neural2-B', 'ja-JP-Wavenet-D'];
+const GOOGLE_TTS_WHITELIST = [
+    'ja-JP-Standard-A', 'ja-JP-Wavenet-A', 'ja-JP-Neural2-B', 'ja-JP-Wavenet-D',
+    'zh-TW-Neural2-B', 'zh-TW-Wavenet-B', 'zh-CN-Neural2-A', 'zh-CN-Wavenet-A'
+];
 
 function migrateVoice(voice) {
     if (!voice) return "ja-JP-Neural2-B";
     if (GOOGLE_TTS_WHITELIST.includes(voice)) return voice;
+    
+    // Allow existing zh-TW/zh-CN voices to pass through
+    if (voice.startsWith('zh-TW') || voice.startsWith('zh-CN')) return voice;
+
     // 處理舊 Azure 聲線遷移
     if (voice.includes('MayuNeural') || voice.includes('NanamiNeural') || voice.includes('NaokiNeural')) {
         console.log(`[TTS] Migrating legacy Azure voice: ${voice} -> ja-JP-Neural2-B`);
@@ -382,7 +389,7 @@ async function speakCloudTts(text, voiceShortName = null) {
     stopWebSpeech();
     stopTtsAudio();
 
-    console.log(`[CLOUD TTS] start: ${cleanText.slice(0, 30)}...`);
+
 
     let res;
     let retryCount = 0;

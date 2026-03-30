@@ -1,3 +1,12 @@
+// 【導師語音策略】
+// 1. 本地導師音檔優先（assets/audio/tutor/）
+// 2. 本地音檔不存在或播放失敗時，fallback 到此 Cloud TTS Worker
+// 3. 中文導師台詞（zh-TW-Neural2-B / zh-TW-Wavenet-B）由此 Worker
+//    透過 VOICE_REMAP 轉換為 Google 真正可用的 cmn-TW-Wavenet-* 送出
+// 4. 日文台詞直接送 ja-JP-* voice，不需 remap
+// 5. TTS 為保底機制，正式體驗建議以本地錄音為主
+// 6. azure-tts.js 保留備用，wrangler.toml main 請維持 google-tts.js
+
 const ALLOWED_ORIGINS = [
     "https://yorkwahaha.github.io",
     "http://localhost:8001",
@@ -8,8 +17,15 @@ const ALLOWED_VOICES = [
     "ja-JP-Standard-A",
     "ja-JP-Wavenet-A",
     "ja-JP-Neural2-B",
-    "ja-JP-Wavenet-D"
+    "ja-JP-Wavenet-D",
+    "zh-TW-Neural2-B",
+    "zh-TW-Wavenet-B"
 ];
+
+const VOICE_REMAP = {
+    "zh-TW-Neural2-B": "cmn-TW-Wavenet-A",
+    "zh-TW-Wavenet-B": "cmn-TW-Wavenet-B"
+};
 
 const MAX_REQUESTS_PER_MINUTE_TTS = 30;
 const MAX_REQUESTS_PER_MINUTE_SESSION = 10;
@@ -65,19 +81,25 @@ export class RateLimiter {
 export default {
     async fetch(request, env, ctx) {
         const origin = request.headers.get("Origin") || "";
+        console.error(`[TTS-ENTRY] method=${request.method} path=${new URL(request.url).pathname} origin=${origin}`);
         let corsHeaders = getCorsHeaders(origin);
 
         if (request.method === "OPTIONS") {
+            console.error(`[TTS-OPTIONS] origin_allowed=${ALLOWED_ORIGINS.includes(origin)}`);
             if (!ALLOWED_ORIGINS.includes(origin)) return new Response(null, { status: 403, headers: corsHeaders });
             return new Response(null, { headers: corsHeaders });
         }
 
-        if (!ALLOWED_ORIGINS.includes(origin)) return new Response("Forbidden", { status: 403, headers: corsHeaders });
+        if (!ALLOWED_ORIGINS.includes(origin)) {
+            console.error(`[TTS-FORBIDDEN] origin=${origin}`);
+            return new Response("Forbidden", { status: 403, headers: corsHeaders });
+        }
 
         const url = new URL(request.url);
 
         // 1. Session Token Generation
         if (request.method === "GET" && url.pathname === "/session") {
+            console.error("[TTS-SESSION] entered");
             const ip = request.headers.get("CF-Connecting-IP") || "unknown";
             let rlHeaders = new Headers(corsHeaders);
             if (env.RATE_LIMITER) {
@@ -101,8 +123,12 @@ export default {
             });
         }
 
-        if (request.method !== "POST" || url.pathname !== "/tts") return new Response("Not found", { status: 404, headers: corsHeaders });
+        if (request.method !== "POST" || url.pathname !== "/tts") {
+            console.error(`[TTS-NOT-FOUND] method=${request.method} path=${url.pathname}`);
+            return new Response("Not found", { status: 404, headers: corsHeaders });
+        }
 
+        console.error("[TTS-POST] entered");
         try {
             // 2. Authorization
             const ip = request.headers.get("CF-Connecting-IP") || "unknown";
@@ -112,7 +138,11 @@ export default {
                 const isValid = await env.RATE_LIMIT_KV.get(`sess:${origin}:${ip}:${sessionToken}`);
                 if (isValid) isAuthorized = true;
             }
-            if (!isAuthorized) return new Response("Unauthorized", { status: 401, headers: corsHeaders });
+            console.error(`[TTS-AUTH] sessionToken=${!!sessionToken} isAuthorized=${isAuthorized}`);
+            if (!isAuthorized) {
+                console.error("[TTS-401] unauthorized - returning early");
+                return new Response("Unauthorized", { status: 401, headers: corsHeaders });
+            }
 
             // 3. Rate Limiting
             if (env.RATE_LIMITER) {
@@ -127,6 +157,7 @@ export default {
             }
 
             // 4. Input Parsing
+            console.error("[TTS-BEFORE-BODY] about to parse JSON");
             let body;
             try {
                 body = await request.json();
@@ -135,21 +166,36 @@ export default {
                 return new Response(`Invalid JSON body: ${e.message}`, { status: 400, headers: corsHeaders });
             }
 
-            console.log("Worker Received Payload:", JSON.stringify(body));
+            console.error(`[TTS-AFTER-BODY] voice=${JSON.stringify(body.voice)} text_prefix=${String(body.text||"").slice(0,20)}`);
+            console.error("[TTS] body.voice raw:", JSON.stringify(body.voice));
+            console.error("[TTS] body.text prefix:", String(body.text || "").slice(0, 20));
 
             const text = body.text;
             const voice = body.voice || "ja-JP-Neural2-B";
             const rate = parseFloat(body.rate) || 1.0;
             const pitch = parseFloat(body.pitch) || 0.0; // Google pitch is semitones, Azure is percentage. 
 
+            console.error(`[TTS-VOICE-CHECK] incoming=${voice} inList=${ALLOWED_VOICES.includes(voice)}`);
+
             if (!text) return new Response("Missing 'text' field", { status: 400, headers: corsHeaders });
             if (text.length > 1000) return new Response(`Text too long: ${text.length} chars (Limit 1000)`, { status: 400, headers: corsHeaders });
             if (!ALLOWED_VOICES.includes(voice)) {
-                return new Response(`Invalid voice: ${voice}. Allowed: ${ALLOWED_VOICES.join(', ')}`, { status: 400, headers: corsHeaders });
+                const msg = `Invalid voice: incoming=${voice} allowed=${ALLOWED_VOICES.join(',')}`;
+                console.error(`[TTS-400-HIT] reason=voice_not_in_list incoming=${voice}`);
+                return new Response(msg, { status: 400, headers: corsHeaders });
             }
+            console.error(`[TTS-VOICE-OK] passed whitelist voice=${voice}`);
 
             // 5. Google Cloud TTS Upstream
             if (!env.GOOGLE_API_KEY) return new Response("Config missing", { status: 500, headers: corsHeaders });
+
+            const resolvedVoice = VOICE_REMAP[voice] || voice;
+            const remapped = resolvedVoice !== voice;
+            const langCode = resolvedVoice.startsWith("cmn-TW") ? "cmn-TW" : "ja-JP";
+            console.error(`[TTS-REMAP] hit=${remapped} incoming=${voice} resolved=${resolvedVoice} lang=${langCode}`);
+
+            const googleVoicePayload = { languageCode: langCode, name: resolvedVoice };
+            console.error("[TTS-GOOGLE-PAYLOAD]", JSON.stringify(googleVoicePayload));
 
             const googleUrl = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${env.GOOGLE_API_KEY}`;
             const googleResponse = await fetch(googleUrl, {
@@ -157,7 +203,7 @@ export default {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     input: { text },
-                    voice: { languageCode: "ja-JP", name: voice },
+                    voice: googleVoicePayload,
                     audioConfig: {
                         audioEncoding: "MP3",
                         speakingRate: Math.max(0.25, Math.min(4.0, rate)),
@@ -168,8 +214,8 @@ export default {
 
             if (!googleResponse.ok) {
                 const errorText = await googleResponse.text();
-                console.error(`Google API Error: ${googleResponse.status} ${errorText}`);
-                return new Response(`Google API Error: ${googleResponse.status} ${errorText}`, { status: 502, headers: corsHeaders });
+                console.error(`[TTS] Google API Error: status=${googleResponse.status} incoming=${voice} resolved=${resolvedVoice} lang=${langCode} body=${errorText}`);
+                return new Response(`Google API Error: ${googleResponse.status} incoming=${voice} resolved=${resolvedVoice} lang=${langCode} ${errorText}`, { status: 502, headers: corsHeaders });
             }
 
             const data = await googleResponse.json();

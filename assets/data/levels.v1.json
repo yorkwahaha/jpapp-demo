@@ -16,7 +16,7 @@
     "focusParticle": "は",
     "focusLabel": "主題",
     "bgKey": "",
-    "bgImage": "assets/images/levels/bg_lv1.png",
+    "bgImage": "assets/images/levels/bg_lv1.webp",
     "bgm": null
   },
   {
@@ -36,6 +36,7 @@
     "focusParticle": "の",
     "focusLabel": "所屬",
     "bgKey": "",
+    "bgImage": "assets/images/levels/bg_lv2.webp",
     "bgm": null
   },
   {
@@ -55,6 +56,7 @@
     "focusParticle": "が",
     "focusLabel": "自然發生",
     "bgKey": "",
+    "bgImage": "assets/images/levels/bg_lv3.webp",
     "bgm": null
   },
   {
@@ -74,15 +76,14 @@
     "focusParticle": "を",
     "focusLabel": "受詞",
     "bgKey": "",
+    "bgImage": "assets/images/levels/bg_lv4.webp",
     "bgm": null
   },
   {
     "id": "L5_BOSS",
     "name": "魔王關：語感守門人",
     "skillId": "BOSS_REVIEW_01",
-    "unlockSkills": [
-      "BOSS_REVIEW_01"
-    ],
+    "unlockSkills": [],
     "questionCount": 15,
     "rewardAbilityId": "ODOODO",
     "boss": {
@@ -95,7 +96,7 @@
     "focusParticle": "Boss",
     "focusLabel": "複習",
     "bgKey": "",
-    "bgImage": "assets/images/levels/bg_lv5.png",
+    "bgImage": "assets/images/levels/bg_lv5.webp",
     "bgm": "BGM_boss.mp3"
   },
   {
@@ -182,9 +183,7 @@
     "id": "L10_BOSS",
     "name": "魔王關：半獸人之王",
     "skillId": "BOSS_REVIEW_02",
-    "unlockSkills": [
-      "BOSS_REVIEW_02"
-    ],
+    "unlockSkills": [],
     "questionCount": 15,
     "rewardAbilityId": "GACHIGACHI",
     "boss": {
@@ -288,9 +287,7 @@
     "id": "L15_BOSS",
     "name": "魔王關：冰原巨鳥",
     "skillId": "BOSS_REVIEW_03",
-    "unlockSkills": [
-      "BOSS_REVIEW_03"
-    ],
+    "unlockSkills": [],
     "questionCount": 15,
     "rewardAbilityId": "UTOUTO",
     "boss": {
@@ -390,11 +387,9 @@
     "id": "L20_BOSS",
     "name": "魔王關：外廊守護者",
     "skillId": "BOSS_REVIEW_04",
-    "unlockSkills": [
-      "BOSS_REVIEW_04"
-    ],
+    "unlockSkills": [],
     "questionCount": 15,
-    "rewardAbilityId": "WAKUWAKU",
+    "rewardAbilityId": "JIWAJIWA",
     "boss": {
       "everyNLevels": 5,
       "mode": "all_unlocked",
@@ -486,9 +481,7 @@
   {
     "id": "L25_BOSS",
     "name": "魔王關：深淵盡頭",
-    "unlockSkills": [
-      "BOSS_REVIEW_05"
-    ],
+    "unlockSkills": [],
     "questionCount": 15,
     "rewardAbilityId": "WAKUWAKU",
     "boss": {
@@ -583,11 +576,9 @@
     "id": "L30_BOSS",
     "name": "魔王關：王座之間",
     "skillId": "BOSS_REVIEW_06",
-    "unlockSkills": [
-      "BOSS_REVIEW_06"
-    ],
+    "unlockSkills": [],
     "questionCount": 15,
-    "rewardAbilityId": "WAKUWAKU",
+    "rewardAbilityId": "MORIMORI",
     "boss": {
       "everyNLevels": 5,
       "mode": "all_unlocked",
@@ -680,11 +671,9 @@
     "id": "L35_BOSS",
     "name": "最終魔王：世界之巔",
     "skillId": "FINAL_BOSS_35",
-    "unlockSkills": [
-      "FINAL_BOSS_35"
-    ],
+    "unlockSkills": [],
     "questionCount": 20,
-    "rewardAbilityId": "WAKUWAKU",
+    "rewardAbilityId": "GIRAGIRA",
     "boss": {
       "everyNLevels": 5,
       "mode": "all_unlocked",
@@ -702,11 +691,9 @@
     "name": "裏・極限深淵：無盡試煉",
     "skillId": "HIDDEN_BOSS_36",
     "isBoss": true,
-    "unlockSkills": [
-      "HIDDEN_BOSS_36"
-    ],
+    "unlockSkills": [],
     "questionCount": 35,
-    "rewardAbilityId": "WAKUWAKU",
+    "rewardAbilityId": "GIRAGIRA",
     "boss": {
       "everyNLevels": 5,
       "mode": "all_unlocked",

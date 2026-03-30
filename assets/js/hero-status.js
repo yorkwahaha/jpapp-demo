@@ -1,4 +1,6 @@
 
+
+
 function setHeroAvatar(state) {
 
     const el = document.getElementById('heroAvatar');
@@ -66,7 +68,7 @@ function flashHeroHit(hpPct = 1.0, ms = 1000) {
 // ================= [ HERO STATUS & BUFFS ] =================
 const heroStatusTimers = { speedUntil: 0, evadeUntil: 0 };
 
-const heroBuffs = { enemyAtbMult: 1.0, enemyDmgMult: 1.0, odoodoTurns: 0, gachigachiTurns: 0, monsterSleep: false };
+const heroBuffs = { enemyAtbMult: 1.0, enemyDmgMult: 1.0, odoodoTurns: 0, gachigachiTurns: 0, giragiraTurns: 0, monsterSleep: false };
 
 
 
@@ -180,74 +182,102 @@ function hasSpeedOrEvadeBuffBestEffort() {
 
 function updateHeroStatusBar() {
 
+
+
     const bar = document.getElementById("heroStatusBar");
 
-    if (!bar) return;
+    if (bar) {
+        const hasSpeed = hasSpeedOrEvadeBuffBestEffort();
+        const wantGachigachi = heroBuffs.gachigachiTurns > 0;
+        const pillSpeed = bar.querySelector('.pill-speed');
+        const pillGachigachi = bar.querySelector('.pill-gachigachi');
 
+        if (hasSpeed && !pillSpeed) {
+            const span = document.createElement('span');
+            span.className = 'hero-status-pill speed pill-speed';
+            span.title = '加速／閃避';
+            span.textContent = '速';
+            bar.appendChild(span);
+        } else if (hasSpeed && pillSpeed) {
+            pillSpeed.title = '加速／閃避';
+        } else if (!hasSpeed && pillSpeed) {
+            pillSpeed.remove();
+        }
 
-
-    const hasSpeed = hasSpeedOrEvadeBuffBestEffort();
-
-    const wantGachigachi = heroBuffs.gachigachiTurns > 0;
-
-
-
-    const pillSpeed = bar.querySelector('.pill-speed');
-
-    const pillGachigachi = bar.querySelector('.pill-gachigachi');
-
-
-
-    if (hasSpeed && !pillSpeed) {
-
-        const span = document.createElement('span');
-
-        span.className = 'hero-status-pill speed pill-speed';
-
-        span.title = '加速／閃避';
-
-        span.textContent = '速';
-
-        bar.appendChild(span);
-
-    } else if (hasSpeed && pillSpeed) {
-
-        pillSpeed.title = '加速／閃避';
-
-    } else if (!hasSpeed && pillSpeed) {
-
-        pillSpeed.remove();
-
+        if (wantGachigachi && !pillGachigachi) {
+            const span = document.createElement('span');
+            span.className = 'hero-status-pill speed pill-gachigachi';
+            span.title = `硬化／減傷 (${heroBuffs.gachigachiTurns} 回合)`;
+            span.textContent = '硬';
+            bar.appendChild(span);
+        } else if (wantGachigachi && pillGachigachi) {
+            pillGachigachi.title = `硬化／減傷 (${heroBuffs.gachigachiTurns} 回合)`;
+        } else if (!wantGachigachi && pillGachigachi) {
+            pillGachigachi.remove();
+        }
     }
-
-
-
-    if (wantGachigachi && !pillGachigachi) {
-
-        const span = document.createElement('span');
-
-        span.className = 'hero-status-pill speed pill-gachigachi';
-
-        span.title = `硬化／減傷 (${heroBuffs.gachigachiTurns} 回合)`;
-
-        span.textContent = '硬';
-
-        bar.appendChild(span);
-
-    } else if (wantGachigachi && pillGachigachi) {
-
-        pillGachigachi.title = `硬化／減傷 (${heroBuffs.gachigachiTurns} 回合)`;
-
-    } else if (!wantGachigachi && pillGachigachi) {
-
-        pillGachigachi.remove();
-
-    }
-
-
 
     if (window.updateSpUI) window.updateSpUI();
 
+    // --- Battle Buff Overlay (GIRAGIRA visual) ---
+    const overlay = document.getElementById('battleBuffOverlay');
+    if (overlay) {
+        overlay.innerHTML = '';
+
+        if (heroBuffs.giragiraTurns > 0) {
+            // Match hero's exact screen rect so aura + badge align with hero
+            const heroEl = document.getElementById('heroAvatar');
+            const r = heroEl ? heroEl.getBoundingClientRect() : null;
+
+            if (r && r.width > 0) {
+                overlay.style.cssText =
+                    'position:fixed!important;' +
+                    'left:' + r.left + 'px!important;' +
+                    'top:' + r.top + 'px!important;' +
+                    'width:' + r.width + 'px!important;' +
+                    'height:' + r.height + 'px!important;' +
+                    'z-index:47!important;' +
+                    'pointer-events:none!important;' +
+                    'overflow:visible!important;' +
+                    'display:block!important;' +
+                    'margin:0!important;padding:0!important;background:none!important;';
+            } else {
+                overlay.style.cssText =
+                    'position:fixed!important;bottom:200px!important;left:4px!important;' +
+                    'width:110px!important;height:110px!important;z-index:47!important;' +
+                    'pointer-events:none!important;overflow:visible!important;' +
+                    'display:block!important;margin:0!important;padding:0!important;background:none!important;';
+            }
+
+            overlay.innerHTML =
+                // Aura glow ring (z-index:0, not -1)
+                '<div style="position:absolute;inset:-10px;border-radius:50%;' +
+                'border:2px solid rgba(251,191,36,0.75);' +
+                'box-shadow:0 0 14px 4px rgba(251,191,36,0.45),0 0 28px 8px rgba(251,191,36,0.2);' +
+                'animation:giragira-aurora 1.5s ease-in-out infinite;' +
+                'z-index:0;pointer-events:none;"></div>' +
+                // Count badge at top-right of hero
+                '<div style="position:absolute;top:-14px;right:-10px;' +
+                'display:flex;align-items:center;gap:3px;' +
+                'padding:2px 7px 2px 5px;' +
+                'background:rgba(146,64,14,0.92);border:1.5px solid #fbbf24;border-radius:10px;' +
+                'color:#fef3c7;font-size:13px;font-weight:900;line-height:1;' +
+                'z-index:2;white-space:nowrap;' +
+                'box-shadow:0 2px 8px rgba(0,0,0,0.65);text-shadow:0 1px 3px rgba(0,0,0,0.8);' +
+                'animation:badge-pop 0.3s cubic-bezier(0.34,1.56,0.64,1);">' +
+                '\u92d2\u00a0' + heroBuffs.giragiraTurns + '</div>';
+        } else {
+            overlay.style.cssText = 'display:none!important;';
+        }
+    }
+
+    // --- Cleanup Legacy Hooks (Safety) ---
+    const oldHero = document.getElementById('heroAvatar');
+    if (oldHero) {
+        oldHero.classList.remove('aura-giragira');
+        const oldList = document.getElementById('heroBuffList');
+        if (oldList) oldList.remove();
+    }
 }
 
 

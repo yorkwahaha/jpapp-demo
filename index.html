@@ -60,7 +60,7 @@
 
         rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/styles.css?v=26032402">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26033001">
 
 
 
@@ -70,7 +70,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26032702';
+            const v = window.APP_VERSION || '26033001';
 
 
 
@@ -1577,15 +1577,143 @@
 
 
         /* Applied to map-nodes-container when icefield_wind ambient is active */
-
         .map-ambient-ice .map-base-img {
-
             animation: map-ambient-sway 22s ease-in-out infinite;
-
             transform-origin: center center;
-
         }
 
+        /* --- Hero Buff Overlay Layer --- */
+        .battle-buff-overlay {
+            position: fixed;
+            bottom: 0;
+            left: 4px;
+            width: clamp(110px, 7vw, 160px);
+            height: clamp(110px, 7vw, 160px);
+            z-index: 60; /* Above HUD (50), Below Modals (1000+) */
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (min-width: 768px) {
+            .battle-buff-overlay {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%) translateX(-180px);
+            }
+        }
+
+        /* --- Hero Buff Aura (GIRAGIRA) --- */
+        @keyframes giragira-aurora {
+            0% { 
+                box-shadow: 0 0 20px 2px rgba(245, 158, 11, 0.4), inset 0 0 10px rgba(251, 191, 36, 0.2);
+                transform: scale(1.0);
+            }
+            50% { 
+                box-shadow: 0 0 45px 8px rgba(251, 191, 36, 0.7), inset 0 0 20px rgba(245, 158, 11, 0.4);
+                transform: scale(1.05);
+            }
+            100% { 
+                box-shadow: 0 0 20px 2px rgba(245, 158, 11, 0.4), inset 0 0 10px rgba(251, 191, 36, 0.2);
+                transform: scale(1.0);
+            }
+        }
+
+        .aura-giragira-ring {
+            position: absolute;
+            width: 90%;
+            height: 90%;
+            border-radius: 50%;
+            border: 2px solid rgba(251, 191, 36, 0.5);
+            animation: giragira-aurora 1.5s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        /* Sharp energy "spikes" on overlay */
+        .aura-giragira-spikes::before, .aura-giragira-spikes::after {
+            content: '✦';
+            position: absolute;
+            color: #fbbf24;
+            font-size: 44px;
+            opacity: 0;
+            animation: giragira-spikes-refined 2s linear infinite;
+            text-shadow: 0 0 12px #f59e0b;
+        }
+        .aura-giragira-spikes::before { top: -20%; left: 0%; animation-delay: 0s; }
+        .aura-giragira-spikes::after { bottom: -10%; right: -5%; animation-delay: 1s; }
+
+        @keyframes giragira-spikes-refined {
+            0% { transform: scale(0.5) rotate(0deg); opacity: 0; }
+            40% { opacity: 1; }
+            100% { transform: scale(1.8) rotate(180deg); opacity: 0; }
+        }
+
+        /* --- Buff Badge System --- */
+        .hero-buff-list {
+            position: absolute;
+            top: -15px;
+            right: -25px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 70;
+            pointer-events: none;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.8));
+        }
+
+        .buff-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 10px;
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+            animation: badge-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes badge-pop {
+            0% { transform: scale(0.5) translateX(20px); opacity: 0; }
+            100% { transform: scale(1) translateX(0); opacity: 1; }
+        }
+
+        .buff-badge-icon {
+            font-size: 11px;
+            font-weight: 900;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .buff-badge-label {
+            font-size: 12px;
+            font-weight: 900;
+            color: #fff;
+            white-space: nowrap;
+            letter-spacing: 0.05em;
+        }
+
+        .buff-badge-count {
+            font-size: 13px;
+            font-weight: 900;
+            color: #fbbf24;
+            margin-left: 4px;
+            font-family: monospace;
+        }
+
+        /* Specific Badge: GIRAGIRA */
+        .buff-badge-giragira .buff-badge-icon {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+        }
     </style>
 
 </head>
@@ -3329,22 +3457,18 @@
 
 
 
-            <!-- Hero Avatar Behind HUD -->
-
             <div v-if="!isFinished" id="heroAvatar"
-
                 class="fixed md:absolute bottom-0 left-4 md:left-1/2 md:-translate-x-1/2 md:ml-[-180px] z-[45] pointer-events-none"
-
                 style="width: clamp(110px, 7vw, 160px); height: clamp(110px, 7vw, 160px);"
                 :style="{ marginBottom: HERO_VISUAL_CONFIG.battle.marginBottom }">
-
+                
                 <img src="assets/images/hero/hero_neutral.png"
-
                     class="w-full h-full object-contain drop-shadow-[0_8px_12px_rgba(0,0,0,0.6)]"
-
                     data-state="neutral" />
-
             </div>
+
+            <!-- New Dedicated Buff Overlay Layer (Above HUD but below Modals) -->
+            <div id="battleBuffOverlay" v-if="!isFinished" class="battle-buff-overlay"></div>
 
 
 
@@ -3579,8 +3703,7 @@
 
             <!-- Skill Panel -->
 
-            <div v-if="isSkillOpen" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
-
+            <div v-if="isSkillOpen" class="modal-overlay fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-6"
                 style="background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px);">
 
                 <div

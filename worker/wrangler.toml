@@ -1,5 +1,7 @@
 name = "jpapp-tts-proxy"
-main = "azure-tts.js"
+# 入口：google-tts.js（Google Cloud TTS proxy）
+# azure-tts.js 保留備用，勿設為 main
+main = "google-tts.js"
 compatibility_date = "2026-03-05"
 preview_urls = false
 
