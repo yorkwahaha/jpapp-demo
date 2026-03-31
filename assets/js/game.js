@@ -3,7 +3,7 @@
 
 window.__sp = { cur: 20, max: 20 };
 
-window.spawnFloatingDamage = function(target, amount, type = 'hp') {
+window.spawnFloatingDamage = function (target, amount, type = 'hp') {
     const vfxLayer = (typeof window.getVfxLayer === 'function') ? window.getVfxLayer() : document.getElementById('global-vfx-layer');
     if (!vfxLayer) return;
 
@@ -31,7 +31,7 @@ window.spawnFloatingDamage = function(target, amount, type = 'hp') {
 
     const el = document.createElement('div');
     el.className = `floating-dmg-ui floating-dmg-${target}`;
-    
+
     // Type-based styling
     if (type === 'sp') {
         el.classList.add('floating-dmg-sp');
@@ -48,8 +48,9 @@ window.spawnFloatingDamage = function(target, amount, type = 'hp') {
     }
 
     let fontSize = 14 + (Math.abs(amount) * 0.9);
+    if (type === 'sp' || amount < 0) fontSize = Math.max(fontSize, 28);
     fontSize = Math.min(Math.max(fontSize, 14), 48);
-    
+
     const dir = Math.random() > 0.5 ? 1 : -1;
     const dx = (Math.random() * 45 + 35) * dir;
     const dy = (Math.random() * -15 - 5);
@@ -61,13 +62,15 @@ window.spawnFloatingDamage = function(target, amount, type = 'hp') {
     el.style.setProperty('--bounce1', `${bounce1}px`);
     el.style.setProperty('--rot', `${rot}deg`);
 
-    const ox = (Math.random() - 0.5) * 20;
+    let ox = (Math.random() - 0.5) * 20;
     const oy = (Math.random() - 0.5) * 10;
+    if (type === 'sp') ox = 22;
+    else if (amount < 0) ox = -22;
 
     el.style.left = `${x + ox}px`;
     el.style.top = `${y + oy}px`;
     el.style.fontSize = `${fontSize}px`;
-    
+
     // Display value
     if (type === 'sp') {
         el.innerHTML = `+${Math.abs(amount)}`;
@@ -79,6 +82,188 @@ window.spawnFloatingDamage = function(target, amount, type = 'hp') {
 
     vfxLayer.appendChild(el);
     setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 1200);
+};
+
+
+
+window.spawnSkillActivationVfx = function (id) {
+    const vfxLayer = (typeof window.getVfxLayer === 'function') ? window.getVfxLayer() : document.getElementById('global-vfx-layer');
+    if (!vfxLayer) return;
+
+    const heroEl = document.getElementById('heroAvatar');
+    const hr = heroEl ? heroEl.getBoundingClientRect() : null;
+    const hx = hr ? hr.left + hr.width / 2 : window.innerWidth * 0.2;
+    const hy = hr ? hr.top + hr.height / 2 : window.innerHeight * 0.75;
+
+    const monsterEl = document.querySelector('img[alt="monster"]') || document.querySelector('.monster-img-normal') || document.querySelector('.monster-img-boss');
+    const mr = monsterEl ? monsterEl.getBoundingClientRect() : null;
+    const mx = mr ? mr.left + mr.width / 2 : window.innerWidth * 0.65;
+    const my = mr ? mr.top + mr.height / 2 : window.innerHeight * 0.35;
+
+    const spawn = (css, dur, frames, easing) => {
+        const el = document.createElement('div');
+        el.style.cssText = css;
+        vfxLayer.appendChild(el);
+        el.animate(frames, { duration: dur, easing: easing || 'ease-out', fill: 'forwards' });
+        setTimeout(() => { if (el.isConnected) el.remove(); }, dur + 50);
+    };
+
+    if (id === 'GIRAGIRA') {
+        spawn(
+            `position:absolute;width:150px;height:150px;left:${hx - 75}px;top:${hy - 75}px;border-radius:50%;` +
+            `background:radial-gradient(circle,rgba(255,255,220,0.92) 0%,rgba(251,191,36,0.55) 45%,transparent 75%);pointer-events:none;`,
+            420, [{ opacity: 0.95, transform: 'scale(0.25)' }, { opacity: 0, transform: 'scale(2)' }]);
+        [[-38, 1], [38, -1]].forEach(([rot, dir]) => {
+            spawn(
+                `position:absolute;width:4px;height:190px;left:${hx - 2}px;top:${hy - 95}px;` +
+                `background:linear-gradient(to bottom,transparent 5%,rgba(255,255,200,0.95) 35%,rgba(251,191,36,1) 60%,transparent 95%);` +
+                `border-radius:2px;pointer-events:none;transform-origin:center center;`,
+                360,
+                [{ opacity: 1, transform: `rotate(${rot}deg) scaleY(0.08)` }, { opacity: 0, transform: `rotate(${rot + dir * 9}deg) scaleY(1.2)` }],
+                'cubic-bezier(0.05,0.9,0.25,1)');
+        });
+        for (let i = 0; i < 6; i++) {
+            const ang = (Math.PI * 2 / 6) * i;
+            const dist = 55 + Math.random() * 25;
+            spawn(
+                `position:absolute;width:5px;height:15px;left:${hx - 2.5}px;top:${hy - 7.5}px;` +
+                `background:#fde047;box-shadow:0 0 6px #f59e0b;border-radius:3px;pointer-events:none;`,
+                280 + Math.random() * 80,
+                [{ opacity: 1, transform: `rotate(${ang + Math.PI / 2}rad) translate(0,0) scale(1)` }, { opacity: 0, transform: `rotate(${ang + Math.PI / 2}rad) translate(0,-${dist}px) scale(0.15)` }]);
+        }
+    } else if (id === 'MORIMORI') {
+        spawn(
+            `position:absolute;width:110px;height:110px;left:${hx - 55}px;top:${hy - 55}px;` +
+            `border:3px solid rgba(96,165,250,0.88);border-radius:50%;` +
+            `box-shadow:0 0 14px rgba(59,130,246,0.65),inset 0 0 8px rgba(59,130,246,0.25);pointer-events:none;`,
+            520, [{ opacity: 1, transform: 'scale(0.35)' }, { opacity: 0, transform: 'scale(1.9)' }]);
+        for (let i = 0; i < 8; i++) {
+            const ox = (Math.random() - 0.5) * 65, oy = Math.random() * 22;
+            spawn(
+                `position:absolute;width:8px;height:8px;left:${hx + ox - 4}px;top:${hy + oy - 4}px;` +
+                `background:rgba(96,165,250,0.9);border-radius:50%;box-shadow:0 0 8px #60a5fa;pointer-events:none;`,
+                380 + Math.random() * 200,
+                [{ opacity: 0.9, transform: 'translateY(0) scale(1)' }, { opacity: 0, transform: `translateY(-${50 + Math.random() * 30}px) scale(0.25)` }]);
+        }
+    } else if (id === 'JIWAJIWA') {
+        [0, 160].forEach((delay, i) => {
+            const sz = 90 + i * 35;
+            setTimeout(() => {
+                spawn(
+                    `position:absolute;width:${sz}px;height:${sz}px;left:${hx - sz / 2}px;top:${hy - sz / 2}px;` +
+                    `border:2px solid rgba(74,222,128,0.72);border-radius:50%;` +
+                    `box-shadow:0 0 10px rgba(34,197,94,0.45);pointer-events:none;`,
+                    620, [{ opacity: 0.8, transform: 'scale(0.45)' }, { opacity: 0, transform: 'scale(1.7)' }]);
+            }, delay);
+        });
+        spawn(
+            `position:absolute;width:85px;height:85px;left:${hx - 42.5}px;top:${hy - 42.5}px;` +
+            `border-radius:50%;background:radial-gradient(circle,rgba(167,243,208,0.72) 0%,transparent 70%);pointer-events:none;`,
+            520, [{ opacity: 0.8, transform: 'scale(0.35)' }, { opacity: 0, transform: 'scale(1.5)' }]);
+    } else if (id === 'WAKUWAKU') {
+        [-18, 2, 22].forEach((oy, i) => {
+            const w = 55 + Math.random() * 45;
+            setTimeout(() => {
+                spawn(
+                    `position:absolute;height:3px;width:${w}px;left:${hx - 85}px;top:${hy + oy}px;` +
+                    `background:linear-gradient(to right,transparent,rgba(56,189,248,0.88),transparent);` +
+                    `border-radius:2px;pointer-events:none;`,
+                    220,
+                    [{ opacity: 1, transform: 'scaleX(0.08) translateX(-50px)' }, { opacity: 0, transform: 'scaleX(1) translateX(70px)' }],
+                    'ease-in');
+            }, i * 45);
+        });
+        spawn(
+            `position:absolute;width:115px;height:115px;left:${hx - 57.5}px;top:${hy - 57.5}px;` +
+            `border-radius:50%;background:radial-gradient(circle,rgba(186,230,253,0.65) 0%,transparent 70%);pointer-events:none;`,
+            350, [{ opacity: 0.85, transform: 'scale(0.28)' }, { opacity: 0, transform: 'scale(1.9)' }]);
+    } else if (id === 'ODOODO') {
+        [0, 110].forEach((delay, i) => {
+            const sz = 80 + i * 45;
+            setTimeout(() => {
+                spawn(
+                    `position:absolute;width:${sz}px;height:${sz}px;left:${mx - sz / 2}px;top:${my - sz / 2}px;` +
+                    `border:2px solid rgba(134,239,172,0.68);border-radius:50%;` +
+                    `box-shadow:0 0 10px rgba(74,222,128,0.38);pointer-events:none;`,
+                    520, [{ opacity: 0.75, transform: 'scale(0.38)' }, { opacity: 0, transform: 'scale(2.1)' }]);
+            }, delay);
+        });
+        spawn(
+            `position:absolute;width:120px;height:120px;left:${mx - 60}px;top:${my - 60}px;` +
+            `border-radius:50%;background:radial-gradient(circle,rgba(74,222,128,0.32) 0%,transparent 70%);pointer-events:none;`,
+            400, [{ opacity: 0.8 }, { opacity: 0 }]);
+    } else if (id === 'GACHIGACHI') {
+        spawn(
+            `position:absolute;width:105px;height:105px;left:${hx - 52.5}px;top:${hy - 52.5}px;` +
+            `border:4px solid rgba(148,163,184,0.88);border-radius:50%;` +
+            `box-shadow:0 0 16px rgba(203,213,225,0.55),inset 0 0 8px rgba(148,163,184,0.28);pointer-events:none;`,
+            480, [{ opacity: 1, transform: 'scale(0.28)' }, { opacity: 0, transform: 'scale(1.65)' }]);
+        [[0, -1], [1, 0], [0, 1], [-1, 0]].forEach(([dx, dy], i) => {
+            const sx = hx + dx * 68, sy = hy + dy * 68;
+            spawn(
+                `position:absolute;width:13px;height:13px;left:${sx - 6.5}px;top:${sy - 6.5}px;` +
+                `background:rgba(203,213,225,0.88);border-radius:2px;` +
+                `box-shadow:0 0 6px rgba(148,163,184,0.75);pointer-events:none;`,
+                360,
+                [{ opacity: 1, transform: `translate(0,0) rotate(${i * 45}deg) scale(1)` }, { opacity: 0, transform: `translate(${-dx * 68}px,${-dy * 68}px) rotate(${i * 45 + 180}deg) scale(0.15)` }],
+                'cubic-bezier(0.25,0,0.15,1)');
+        });
+    } else if (id === 'UTOUTO') {
+        for (let i = 0; i < 3; i++) {
+            const sz = 14 + i * 8, ox = (i - 1) * 30;
+            setTimeout(() => {
+                spawn(
+                    `position:absolute;width:${sz}px;height:${sz}px;left:${hx + ox - sz / 2}px;top:${hy - sz / 2}px;` +
+                    `background:rgba(167,139,250,0.62);border-radius:50%;` +
+                    `border:1.5px solid rgba(196,181,253,0.68);` +
+                    `box-shadow:0 0 8px rgba(139,92,246,0.48);pointer-events:none;`,
+                    680 + i * 80,
+                    [{ opacity: 0.8, transform: 'translateY(0) scale(1)' }, { opacity: 0, transform: `translateY(-${65 + i * 22}px) scale(0.25)` }]);
+            }, i * 130);
+        }
+        spawn(
+            `position:absolute;width:120px;height:120px;left:${mx - 60}px;top:${my - 60}px;` +
+            `border-radius:50%;background:radial-gradient(circle,rgba(167,139,250,0.38) 0%,transparent 70%);pointer-events:none;`,
+            620, [{ opacity: 0.7, transform: 'scale(0.48)' }, { opacity: 0, transform: 'scale(1.55)' }]);
+    }
+};
+
+
+
+window.spawnGiraGiraHitVfx = function (x, y) {
+    const vfxLayer = (typeof window.getVfxLayer === 'function') ? window.getVfxLayer() : document.getElementById('global-vfx-layer');
+    if (!vfxLayer) return;
+
+    const spawn = (css, dur, frames, easing) => {
+        const el = document.createElement('div');
+        el.style.cssText = css;
+        vfxLayer.appendChild(el);
+        el.animate(frames, { duration: dur, easing: easing || 'ease-out', fill: 'forwards' });
+        setTimeout(() => { if (el.isConnected) el.remove(); }, dur + 50);
+    };
+
+    spawn(
+        `position:absolute;width:65px;height:65px;left:${x - 32.5}px;top:${y - 32.5}px;` +
+        `border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,1) 0%,rgba(253,224,71,0.65) 50%,transparent 80%);pointer-events:none;`,
+        240, [{ opacity: 1, transform: 'scale(0.25)' }, { opacity: 0, transform: 'scale(2.6)' }]);
+    [[-42, 1], [42, -1]].forEach(([rot, dir]) => {
+        spawn(
+            `position:absolute;width:3px;height:145px;left:${x - 1.5}px;top:${y - 72.5}px;` +
+            `background:linear-gradient(to bottom,transparent 5%,rgba(255,255,200,0.95) 30%,rgba(251,191,36,1) 60%,transparent 95%);` +
+            `border-radius:2px;pointer-events:none;transform-origin:center center;`,
+            270,
+            [{ opacity: 1, transform: `rotate(${rot}deg) scaleY(0.08)` }, { opacity: 0, transform: `rotate(${rot + dir * 7}deg) scaleY(1.1)` }],
+            'cubic-bezier(0.05,0.9,0.25,1)');
+    });
+    for (let i = 0; i < 4; i++) {
+        const ang = (Math.PI * 2 / 4) * i + Math.PI / 4;
+        const dist = 40 + Math.random() * 20;
+        spawn(
+            `position:absolute;width:4px;height:12px;left:${x - 2}px;top:${y - 6}px;` +
+            `background:#fde047;box-shadow:0 0 5px #f59e0b;border-radius:2px;pointer-events:none;`,
+            240,
+            [{ opacity: 1, transform: `rotate(${ang + Math.PI / 2}rad) translate(0,0)` }, { opacity: 0, transform: `rotate(${ang + Math.PI / 2}rad) translate(0,-${dist}px) scale(0.1)` }]);
+    }
 };
 
 
@@ -241,13 +426,13 @@ const _jpApp = Vue.createApp({
         };
 
         const BOSS_ONOMATOPE_MAP = {
-            5:  { id: 'ODOODO',     particle: 'おど', name: 'おどおど',     meaning: '影響敵方 3 次攻擊（減速 30%）',    isOnomatope: true, cost: 5, duration: 3 },
-            10: { id: 'GACHIGACHI', particle: 'がち', name: 'がちがち',   meaning: '抵禦敵方 3 次攻擊（減傷 40%）',           isOnomatope: true, cost: 5, duration: 3 },
-            15: { id: 'UTOUTO',     particle: 'うと', name: 'うとうと',     meaning: '敵人入眠，此期間我方攻擊必定命中', isOnomatope: true, cost: 5 },
-            20: { id: 'JIWAJIWA',   particle: 'じわ', name: 'じわじわ',    meaning: '6 回合內每回合恢復 HP +6',     isOnomatope: true, cost: 5, duration: 6 },
-            25: { id: 'WAKUWAKU',   particle: 'わく', name: 'わくわく',    meaning: '6 次攻擊閃避率提升至 50%',   isOnomatope: true, cost: 5, duration: 6 },
-            30: { id: 'MORIMORI',   particle: 'もり', name: 'もりもり',    meaning: '8 回合內每回合恢復 SP +1', isOnomatope: true, cost: 4, duration: 8 },
-            35: { id: 'GIRAGIRA',   particle: 'ぎら', name: 'ぎらぎら',    meaning: '3 次攻擊必定命中且傷害 +50%',   isOnomatope: true, cost: 8, duration: 3 },
+            5: { id: 'ODOODO', particle: 'おど', name: 'おどおど', meaning: '影響敵方 3 次攻擊（減速 30%）', isOnomatope: true, cost: 5, duration: 3 },
+            10: { id: 'GACHIGACHI', particle: 'がち', name: 'がちがち', meaning: '抵禦敵方 3 次攻擊（減傷 40%）', isOnomatope: true, cost: 5, duration: 3 },
+            15: { id: 'UTOUTO', particle: 'うと', name: 'うとうと', meaning: '敵人入眠，此期間我方攻擊必定命中', isOnomatope: true, cost: 5 },
+            20: { id: 'JIWAJIWA', particle: 'じわ', name: 'じわじわ', meaning: '6 回合內每回合恢復 HP +6', isOnomatope: true, cost: 5, duration: 6 },
+            25: { id: 'WAKUWAKU', particle: 'わく', name: 'わくわく', meaning: '6 次攻擊閃避率提升至 50%', isOnomatope: true, cost: 5, duration: 6 },
+            30: { id: 'MORIMORI', particle: 'もり', name: 'もりもり', meaning: '8 回合內每回合恢復 SP +1', isOnomatope: true, cost: 4, duration: 8 },
+            35: { id: 'GIRAGIRA', particle: 'ぎら', name: 'ぎらぎら', meaning: '3 次攻擊必定命中且傷害 +50%', isOnomatope: true, cost: 8, duration: 3 },
         };
 
         const activeSegment = computed(() => {
@@ -291,7 +476,7 @@ const _jpApp = Vue.createApp({
 
             if (!node) return {};
 
-            
+
 
             const isDesktop = window.innerWidth >= 1024;
 
@@ -424,7 +609,7 @@ const _jpApp = Vue.createApp({
 
                 if (typeof unlockAudioOnce === 'function') unlockAudioOnce();
 
-                
+
 
                 if (typeof bgmAudio !== 'undefined') {
 
@@ -442,7 +627,7 @@ const _jpApp = Vue.createApp({
 
                         if (typeof audioPool !== 'undefined') {
 
-                            audioPool.set(BGM_BASE + 'BGM_1.mp3', bgmAudio.value); 
+                            audioPool.set(BGM_BASE + 'BGM_1.mp3', bgmAudio.value);
 
                         }
 
@@ -462,7 +647,7 @@ const _jpApp = Vue.createApp({
 
                         if (playPromise !== undefined) {
                             playPromise.catch(e => {
-                                if (e.name === 'AbortError') return; 
+                                if (e.name === 'AbortError') return;
                                 console.warn('[BGM] openMap sync play failed', e.name, e.message);
                                 if (typeof needsUserGestureToResumeBgm !== 'undefined') {
                                     needsUserGestureToResumeBgm.value = true;
@@ -493,7 +678,7 @@ const _jpApp = Vue.createApp({
                 const justUnlockedSegIdx = Math.floor((newUnlockLv.value - 1) / 5);
                 if (justUnlockedSegIdx > selectedSegmentIdx.value && selectedSegmentIdx.value === latestSegIdx - 1) {
                     selectedSegmentIdx.value = justUnlockedSegIdx;
-                    activeChapter.value = 'chapter1'; 
+                    activeChapter.value = 'chapter1';
                 }
             } else if (!isSegmentUnlocked(selectedSegmentIdx.value)) {
                 autoSelectSegment();
@@ -503,7 +688,7 @@ const _jpApp = Vue.createApp({
 
             showMap.value = true;
 
-            
+
 
             // Reset battle UI states
 
@@ -521,7 +706,7 @@ const _jpApp = Vue.createApp({
 
             if (vfxLayer) vfxLayer.innerHTML = '';
 
-            
+
 
             // Auto scroll to target
 
@@ -529,7 +714,7 @@ const _jpApp = Vue.createApp({
 
             scrollToStage(target);
 
-            
+
 
             // Stop battle music and play map music
 
@@ -537,7 +722,7 @@ const _jpApp = Vue.createApp({
 
             playBgm();
 
-            
+
 
             checkGlobalEndingTriggers();
 
@@ -613,7 +798,7 @@ const _jpApp = Vue.createApp({
                 activeChapter.value = chapKey;
             }
             handleMapTabClick(segIdx);
-            
+
             saveProgression();
 
             // Refresh ambient for new chapter
@@ -738,7 +923,7 @@ const _jpApp = Vue.createApp({
         const returnToMap = () => {
             isFinished.value = true;
             showLevelSelect.value = false;
-            
+
             const maxUnlocked = Math.max(...unlockedLevels.value, 1);
             const latestSegIdx = Math.floor((maxUnlocked - 1) / 5);
 
@@ -746,7 +931,7 @@ const _jpApp = Vue.createApp({
                 const justUnlockedSegIdx = Math.floor((newUnlockLv.value - 1) / 5);
                 if (justUnlockedSegIdx > selectedSegmentIdx.value && selectedSegmentIdx.value === latestSegIdx - 1) {
                     selectedSegmentIdx.value = justUnlockedSegIdx;
-                    activeChapter.value = 'chapter1'; 
+                    activeChapter.value = 'chapter1';
                 }
             } else if (!isSegmentUnlocked(selectedSegmentIdx.value)) {
                 autoSelectSegment();
@@ -777,7 +962,7 @@ const _jpApp = Vue.createApp({
         const triggerNextKnowledgeCard = () => {
             if (pendingKnowledgeCards.value.length === 0) {
                 isKnowledgeCardShowing.value = false;
-                
+
                 // If there's a callback (e.g. from grantRewards), execute it
                 if (window._afterKnowledgeCards) {
                     const cb = window._afterKnowledgeCards;
@@ -801,8 +986,8 @@ const _jpApp = Vue.createApp({
         const closeKnowledgeCard = () => {
             if (isKnowledgeCardAbsorbing.value) return;
             isKnowledgeCardAbsorbing.value = true;
-            playSfx('skillget'); 
-            
+            playSfx('skillget');
+
             // Wait for absorption animation to finish (matching CSS duration)
             setTimeout(() => {
                 isKnowledgeCardShowing.value = false;
@@ -811,7 +996,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26033101";
+        const APP_VERSION = window.APP_VERSION || "26033103";
 
         const appVersion = ref(APP_VERSION);
 
@@ -1110,7 +1295,7 @@ const _jpApp = Vue.createApp({
 
             mentorDialogueIndex.value = 0;
 
-            
+
 
             if (showMap.value) {
 
@@ -1124,7 +1309,7 @@ const _jpApp = Vue.createApp({
                 isMapMentorOpen.value = false;
             }
 
-            
+
 
             isMentorPortraitError.value = false;
 
@@ -1142,7 +1327,7 @@ const _jpApp = Vue.createApp({
 
             if (!skill || !skill.mentorDialogue) return false;
 
-            
+
 
             // If NOT forced, check if already seen
 
@@ -1152,7 +1337,7 @@ const _jpApp = Vue.createApp({
 
             }
 
-            
+
 
             setupMentorDialogue(skill);
 
@@ -1386,7 +1571,7 @@ const _jpApp = Vue.createApp({
 
                 const callback = window._resumeAfterMentor;
 
-                window._resumeAfterMentor = null; 
+                window._resumeAfterMentor = null;
 
                 callback();
 
@@ -1406,7 +1591,7 @@ const _jpApp = Vue.createApp({
 
                 isMentorSkipPressing.value = false;
 
-                playSfx('click'); 
+                playSfx('click');
 
                 finishMentorDialogue();
 
@@ -1451,7 +1636,7 @@ const _jpApp = Vue.createApp({
                 if (a.particle !== b.particle) return (a.particle || '').localeCompare(b.particle || '', 'ja');
                 return (a.rank || 0) - (b.rank || 0);
             });
-            return [...unlocked, ...locked].map(s => ({ 
+            return [...unlocked, ...locked].map(s => ({
                 ...s,
                 unlockLevel: skillUnlockMap.value[s.id]
             }));
@@ -1691,14 +1876,14 @@ const _jpApp = Vue.createApp({
 
 
 
-        function openSkillOverlay() { 
+        function openSkillOverlay() {
             playSfx('uiPop'); // Added feedback for skill reveal
-            isSkillOpen.value = true; 
+            isSkillOpen.value = true;
         }
 
-        function closeSkillOverlay() { 
-            playSfx('click'); 
-            isSkillOpen.value = false; 
+        function closeSkillOverlay() {
+            playSfx('click');
+            isSkillOpen.value = false;
         }
 
 
@@ -1735,7 +1920,7 @@ const _jpApp = Vue.createApp({
                 if (actualHeal > 0) {
                     pushBattleLog(`ジワジワ：恢復了 ${actualHeal} 點 HP！`, 'buff');
                     if (typeof window.spawnFloatingDamage === 'function') {
-                        window.spawnFloatingDamage('player', -actualHeal); 
+                        window.spawnFloatingDamage('player', -actualHeal);
                     }
                 }
                 if (heroBuffs.jiwajiwaTurns <= 0) {
@@ -1846,7 +2031,7 @@ const _jpApp = Vue.createApp({
 
             setTimeout(() => playSkillSfx(`${sfxBase}2.mp3`), 1000);
 
-
+            if (typeof window.spawnSkillActivationVfx === 'function') window.spawnSkillActivationVfx(id);
 
             // 觸發技能效果與 UI 提示
 
@@ -1952,7 +2137,7 @@ const _jpApp = Vue.createApp({
                 // Overhauled: Now grants 50% evasion for next 6 attacks (Speed Potion effect)
                 evasionBuffAttacksLeft.value = 6;
                 heroBuffs.wakuwakuTurns = 6;
-                if (typeof setSpeedStatus === 'function') setSpeedStatus(25000); 
+                if (typeof setSpeedStatus === 'function') setSpeedStatus(25000);
                 showStatusToast('⚡ 感覺輕盈！ (閃避上升)', {
                     bg: 'rgba(8,145,178,0.92)',
                     border: '#0891b2',
@@ -2106,6 +2291,7 @@ const _jpApp = Vue.createApp({
         const animatedGold = ref(0);
 
         const monsterHit = ref(false);
+        const monsterDodge = ref(false);
 
         const monsterStunSeconds = ref(0); // 怪物處於受擊僵直的時間 (秒)
 
@@ -2501,6 +2687,7 @@ const _jpApp = Vue.createApp({
                 potion: 'assets/audio/sfx_potion.mp3',
                 click: 'assets/audio/sfx_click.mp3',
                 damage: 'assets/audio/damage.mp3',
+                damage1: 'assets/audio/damage1.mp3',
                 damage2: 'assets/audio/damage2.mp3',
                 damage3: 'assets/audio/damage3.mp3',
                 damage4: 'assets/audio/damage4.mp3',
@@ -2690,7 +2877,7 @@ const _jpApp = Vue.createApp({
 
             let bScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMentorModalOpen.value || isMistakesOpen.value) ? 0.35 : 1.0;
 
-            
+
 
             if (isMentorVoicePlaying.value) {
 
@@ -3060,7 +3247,7 @@ const _jpApp = Vue.createApp({
         watch(() => player.value.hp, (newHp) => {
             const el = document.getElementById('heroAvatar');
             const ratio = newHp / player.value.maxHp;
-            
+
             if (el && el.dataset.state !== 'hit' && el.dataset.state !== 'lose' && el.dataset.state !== 'win') {
                 // Use data-driven thresholds
                 let targetExpression = 'neutral';
@@ -3132,6 +3319,7 @@ const _jpApp = Vue.createApp({
             potion: 'assets/audio/sfx_potion.mp3',
             click: 'assets/audio/sfx_click.mp3',
             damage: 'assets/audio/damage.mp3',
+            damage1: 'assets/audio/damage1.mp3',
             damage2: 'assets/audio/damage2.mp3',
             damage3: 'assets/audio/damage3.mp3',
             damage4: 'assets/audio/damage4.mp3',
@@ -3261,7 +3449,7 @@ const _jpApp = Vue.createApp({
                         try {
                             const bsn = audioCtx.value.createBufferSource();
                             bsn.buffer = decoded;
-                            
+
                             // Normalization / Scaling
                             const scale = SFX_SCALES[name] || 1.0;
                             if (scale !== 1.0) {
@@ -3272,7 +3460,7 @@ const _jpApp = Vue.createApp({
                             } else {
                                 bsn.connect(sfxGain.value || masterGain.value);
                             }
-                            
+
                             bsn.start(0);
                         } catch (e) { }
                     };
@@ -3626,6 +3814,11 @@ const _jpApp = Vue.createApp({
 
                 vine.style.left = `${pos}%`;
 
+                const vw = 8 + Math.floor(Math.random() * 7);
+                vine.style.width = `${vw}px`;
+                const hue = Math.round(Math.random() * 16 - 6);
+                if (hue !== 0) vine.style.filter = `drop-shadow(0 0 4px rgba(0,0,0,0.7)) hue-rotate(${hue}deg)`;
+
                 group.appendChild(vine);
 
             });
@@ -3643,6 +3836,9 @@ const _jpApp = Vue.createApp({
                 vine.style.top = `${top}%`;
 
                 vine.style.left = i % 2 === 0 ? '-10%' : '110%';
+
+                const sw = 7 + Math.floor(Math.random() * 5);
+                vine.style.width = `${sw}px`;
 
                 group.appendChild(vine);
 
@@ -3662,7 +3858,7 @@ const _jpApp = Vue.createApp({
 
                 setTimeout(() => { bossScreenShake.value = false; }, 400);
 
-                
+
 
                 const flash = document.createElement('div');
 
@@ -3915,11 +4111,11 @@ const _jpApp = Vue.createApp({
 
             const fist = document.createElement('div');
             fist.className = 'boss-vfx-stone-fist is-attacking';
-            
+
             // 目標定位在勇者區域 (畫面中下)
             fist.style.left = '50%';
             fist.style.bottom = '10%';
-            
+
             group.appendChild(fist);
 
             // 在動畫進行到約 0.55s 時觸發命中震動 (總長 0.85s)
@@ -4058,13 +4254,13 @@ const _jpApp = Vue.createApp({
             // 前搖後羽刃落下
             setTimeout(() => {
                 const feathers = [
-                    { cls: 'feather-white', delay: 0.00, x: '18%', rot:  10 },
-                    { cls: 'feather-dark',  delay: 0.07, x: '32%', rot:  -7 },
-                    { cls: 'feather-white', delay: 0.13, x: '48%', rot:   5 },
-                    { cls: 'feather-dark',  delay: 0.04, x: '62%', rot: -12 },
-                    { cls: 'feather-white', delay: 0.10, x: '76%', rot:   8 },
-                    { cls: 'feather-dark',  delay: 0.02, x: '26%', rot:  -5 },
-                    { cls: 'feather-white', delay: 0.16, x: '56%', rot:  11 },
+                    { cls: 'feather-white', delay: 0.00, x: '18%', rot: 10 },
+                    { cls: 'feather-dark', delay: 0.07, x: '32%', rot: -7 },
+                    { cls: 'feather-white', delay: 0.13, x: '48%', rot: 5 },
+                    { cls: 'feather-dark', delay: 0.04, x: '62%', rot: -12 },
+                    { cls: 'feather-white', delay: 0.10, x: '76%', rot: 8 },
+                    { cls: 'feather-dark', delay: 0.02, x: '26%', rot: -5 },
+                    { cls: 'feather-white', delay: 0.16, x: '56%', rot: 11 },
                 ];
                 feathers.forEach(fd => {
                     const f = document.createElement('div');
@@ -4496,8 +4692,8 @@ const _jpApp = Vue.createApp({
         // boss.sameMapRatio: 魔王關同張地圖題比例，其餘為前地圖歷史題
         // hiddenBoss.tierWeights: L36 各層難度比例 [tier3, tier2, tier1]
         const QUESTION_MIX_CONFIG = {
-            normal:     { newRatio: 0.5 },
-            boss:       { sameMapRatio: 0.8 },
+            normal: { newRatio: 0.5 },
+            boss: { sameMapRatio: 0.8 },
             hiddenBoss: { tierWeights: [0.5, 0.3, 0.2] }
         };
 
@@ -4560,17 +4756,17 @@ const _jpApp = Vue.createApp({
             const isBoss = !isL36 && isBossLevel(lv);
 
             if (isL36) {
-                // L36 隱藏魔王：按 tier 歸類
-                const tier3 = new Set(['KARA_REASON', 'YORI_COMPARE', 'NI_FREQUENCY', 'DE_MATERIAL', 'TO_QUOTE', 'NI_PURPOSE']);
-                const tier2 = new Set(['KARA_SOURCE_START', 'MADE_LIMIT_END', 'TO_COMPANION', 'DE_TOOL_MEANS', 'HE_DIRECTION', 'NI_TARGET']);
-                const tier1 = new Set(['NI_TIME', 'NI_EXIST_PLACE', 'YA_AND_OTHERS', 'WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE']);
+                // L36 隱藏魔王：按 tier 歸類（與 startBossQueue 同步）
+                const tier3 = new Set(['KARA_REASON', 'YORI_COMPARE', 'NI_FREQUENCY', 'DE_MATERIAL', 'TO_QUOTE', 'NI_PURPOSE', 'GA_BUT', 'TO_CONDITIONAL']);
+                const tier2 = new Set(['KARA_SOURCE_START', 'MADE_LIMIT_END', 'TO_WITH', 'DE_TOOL_MEANS', 'HE_DIRECTION', 'NI_TARGET', 'NI_DESTINATION', 'MO_COMPLETE_NEGATION', 'TO_AND', 'DE_SCOPE']);
+                const tier1 = new Set(['NI_TIME', 'NI_EXIST_PLACE', 'YA_AND_OTHERS', 'WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE', 'WO_OBJECT_BASIC', 'DE_ACTION_PLACE', 'GA_EXIST_SUBJECT', 'MO_ALSO_BASIC']);
                 let nT3 = 0, nT2 = 0, nT1 = 0, nOther = 0;
                 qs.forEach(q => {
                     const sid = q.skillId || '';
-                    if (tier3.has(sid))      nT3++;
+                    if (tier3.has(sid)) nT3++;
                     else if (tier2.has(sid)) nT2++;
                     else if (tier1.has(sid)) nT1++;
-                    else                     nOther++;
+                    else nOther++;
                 });
                 if (window.__DEBUG__) {
                     console.log(`[QMix] L36 (HiddenBoss) | Total:${total} Tier3:${pct(nT3)} Tier2:${pct(nT2)} Tier1:${pct(nT1)} Other:${nOther} | Dup:${dupCount}`);
@@ -4585,9 +4781,9 @@ const _jpApp = Vue.createApp({
                 let nSame = 0, nPrev = 0, nFallback = 0;
                 qs.forEach(q => {
                     const sid = q.skillId || 'FALLBACK';
-                    if (sid === 'FALLBACK')       nFallback++;
+                    if (sid === 'FALLBACK') nFallback++;
                     else if (sameMapIds.has(sid)) nSame++;
-                    else                          nPrev++;
+                    else nPrev++;
                 });
                 if (window.__DEBUG__) {
                     console.log(`[QMix] L${lv} (Boss) | Total:${total} SameMap:${pct(nSame)} PrevMap:${pct(nPrev)} Fallback:${nFallback} | Dup:${dupCount}`);
@@ -4599,9 +4795,9 @@ const _jpApp = Vue.createApp({
                 let nNew = 0, nOld = 0, nFallback = 0;
                 qs.forEach(q => {
                     const sid = q.skillId || 'FALLBACK';
-                    if (sid === 'FALLBACK')    nFallback++;
-                    else if (newIds.has(sid))  nNew++;
-                    else                       nOld++;
+                    if (sid === 'FALLBACK') nFallback++;
+                    else if (newIds.has(sid)) nNew++;
+                    else nOld++;
                 });
                 if (window.__DEBUG__) {
                     console.log(`[QMix] L${lv} (Normal) | Total:${total} New:${pct(nNew)} Old:${pct(nOld)} Fallback:${nFallback} | Dup:${dupCount}`);
@@ -4641,7 +4837,7 @@ const _jpApp = Vue.createApp({
 
             _audioUnlockTried.value = true;
 
-            
+
 
             try {
 
@@ -4669,11 +4865,11 @@ const _jpApp = Vue.createApp({
 
                 if (audioCtx.value.state === 'suspended' || audioCtx.value.state === 'interrupted') {
 
-                    audioCtx.value.resume().catch(()=>{});
+                    audioCtx.value.resume().catch(() => { });
 
                 }
 
-            } catch (e) {}
+            } catch (e) { }
 
 
 
@@ -4693,7 +4889,7 @@ const _jpApp = Vue.createApp({
 
                     silentSrc.start(0);
 
-                } catch (_) {}
+                } catch (_) { }
 
 
 
@@ -4703,9 +4899,9 @@ const _jpApp = Vue.createApp({
 
                     dummyAudio.muted = true;
 
-                    dummyAudio.play().then(() => { dummyAudio.pause(); dummyAudio.muted = false; }).catch(() => {});
+                    dummyAudio.play().then(() => { dummyAudio.pause(); dummyAudio.muted = false; }).catch(() => { });
 
-                } catch (e) {}
+                } catch (e) { }
 
             }
 
@@ -4719,7 +4915,7 @@ const _jpApp = Vue.createApp({
 
                     if (bgmAudio.value && bgmAudio.value.paused) {
 
-                        bgmAudio.value.play().catch(()=>{});
+                        bgmAudio.value.play().catch(() => { });
 
                     } else {
 
@@ -4745,7 +4941,7 @@ const _jpApp = Vue.createApp({
 
             if (!audioInited.value) initAudio();
 
-            
+
 
             if (window._preConnectRetry) {
 
@@ -4882,13 +5078,13 @@ const _jpApp = Vue.createApp({
 
             currentLevel.value = lv;
 
-            
+
 
             // withMentor = true means user clicked the "Mentor Icon" -> forceMentor = true
 
             // withMentor = false means user clicked the "Stage Card" -> skipMentor = true
 
-            initGame(lv, !withMentor, withMentor); 
+            initGame(lv, !withMentor, withMentor);
 
         };
 
@@ -4902,11 +5098,11 @@ const _jpApp = Vue.createApp({
 
             if (needsUserGestureToResumeBgm.value) { ensureBgmPlaying('potion'); needsUserGestureToResumeBgm.value = false; }
 
-            
+
 
             if (inventory.value.potions <= 0 || player.value.hp >= player.value.maxHp) return;
 
-            
+
 
             playSfx('potion');
 
@@ -4928,11 +5124,11 @@ const _jpApp = Vue.createApp({
 
             if (needsUserGestureToResumeBgm.value) { ensureBgmPlaying('potion'); needsUserGestureToResumeBgm.value = false; }
 
-            
+
 
             if (inventory.value.speedPotions <= 0 || evasionBuffAttacksLeft.value > 0 || playerDead.value || monsterDead.value) return;
 
-            
+
 
             playSfx('potion');
 
@@ -5037,6 +5233,7 @@ const _jpApp = Vue.createApp({
 
 
         let bossSkillQueue = [];
+        let bossQuestionQueue = []; // L36 專用：不重複題目的完整對列
 
         const startBossQueue = (unlockedIds, levelOverride) => {
 
@@ -5074,20 +5271,51 @@ const _jpApp = Vue.createApp({
                 const prevMapSlots = cycleFill(prevPool, prevMapCount);
                 bossSkillQueue = [...sameMapSlots, ...prevMapSlots].sort(() => Math.random() - 0.5);
             } else if (config.skillId && config.skillId === 'HIDDEN_BOSS_36') {
-                // L36 隱藏魔王：三層難度比例，無放回循環補齊（不允許同 skill 連續重複）
-                const generateTieredSkillQueue = () => {
-                    const tier3 = ['KARA_REASON', 'YORI_COMPARE', 'NI_FREQUENCY', 'DE_MATERIAL', 'TO_QUOTE', 'NI_PURPOSE'];
-                    const tier2 = ['KARA_SOURCE_START', 'MADE_LIMIT_END', 'TO_COMPANION', 'DE_TOOL_MEANS', 'HE_DIRECTION', 'NI_TARGET'];
-                    const tier1 = ['NI_TIME', 'NI_EXIST_PLACE', 'YA_AND_OTHERS', 'WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE'];
-                    const [w3, w2, w1] = QUESTION_MIX_CONFIG.hiddenBoss.tierWeights;
-                    const total = 30;
-                    const t3c = Math.round(w3 * total);
-                    const t2c = Math.round(w2 * total);
-                    const t1c = total - t3c - t2c;
-                    const mix = [...cycleFill(tier3, t3c), ...cycleFill(tier2, t2c), ...cycleFill(tier1, t1c)];
-                    return mix.sort(() => Math.random() - 0.5);
+                // L36 隱藏魔王：完整句子級別的不重複題池
+                const collectL36Questions = () => {
+                    const tier3 = ['KARA_REASON', 'YORI_COMPARE', 'NI_FREQUENCY', 'DE_MATERIAL', 'TO_QUOTE', 'NI_PURPOSE', 'GA_BUT', 'TO_CONDITIONAL'];
+                    const tier2 = ['KARA_SOURCE_START', 'MADE_LIMIT_END', 'TO_WITH', 'DE_TOOL_MEANS', 'HE_DIRECTION', 'NI_TARGET', 'NI_DESTINATION', 'MO_COMPLETE_NEGATION', 'TO_AND', 'DE_SCOPE'];
+                    const tier1 = ['NI_TIME', 'NI_EXIST_PLACE', 'YA_AND_OTHERS', 'WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE', 'WO_OBJECT_BASIC', 'DE_ACTION_PLACE', 'GA_EXIST_SUBJECT', 'MO_ALSO_BASIC'];
+                    
+                    const masterPool = [];
+                    const seenKeys = new Set();
+                    const allSkills = [...tier3, ...tier2, ...tier1];
+                    const poolStats = {}; // 診斷用：紀錄每種技能最後進入大池的題數
+                    
+                    // 隨機化處理順序，避免固定順序導致某些技能（如 Tier 3）永遠「佔住」 overlap 句子
+                    const shuffledSkills = [...allSkills].sort(() => Math.random() - 0.5);
+
+                    shuffledSkills.forEach(skillId => {
+                        const skillPool = EARLY_GAME_POOLS.skills[skillId] || {};
+                        const combos = skillPool.safeCombos || [];
+                        
+                        combos.forEach(combo => {
+                            const originalCombos = skillPool.safeCombos;
+                            skillPool.safeCombos = [combo];
+                            
+                            const q = generateQuestionBySkill(skillId, 1, EARLY_GAME_POOLS, VOCAB.value);
+                            if (q) {
+                                const key = q.chinese + "|" + (q.segments ? q.segments.map(s => s.text).join('') : '');
+                                if (!seenKeys.has(key)) {
+                                    seenKeys.add(key);
+                                    q._sentenceKey = key;
+                                    masterPool.push(q);
+                                    poolStats[skillId] = (poolStats[skillId] || 0) + 1;
+                                }
+                            }
+                            
+                            skillPool.safeCombos = originalCombos;
+                        });
+                    });
+                    
+                    if (window.__DEBUG__) {
+                        console.log(`[L36 Pool] Generated ${masterPool.length} unique questions.`);
+                        console.table(Object.entries(poolStats).map(([id, count]) => ({ Skill: id, Count: count })).sort((a,b) => b.Count - a.Count));
+                    }
+                    return masterPool.sort(() => Math.random() - 0.5);
                 };
-                bossSkillQueue = generateTieredSkillQueue();
+                bossQuestionQueue = collectL36Questions();
+                bossSkillQueue = ['HIDDEN_BOSS_36_POOL']; // 用作標記
             } else if (config.skillId && (config.skillId.startsWith('BOSS_REVIEW') || config.skillId === 'FINAL_BOSS_35')) {
                 bossSkillQueue = [config.skillId];
             } else {
@@ -5101,6 +5329,8 @@ const _jpApp = Vue.createApp({
         const pickSkillForBoss = () => {
 
             if (bossSkillQueue.length === 0) return null;
+
+            if (bossSkillQueue[0] === 'HIDDEN_BOSS_36_POOL') return 'HIDDEN_BOSS_36_QUEUE';
 
             const skill = bossSkillQueue.shift();
 
@@ -5196,6 +5426,15 @@ const _jpApp = Vue.createApp({
 
         /** 依 skillId 生成單道助詞題（包含所有 if/else 助詞都合邏輯分支）。回傳 question object 或 null。 */
         const generateQuestionBySkill = (skillId, blanks, db, vocab, forceTargetCount = null) => {
+            // L36 專用：不重複題目的抽題邏輯
+            if (skillId === 'HIDDEN_BOSS_36_QUEUE') {
+                if (bossQuestionQueue.length === 0) {
+                    // 若耗盡則自動重新裝彈洗牌（Indefinite trial）
+                    startBossQueue(unlockedSkillIds.value);
+                }
+                const q = bossQuestionQueue.shift();
+                return q;
+            }
 
             // 向下相容 MO_ALSO_BASIC
 
@@ -5478,15 +5717,15 @@ const _jpApp = Vue.createApp({
 
                 const particleAns = skillDef.particle || "の";
                 const choicesOptions = skillDef.choiceSet || ["の", "は", "が", "を", "に", "へ", "で", "と", "も", "から", "まで", "や", "より"];
-                
+
                 let excludeChoices = [];
                 if (skillId === 'HE_DEST' || skillId === 'HE_DIRECTION') excludeChoices = ['に'];
-                
+
                 let finalChoices = undefined;
                 if (Number(blanks ?? 1) === 1) {
                     // For HE_DIRECTION/HE_DEST, allow forceTargetCount to override level default
                     const targetCount = forceTargetCount ?? getChoiceCountForLevel(currentLevel.value);
-                    
+
                     finalChoices = getChoices(choicesOptions, particleAns);
                     if (excludeChoices.length > 0) {
                         finalChoices = finalChoices.filter(c => !excludeChoices.includes(c));
@@ -6435,9 +6674,9 @@ const _jpApp = Vue.createApp({
 
             }
 
-            else if (skillDef.id === 'TO_COMPANION') {
+            else if (skillDef.id === 'TO_WITH' || skillDef.id === 'TO_COMPANION') {
 
-                const skillPool = (pool.skills?.TO_COMPANION) || {};
+                const skillPool = (pool.skills?.TO_WITH) || (pool.skills?.TO_COMPANION) || {};
 
                 const list = skillPool.safeCombos || [];
 
@@ -6487,7 +6726,7 @@ const _jpApp = Vue.createApp({
 
                 else list = skillPool.transportCombos || [];
 
-                
+
 
                 const combo = pickOne(list);
 
@@ -6592,7 +6831,7 @@ const _jpApp = Vue.createApp({
 
             else if (ratio < 0.8) startState = 'ase';
 
-            
+
 
             setHeroAvatar(startState);
 
@@ -7461,21 +7700,23 @@ const _jpApp = Vue.createApp({
 
                     posX: enemyMatch.posX ?? null,
 
-                    posY: enemyMatch.posY ?? null
+                    posY: enemyMatch.posY ?? null,
+
+                    infoOffsetY: enemyMatch.infoOffsetY ?? 0
 
                 };
 
             } else {
 
-                monster.value = { 
+                monster.value = {
 
-                    hp: mdef.hpMax, 
+                    hp: mdef.hpMax,
 
-                    maxHp: mdef.hpMax, 
+                    maxHp: mdef.hpMax,
 
-                    name: mdef.name, 
+                    name: mdef.name,
 
-                    sprite: mdef.sprite, 
+                    sprite: mdef.sprite,
 
                     spriteHit: null,
 
@@ -7485,7 +7726,9 @@ const _jpApp = Vue.createApp({
 
                     posX: null,
 
-                    posY: null
+                    posY: null,
+
+                    infoOffsetY: 0
 
                 };
 
@@ -7811,6 +8054,9 @@ const _jpApp = Vue.createApp({
 
                         pushBattleLog(`攻擊被閃避了！沒造成傷害！`, 'info');
 
+                        monsterDodge.value = true;
+                        setTimeout(() => { monsterDodge.value = false; }, 800);
+
                     } else {
 
                         monsterHit.value = true;
@@ -7857,7 +8103,15 @@ const _jpApp = Vue.createApp({
 
                         }
 
-
+                        // GIRAGIRA 強化命中特效
+                        if (heroBuffs.giragiraTurns > 0 && typeof window.spawnGiraGiraHitVfx === 'function') {
+                            const giraEl = document.querySelector('img[alt="monster"]') || document.querySelector('.w-28.h-28.rounded-full');
+                            const giraCenter = rectCenter(giraEl);
+                            if (giraCenter) {
+                                const giraDelay = isFlick ? 380 : 0;
+                                setTimeout(() => { if (typeof window.spawnGiraGiraHitVfx === 'function') window.spawnGiraGiraHitVfx(giraCenter.x, giraCenter.y); }, giraDelay);
+                            }
+                        }
 
                         comboCount.value++;
 
@@ -7877,12 +8131,12 @@ const _jpApp = Vue.createApp({
                             dmg = Math.round(baseDmg * 1.5);
                             heroBuffs.giragiraTurns--;
 
-                            
+
                             // UI Update Trigger
                             if (typeof updateHeroStatusBar === 'function') updateHeroStatusBar();
 
                             pushBattleLog(`ギラギラ：鋒芒畢露！造成 ${dmg} 點必命中傷害！`, 'buff');
-                            
+
                             if (heroBuffs.giragiraTurns <= 0) {
                                 heroBuffs.giragiraTurns = 0;
                                 if (typeof updateHeroStatusBar === 'function') updateHeroStatusBar();
@@ -8129,13 +8383,13 @@ const _jpApp = Vue.createApp({
 
             // 🟢 26031301 Optimized: 死亡演出長度 (Boss 5.5s / 一般固定 2.0s)
 
-            const deathDuration = isBoss ? 5500 : 2000; 
+            const deathDuration = isBoss ? 5500 : 2000;
 
 
 
             monsterIsDying.value = true;
 
-            
+
 
             // 🌟 第一階段：等待死亡演出完整播完
 
@@ -8145,7 +8399,7 @@ const _jpApp = Vue.createApp({
 
                 monsterResultShown.value = true;
 
-                
+
 
                 // Update progression
 
@@ -8157,7 +8411,7 @@ const _jpApp = Vue.createApp({
 
                 }
 
-                
+
 
                 // Update best grade
 
@@ -8169,7 +8423,7 @@ const _jpApp = Vue.createApp({
 
                 const isGradeBetter = (newG, oldG) => (GRADE_RANK[newG] || 0) > (GRADE_RANK[oldG] || 0);
 
-                
+
 
                 if (!oldG || isGradeBetter(currentG, oldG)) {
 
@@ -8213,14 +8467,14 @@ const _jpApp = Vue.createApp({
 
                 setHeroAvatar('win');
 
-                
+
 
                 // 🌟 第二階段：死亡演出結束後，檢查是否有新技能知識卡需要播放
                 // 如果有卡片，播放完畢後才進入數字遞增環節
-                setTimeout(() => { 
+                setTimeout(() => {
 
                     const proceedToTally = () => {
-                        playSfx('fanfare'); 
+                        playSfx('fanfare');
                         startTallySequence();
                     };
 
@@ -8253,7 +8507,7 @@ const _jpApp = Vue.createApp({
 
                 const duration = Math.min(Math.max(calculatedDuration, 800), 2000);
 
-                
+
 
                 const startTime = Date.now();
 
@@ -8269,7 +8523,7 @@ const _jpApp = Vue.createApp({
 
                     animatedGold.value = Math.floor(goldTarget * progress);
 
-                    
+
 
                     if (progress < 1) {
 
@@ -8987,7 +9241,7 @@ const _jpApp = Vue.createApp({
             levelTitle, player, monster, currentQuestion,
             startLevel, retryLevel, initGame, generateQuestionBySkill,
             mentorTutorialSeen, saveMentorState, skillsAll, setupMentorDialogue,
-            pauseBattle, db, VOCAB
+            pauseBattle, db, VOCAB, startBossQueue, unlockedSkillIds
         });
 
         return {
@@ -8995,7 +9249,7 @@ const _jpApp = Vue.createApp({
             animatedExp, animatedGold,
             uiMenuOpen, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, stageLog, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, playMistakeVoice, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, CODEX_PER_PAGE, closeCodex, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             heroBuffs,
-            allAbilities, unlockedAbilityIds, skillList, castAbility, spState, handleReload, settings, shouldShowNextButton, praiseToast, isDefeated, defeatReturn, HERO_VISUAL_CONFIG,
+            allAbilities, unlockedAbilityIds, skillList, castAbility, spState, handleReload, settings, shouldShowNextButton, praiseToast, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
             isMentorModalOpen, isMentorReplayOpen, isLevelJumpOpen, isAdvancedSettingsOpen, replaySpecificMentor, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
             displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,

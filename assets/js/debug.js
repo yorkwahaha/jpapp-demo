@@ -8,7 +8,7 @@ window.__attachDebugTools = function (refs) {
         levelTitle, player, monster, currentQuestion,
         startLevel, retryLevel, initGame, goHome, generateQuestionBySkill,
         mentorTutorialSeen, saveMentorState, skillsAll, setupMentorDialogue,
-        pauseBattle, db, VOCAB, unlockedSkillIds
+        pauseBattle, db, VOCAB, unlockedSkillIds, startBossQueue
     } = refs || {};
 
     // --- Audit State ---
@@ -576,7 +576,20 @@ window.__attachDebugTools = function (refs) {
                     const oldSkills = getHistArr(levelId);
                     const weight = config.skillMix?.newSkillWeight ?? 0.5;
 
-                    if (isBoss) {
+                    if (levelId === 36) {
+                        // L36 隱藏魔王：實測模式，直接呼叫 game 引擎的產題路徑
+                        console.log("[jpDebug.audit] L36 detected. Using REAL generation (Dry-run mode)...");
+                        // 使用 startBossQueue 僅初始化數值對列，避免 initGame 帶來的音效、觸發動畫與轉場副作用
+                        if (typeof startBossQueue === 'function') startBossQueue(unlockedSkillIds?.value || [], 36);
+                        
+                        for (let i = 0; i < sampleCount; i++) {
+                            const q = generateQuestionBySkill('HIDDEN_BOSS_36_QUEUE', 1, db?.value || db, VOCAB?.value || VOCAB);
+                            if (q) {
+                                const sid = q.skillId || 'UNKNOWN';
+                                counts[sid] = (counts[sid] || 0) + 1;
+                            }
+                        }
+                    } else if (isBoss) {
                         if (levelId === 5) {
                             const pool = ['WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE', 'WO_OBJECT_BASIC'];
                             for(let i=0; i<sampleCount; i++) {

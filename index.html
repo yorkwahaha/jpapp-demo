@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26033101'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26033103'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -55,9 +55,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <link
-
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
-
         rel="stylesheet">
 
     <link rel="stylesheet" href="assets/css/styles.css?v=26033101">
@@ -231,7 +229,6 @@
     </script>
 
     <style>
-
         .map-header {
 
             display: flex;
@@ -784,7 +781,7 @@
 
                 inset 0 -2px 6px rgba(217, 119, 6, 0.7);
 
-            -webkit-text-stroke: 1px rgba(0,0,0,0.3);
+            -webkit-text-stroke: 1px rgba(0, 0, 0, 0.3);
 
             text-shadow:
 
@@ -826,7 +823,7 @@
 
                 inset 0 -2px 4px rgba(37, 99, 235, 0.6);
 
-            -webkit-text-stroke: 0.8px rgba(0,0,0,0.25);
+            -webkit-text-stroke: 0.8px rgba(0, 0, 0, 0.25);
 
             text-shadow:
 
@@ -864,7 +861,7 @@
 
                 inset 0 -2px 4px rgba(71, 85, 105, 0.4);
 
-            -webkit-text-stroke: 0.8px rgba(0,0,0,0.2);
+            -webkit-text-stroke: 0.8px rgba(0, 0, 0, 0.2);
 
             text-shadow:
 
@@ -1431,7 +1428,8 @@
             transform: translateY(-1px);
             box-shadow:
                 0 6px 16px rgba(15, 23, 42, 0.15),
-                0 0 10px rgba(167, 139, 250, 0.15), /* Stable achievement glow */
+                0 0 10px rgba(167, 139, 250, 0.15),
+                /* Stable achievement glow */
                 inset 0 1px 0 rgba(255, 255, 255, 0.12);
             background: rgba(167, 139, 250, 0.03);
             transition: all 0.3s ease;
@@ -1465,7 +1463,8 @@
             transform: translateY(-2px) scale(1.02);
             box-shadow:
                 0 14px 24px rgba(15, 23, 42, 0.35),
-                0 0 25px rgba(0, 150, 255, 0.5), /* Deep Blue Glow Base */
+                0 0 25px rgba(0, 150, 255, 0.5),
+                /* Deep Blue Glow Base */
                 inset 0 1px 0 rgba(255, 255, 255, 0.3);
             animation: map-stage-node-pulse 2s ease-in-out infinite;
             position: relative;
@@ -1498,7 +1497,7 @@
             content: '';
             position: absolute;
             inset: -15px;
-            background-image: 
+            background-image:
                 radial-gradient(circle at 20% 30%, #fff 1px, transparent 1px),
                 radial-gradient(circle at 80% 40%, #fff 1px, transparent 1px),
                 radial-gradient(circle at 40% 80%, #fff 1px, transparent 1px),
@@ -1520,42 +1519,78 @@
             0% {
                 filter: drop-shadow(0 0 10px rgba(100, 200, 255, 0.8)) drop-shadow(0 0 20px rgba(255, 255, 255, 0.3)) brightness(1);
             }
+
             100% {
                 filter: drop-shadow(0 0 20px rgba(185, 226, 255, 1)) drop-shadow(0 0 40px rgba(255, 255, 255, 0.6)) brightness(1.5);
             }
         }
 
         @keyframes map-stage-node-pulse {
-            0%, 100% {
+
+            0%,
+            100% {
                 transform: translateY(-2px) scale(1.02);
                 box-shadow: 0 14px 24px rgba(15, 23, 42, 0.35), 0 0 20px rgba(0, 150, 255, 0.4);
             }
+
             50% {
-                transform: translateY(-8px) scale(1.08); /* Higher float for better visibility */
+                transform: translateY(-8px) scale(1.08);
+                /* Higher float for better visibility */
                 box-shadow: 0 25px 40px rgba(15, 23, 42, 0.4), 0 0 40px rgba(100, 200, 255, 0.8);
             }
         }
 
         @keyframes map-node-rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         @keyframes map-node-sparkle {
-            0% { transform: rotate(0deg) scale(1); opacity: 0.2; }
-            50% { transform: rotate(180deg) scale(1.3); opacity: 0.7; color: #fff; }
-            100% { transform: rotate(360deg) scale(1); opacity: 0.2; }
+            0% {
+                transform: rotate(0deg) scale(1);
+                opacity: 0.2;
+            }
+
+            50% {
+                transform: rotate(180deg) scale(1.3);
+                opacity: 0.7;
+                color: #fff;
+            }
+
+            100% {
+                transform: rotate(360deg) scale(1);
+                opacity: 0.2;
+            }
         }
 
 
 
         /* ── Map Ambient: Chapter 1 sway ──────────────────────────────── */
         @keyframes map-ambient-sway {
-            0%   { transform: translateX(0px) scale(1.005); }
-            25%  { transform: translateX(2px) scale(1.006); }
-            50%  { transform: translateX(-1px) scale(1.005); }
-            75%  { transform: translateX(1.5px) scale(1.006); }
-            100% { transform: translateX(0px) scale(1.005); }
+            0% {
+                transform: translateX(0px) scale(1.005);
+            }
+
+            25% {
+                transform: translateX(2px) scale(1.006);
+            }
+
+            50% {
+                transform: translateX(-1px) scale(1.005);
+            }
+
+            75% {
+                transform: translateX(1.5px) scale(1.006);
+            }
+
+            100% {
+                transform: translateX(0px) scale(1.005);
+            }
         }
 
         /* Applied to map-nodes-container when chapter1 ambient is active */
@@ -1589,7 +1624,8 @@
             left: 4px;
             width: clamp(110px, 7vw, 160px);
             height: clamp(110px, 7vw, 160px);
-            z-index: 60; /* Above HUD (50), Below Modals (1000+) */
+            z-index: 60;
+            /* Above HUD (50), Below Modals (1000+) */
             pointer-events: none;
             display: flex;
             align-items: center;
@@ -1606,15 +1642,17 @@
 
         /* --- Hero Buff Aura (GIRAGIRA) --- */
         @keyframes giragira-aurora {
-            0% { 
+            0% {
                 box-shadow: 0 0 20px 2px rgba(245, 158, 11, 0.4), inset 0 0 10px rgba(251, 191, 36, 0.2);
                 transform: scale(1.0);
             }
-            50% { 
+
+            50% {
                 box-shadow: 0 0 45px 8px rgba(251, 191, 36, 0.7), inset 0 0 20px rgba(245, 158, 11, 0.4);
                 transform: scale(1.05);
             }
-            100% { 
+
+            100% {
                 box-shadow: 0 0 20px 2px rgba(245, 158, 11, 0.4), inset 0 0 10px rgba(251, 191, 36, 0.2);
                 transform: scale(1.0);
             }
@@ -1631,7 +1669,8 @@
         }
 
         /* Sharp energy "spikes" on overlay */
-        .aura-giragira-spikes::before, .aura-giragira-spikes::after {
+        .aura-giragira-spikes::before,
+        .aura-giragira-spikes::after {
             content: '✦';
             position: absolute;
             color: #fbbf24;
@@ -1640,13 +1679,33 @@
             animation: giragira-spikes-refined 2s linear infinite;
             text-shadow: 0 0 12px #f59e0b;
         }
-        .aura-giragira-spikes::before { top: -20%; left: 0%; animation-delay: 0s; }
-        .aura-giragira-spikes::after { bottom: -10%; right: -5%; animation-delay: 1s; }
+
+        .aura-giragira-spikes::before {
+            top: -20%;
+            left: 0%;
+            animation-delay: 0s;
+        }
+
+        .aura-giragira-spikes::after {
+            bottom: -10%;
+            right: -5%;
+            animation-delay: 1s;
+        }
 
         @keyframes giragira-spikes-refined {
-            0% { transform: scale(0.5) rotate(0deg); opacity: 0; }
-            40% { opacity: 1; }
-            100% { transform: scale(1.8) rotate(180deg); opacity: 0; }
+            0% {
+                transform: scale(0.5) rotate(0deg);
+                opacity: 0;
+            }
+
+            40% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1.8) rotate(180deg);
+                opacity: 0;
+            }
         }
 
         /* --- Buff Badge System --- */
@@ -1659,7 +1718,7 @@
             gap: 8px;
             z-index: 70;
             pointer-events: none;
-            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.8));
+            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.8));
         }
 
         .buff-badge {
@@ -1676,8 +1735,15 @@
         }
 
         @keyframes badge-pop {
-            0% { transform: scale(0.5) translateX(20px); opacity: 0; }
-            100% { transform: scale(1) translateX(0); opacity: 1; }
+            0% {
+                transform: scale(0.5) translateX(20px);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1) translateX(0);
+                opacity: 1;
+            }
         }
 
         .buff-badge-icon {
@@ -1723,11 +1789,9 @@
 <body class="">
 
     <div id="app" v-cloak class="w-full" @pointerdown="onUserGesture"
-
         :class="{ 'max-w-6xl mx-auto p-4 md:p-8 relative': showLevelSelect, 'min-h-screen': !showLevelSelect, shake: screenShake }">
 
         <div
-
             class="absolute top-2 right-4 text-[10px] text-slate-500/80 font-mono tracking-wider pointer-events-none z-50">
 
             v{{ appVersion }}</div>
@@ -1793,12 +1857,12 @@
                 <div class="map-nodes-container" v-if="mapChapters[activeChapter].segments[selectedSegmentIdx]">
 
                     <img :src="mapChapters[activeChapter].segments[selectedSegmentIdx].background" class="map-base-img"
-
                         alt="Base Map">
 
 
 
-                    <div v-if="mapChapters[activeChapter].segments[selectedSegmentIdx].nodes['1']" class="map-progress-paths">
+                    <div v-if="mapChapters[activeChapter].segments[selectedSegmentIdx].nodes['1']"
+                        class="map-progress-paths">
 
                         <div class="map-progress-line route-1"></div>
 
@@ -1813,7 +1877,6 @@
 
 
                     <template v-for="(node, n) in mapChapters[activeChapter].segments[selectedSegmentIdx].nodes"
-
                         :key="'node_overlay_' + n">
 
                         <div class="stage-node-wrap" :style="getMapNodeStyle(node)" :class="[getStageNodeClass(n)]">
@@ -1822,18 +1885,15 @@
 
                             <!-- Top Label (Boss only) -->
 
-                            <div v-if="node.landmark && LEVEL_CONFIG[n]?.boss" class="node-landmark-label node-landmark-label--top">{{ node.landmark }}</div>
+                            <div v-if="node.landmark && LEVEL_CONFIG[n]?.boss"
+                                class="node-landmark-label node-landmark-label--top">{{ node.landmark }}</div>
 
 
 
                             <div class="flex items-center justify-center gap-4 z-10">
 
-                                <button @click="selectStageFromMap(n)" :data-stage-node="n"
-
-                                    class="map-stage-node"
-
+                                <button @click="selectStageFromMap(n)" :data-stage-node="n" class="map-stage-node"
                                     :class="[{ 'new-unlock-glow': n === newUnlockLv }, !isLevelUnlocked(n) ? 'state-unopened' : isLevelCleared(n) ? 'state-opened' : 'state-current']"
-
                                     :disabled="!isLevelUnlocked(n)">
 
 
@@ -1843,7 +1903,6 @@
                                     <div v-if="isLevelCleared(n)" class="absolute -top-1 -left-1 z-30">
 
                                         <span v-if="bestGrades[n]" :class="getGradeColor(bestGrades[n])"
-
                                             class="grade-badge shadow-lg scale-110">{{ bestGrades[n] }}</span>
 
                                         <span v-else class="text-xl drop-shadow-md">⭐</span>
@@ -1853,7 +1912,6 @@
 
 
                                     <div v-if="n === newUnlockLv"
-
                                         class="absolute -top-3 -right-1 bg-amber-500 text-slate-900 text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg z-20 animate-bounce">
 
                                         NEW</div>
@@ -1865,20 +1923,18 @@
                                         <div class="map-stage-node-frame">
 
                                             <div class="map-stage-node-image-layer"
-
                                                 :class="!isLevelUnlocked(n) ? 'state-unopened' : isLevelCleared(n) ? 'state-opened' : 'state-current'">
 
                                                 <div class="map-stage-node-image-placeholder">
 
                                                     <img :src="!isLevelUnlocked(n) ? 'assets/images/ui/book-closed.png' : isLevelCleared(n) ? 'assets/images/ui/book-opened.png' : 'assets/images/ui/book-current.png'"
-
-                                                         class="map-stage-node-book-img"
-
-                                                         alt="">
+                                                        class="map-stage-node-book-img" alt="">
 
                                                     <!-- Special logic for Stage 36 unearned indicator -->
 
-                                                    <div v-if="Number(n) === 36 && !isLevelUnlocked(n)" class="map-stage-node-image-label" style="color:rgba(251,191,36,1)">{{ sRankCount }}/35 封印</div>
+                                                    <div v-if="Number(n) === 36 && !isLevelUnlocked(n)"
+                                                        class="map-stage-node-image-label"
+                                                        style="color:rgba(251,191,36,1)">{{ sRankCount }}/35 封印</div>
 
 
 
@@ -1895,7 +1951,6 @@
                                     <!-- Boss indicator badge -->
 
                                     <div v-if="LEVEL_CONFIG[n]?.boss"
-
                                         class="absolute -bottom-2 bg-rose-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-[0_0_12px_rgba(225,29,72,0.5)] z-20 border border-rose-400 tracking-wider">
 
                                         BOSS</div>
@@ -1910,7 +1965,8 @@
 
                             <!-- Bottom Label (Normal nodes) -->
 
-                            <div v-if="node.landmark && !LEVEL_CONFIG[n]?.boss" class="node-landmark-label node-landmark-label--bottom">{{ node.landmark }}</div>
+                            <div v-if="node.landmark && !LEVEL_CONFIG[n]?.boss"
+                                class="node-landmark-label node-landmark-label--bottom">{{ node.landmark }}</div>
 
                         </div>
 
@@ -1918,99 +1974,61 @@
 
 
 
-                        <!-- [DESKTOP ONLY UI] (Anchored to map width) -->
+                    <!-- [DESKTOP ONLY UI] (Anchored to map width) -->
 
-                        <div class="map-ui-desktop-zone">
+                    <div class="map-ui-desktop-zone">
 
-                            <!-- ── FLOATING HEADER ── -->
+                        <!-- ── FLOATING HEADER ── -->
 
-                            <div v-if="isMapDropdownOpen" class="fixed inset-0 z-[24]" @click="isMapDropdownOpen = false"></div>
+                        <div v-if="isMapDropdownOpen" class="fixed inset-0 z-[24]" @click="isMapDropdownOpen = false">
+                        </div>
 
-                            <div class="map-float-header" v-if="mapChapters && activeChapter && mapChapters[activeChapter]">
+                        <div class="map-float-header" v-if="mapChapters && activeChapter && mapChapters[activeChapter]">
 
-                                <div class="map-name-btn" :class="{ 'map-name-btn--open': isMapDropdownOpen }" @click.stop="isMapDropdownOpen = !isMapDropdownOpen">
+                            <div class="map-name-btn" :class="{ 'map-name-btn--open': isMapDropdownOpen }"
+                                @click.stop="isMapDropdownOpen = !isMapDropdownOpen">
 
-                                    <span class="map-chapter-dot"></span>
+                                <span class="map-chapter-dot"></span>
 
-                                    <span class="map-chapter-name">{{ mapChapters[activeChapter].segments[selectedSegmentIdx]?.title || '地圖' }}</span>
+                                <span class="map-chapter-name">{{
+                                    mapChapters[activeChapter].segments[selectedSegmentIdx]?.title || '地圖' }}</span>
 
-                                    <span class="map-name-chevron">{{ isMapDropdownOpen ? '▴' : '▾' }}</span>
+                                <span class="map-name-chevron">{{ isMapDropdownOpen ? '▴' : '▾' }}</span>
 
-                                    <div v-if="isMapDropdownOpen" class="map-dropdown-panel" @click.stop>
+                                <div v-if="isMapDropdownOpen" class="map-dropdown-panel" @click.stop>
 
-                                        <template v-for="(chap, chapKey) in mapChapters" :key="'d_chap_' + chapKey">
+                                    <template v-for="(chap, chapKey) in mapChapters" :key="'d_chap_' + chapKey">
 
-                                            <div v-if="chap.segments && chap.segments.length" class="map-dropdown-group">
+                                        <div v-if="chap.segments && chap.segments.length" class="map-dropdown-group">
 
-                                                <div v-if="Object.keys(mapChapters).length > 1" class="map-dropdown-chapter-label">{{ chap.title || chapKey }}</div>
+                                            <div v-if="Object.keys(mapChapters).length > 1"
+                                                class="map-dropdown-chapter-label">{{ chap.title || chapKey }}</div>
 
-                                                <button v-for="(seg, idx) in chap.segments" :key="'drop_d_' + chapKey + '_' + idx"
+                                            <button v-for="(seg, idx) in chap.segments"
+                                                :key="'drop_d_' + chapKey + '_' + idx" class="map-dropdown-item"
+                                                :class="{ 'map-dropdown-item--active': chapKey === activeChapter && selectedSegmentIdx === idx, 'map-dropdown-item--locked': !isSegmentUnlocked(idx) }"
+                                                @click="jumpToMapSegment(chapKey, idx)">
 
-                                                    class="map-dropdown-item" :class="{ 'map-dropdown-item--active': chapKey === activeChapter && selectedSegmentIdx === idx, 'map-dropdown-item--locked': !isSegmentUnlocked(idx) }"
+                                                <span class="map-dropdown-indicator">
 
-                                                    @click="jumpToMapSegment(chapKey, idx)">
+                                                    <span v-if="!isSegmentUnlocked(idx)">🔒</span>
 
-                                                    <span class="map-dropdown-indicator">
+                                                    <span
+                                                        v-else-if="chapKey === activeChapter && selectedSegmentIdx === idx"
+                                                        class="map-dropdown-dot map-dropdown-dot--active"></span>
 
-                                                        <span v-if="!isSegmentUnlocked(idx)">🔒</span>
+                                                    <span v-else class="map-dropdown-dot"></span>
 
-                                                        <span v-else-if="chapKey === activeChapter && selectedSegmentIdx === idx" class="map-dropdown-dot map-dropdown-dot--active"></span>
+                                                </span>
 
-                                                        <span v-else class="map-dropdown-dot"></span>
+                                                <span class="map-dropdown-label">{{ isSegmentUnlocked(idx) ? (seg.title
+                                                    || String(idx + 1)) : '？？？' }}</span>
 
-                                                    </span>
+                                            </button>
 
-                                                    <span class="map-dropdown-label">{{ isSegmentUnlocked(idx) ? (seg.title || String(idx + 1)) : '？？？' }}</span>
-
-                                                </button>
-
-                                            </div>
-
-                                        </template>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                            
-
-                            <!-- ── Hero avatar ── -->
-
-                            <div class="map-hud-avatar">
-
-                                <img src="assets/images/hero/hero_001.png" class="map-hud-avatar-img" alt="">
-
-                            </div>
-
-                            
-
-                            <!-- ── BOTTOM HUD ── -->
-
-                            <div class="map-hud-bottom">
-
-                                <div class="map-hud-bars">
-                                    <div class="map-hud-bar-row">
-                                        <span class="hud-bar-label hud-bar-label--hp">HP</span>
-                                        <div class="map-hud-bar-track hud-bar-track">
-                                            <div class="hud-bar-fill hud-bar-hp-fill" :style="{ width: (player.hp / player.maxHp * 100) + '%' }"></div>
                                         </div>
-                                        <span class="hud-bar-value">{{ player.hp }}</span>
-                                    </div>
-                                    <div class="map-hud-bar-row">
-                                        <span class="hud-bar-label hud-bar-label--sp">SP</span>
-                                        <div class="map-hud-bar-track hud-bar-track">
-                                            <div class="hud-bar-fill hud-bar-sp-fill" style="width:100%"></div>
-                                        </div>
-                                        <span class="hud-bar-value">{{ spState ? spState.cur : 0 }}</span>
-                                    </div>
-                                </div>
 
-                                <div class="map-hud-actions">
-
-                                    <button @click="isCodexOpen = true; playSfx('uiPop');" class="map-hud-btn"><span>📖</span></button>
-                                    <button @click="isMenuOpen = true; playSfx('uiPop');" class="map-hud-btn"><span>⚙️</span></button>
+                                    </template>
 
                                 </div>
 
@@ -2020,7 +2038,54 @@
 
 
 
+                        <!-- ── Hero avatar ── -->
+
+                        <div class="map-hud-avatar">
+
+                            <img src="assets/images/hero/hero_001.png" class="map-hud-avatar-img" alt="">
+
+                        </div>
+
+
+
+                        <!-- ── BOTTOM HUD ── -->
+
+                        <div class="map-hud-bottom">
+
+                            <div class="map-hud-bars">
+                                <div class="map-hud-bar-row">
+                                    <span class="hud-bar-label hud-bar-label--hp">HP</span>
+                                    <div class="map-hud-bar-track hud-bar-track">
+                                        <div class="hud-bar-fill hud-bar-hp-fill"
+                                            :style="{ width: (player.hp / player.maxHp * 100) + '%' }"></div>
+                                    </div>
+                                    <span class="hud-bar-value">{{ player.hp }}</span>
+                                </div>
+                                <div class="map-hud-bar-row">
+                                    <span class="hud-bar-label hud-bar-label--sp">SP</span>
+                                    <div class="map-hud-bar-track hud-bar-track">
+                                        <div class="hud-bar-fill hud-bar-sp-fill" style="width:100%"></div>
+                                    </div>
+                                    <span class="hud-bar-value">{{ spState ? spState.cur : 0 }}</span>
+                                </div>
+                            </div>
+
+                            <div class="map-hud-actions">
+
+                                <button @click="isCodexOpen = true; playSfx('uiPop');"
+                                    class="map-hud-btn"><span>📖</span></button>
+                                <button @click="isMenuOpen = true; playSfx('uiPop');"
+                                    class="map-hud-btn"><span>⚙️</span></button>
+
+                            </div>
+
+                        </div>
+
                     </div>
+
+
+
+                </div>
                 </transition>
             </div>
 
@@ -2036,11 +2101,13 @@
 
                 <div class="map-float-header" v-if="mapChapters && activeChapter && mapChapters[activeChapter]">
 
-                    <div class="map-name-btn" :class="{ 'map-name-btn--open': isMapDropdownOpen }" @click.stop="isMapDropdownOpen = !isMapDropdownOpen">
+                    <div class="map-name-btn" :class="{ 'map-name-btn--open': isMapDropdownOpen }"
+                        @click.stop="isMapDropdownOpen = !isMapDropdownOpen">
 
                         <span class="map-chapter-dot"></span>
 
-                        <span class="map-chapter-name">{{ mapChapters[activeChapter].segments[selectedSegmentIdx]?.title || '地圖' }}</span>
+                        <span class="map-chapter-name">{{ mapChapters[activeChapter].segments[selectedSegmentIdx]?.title
+                            || '地圖' }}</span>
 
                         <span class="map-name-chevron">{{ isMapDropdownOpen ? '▴' : '▾' }}</span>
 
@@ -2050,25 +2117,27 @@
 
                                 <div v-if="chap.segments && chap.segments.length" class="map-dropdown-group">
 
-                                    <div v-if="Object.keys(mapChapters).length > 1" class="map-dropdown-chapter-label">{{ chap.title || chapKey }}</div>
+                                    <div v-if="Object.keys(mapChapters).length > 1" class="map-dropdown-chapter-label">
+                                        {{ chap.title || chapKey }}</div>
 
                                     <button v-for="(seg, idx) in chap.segments" :key="'drop_m_' + chapKey + '_' + idx"
-
-                                        class="map-dropdown-item" :class="{ 'map-dropdown-item--active': chapKey === activeChapter && selectedSegmentIdx === idx, 'map-dropdown-item--locked': !isSegmentUnlocked(idx) }"
-
+                                        class="map-dropdown-item"
+                                        :class="{ 'map-dropdown-item--active': chapKey === activeChapter && selectedSegmentIdx === idx, 'map-dropdown-item--locked': !isSegmentUnlocked(idx) }"
                                         @click="jumpToMapSegment(chapKey, idx)">
 
                                         <span class="map-dropdown-indicator">
 
                                             <span v-if="!isSegmentUnlocked(idx)">🔒</span>
 
-                                            <span v-else-if="chapKey === activeChapter && selectedSegmentIdx === idx" class="map-dropdown-dot map-dropdown-dot--active"></span>
+                                            <span v-else-if="chapKey === activeChapter && selectedSegmentIdx === idx"
+                                                class="map-dropdown-dot map-dropdown-dot--active"></span>
 
                                             <span v-else class="map-dropdown-dot"></span>
 
                                         </span>
 
-                                        <span class="map-dropdown-label">{{ isSegmentUnlocked(idx) ? (seg.title || String(idx + 1)) : '？？？' }}</span>
+                                        <span class="map-dropdown-label">{{ isSegmentUnlocked(idx) ? (seg.title ||
+                                            String(idx + 1)) : '？？？' }}</span>
 
                                     </button>
 
@@ -2082,7 +2151,7 @@
 
                 </div>
 
-                
+
 
                 <div class="map-hud-avatar">
 
@@ -2090,7 +2159,7 @@
 
                 </div>
 
-                
+
 
                 <div class="map-hud-bottom">
 
@@ -2098,7 +2167,8 @@
                         <div class="map-hud-bar-row">
                             <span class="hud-bar-label hud-bar-label--hp">HP</span>
                             <div class="map-hud-bar-track hud-bar-track">
-                                <div class="hud-bar-fill hud-bar-hp-fill" :style="{ width: (player.hp / player.maxHp * 100) + '%' }"></div>
+                                <div class="hud-bar-fill hud-bar-hp-fill"
+                                    :style="{ width: (player.hp / player.maxHp * 100) + '%' }"></div>
                             </div>
                             <span class="hud-bar-value">{{ player.hp }}</span>
                         </div>
@@ -2128,13 +2198,10 @@
             <transition name="fade">
 
                 <div v-if="isBattleConfirmOpen"
-
                     class="fixed inset-0 z-[100] flex items-center justify-center px-8 bg-slate-950/[0.05] backdrop-blur-[2px]"
-
                     @click="isBattleConfirmOpen = false; playSfx('click');">
 
                     <div class="w-full max-w-xs confirm-modal-glass rounded-[2rem] overflow-hidden" @click.stop
-
                         v-if="selectedStageToConfirm">
 
                         <div class="p-7 text-center bg-gradient-to-b from-white/5 to-transparent">
@@ -2148,7 +2215,6 @@
                             <h3 class="text-white text-lg font-black mb-1.5 tracking-tighter">準備好挑戰了嗎？</h3>
 
                             <div
-
                                 class="inline-block px-2.5 py-0.5 bg-amber-500/10 rounded-lg border border-amber-500/20 mb-1">
 
                                 <p class="text-amber-400 text-[10px] font-black uppercase tracking-[0.2em]">STAGE {{
@@ -2166,21 +2232,16 @@
                         <div class="pl-6 pr-5 pt-3" v-if="hasMentor(selectedStageToConfirm)">
 
                             <button @click="startStageWithExplanation(selectedStageToConfirm)"
-
                                 class="w-full py-3 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 text-white/90 text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-4">
 
                                 <span
-
                                     class="relative inline-flex items-center justify-center w-14 h-14 rounded-full overflow-visible border border-white/30 shadow-md">
 
                                     <img src="assets/images/ui/mentor/mentor-neutral.png" alt="Mentor"
-
                                         class="w-full h-full object-cover rounded-full">
 
                                     <span
-
                                         class="absolute -top-2 -right-2 -mr-0.5 -mt-0.5 px-2 py-[2px] rounded-full bg-white/95 border border-white/70 shadow-[0_2px_6px_rgba(0,0,0,0.25)] flex items-center justify-center z-20 pointer-events-none"><span
-
                                             class="text-[10px] font-black leading-none text-slate-700 tracking-wider">...</span></span>
 
                                 </span>
@@ -2194,7 +2255,6 @@
                         <div class="flex items-center p-4 gap-2 bg-black/10">
 
                             <button @click="isBattleConfirmOpen = false; playSfx('click');"
-
                                 class="basis-1/3 px-6 py-2.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 rounded-xl text-white/60 text-xs font-black transition-all active:scale-95 uppercase tracking-widest">
 
                                 取消
@@ -2202,7 +2262,6 @@
                             </button>
 
                             <button @click="confirmAndStartBattle"
-
                                 class="basis-2/3 px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-sm font-black rounded-xl transition-all active:scale-95 shadow-[0_4px_15px_rgba(245,158,11,0.3)] border border-amber-400/60">
 
                                 出發！
@@ -2222,21 +2281,16 @@
             <transition name="fade">
 
                 <div v-if="isMapMentorOpen"
-
                     class="fixed inset-0 z-[110] flex flex-col justify-end bg-slate-950/40 backdrop-blur-md px-6 pb-10"
-
                     @click="nextMentorLine">
 
                     <div
-
                         class="absolute bottom-40 left-1/2 -translate-x-1/2 w-full max-w-sm pointer-events-none transition-all duration-700 ease-out flex justify-center">
 
                         <div class="mentor-portrait-shadow"></div>
 
                         <img src="assets/images/ui/mentor-cover-fullbody.png" alt="Mentor"
-
                             class="h-[65vh] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] mentor-portrait-fade"
-
                             style="transform: translateY(20px);">
 
                     </div>
@@ -2244,7 +2298,6 @@
 
 
                     <div class="mentor-dialogue-box w-full md:max-w-4xl md:mx-auto px-8 py-7 rounded-[2rem] relative isolate overflow-hidden shadow-[0_24px_64px_-16px_rgba(0,0,0,0.8)] border border-white/5 active:scale-[0.99] transition-transform"
-
                         @click.stop="nextMentorLine">
 
                         <div class="flex justify-between items-center mb-6">
@@ -2258,7 +2311,6 @@
                             </div>
 
                             <button @click.stop="finishMentorDialogue"
-
                                 class="px-4 py-1.5 bg-white/10 hover:bg-white/20 border border-white/30 rounded-full text-white/80 text-[11px] font-black transition-all tracking-tight shadow-sm">
 
                                 跳過
@@ -2272,7 +2324,6 @@
                         <div class="min-h-[5em] text-white/95 text-lg font-medium mentor-dialogue-text">
 
                             {{ displayedMentorText }}<span v-if="isTypingMentor"
-
                                 class="inline-block w-1 h-5 bg-amber-500 ml-1 animate-pulse align-middle"></span>
 
                         </div>
@@ -2302,123 +2353,177 @@
                     <div class="codex-book-header flex-shrink-0 flex items-center justify-between px-5 py-3">
                         <div class="flex items-center gap-2">
                             <span class="text-xl">📖</span>
-                            <div><h2 class="codex-book-title">秘笈本</h2><p class="codex-book-subtitle">CODEX</p></div>
+                            <div>
+                                <h2 class="codex-book-title">秘笈本</h2>
+                                <p class="codex-book-subtitle">CODEX</p>
+                            </div>
                         </div>
-                        <button @click="isCodexOpen = false; flippedCardId = null; playSfx('click')" class="codex-close-btn">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                        <button @click="isCodexOpen = false; flippedCardId = null; playSfx('click')"
+                            class="codex-close-btn">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
                         </button>
                     </div>
                     <div class="codex-spread flex-1 min-h-0 flex overflow-hidden">
                         <div class="flex flex-1 min-w-0 overflow-hidden">
-                        <div class="codex-book-page flex flex-1 items-center justify-center overflow-y-auto p-4 sm:p-8">
-                            <div v-if="codexPageSkills[0]" :id="'skill-card-' + codexPageSkills[0].id" class="flex justify-center w-full">
-                                <div v-if="unlockedSkillIds.includes(codexPageSkills[0].id)"
-                                    class="codex-flip-card"
-                                    :class="{ 'codex-flip-card--highlight': expandedSkillId === codexPageSkills[0].id }"
-                                    @click="flippedCardId = (flippedCardId === codexPageSkills[0].id ? null : codexPageSkills[0].id); playCardFlip()">
-                                    <div class="codex-flip-inner" :class="{ 'is-flipped': flippedCardId === codexPageSkills[0].id }">
-                                        <div class="codex-face codex-face-front">
-                                            <div class="flex justify-center"><span class="codex-particle-badge-lg">{{ (codexPageSkills[0].particle || '技').length <= 3 ? (codexPageSkills[0].particle || '技') : '技' }}</span></div>
-                                            <h3 class="codex-face-name">{{ codexPageSkills[0].name.split('：')[1] || codexPageSkills[0].name }}</h3>
-                                            <p class="codex-face-meaning-text">{{ codexPageSkills[0].meaning || '—' }}</p>
-                                            <div class="codex-face-rule-block"><span class="codex-label-mini codex-label-mini--rule">句型</span><code class="codex-face-rule-code ml-2">{{ codexPageSkills[0].rule || '—' }}</code></div>
-                                            <p class="codex-flip-hint">翻面查看 ↺</p>
-                                        </div>
-                                        <div class="codex-face codex-face-back">
-                                            <div class="codex-back-id-row">
-                                                <span class="codex-particle-badge" style="width:26px;height:26px;font-size:0.72rem">{{ (codexPageSkills[0].particle || '技').length <= 3 ? (codexPageSkills[0].particle || '技') : '技' }}</span>
-                                                <span class="codex-back-id-name">{{ codexPageSkills[0].name.split('：')[1] || codexPageSkills[0].name }}</span>
+                            <div
+                                class="codex-book-page flex flex-1 items-center justify-center overflow-y-auto p-4 sm:p-8">
+                                <div v-if="codexPageSkills[0]" :id="'skill-card-' + codexPageSkills[0].id"
+                                    class="flex justify-center w-full">
+                                    <div v-if="unlockedSkillIds.includes(codexPageSkills[0].id)" class="codex-flip-card"
+                                        :class="{ 'codex-flip-card--highlight': expandedSkillId === codexPageSkills[0].id }"
+                                        @click="flippedCardId = (flippedCardId === codexPageSkills[0].id ? null : codexPageSkills[0].id); playCardFlip()">
+                                        <div class="codex-flip-inner"
+                                            :class="{ 'is-flipped': flippedCardId === codexPageSkills[0].id }">
+                                            <div class="codex-face codex-face-front">
+                                                <div class="flex justify-center"><span
+                                                        class="codex-particle-badge-lg">{{ (codexPageSkills[0].particle
+                                                        || '技').length <= 3 ? (codexPageSkills[0].particle || '技' )
+                                                            : '技' }}</span>
+                                                </div>
+                                                <h3 class="codex-face-name">{{ codexPageSkills[0].name.split('：')[1] ||
+                                                    codexPageSkills[0].name }}</h3>
+                                                <p class="codex-face-meaning-text">{{ codexPageSkills[0].meaning || '—'
+                                                    }}</p>
+                                                <div class="codex-face-rule-block"><span
+                                                        class="codex-label-mini codex-label-mini--rule">句型</span><code
+                                                        class="codex-face-rule-code ml-2">{{ codexPageSkills[0].rule || '—' }}</code>
+                                                </div>
+                                                <p class="codex-flip-hint">翻面查看 ↺</p>
                                             </div>
-                                            <div class="codex-back-section">
-                                                <span class="codex-label-mini codex-label-mini--formula">公式</span>
-                                                <code class="codex-back-formula-code">{{ codexPageSkills[0].rule || '—' }}</code>
+                                            <div class="codex-face codex-face-back">
+                                                <div class="codex-back-id-row">
+                                                    <span class="codex-particle-badge"
+                                                        style="width:26px;height:26px;font-size:0.72rem">{{
+                                                        (codexPageSkills[0].particle || '技').length <= 3 ?
+                                                            (codexPageSkills[0].particle || '技' ) : '技' }}</span>
+                                                            <span class="codex-back-id-name">{{
+                                                                codexPageSkills[0].name.split('：')[1] ||
+                                                                codexPageSkills[0].name }}</span>
+                                                </div>
+                                                <div class="codex-back-section">
+                                                    <span class="codex-label-mini codex-label-mini--formula">公式</span>
+                                                    <code
+                                                        class="codex-back-formula-code">{{ codexPageSkills[0].rule || '—' }}</code>
+                                                </div>
+                                                <div v-if="codexPageSkills[0].examples && codexPageSkills[0].examples.length"
+                                                    class="codex-back-section">
+                                                    <span class="codex-label-mini codex-label-mini--example">例句</span>
+                                                    <ul class="codex-back-examples-list">
+                                                        <li v-for="ex in codexPageSkills[0].examples.slice(0,2)"
+                                                            class="codex-back-example-item">{{ ex }}</li>
+                                                    </ul>
+                                                </div>
+                                                <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
+                                                <div v-if="codexPageSkills[0].tip" class="codex-back-tip-block">
+                                                    <span class="codex-label-mini codex-label-mini--tip">提醒</span>
+                                                    <p class="codex-back-tip-text">{{ codexPageSkills[0].tip }}</p>
+                                                </div>
+                                                <p class="codex-flip-hint mt-auto">← 返回正面</p>
                                             </div>
-                                            <div v-if="codexPageSkills[0].examples && codexPageSkills[0].examples.length" class="codex-back-section">
-                                                <span class="codex-label-mini codex-label-mini--example">例句</span>
-                                                <ul class="codex-back-examples-list">
-                                                    <li v-for="ex in codexPageSkills[0].examples.slice(0,2)" class="codex-back-example-item">{{ ex }}</li>
-                                                </ul>
-                                            </div>
-                                            <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
-                                            <div v-if="codexPageSkills[0].tip" class="codex-back-tip-block">
-                                                <span class="codex-label-mini codex-label-mini--tip">提醒</span>
-                                                <p class="codex-back-tip-text">{{ codexPageSkills[0].tip }}</p>
-                                            </div>
-                                            <p class="codex-flip-hint mt-auto">← 返回正面</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div v-else class="codex-locked-card">
-                                    <div class="flex items-center gap-2"><span>🔒</span><span class="font-bold text-slate-500/70 text-sm">尚未習得</span></div>
-                                    <span class="codex-unlock-tip">{{ codexPageSkills[0].unlockLevel ? '第 ' + codexPageSkills[0].unlockLevel + ' 關解鎖' : '探索中' }}</span>
-                                </div>
-                            </div>
-                            <div v-else class="codex-page-empty"><p class="text-amber-900/40 text-sm">此章節尚無技能</p></div>
-                        </div>
-                        <div class="codex-spine hidden sm:block flex-shrink-0"></div>
-                        <div class="codex-book-page codex-book-page--right hidden sm:flex flex-1 items-center justify-center overflow-y-auto p-8">
-                            <div v-if="codexNextSkill" :id="'skill-card-r-' + codexNextSkill.id" class="flex justify-center w-full">
-                                <div v-if="unlockedSkillIds.includes(codexNextSkill.id)"
-                                    class="codex-flip-card"
-                                    :class="{ 'codex-flip-card--highlight': expandedSkillId === codexNextSkill.id }"
-                                    @click="flippedCardId = (flippedCardId === codexNextSkill.id ? null : codexNextSkill.id); playCardFlip()">
-                                    <div class="codex-flip-inner" :class="{ 'is-flipped': flippedCardId === codexNextSkill.id }">
-                                        <div class="codex-face codex-face-front">
-                                            <div class="flex justify-center"><span class="codex-particle-badge-lg">{{ (codexNextSkill.particle || '技').length <= 3 ? (codexNextSkill.particle || '技') : '技' }}</span></div>
-                                            <h3 class="codex-face-name">{{ codexNextSkill.name.split('：')[1] || codexNextSkill.name }}</h3>
-                                            <p class="codex-face-meaning-text">{{ codexNextSkill.meaning || '—' }}</p>
-                                            <div class="codex-face-rule-block"><span class="codex-label-mini codex-label-mini--rule">句型</span><code class="codex-face-rule-code ml-2">{{ codexNextSkill.rule || '—' }}</code></div>
-                                            <p class="codex-flip-hint">翻面查看 ↺</p>
-                                        </div>
-                                        <div class="codex-face codex-face-back">
-                                            <div class="codex-back-id-row">
-                                                <span class="codex-particle-badge" style="width:26px;height:26px;font-size:0.72rem">{{ (codexNextSkill.particle || '技').length <= 3 ? (codexNextSkill.particle || '技') : '技' }}</span>
-                                                <span class="codex-back-id-name">{{ codexNextSkill.name.split('：')[1] || codexNextSkill.name }}</span>
-                                            </div>
-                                            <div class="codex-back-section">
-                                                <span class="codex-label-mini codex-label-mini--formula">公式</span>
-                                                <code class="codex-back-formula-code">{{ codexNextSkill.rule || '—' }}</code>
-                                            </div>
-                                            <div v-if="codexNextSkill.examples && codexNextSkill.examples.length" class="codex-back-section">
-                                                <span class="codex-label-mini codex-label-mini--example">例句</span>
-                                                <ul class="codex-back-examples-list">
-                                                    <li v-for="ex in codexNextSkill.examples.slice(0,2)" class="codex-back-example-item">{{ ex }}</li>
-                                                </ul>
-                                            </div>
-                                            <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
-                                            <div v-if="codexNextSkill.tip" class="codex-back-tip-block">
-                                                <span class="codex-label-mini codex-label-mini--tip">提醒</span>
-                                                <p class="codex-back-tip-text">{{ codexNextSkill.tip }}</p>
-                                            </div>
-                                            <p class="codex-flip-hint mt-auto">← 返回正面</p>
                                         </div>
                                     </div>
+                                    <div v-else class="codex-locked-card">
+                                        <div class="flex items-center gap-2"><span>🔒</span><span
+                                                class="font-bold text-slate-500/70 text-sm">尚未習得</span></div>
+                                        <span class="codex-unlock-tip">{{ codexPageSkills[0].unlockLevel ? '第 ' +
+                                            codexPageSkills[0].unlockLevel + ' 關解鎖' : '探索中' }}</span>
+                                    </div>
                                 </div>
-                                <div v-else class="codex-locked-card">
-                                    <div class="flex items-center gap-2"><span>🔒</span><span class="font-bold text-slate-500/70 text-sm">尚未習得</span></div>
-                                    <span class="codex-unlock-tip">{{ codexNextSkill.unlockLevel ? '第 ' + codexNextSkill.unlockLevel + ' 關解鎖' : '探索中' }}</span>
+                                <div v-else class="codex-page-empty">
+                                    <p class="text-amber-900/40 text-sm">此章節尚無技能</p>
                                 </div>
                             </div>
-                            <div v-else class="codex-page-fin text-center">
-                                <div class="text-amber-900/35 text-3xl mb-2">✦</div>
-                                <p class="text-amber-900/30 text-xs tracking-[0.3em]">— 終 —</p>
+                            <div class="codex-spine hidden sm:block flex-shrink-0"></div>
+                            <div
+                                class="codex-book-page codex-book-page--right hidden sm:flex flex-1 items-center justify-center overflow-y-auto p-8">
+                                <div v-if="codexNextSkill" :id="'skill-card-r-' + codexNextSkill.id"
+                                    class="flex justify-center w-full">
+                                    <div v-if="unlockedSkillIds.includes(codexNextSkill.id)" class="codex-flip-card"
+                                        :class="{ 'codex-flip-card--highlight': expandedSkillId === codexNextSkill.id }"
+                                        @click="flippedCardId = (flippedCardId === codexNextSkill.id ? null : codexNextSkill.id); playCardFlip()">
+                                        <div class="codex-flip-inner"
+                                            :class="{ 'is-flipped': flippedCardId === codexNextSkill.id }">
+                                            <div class="codex-face codex-face-front">
+                                                <div class="flex justify-center"><span
+                                                        class="codex-particle-badge-lg">{{ (codexNextSkill.particle ||
+                                                        '技').length <= 3 ? (codexNextSkill.particle || '技' ) : '技'
+                                                            }}</span>
+                                                </div>
+                                                <h3 class="codex-face-name">{{ codexNextSkill.name.split('：')[1] ||
+                                                    codexNextSkill.name }}</h3>
+                                                <p class="codex-face-meaning-text">{{ codexNextSkill.meaning || '—' }}
+                                                </p>
+                                                <div class="codex-face-rule-block"><span
+                                                        class="codex-label-mini codex-label-mini--rule">句型</span><code
+                                                        class="codex-face-rule-code ml-2">{{ codexNextSkill.rule || '—' }}</code>
+                                                </div>
+                                                <p class="codex-flip-hint">翻面查看 ↺</p>
+                                            </div>
+                                            <div class="codex-face codex-face-back">
+                                                <div class="codex-back-id-row">
+                                                    <span class="codex-particle-badge"
+                                                        style="width:26px;height:26px;font-size:0.72rem">{{
+                                                        (codexNextSkill.particle || '技').length <= 3 ?
+                                                            (codexNextSkill.particle || '技' ) : '技' }}</span>
+                                                            <span class="codex-back-id-name">{{
+                                                                codexNextSkill.name.split('：')[1] || codexNextSkill.name
+                                                                }}</span>
+                                                </div>
+                                                <div class="codex-back-section">
+                                                    <span class="codex-label-mini codex-label-mini--formula">公式</span>
+                                                    <code
+                                                        class="codex-back-formula-code">{{ codexNextSkill.rule || '—' }}</code>
+                                                </div>
+                                                <div v-if="codexNextSkill.examples && codexNextSkill.examples.length"
+                                                    class="codex-back-section">
+                                                    <span class="codex-label-mini codex-label-mini--example">例句</span>
+                                                    <ul class="codex-back-examples-list">
+                                                        <li v-for="ex in codexNextSkill.examples.slice(0,2)"
+                                                            class="codex-back-example-item">{{ ex }}</li>
+                                                    </ul>
+                                                </div>
+                                                <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
+                                                <div v-if="codexNextSkill.tip" class="codex-back-tip-block">
+                                                    <span class="codex-label-mini codex-label-mini--tip">提醒</span>
+                                                    <p class="codex-back-tip-text">{{ codexNextSkill.tip }}</p>
+                                                </div>
+                                                <p class="codex-flip-hint mt-auto">← 返回正面</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-else class="codex-locked-card">
+                                        <div class="flex items-center gap-2"><span>🔒</span><span
+                                                class="font-bold text-slate-500/70 text-sm">尚未習得</span></div>
+                                        <span class="codex-unlock-tip">{{ codexNextSkill.unlockLevel ? '第 ' +
+                                            codexNextSkill.unlockLevel + ' 關解鎖' : '探索中' }}</span>
+                                    </div>
+                                </div>
+                                <div v-else class="codex-page-fin text-center">
+                                    <div class="text-amber-900/35 text-3xl mb-2">✦</div>
+                                    <p class="text-amber-900/30 text-xs tracking-[0.3em]">— 終 —</p>
+                                </div>
                             </div>
-                        </div>
                         </div>
                         <div class="codex-tab-strip flex-shrink-0">
                             <button v-for="ch in codexChapterList" :key="ch.key"
                                 @click="codexChapter = ch.key; codexPage = 0; flippedCardId = null"
-                                :class="['codex-tab-item', codexChapter === ch.key ? 'codex-tab-item--active' : '']">{{ ch.label }}</button>
+                                :class="['codex-tab-item', codexChapter === ch.key ? 'codex-tab-item--active' : '']">{{
+                                ch.label }}</button>
                         </div>
                     </div>
                     <div class="codex-page-nav flex-shrink-0 flex items-center justify-between px-4 py-2">
-                        <button @click="codexPage = Math.max(0, codexPage - 1); flippedCardId = null" :disabled="codexPage === 0" class="codex-nav-btn">← 前頁</button>
+                        <button @click="codexPage = Math.max(0, codexPage - 1); flippedCardId = null"
+                            :disabled="codexPage === 0" class="codex-nav-btn">← 前頁</button>
                         <div class="codex-page-indicator flex items-baseline gap-1">
                             <span class="text-amber-900/55 text-xs">第</span>
                             <span class="codex-page-num">{{ codexPage + 1 }}</span>
                             <span class="text-amber-900/55 text-xs">頁 / 共 {{ codexTotalPages }} 頁</span>
                         </div>
-                        <button @click="codexPage = Math.min(codexTotalPages - 1, codexPage + 1); flippedCardId = null" :disabled="codexPage >= codexTotalPages - 1" class="codex-nav-btn">後頁 →</button>
+                        <button @click="codexPage = Math.min(codexTotalPages - 1, codexPage + 1); flippedCardId = null"
+                            :disabled="codexPage >= codexTotalPages - 1" class="codex-nav-btn">後頁 →</button>
                     </div>
                 </div>
             </div>
@@ -2426,25 +2531,20 @@
             <!-- ── 進階設定（地圖頁可用） ── -->
 
             <div v-if="isAdvancedSettingsOpen"
-
                 class="modal-overlay fixed inset-0 z-[5000] flex items-center justify-center p-4"
-
                 @click.self="isAdvancedSettingsOpen = false">
 
                 <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
 
                 <div
-
                     class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[400px] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col">
 
                     <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4">
 
                         <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">設定 <span
-
                                 class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2">SETTINGS</span></h2>
 
                         <button @click="isAdvancedSettingsOpen = false"
-
                             class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
 
                     </div>
@@ -2456,7 +2556,6 @@
                             <label class="flex items-center justify-between cursor-pointer group">
 
                                 <span
-
                                     class="text-sm font-bold text-slate-200 group-hover:text-white transition-colors">答錯時自動朗讀句子</span>
 
                                 <div class="relative inline-flex items-center cursor-pointer">
@@ -2464,7 +2563,6 @@
                                     <input type="checkbox" v-model="settings.autoReadOnWrong" class="sr-only peer">
 
                                     <div
-
                                         class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
 
                                     </div>
@@ -2480,17 +2578,13 @@
                             <div>
 
                                 <span
-
                                     class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">答對後自動前進</span>
 
                                 <div class="flex bg-black/30 rounded-xl p-1">
 
                                     <button v-for="v in [0, 1000, 2000, 3000]" :key="'adv_'+v"
-
                                         @click="settings.correctAdvanceDelayMs = v"
-
                                         class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all"
-
                                         :class="settings.correctAdvanceDelayMs === v ? 'bg-amber-500 text-indigo-950' : 'text-slate-400 hover:text-slate-200'">
 
                                         {{ v === 0 ? '手動' : (v/1000) + 's' }}
@@ -2504,17 +2598,13 @@
                             <div>
 
                                 <span
-
                                     class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">答錯後自動前進</span>
 
                                 <div class="flex bg-black/30 rounded-xl p-1">
 
                                     <button v-for="v in [0, 2000, 3000, 5000]" :key="'err_'+v"
-
                                         @click="settings.wrongAdvanceDelayMs = v"
-
                                         class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all"
-
                                         :class="settings.wrongAdvanceDelayMs === v ? 'bg-amber-500 text-indigo-950' : 'text-slate-400 hover:text-slate-200'">
 
                                         {{ v === 0 ? '手動' : (v/1000) + 's' }}
@@ -2532,15 +2622,12 @@
                             <div>
 
                                 <span
-
                                     class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">回饋風格</span>
 
                                 <div class="grid grid-cols-2 gap-2">
 
                                     <button @click="settings.feedbackStyle = 'oneesan'"
-
                                         class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
-
                                         :class="settings.feedbackStyle === 'oneesan' ? 'bg-indigo-500/20 border-indigo-500 text-indigo-100 shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
 
                                         播報姊姊
@@ -2548,9 +2635,7 @@
                                     </button>
 
                                     <button @click="settings.feedbackStyle = 'combat'"
-
                                         class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
-
                                         :class="settings.feedbackStyle === 'combat' ? 'bg-indigo-500/20 border-indigo-500 text-indigo-100 shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
 
                                         爽快戰鬥
@@ -2564,15 +2649,12 @@
                             <div>
 
                                 <span
-
                                     class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">戰鬥模式</span>
 
                                 <div class="grid grid-cols-2 gap-2">
 
                                     <button @click="settings.enemyAttackMode = 'atb'"
-
                                         class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
-
                                         :class="settings.enemyAttackMode === 'atb' ? 'bg-rose-500/20 border-rose-500 text-rose-100 shadow-[0_0_15px_rgba(244,63,94,0.2)]' : 'bg-black/20 border-white/5 text-slate-400'">
 
                                         ATB(即時)
@@ -2580,7 +2662,6 @@
                                     </button>
 
                                     <button
-
                                         class="py-2 px-1 text-xs font-bold rounded-xl border border-white/5 bg-black/10 text-slate-600 cursor-not-allowed italic">
 
                                         回合制(TODO)
@@ -2608,21 +2689,17 @@
 
             <!-- ── 選單 MENU（地圖頁可用） ── -->
 
-            <div v-if="isMenuOpen"
-
-                class="modal-overlay fixed inset-0 z-[5000] flex items-center justify-center p-4"
+            <div v-if="isMenuOpen" class="modal-overlay fixed inset-0 z-[5000] flex items-center justify-center p-4"
                 @click.self="isMenuOpen = false; playSfx('click');">
 
                 <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
 
                 <div
-
                     class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[400px] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col">
 
                     <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4">
 
                         <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">選單 <span
-
                                 class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2">MENU</span></h2>
 
                         <button @click="isMenuOpen = false; playSfx('click');"
@@ -2639,7 +2716,6 @@
                                 <span class="text-sm font-bold text-slate-200">{{ isMuted ? '🔇 靜音' : '🔊 音量' }}</span>
 
                                 <button @click="isMuted = !isMuted; saveAudioSettings(); playBgm();"
-
                                     class="text-xs px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 transition-colors border border-white/5">
 
                                     {{ isMuted ? '取消靜音' : '設為靜音' }}
@@ -2650,26 +2726,24 @@
 
                             <div class="space-y-2">
 
-                                <label class="flex items-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                <label
+                                    class="flex items-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
 
                                     <span class="w-8">BGM</span>
 
                                     <input type="range" min="0" max="1" step="0.01" v-model.number="bgmVolume"
-
                                         @input="playBgm(); saveAudioSettings()"
-
                                         class="flex-1 accent-amber-500 h-1.5 bg-black/30 rounded-full appearance-none">
 
                                 </label>
 
-                                <label class="flex items-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                <label
+                                    class="flex items-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
 
                                     <span class="w-8">SFX</span>
 
                                     <input type="range" min="0" max="1" step="0.01" v-model.number="sfxVolume"
-
                                         @input="saveAudioSettings()"
-
                                         class="flex-1 accent-amber-500 h-1.5 bg-black/30 rounded-full appearance-none">
 
                                 </label>
@@ -2693,15 +2767,11 @@
                         </button>
 
                         <button @pointerdown="startRunAwayPress" @pointerup="cancelRunAwayPress"
-
                             @pointerleave="cancelRunAwayPress" @pointercancel="cancelRunAwayPress" @contextmenu.prevent
-
                             class="relative w-full px-4 py-3.5 rounded-xl bg-rose-950/30 border border-rose-500/30 hover:bg-rose-900/40 text-rose-100 text-xs font-black shadow-lg transition-all overflow-hidden select-none active:scale-95 mt-1"
-
                             :class="{ 'border-rose-400/50 shadow-rose-500/10': isRunAwayPressing }">
 
                             <div class="absolute left-0 top-0 bottom-0 bg-rose-500/30 pointer-events-none"
-
                                 :style="{ width: isRunAwayPressing ? '100%' : '0%', transition: isRunAwayPressing ? 'width 3s linear' : 'width 0.2s ease-out' }">
 
                             </div>
@@ -2723,17 +2793,22 @@
 
                 <div class="absolute inset-0 bg-slate-950/50 backdrop-blur-md pointer-events-none"></div>
 
-                <div class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[500px] h-full max-h-[75vh] shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
+                <div
+                    class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[500px] h-full max-h-[75vh] shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
 
                     <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4 flex-shrink-0">
 
-                        <h2 class="text-2xl font-black text-indigo-300 tracking-[0.1em] drop-shadow-lg">更新日誌 <span class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2 uppercase">CHANGELOG</span></h2>
+                        <h2 class="text-2xl font-black text-indigo-300 tracking-[0.1em] drop-shadow-lg">更新日誌 <span
+                                class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2 uppercase">CHANGELOG</span>
+                        </h2>
 
-                        <button @click="isChangelogOpen = false; playSfx('click');" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
+                        <button @click="isChangelogOpen = false; playSfx('click');"
+                            class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
 
                     </div>
 
-                    <div v-if="changelogError" class="flex-1 flex flex-col items-center justify-center p-10 text-center">
+                    <div v-if="changelogError"
+                        class="flex-1 flex flex-col items-center justify-center p-10 text-center">
 
                         <span class="text-4xl mb-4">⚠️</span>
 
@@ -2741,9 +2816,12 @@
 
                     </div>
 
-                    <div v-else-if="changelogData.length === 0" class="flex-1 flex flex-col items-center justify-center p-10 text-center">
+                    <div v-else-if="changelogData.length === 0"
+                        class="flex-1 flex flex-col items-center justify-center p-10 text-center">
 
-                        <div class="w-8 h-8 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mb-4"></div>
+                        <div
+                            class="w-8 h-8 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mb-4">
+                        </div>
 
                         <div class="text-slate-400 text-sm font-bold tracking-widest">載入中...</div>
 
@@ -2751,19 +2829,24 @@
 
                     <div v-else class="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-1 pb-2">
 
-                        <div v-for="(entry, index) in changelogData" :key="index" class="p-5 bg-white/5 rounded-2xl border border-white/5 shadow-inner group">
+                        <div v-for="(entry, index) in changelogData" :key="index"
+                            class="p-5 bg-white/5 rounded-2xl border border-white/5 shadow-inner group">
 
                             <div class="flex items-center justify-between mb-3">
 
-                                <span class="text-indigo-300 font-black text-xl tracking-tight leading-none">v{{ entry.version }}</span>
+                                <span class="text-indigo-300 font-black text-xl tracking-tight leading-none">v{{
+                                    entry.version }}</span>
 
-                                <span class="text-[10px] font-bold text-slate-500 bg-black/20 px-2 py-0.5 rounded-full border border-white/5 uppercase tracking-tighter">{{ entry.date }}</span>
+                                <span
+                                    class="text-[10px] font-bold text-slate-500 bg-black/20 px-2 py-0.5 rounded-full border border-white/5 uppercase tracking-tighter">{{
+                                    entry.date }}</span>
 
                             </div>
 
                             <ul class="space-y-2">
 
-                                <li v-for="(change, cIndex) in entry.changes" :key="cIndex" class="flex items-start gap-3 text-slate-300 text-xs leading-relaxed">
+                                <li v-for="(change, cIndex) in entry.changes" :key="cIndex"
+                                    class="flex items-start gap-3 text-slate-300 text-xs leading-relaxed">
 
                                     <span class="w-1.5 h-1.5 rounded-full bg-indigo-500/50 mt-1.5 flex-shrink-0"></span>
 
@@ -2779,7 +2862,8 @@
 
                     <div class="flex justify-end pt-5 mt-3 border-t border-white/10 flex-shrink-0">
 
-                        <button @click="isChangelogOpen = false; playSfx('click');" class="px-8 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95">關閉</button>
+                        <button @click="isChangelogOpen = false; playSfx('click');"
+                            class="px-8 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95">關閉</button>
 
                     </div>
 
@@ -2794,9 +2878,7 @@
         <!-- V3.0 Battle UI -->
 
         <div v-else-if="!isFinished" id="stageWrap"
-
             class="fixed inset-0 bg-slate-900 overflow-hidden font-sans select-none"
-
             :class="{ 'boss-vfx-shake': bossScreenShake }">
 
 
@@ -2806,9 +2888,7 @@
             <div class="absolute inset-0 z-0 h-[100dvh] w-full">
 
                 <div id="battleScene"
-
                     class="absolute inset-0 transition-all duration-300 bg-cover bg-center bg-no-repeat"
-
                     :style="{ backgroundImage: 'url(' + currentBg + ')' }" :class="{ 'bg-dodge': isPlayerDodging }">
 
 
@@ -2816,94 +2896,93 @@
                     <!-- Monster Container -->
 
                     <div
-
                         class="absolute top-[20dvh] left-0 w-full h-[50dvh] flex items-center justify-center z-10 pointer-events-none">
 
                         <div v-if="!monsterTrulyDead"
                             class="flex flex-col items-center relative transition-all duration-300 pointer-events-auto"
-                            :style="monsterPositionStyle"
-                            :class="{ 
+                            :style="monsterPositionStyle" :class="{ 
                                 'monster-death-anim': monsterIsDying && currentLevel % 5 !== 0,
                                 'boss-death-anim': monsterIsDying && currentLevel % 5 === 0
                             }">
 
                             <!-- Hit Animation Wrapper: Isolates hit/shake from base position transform to prevent jumping -->
-                            <div class="flex flex-col items-center"
-                                :class="{ 
+                            <div class="flex flex-col items-center" :class="{ 
                                     hit: monsterHit,
-                                    'hit-boss': monsterHit && currentLevel % 5 === 0
+                                    'hit-boss': monsterHit && currentLevel % 5 === 0,
+                                    'monster-dodge': monsterDodge
                                 }">
                                 <div v-if="heroBuffs.monsterSleep" class="zzz-indicator-wrap z-50">
                                     <div class="zzz-item text-3xl" style="animation-delay: 0s; top: 0; left: 0;">Z</div>
-                                    <div class="zzz-item text-2xl" style="animation-delay: 1s; top: 10px; left: 10px;">z</div>
-                                    <div class="zzz-item text-xl" style="animation-delay: 2s; top: 20px; left: 20px;">z</div>
+                                    <div class="zzz-item text-2xl" style="animation-delay: 1s; top: 10px; left: 10px;">z
+                                    </div>
+                                    <div class="zzz-item text-xl" style="animation-delay: 2s; top: 20px; left: 20px;">z
+                                    </div>
                                 </div>
 
-                            <!-- Monster Image -->
+                                <!-- Monster Image -->
 
-                            <div class="rounded-full flex items-center justify-center text-5xl mb-3 shadow-[0_0_30px_rgba(225,29,72,0.3)] ring-2 ring-rose-500/20"
-
-                                :style="{ 
+                                <div class="rounded-full flex items-center justify-center text-5xl mb-3 shadow-[0_0_30px_rgba(225,29,72,0.3)] ring-2 ring-rose-500/20"
+                                    :style="{ 
 
                                     background: 'conic-gradient(rgba(225, 29, 72, 0.6) ' + ((10 - timeLeft) / 10 * 360) + 'deg, rgba(136, 19, 55, 0.2) 0deg)',
 
-                                    transform: 'scale(' + (monster.size || 1) + ')'
+                                    transform: 'scale(' + (monster.size || 1) + ')',
+
+                                    '--m-scale': (monster.size || 1)
 
                                 }"
+                                    :class="[currentLevel % 5 === 0 ? 'monster-container-boss' : 'monster-container-normal', { 'monster-entrance': monsterIsEntering }]">
 
-                                :class="[currentLevel % 5 === 0 ? 'monster-container-boss' : 'monster-container-normal', { 'monster-entrance': monsterIsEntering }]">
+                                    <img v-if="monster.sprite && monster.sprite.includes('/')"
+                                        :src="currentMonsterSprite" @error="handleMonsterImageError" alt="monster"
+                                        class="object-contain drop-shadow-2xl monster-breath"
+                                        :class="currentLevel % 5 === 0 ? 'monster-img-boss' : 'monster-img-normal'">
 
-                                <img v-if="monster.sprite && monster.sprite.includes('/')" :src="currentMonsterSprite"
+                                    <span v-else class="monster-breath inline-block">{{ monster.sprite || '👹' }}</span>
 
-                                    @error="handleMonsterImageError" alt="monster"
+                                </div>
 
-                                    class="object-contain drop-shadow-2xl monster-breath"
 
-                                    :class="currentLevel % 5 === 0 ? 'monster-img-boss' : 'monster-img-normal'">
 
-                                <span v-else class="monster-breath inline-block">{{ monster.sprite || '👹' }}</span>
+                                <!-- Monster Info Block (name + HP + status): marginTop driven by infoOffsetY -->
+                                <div :style="monster.infoOffsetY ? { marginTop: monster.infoOffsetY + 'px' } : {}">
 
+                                <!-- Monster Info -->
+
+                                <div class="relative z-10 flex flex-col items-center">
+
+                                    <span class="text-xl font-black text-white mb-0.5"
+                                        style="text-shadow: 0 2px 10px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9);">{{
+
+                                        monster.name }}</span>
+
+                                    <span class="text-sm font-bold text-amber-300 text-center"
+                                        style="white-space: pre-line; line-height: 1.15; text-shadow: 0 2px 8px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9);">{{
+
+                                        monster.trait?.replace(/，/g, '\n') }}</span>
+
+                                </div>
+
+
+
+                                <!-- Monster HP -->
+
+                                <div class="w-full h-2.5 bg-slate-950/80 rounded-full overflow-hidden mb-1 border border-white/20 shadow-lg"
+                                    style="width: 160px;">
+
+                                    <div class="h-full bg-gradient-to-r from-rose-600 to-rose-400 shadow-[0_0_10px_rgba(225,29,72,0.6)] transition-all duration-500"
+                                        :style="{ width: (monster.hp / monster.maxHp * 100) + '%' }"></div>
+
+                                </div>
+
+
+
+                                <div id="monsterStatusBar" class="w-full flex justify-center gap-1 mt-1 min-h-[22px]">
+                                </div>
+
+                                </div>
                             </div>
-
-
-
-                            <!-- Monster Info -->
-
-                            <div class="relative z-10 flex flex-col items-center">
-
-                                <span class="text-xl font-black text-white mb-0.5"
-
-                                    style="text-shadow: 0 2px 10px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9);">{{
-
-                                    monster.name }}</span>
-
-                                <span class="text-sm font-bold text-amber-300 text-center"
-
-                                    style="white-space: pre-line; line-height: 1.15; text-shadow: 0 2px 8px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9);">{{
-
-                                    monster.trait?.replace(/，/g, '\n') }}</span>
-
-                            </div>
-
-
-
-                            <!-- Monster HP -->
-
-                            <div class="w-full h-2.5 bg-slate-950/80 rounded-full overflow-hidden mb-1 border border-white/20 shadow-lg"
-
-                                style="width: 160px;">
-
-                                <div class="h-full bg-gradient-to-r from-rose-600 to-rose-400 shadow-[0_0_10px_rgba(225,29,72,0.6)] transition-all duration-500"
-
-                                    :style="{ width: (monster.hp / monster.maxHp * 100) + '%' }"></div>
-
-                            </div>
-
-
-
-                            <div id="monsterStatusBar" class="w-full flex justify-center gap-1 mt-1 min-h-[22px]"></div>
                         </div>
-                    </div>
 
                     </div>
 
@@ -2922,13 +3001,10 @@
             <!-- [L3] Legacy Hero Stand Slot -->
 
             <div id="heroStandContainer"
-
                 class="absolute left-0 w-[45%] max-w-[170px] z-[45] pointer-events-none flex items-end justify-start"
-
                 style="bottom: clamp(150px, 28dvh, 240px); height: min(35dvh, 260px); display: none;">
 
                 <img src="assets/images/hero/hero_neutral.png"
-
                     class="object-contain object-bottom w-full h-full drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)] opacity-60 mix-blend-screen mask-image-b mask-gradient-b">
 
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent z-[-1]"></div>
@@ -2950,9 +3026,7 @@
                 <transition name="praise-pop">
 
                     <div v-if="praiseToast.show"
-
                         class="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-5xl font-black text-rose-300 drop-shadow-[0_0_20px_rgba(244,63,94,1)] tracking-widest text-center"
-
                         style="-webkit-text-stroke: 1.5px #881337; text-shadow: 0 4px 6px rgba(0,0,0,0.5); width: max-content;">
 
                         {{ praiseToast.text }}
@@ -2966,7 +3040,6 @@
             <!-- [L6] Global UI Layer -->
 
             <div
-
                 class="absolute top-0 w-full z-[60] pt-safe px-4 pointer-events-none flex flex-col items-center gap-3 mt-2">
 
 
@@ -2976,11 +3049,9 @@
                 <div class="flex items-center justify-between w-full max-w-lg mb-1 pointer-events-auto">
 
                     <div
-
                         class="px-3 py-1 bg-black/40 backdrop-blur-sm rounded-full border border-white/10 text-[11px] font-bold text-slate-300 shadow-lg flex items-center gap-2">
 
                         <span class="w-2 h-2 rounded-full"
-
                             :class="difficulty === 'easy' ? 'bg-emerald-400' : 'bg-rose-500 shadow-[0_0_5px_rgba(225,29,72,0.8)]'"></span>
 
                         <span>LV.{{ currentLevel }}</span>
@@ -2988,15 +3059,12 @@
                     </div>
 
                     <div id="battleLog"
-
                         class="flex-1 mx-2 text-center text-xs font-bold text-amber-300 drop-shadow-md truncate"
-
                         aria-live="polite"></div>
 
                     <div class="flex items-center gap-2">
 
                         <span v-if="comboCount > 1"
-
                             class="px-2 py-0.5 bg-rose-900/60 border border-rose-500/50 rounded text-rose-300 font-black text-[10px] animate-pulse">
 
                             🔥 {{ comboCount }} COMBO
@@ -3012,19 +3080,15 @@
                 <!-- Floating Question Bubble -->
 
                 <div v-if="!monsterDead && !playerDead && !isFinished"
-
                     class="w-full max-w-md mx-auto pointer-events-auto transition-all duration-300"
-
                     :class="{ 'blur-md brightness-50 grayscale-[0.2] opacity-40 scale-95': isSkillOpen || isCodexOpen || isMenuOpen || isMistakesOpen }">
 
                     <div
-
                         class="glass-panel question-card rounded-2xl p-2 sm:p-3 shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-white/20 relative">
 
                         <div id="question-area" class="w-full flex flex-col items-center justify-center min-h-[50px]">
 
                             <div
-
                                 class="text-amber-100/80 font-bold mb-3 text-sm md:text-base tracking-widest text-shadow-sm text-center">
 
                                 {{ currentQuestion?.chinese || '' }}
@@ -3036,17 +3100,13 @@
                             <div class="flex flex-wrap justify-center items-center gap-2 leading-tight">
 
                                 <span v-for="(seg, idx) in displaySegments"
-
                                     :key="'seg_' + currentLevel + '_' + currentIndex + '_' + idx"
-
                                     class="inline-flex items-center">
 
                                     <span v-if="!seg.isBlank"
-
                                         class="text-white text-2xl md:text-3xl font-black drop-shadow-md">
 
                                         <ruby v-if="seg.ruby">{{ seg.text }}<rt
-
                                                 class="text-[10px] md:text-xs text-amber-300 font-bold mb-1">{{ seg.ruby
 
                                                 }}</rt></ruby>
@@ -3056,9 +3116,7 @@
                                     </span>
 
                                     <span v-else-if="seg.showInput && isChoiceMode"
-
                                         class="blank-slot text-2xl md:text-3xl font-black mx-1"
-
                                         :class="[getInputStyle(seg.blankIndex), { 'is-empty': !hasSubmitted && !userAnswers[seg.blankIndex] }]">
 
                                         {{ hasSubmitted ? getAnswerForDisplay(seg.blankIndex) :
@@ -3068,7 +3126,6 @@
                                     </span>
 
                                     <span v-else
-
                                         class="particle-input correct inline-block px-3 py-0.5 text-2xl md:text-3xl mx-1 shadow-inner">
 
                                         {{ getAnswerForDisplay(seg.blankIndex) }}
@@ -3092,9 +3149,7 @@
             <!-- [L5] Bottom HUD Console -->
 
             <div id="hud" v-if="!isFinished"
-
                 class="fixed md:absolute bottom-0 left-0 w-full md:w-[60%] md:min-w-[400px] md:max-w-[700px] md:left-1/2 md:-translate-x-1/2 z-50 glass-panel border-t md:border-x border-white/20 shadow-[0_-15px_40px_rgba(0,0,0,0.5)] flex flex-col justify-start !p-0 !min-h-0 h-auto overflow-visible"
-
                 style="background: rgba(15, 23, 42, 0.15); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-top-left-radius: 20px; border-top-right-radius: 20px; padding-bottom: env(safe-area-inset-bottom, 2px);">
 
 
@@ -3102,7 +3157,6 @@
                 <div class="hud-inner-wrap" :class="{ 'hud-shake': screenShake }">
 
                     <div class="h-full relative overflow-visible flex flex-col hud-interactive-rows"
-
                         :class="{ 'hud-tap-mode': answerMode === 'tap' }">
 
 
@@ -3110,7 +3164,6 @@
                         <!-- Hint Overlay anchored above HUD -->
 
                         <div
-
                             class="absolute left-1/2 -translate-x-1/2 -top-5 z-[60] pointer-events-none text-[11px] font-black tracking-widest text-amber-300 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)] hidden md:block">
 
                             {{ answerMode === 'flick' ? 'FLICK TO ATTACK' : 'TAP TO ATTACK' }}
@@ -3126,29 +3179,22 @@
                             <div class="h-full relative overflow-visible">
 
                                 <div v-if="answerMode === 'tap' && !hasSubmitted"
-
                                     class="tap-mode-controls w-full h-full flex items-center justify-center gap-1 sm:gap-2 pt-1">
 
                                     <div class="flex w-full justify-center"
-
                                         :class="currentQuestion?.choices?.length > 3 ? 'gap-1' : 'gap-2'">
 
                                         <button v-for="(opt, i) in currentQuestion.choices"
-
                                             :key="'tap_' + opt + '_' + i" @click="selectChoice(opt)"
-
                                             class="flex-1 h-[34px] rounded-xl border border-amber-400/50 bg-slate-800/60 outline-none hover:bg-amber-400/30 active:bg-amber-500/60 active:scale-95 transition-all shadow-lg relative overflow-hidden group"
-
                                             :class="getChoiceBtnClass(opt)">
 
                                             <div
-
                                                 class="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent opacity-30 group-hover:opacity-50 transition-opacity">
 
                                             </div>
 
                                             <span
-
                                                 class="relative z-10 text-[20px] md:text-[22px] font-black text-amber-50 shadow-sm leading-none">{{
 
                                                 opt }}</span>
@@ -3162,25 +3208,17 @@
 
 
                                 <div v-if="answerMode === 'flick' && !hasSubmitted" id="flickLayer"
-
                                     class="w-full h-full flex justify-center items-center select-none touch-none"
-
                                     :class="currentQuestion?.choices?.length > 3 ? 'gap-1' : 'gap-2'"
-
                                     @pointermove="moveFlick" @pointerup="endFlick" @pointercancel="endFlick"
-
                                     @pointerleave="endFlick">
 
                                     <button v-for="(opt, i) in currentQuestion.choices" :key="'flick_' + opt + '_' + i"
-
                                         class="flex-1 h-[36px] rounded-2xl border bg-slate-800/35 transition-all shadow-inner relative flex justify-center items-center"
-
                                         :class="flickState.successOpt === opt ? 'border-emerald-400 bg-emerald-500/30 text-emerald-100' : (flickState.activeOpt === opt ? 'border-amber-400 bg-amber-500/30 text-amber-50 scale-105 shadow-[0_0_15px_rgba(251,191,36,0.4)]' : 'border-amber-400/30 text-amber-50 border-white/10')"
-
                                         @pointerdown="startFlick($event, opt)">
 
                                         <span
-
                                             class="text-[19px] md:text-[20px] font-bold text-amber-100 drop-shadow-lg pointer-events-none leading-none">{{
 
                                             opt }}</span>
@@ -3194,15 +3232,12 @@
                                 <!-- Feedback Overlay -->
 
                                 <div v-show="hasSubmitted"
-
                                     class="absolute inset-0 w-full h-full flex items-center justify-center gap-4 z-20 pointer-events-none">
 
                                     <div class="flex items-center justify-center gap-4 px-6 py-2 rounded-full border shadow-[0_0_20px_rgba(0,0,0,0.8)] pointer-events-auto"
-
                                         :class="isCurrentCorrect ? 'border-emerald-500 bg-emerald-950/80' : 'border-rose-500 bg-rose-950/80'">
 
                                         <span v-if="isCurrentCorrect"
-
                                             class="text-emerald-400 text-lg font-black flex items-center gap-2">✓
 
                                             正確！</span>
@@ -3216,7 +3251,6 @@
 
 
                                     <button v-if="shouldShowNextButton" @click="nextQuestion"
-
                                         class="px-6 py-2 rounded-full bg-amber-500 text-slate-950 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all border border-amber-300 tracking-widest pointer-events-auto">
 
                                         次へ
@@ -3234,15 +3268,11 @@
                         <!-- Row 2: Attack Button (Compacted) -->
 
                         <div v-if="answerMode === 'tap'" class="w-full px-2 py-0.5 flex justify-center flex-none"
-
                             style="height: 38px;">
 
                             <button v-show="!hasSubmitted" @click="checkAnswer"
-
                                 :disabled="hasSubmitted || (isChoiceMode && !userAnswers[0])"
-
                                 class="w-[60%] max-w-[320px] h-[32px] md:h-[36px] rounded-2xl bg-gradient-to-r from-amber-600 to-amber-500 border border-amber-300 shadow-xl text-slate-900 text-[12px] font-black tracking-widest transition-transform active:scale-95 disabled:opacity-50 disabled:grayscale hover:brightness-110 flex justify-center items-center leading-none"
-
                                 :class="(isChoiceMode && !userAnswers[0]) ? 'cursor-not-allowed opacity-50' : ''">
 
                                 攻擊 ATTACK
@@ -3264,25 +3294,19 @@
                                 <div class="flex-shrink-0 flex flex-col gap-1 items-center w-auto md:flex-none">
 
                                     <button @click="answerMode = 'flick'"
-
                                         class="w-14 md:w-16 h-5 md:h-6 rounded-sm flex items-center justify-center transition-all shadow-md border border-white/10"
-
                                         :class="answerMode === 'flick' ? 'bg-amber-400 text-slate-900 border-amber-200' : 'bg-slate-800 text-slate-500 opacity-60'">
 
                                         <span
-
                                             class="text-[9px] font-black tracking-tighter uppercase leading-none">FLICK</span>
 
                                     </button>
 
                                     <button @click="answerMode = 'tap'"
-
                                         class="w-14 md:w-16 h-5 md:h-6 rounded-sm flex items-center justify-center transition-all shadow-md border border-white/10"
-
                                         :class="answerMode === 'tap' ? 'bg-amber-400 text-slate-900 border-amber-200' : 'bg-slate-800 text-slate-500 opacity-60'">
 
                                         <span
-
                                             class="text-[9px] font-black tracking-tighter uppercase leading-none">TAP</span>
 
                                     </button>
@@ -3321,7 +3345,6 @@
                                 <!-- Right: Icons (Enlarged) -->
 
                                 <div
-
                                     class="flex-shrink-0 flex flex-nowrap items-center justify-end gap-2 md:gap-3 w-auto md:flex-none">
 
 
@@ -3330,8 +3353,7 @@
                                         <span class="group-hover:scale-110">📖</span>
                                     </button>
 
-                                    <button @click="usePotion()"
-                                        class="hud-tool-btn is-potion-ready group"
+                                    <button @click="usePotion()" class="hud-tool-btn is-potion-ready group"
                                         :class="{ 'is-disabled': inventory.potions <= 0 }" title="補血藥">
                                         <span class="group-hover:scale-110">🧪</span>
                                         <!-- Unified Potion Count Badge -->
@@ -3360,11 +3382,9 @@
             <!-- [L7] Result Overlay -->
 
             <div v-if="(monsterResultShown || playerDead) && !isDefeated"
-
                 class="absolute inset-0 z-[100] flex items-center justify-center result-screen-backdrop pointer-events-auto px-4">
 
                 <div
-
                     class="glass-panel p-8 rounded-3xl border border-white/20 shadow-[0_10px_50px_rgba(0,0,0,0.8)] flex flex-col items-center text-center w-full max-w-sm">
 
                     <div v-if="monsterDead" class="w-full">
@@ -3378,15 +3398,11 @@
                         <div class="w-full bg-black/40 rounded-xl p-4 mb-6 border border-white/5 space-y-2">
 
                             <div class="flex justify-between items-center"><span
-
                                     class="text-slate-400 font-bold text-sm">評價</span><span class="text-3xl font-black"
-
                                     :class="getGradeColor(calculatedGrade)">{{ calculatedGrade }}</span></div>
 
                             <div class="flex justify-between items-center"><span
-
                                     class="text-slate-400 text-xs">正確率</span><span
-
                                     class="text-emerald-400 font-mono font-bold">{{ accuracyPct }}%</span></div>
 
                             <div class="flex justify-between items-center"><span class="text-slate-400 text-xs">最大
@@ -3408,9 +3424,7 @@
                             查看題目</button>
 
                         <button v-if="currentLevel < maxLevel" @click="returnToMap"
-
                             class="w-full py-4 rounded-xl bg-amber-500 text-slate-900 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all mb-3"
-
                             :class="{ 'opacity-0 pointer-events-none': !isNextBtnVisible }">
 
                             返回地圖
@@ -3418,9 +3432,7 @@
                         </button>
 
                         <button v-else @click="returnToMap"
-
                             class="w-full py-4 rounded-xl bg-amber-500 text-slate-900 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all mb-3"
-
                             :class="{ 'opacity-0 pointer-events-none': !isNextBtnVisible }">
 
                             章節結算
@@ -3444,12 +3456,14 @@
             </div>
 
             <!-- 💀 Defeat Overlay -->
-            <div id="defeatOverlay" class="fixed inset-0 z-[99] flex flex-col items-center justify-center gap-10 pointer-events-auto hidden bg-black/40 backdrop-blur-[2px]">
+            <div id="defeatOverlay"
+                class="fixed inset-0 z-[99] flex flex-col items-center justify-center gap-10 pointer-events-auto hidden bg-black/40 backdrop-blur-[2px]">
                 <div class="text-8xl font-black text-rose-600/80 tracking-[0.2em] transform -rotate-12 select-none pointer-events-none animate-pulse"
-                     style="text-shadow: 0 0 40px rgba(225,29,72,0.6), 0 10px 20px rgba(0,0,0,0.8);">
+                    style="text-shadow: 0 0 40px rgba(225,29,72,0.6), 0 10px 20px rgba(0,0,0,0.8);">
                     敗北
                 </div>
-                <button @click="defeatReturn()" class="px-10 py-3 rounded-2xl bg-slate-800/90 border border-slate-500 text-white font-bold text-lg tracking-widest shadow-xl hover:bg-slate-700 active:scale-95 transition-all">
+                <button @click="defeatReturn()"
+                    class="px-10 py-3 rounded-2xl bg-slate-800/90 border border-slate-500 text-white font-bold text-lg tracking-widest shadow-xl hover:bg-slate-700 active:scale-95 transition-all">
                     回首頁
                 </button>
             </div>
@@ -3460,7 +3474,7 @@
                 class="fixed md:absolute bottom-0 left-4 md:left-1/2 md:-translate-x-1/2 md:ml-[-180px] z-[45] pointer-events-none"
                 style="width: clamp(110px, 7vw, 160px); height: clamp(110px, 7vw, 160px);"
                 :style="{ marginBottom: HERO_VISUAL_CONFIG.battle.marginBottom }">
-                
+
                 <img src="assets/images/hero/hero_neutral.png"
                     class="w-full h-full object-contain drop-shadow-[0_8px_12px_rgba(0,0,0,0.6)]"
                     data-state="neutral" />
@@ -3494,7 +3508,6 @@
                         <div class="mentor-portrait-container">
 
                             <img v-if="!isMentorPortraitError" src="assets/images/ui/mentor/mentor-neutral.png"
-
                                 @error="isMentorPortraitError = true" class="mentor-portrait-img rounded-full">
 
                             <div v-else class="mentor-portrait-placeholder">
@@ -3512,11 +3525,8 @@
                     <div class="mentor-footer">
 
                         <button @pointerdown="startMentorSkipPress" @pointerup="cancelMentorSkipPress"
-
                             @pointerleave="cancelMentorSkipPress" @pointercancel="cancelMentorSkipPress"
-
                             @contextmenu.prevent class="mentor-skip-btn"
-
                             :class="{ 'is-pressing': isMentorSkipPressing }">
 
                             <div class="mentor-skip-progress" :style="{ width: isMentorSkipPressing ? '100%' : '0%' }">
@@ -3532,7 +3542,6 @@
                         <div v-if="isLastMentorLine && !isTypingMentor" class="flex gap-4">
 
                             <button @click="restartMentorDialogue"
-
                                 class="mentor-btn btn-secondary text-sm sm:text-base px-4 sm:px-10">
 
                                 再看一次
@@ -3564,7 +3573,8 @@
 
             <!-- Knowledge Card Animation Overlay -->
             <transition name="fade">
-                <div v-if="isKnowledgeCardShowing" class="knowledge-card-overlay" :class="{ 'is-absorbing': isKnowledgeCardAbsorbing }" @click="closeKnowledgeCard">
+                <div v-if="isKnowledgeCardShowing" class="knowledge-card-overlay"
+                    :class="{ 'is-absorbing': isKnowledgeCardAbsorbing }" @click="closeKnowledgeCard">
                     <div class="knowledge-card-container">
                         <div class="card-magic-glow"></div>
                         <div class="knowledge-card">
@@ -3572,27 +3582,29 @@
                             <div class="card-sparkles">
                                 <div v-for="n in 8" :key="'s'+n" class="card-sparkle"></div>
                             </div>
-                            
+
                             <div class="card-header">
                                 <div class="particle-glamour">{{ activeKnowledgeCard?.particle }}</div>
                             </div>
-                            
+
                             <div class="card-body">
-                                <div class="card-topic-tag">{{ activeKnowledgeCard?.name.split('：')[1] || activeKnowledgeCard?.name }}</div>
+                                <div class="card-topic-tag">{{ activeKnowledgeCard?.name.split('：')[1] ||
+                                    activeKnowledgeCard?.name }}</div>
                                 <p class="card-meaning">{{ activeKnowledgeCard?.meaning }}</p>
                             </div>
-                            
+
                             <div class="card-footer">
                                 點擊收錄至秘笈本
                             </div>
-                            
+
                             <!-- Inner Shine Effect -->
                             <div class="card-inner-shine"></div>
                         </div>
-                        
+
                         <div v-if="isKnowledgeCardAbsorbing" class="card-absorb-particles">
-                            <div v-for="n in 12" :key="n" class="card-absorb-particle" 
-                                 :style="{ '--dx': (Math.random()*300-150)+'px', '--dy': (Math.random()*300-150)+'px' }"></div>
+                            <div v-for="n in 12" :key="n" class="card-absorb-particle"
+                                :style="{ '--dx': (Math.random()*300-150)+'px', '--dy': (Math.random()*300-150)+'px' }">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3600,12 +3612,10 @@
 
             <!-- Skill Unlock Modal -->
 
-            <div v-if="isSkillUnlockModalOpen" class="modal-overlay" @click.self="isSkillUnlockModalOpen = false; playSfx('click');"
-
-                style="z-index: 100;">
+            <div v-if="isSkillUnlockModalOpen" class="modal-overlay"
+                @click.self="isSkillUnlockModalOpen = false; playSfx('click');" style="z-index: 100;">
 
                 <div
-
                     class="modal-panel max-w-sm rounded-[1rem] border-2 border-amber-600/60 bg-[#1e110a]/95 drop-shadow-[0_0_20px_rgba(217,119,6,0.3)] shadow-2xl overflow-hidden font-serif">
 
                     <div class="text-6xl text-center mb-4 animate-bounce mt-4">✨</div>
@@ -3615,7 +3625,6 @@
                     <div class="space-y-3 mb-8 px-2 max-h-64 overflow-y-auto custom-scrollbar">
 
                         <div v-for="skill in newlyUnlocked" :key="skill.id"
-
                             class="p-4 bg-[#3e2723]/60 rounded border border-amber-700/50 shadow-inner">
 
                             <div class="font-bold text-lg text-amber-400 tracking-wide">{{ skill.name }}</div>
@@ -3629,7 +3638,6 @@
                     <div class="flex gap-3 px-2 mb-2">
 
                         <button @click="openCodexTo(newlyUnlocked[0]?.id)"
-
                             class="flex-1 px-4 py-3 rounded bg-gradient-to-t from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500 text-amber-50 text-base font-bold shadow-lg transition-colors border border-amber-500/50">
 
                             📖 立刻翻開秘笈
@@ -3637,7 +3645,6 @@
                         </button>
 
                         <button @click="isSkillUnlockModalOpen = false; resumeBattle(); playSfx('click');"
-
                             class="px-4 py-3 rounded bg-[#2a1c15] hover:bg-[#3e2723] text-amber-600 hover:text-amber-500 text-base font-bold shadow-lg transition-colors border border-amber-900/50">
 
                             稍後
@@ -3657,7 +3664,6 @@
             <div v-if="isAbilityUnlockModalOpen" class="modal-overlay" style="z-index: 3000;">
 
                 <div
-
                     class="modal-panel max-w-md rounded-2xl border-4 border-amber-500 bg-slate-900 shadow-[0_0_50px_rgba(245,158,11,0.4)] overflow-hidden">
 
                     <div class="p-8 text-center">
@@ -3671,7 +3677,6 @@
 
 
                         <div v-if="pendingLevelUpAbility"
-
                             class="bg-slate-800/80 rounded-2xl p-6 border border-amber-500/30 mb-8 shadow-inner">
 
                             <div class="text-5xl mb-4">{{ pendingLevelUpAbility.icon }}</div>
@@ -3685,7 +3690,6 @@
 
 
                         <button @click="confirmAbilityUnlockAndContinue(); playSfx('click');"
-
                             class="w-full py-4 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-900 font-black text-xl rounded-xl shadow-[0_4px_0_#92400e] active:shadow-none active:translate-y-1 transition-all">
 
                             確認並前往下一關
@@ -3702,27 +3706,24 @@
 
             <!-- Skill Panel -->
 
-            <div v-if="isSkillOpen" class="modal-overlay fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-6"
+            <div v-if="isSkillOpen"
+                class="modal-overlay fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-6"
                 style="background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px);">
 
                 <div
-
                     class="glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-lg shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col max-h-[90vh]">
 
                     <div class="flex justify-between items-center mb-3 border-b border-white/10 pb-2">
 
                         <h2 class="text-2xl font-black text-amber-400 tracking-[0.15em] drop-shadow-lg">技能 <span
-
                                 class="text-xs text-amber-500/30 font-bold tracking-[0.2em] ml-2">SKILLS</span></h2>
 
                         <div class="flex gap-2">
 
                             <button @click="isCodexOpen = true"
-
                                 class="px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl border border-white/5 transition-all active:scale-95 shadow-lg backdrop-blur-md">圖鑑</button>
 
                             <button @click="closeSkillOverlay(); resumeBattle();"
-
                                 class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-800/60 hover:bg-slate-700 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
 
                         </div>
@@ -3734,13 +3735,10 @@
                     <div class="flex-1 overflow-y-auto pr-2 space-y-2 custom-scrollbar">
 
                         <div v-for="skill in skillList" :key="skill.id" @click="castAbility(skill.id)"
-
                             class="group relative bg-slate-900/60 border border-slate-700 hover:border-amber-500/50 rounded-xl p-2.5 flex gap-3 cursor-pointer transition-all hover:bg-slate-800"
-
                             :class="{ 'opacity-50 grayscale cursor-not-allowed': spState.cur < skill.cost || playerDead || monsterDead }">
 
                             <div
-
                                 class="w-14 h-14 flex-shrink-0 bg-slate-800 rounded-lg flex items-center justify-center text-2xl border border-slate-600 group-hover:border-amber-400">
 
                                 {{ skill.icon }}
@@ -3756,7 +3754,6 @@
                                         skill.name }}</h3>
 
                                     <span
-
                                         class="text-xs font-black px-2 py-0.5 rounded-full bg-cyan-900 text-cyan-300 border border-cyan-700">{{
 
                                         skill.cost }} SP</span>
@@ -3786,123 +3783,177 @@
                     <div class="codex-book-header flex-shrink-0 flex items-center justify-between px-5 py-3">
                         <div class="flex items-center gap-2">
                             <span class="text-xl">📖</span>
-                            <div><h2 class="codex-book-title">秘笈本</h2><p class="codex-book-subtitle">CODEX</p></div>
+                            <div>
+                                <h2 class="codex-book-title">秘笈本</h2>
+                                <p class="codex-book-subtitle">CODEX</p>
+                            </div>
                         </div>
-                        <button @click="closeCodex(); if (!isSkillOpen) resumeBattle(); playSfx('click')" class="codex-close-btn">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                        <button @click="closeCodex(); if (!isSkillOpen) resumeBattle(); playSfx('click')"
+                            class="codex-close-btn">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
                         </button>
                     </div>
                     <div class="codex-spread flex-1 min-h-0 flex overflow-hidden">
                         <div class="flex flex-1 min-w-0 overflow-hidden">
-                        <div class="codex-book-page flex flex-1 items-center justify-center overflow-y-auto p-4 sm:p-8">
-                            <div v-if="codexPageSkills[0]" :id="'skill-card-' + codexPageSkills[0].id" class="flex justify-center w-full">
-                                <div v-if="unlockedSkillIds.includes(codexPageSkills[0].id)"
-                                    class="codex-flip-card"
-                                    :class="{ 'codex-flip-card--highlight': expandedSkillId === codexPageSkills[0].id }"
-                                    @click="flippedCardId = (flippedCardId === codexPageSkills[0].id ? null : codexPageSkills[0].id); playCardFlip()">
-                                    <div class="codex-flip-inner" :class="{ 'is-flipped': flippedCardId === codexPageSkills[0].id }">
-                                        <div class="codex-face codex-face-front">
-                                            <div class="flex justify-center"><span class="codex-particle-badge-lg">{{ (codexPageSkills[0].particle || '技').length <= 3 ? (codexPageSkills[0].particle || '技') : '技' }}</span></div>
-                                            <h3 class="codex-face-name">{{ codexPageSkills[0].name.split('：')[1] || codexPageSkills[0].name }}</h3>
-                                            <p class="codex-face-meaning-text">{{ codexPageSkills[0].meaning || '—' }}</p>
-                                            <div class="codex-face-rule-block"><span class="codex-label-mini codex-label-mini--rule">句型</span><code class="codex-face-rule-code ml-2">{{ codexPageSkills[0].rule || '—' }}</code></div>
-                                            <p class="codex-flip-hint">翻面查看 ↺</p>
-                                        </div>
-                                        <div class="codex-face codex-face-back">
-                                            <div class="codex-back-id-row">
-                                                <span class="codex-particle-badge" style="width:26px;height:26px;font-size:0.72rem">{{ (codexPageSkills[0].particle || '技').length <= 3 ? (codexPageSkills[0].particle || '技') : '技' }}</span>
-                                                <span class="codex-back-id-name">{{ codexPageSkills[0].name.split('：')[1] || codexPageSkills[0].name }}</span>
+                            <div
+                                class="codex-book-page flex flex-1 items-center justify-center overflow-y-auto p-4 sm:p-8">
+                                <div v-if="codexPageSkills[0]" :id="'skill-card-' + codexPageSkills[0].id"
+                                    class="flex justify-center w-full">
+                                    <div v-if="unlockedSkillIds.includes(codexPageSkills[0].id)" class="codex-flip-card"
+                                        :class="{ 'codex-flip-card--highlight': expandedSkillId === codexPageSkills[0].id }"
+                                        @click="flippedCardId = (flippedCardId === codexPageSkills[0].id ? null : codexPageSkills[0].id); playCardFlip()">
+                                        <div class="codex-flip-inner"
+                                            :class="{ 'is-flipped': flippedCardId === codexPageSkills[0].id }">
+                                            <div class="codex-face codex-face-front">
+                                                <div class="flex justify-center"><span
+                                                        class="codex-particle-badge-lg">{{ (codexPageSkills[0].particle
+                                                        || '技').length <= 3 ? (codexPageSkills[0].particle || '技' )
+                                                            : '技' }}</span>
+                                                </div>
+                                                <h3 class="codex-face-name">{{ codexPageSkills[0].name.split('：')[1] ||
+                                                    codexPageSkills[0].name }}</h3>
+                                                <p class="codex-face-meaning-text">{{ codexPageSkills[0].meaning || '—'
+                                                    }}</p>
+                                                <div class="codex-face-rule-block"><span
+                                                        class="codex-label-mini codex-label-mini--rule">句型</span><code
+                                                        class="codex-face-rule-code ml-2">{{ codexPageSkills[0].rule || '—' }}</code>
+                                                </div>
+                                                <p class="codex-flip-hint">翻面查看 ↺</p>
                                             </div>
-                                            <div class="codex-back-section">
-                                                <span class="codex-label-mini codex-label-mini--formula">公式</span>
-                                                <code class="codex-back-formula-code">{{ codexPageSkills[0].rule || '—' }}</code>
+                                            <div class="codex-face codex-face-back">
+                                                <div class="codex-back-id-row">
+                                                    <span class="codex-particle-badge"
+                                                        style="width:26px;height:26px;font-size:0.72rem">{{
+                                                        (codexPageSkills[0].particle || '技').length <= 3 ?
+                                                            (codexPageSkills[0].particle || '技' ) : '技' }}</span>
+                                                            <span class="codex-back-id-name">{{
+                                                                codexPageSkills[0].name.split('：')[1] ||
+                                                                codexPageSkills[0].name }}</span>
+                                                </div>
+                                                <div class="codex-back-section">
+                                                    <span class="codex-label-mini codex-label-mini--formula">公式</span>
+                                                    <code
+                                                        class="codex-back-formula-code">{{ codexPageSkills[0].rule || '—' }}</code>
+                                                </div>
+                                                <div v-if="codexPageSkills[0].examples && codexPageSkills[0].examples.length"
+                                                    class="codex-back-section">
+                                                    <span class="codex-label-mini codex-label-mini--example">例句</span>
+                                                    <ul class="codex-back-examples-list">
+                                                        <li v-for="ex in codexPageSkills[0].examples.slice(0,2)"
+                                                            class="codex-back-example-item">{{ ex }}</li>
+                                                    </ul>
+                                                </div>
+                                                <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
+                                                <div v-if="codexPageSkills[0].tip" class="codex-back-tip-block">
+                                                    <span class="codex-label-mini codex-label-mini--tip">提醒</span>
+                                                    <p class="codex-back-tip-text">{{ codexPageSkills[0].tip }}</p>
+                                                </div>
+                                                <p class="codex-flip-hint mt-auto">← 返回正面</p>
                                             </div>
-                                            <div v-if="codexPageSkills[0].examples && codexPageSkills[0].examples.length" class="codex-back-section">
-                                                <span class="codex-label-mini codex-label-mini--example">例句</span>
-                                                <ul class="codex-back-examples-list">
-                                                    <li v-for="ex in codexPageSkills[0].examples.slice(0,2)" class="codex-back-example-item">{{ ex }}</li>
-                                                </ul>
-                                            </div>
-                                            <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
-                                            <div v-if="codexPageSkills[0].tip" class="codex-back-tip-block">
-                                                <span class="codex-label-mini codex-label-mini--tip">提醒</span>
-                                                <p class="codex-back-tip-text">{{ codexPageSkills[0].tip }}</p>
-                                            </div>
-                                            <p class="codex-flip-hint mt-auto">← 返回正面</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div v-else class="codex-locked-card">
-                                    <div class="flex items-center gap-2"><span>🔒</span><span class="font-bold text-slate-500/70 text-sm">尚未習得</span></div>
-                                    <span class="codex-unlock-tip">{{ codexPageSkills[0].unlockLevel ? '第 ' + codexPageSkills[0].unlockLevel + ' 關解鎖' : '探索中' }}</span>
-                                </div>
-                            </div>
-                            <div v-else class="codex-page-empty"><p class="text-amber-900/40 text-sm">此章節尚無技能</p></div>
-                        </div>
-                        <div class="codex-spine hidden sm:block flex-shrink-0"></div>
-                        <div class="codex-book-page codex-book-page--right hidden sm:flex flex-1 items-center justify-center overflow-y-auto p-8">
-                            <div v-if="codexNextSkill" :id="'skill-card-r-' + codexNextSkill.id" class="flex justify-center w-full">
-                                <div v-if="unlockedSkillIds.includes(codexNextSkill.id)"
-                                    class="codex-flip-card"
-                                    :class="{ 'codex-flip-card--highlight': expandedSkillId === codexNextSkill.id }"
-                                    @click="flippedCardId = (flippedCardId === codexNextSkill.id ? null : codexNextSkill.id); playCardFlip()">
-                                    <div class="codex-flip-inner" :class="{ 'is-flipped': flippedCardId === codexNextSkill.id }">
-                                        <div class="codex-face codex-face-front">
-                                            <div class="flex justify-center"><span class="codex-particle-badge-lg">{{ (codexNextSkill.particle || '技').length <= 3 ? (codexNextSkill.particle || '技') : '技' }}</span></div>
-                                            <h3 class="codex-face-name">{{ codexNextSkill.name.split('：')[1] || codexNextSkill.name }}</h3>
-                                            <p class="codex-face-meaning-text">{{ codexNextSkill.meaning || '—' }}</p>
-                                            <div class="codex-face-rule-block"><span class="codex-label-mini codex-label-mini--rule">句型</span><code class="codex-face-rule-code ml-2">{{ codexNextSkill.rule || '—' }}</code></div>
-                                            <p class="codex-flip-hint">翻面查看 ↺</p>
-                                        </div>
-                                        <div class="codex-face codex-face-back">
-                                            <div class="codex-back-id-row">
-                                                <span class="codex-particle-badge" style="width:26px;height:26px;font-size:0.72rem">{{ (codexNextSkill.particle || '技').length <= 3 ? (codexNextSkill.particle || '技') : '技' }}</span>
-                                                <span class="codex-back-id-name">{{ codexNextSkill.name.split('：')[1] || codexNextSkill.name }}</span>
-                                            </div>
-                                            <div class="codex-back-section">
-                                                <span class="codex-label-mini codex-label-mini--formula">公式</span>
-                                                <code class="codex-back-formula-code">{{ codexNextSkill.rule || '—' }}</code>
-                                            </div>
-                                            <div v-if="codexNextSkill.examples && codexNextSkill.examples.length" class="codex-back-section">
-                                                <span class="codex-label-mini codex-label-mini--example">例句</span>
-                                                <ul class="codex-back-examples-list">
-                                                    <li v-for="ex in codexNextSkill.examples.slice(0,2)" class="codex-back-example-item">{{ ex }}</li>
-                                                </ul>
-                                            </div>
-                                            <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
-                                            <div v-if="codexNextSkill.tip" class="codex-back-tip-block">
-                                                <span class="codex-label-mini codex-label-mini--tip">提醒</span>
-                                                <p class="codex-back-tip-text">{{ codexNextSkill.tip }}</p>
-                                            </div>
-                                            <p class="codex-flip-hint mt-auto">← 返回正面</p>
                                         </div>
                                     </div>
+                                    <div v-else class="codex-locked-card">
+                                        <div class="flex items-center gap-2"><span>🔒</span><span
+                                                class="font-bold text-slate-500/70 text-sm">尚未習得</span></div>
+                                        <span class="codex-unlock-tip">{{ codexPageSkills[0].unlockLevel ? '第 ' +
+                                            codexPageSkills[0].unlockLevel + ' 關解鎖' : '探索中' }}</span>
+                                    </div>
                                 </div>
-                                <div v-else class="codex-locked-card">
-                                    <div class="flex items-center gap-2"><span>🔒</span><span class="font-bold text-slate-500/70 text-sm">尚未習得</span></div>
-                                    <span class="codex-unlock-tip">{{ codexNextSkill.unlockLevel ? '第 ' + codexNextSkill.unlockLevel + ' 關解鎖' : '探索中' }}</span>
+                                <div v-else class="codex-page-empty">
+                                    <p class="text-amber-900/40 text-sm">此章節尚無技能</p>
                                 </div>
                             </div>
-                            <div v-else class="codex-page-fin text-center">
-                                <div class="text-amber-900/35 text-3xl mb-2">✦</div>
-                                <p class="text-amber-900/30 text-xs tracking-[0.3em]">— 終 —</p>
+                            <div class="codex-spine hidden sm:block flex-shrink-0"></div>
+                            <div
+                                class="codex-book-page codex-book-page--right hidden sm:flex flex-1 items-center justify-center overflow-y-auto p-8">
+                                <div v-if="codexNextSkill" :id="'skill-card-r-' + codexNextSkill.id"
+                                    class="flex justify-center w-full">
+                                    <div v-if="unlockedSkillIds.includes(codexNextSkill.id)" class="codex-flip-card"
+                                        :class="{ 'codex-flip-card--highlight': expandedSkillId === codexNextSkill.id }"
+                                        @click="flippedCardId = (flippedCardId === codexNextSkill.id ? null : codexNextSkill.id); playCardFlip()">
+                                        <div class="codex-flip-inner"
+                                            :class="{ 'is-flipped': flippedCardId === codexNextSkill.id }">
+                                            <div class="codex-face codex-face-front">
+                                                <div class="flex justify-center"><span
+                                                        class="codex-particle-badge-lg">{{ (codexNextSkill.particle ||
+                                                        '技').length <= 3 ? (codexNextSkill.particle || '技' ) : '技'
+                                                            }}</span>
+                                                </div>
+                                                <h3 class="codex-face-name">{{ codexNextSkill.name.split('：')[1] ||
+                                                    codexNextSkill.name }}</h3>
+                                                <p class="codex-face-meaning-text">{{ codexNextSkill.meaning || '—' }}
+                                                </p>
+                                                <div class="codex-face-rule-block"><span
+                                                        class="codex-label-mini codex-label-mini--rule">句型</span><code
+                                                        class="codex-face-rule-code ml-2">{{ codexNextSkill.rule || '—' }}</code>
+                                                </div>
+                                                <p class="codex-flip-hint">翻面查看 ↺</p>
+                                            </div>
+                                            <div class="codex-face codex-face-back">
+                                                <div class="codex-back-id-row">
+                                                    <span class="codex-particle-badge"
+                                                        style="width:26px;height:26px;font-size:0.72rem">{{
+                                                        (codexNextSkill.particle || '技').length <= 3 ?
+                                                            (codexNextSkill.particle || '技' ) : '技' }}</span>
+                                                            <span class="codex-back-id-name">{{
+                                                                codexNextSkill.name.split('：')[1] || codexNextSkill.name
+                                                                }}</span>
+                                                </div>
+                                                <div class="codex-back-section">
+                                                    <span class="codex-label-mini codex-label-mini--formula">公式</span>
+                                                    <code
+                                                        class="codex-back-formula-code">{{ codexNextSkill.rule || '—' }}</code>
+                                                </div>
+                                                <div v-if="codexNextSkill.examples && codexNextSkill.examples.length"
+                                                    class="codex-back-section">
+                                                    <span class="codex-label-mini codex-label-mini--example">例句</span>
+                                                    <ul class="codex-back-examples-list">
+                                                        <li v-for="ex in codexNextSkill.examples.slice(0,2)"
+                                                            class="codex-back-example-item">{{ ex }}</li>
+                                                    </ul>
+                                                </div>
+                                                <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
+                                                <div v-if="codexNextSkill.tip" class="codex-back-tip-block">
+                                                    <span class="codex-label-mini codex-label-mini--tip">提醒</span>
+                                                    <p class="codex-back-tip-text">{{ codexNextSkill.tip }}</p>
+                                                </div>
+                                                <p class="codex-flip-hint mt-auto">← 返回正面</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-else class="codex-locked-card">
+                                        <div class="flex items-center gap-2"><span>🔒</span><span
+                                                class="font-bold text-slate-500/70 text-sm">尚未習得</span></div>
+                                        <span class="codex-unlock-tip">{{ codexNextSkill.unlockLevel ? '第 ' +
+                                            codexNextSkill.unlockLevel + ' 關解鎖' : '探索中' }}</span>
+                                    </div>
+                                </div>
+                                <div v-else class="codex-page-fin text-center">
+                                    <div class="text-amber-900/35 text-3xl mb-2">✦</div>
+                                    <p class="text-amber-900/30 text-xs tracking-[0.3em]">— 終 —</p>
+                                </div>
                             </div>
-                        </div>
                         </div>
                         <div class="codex-tab-strip flex-shrink-0">
                             <button v-for="ch in codexChapterList" :key="ch.key"
                                 @click="codexChapter = ch.key; codexPage = 0; flippedCardId = null"
-                                :class="['codex-tab-item', codexChapter === ch.key ? 'codex-tab-item--active' : '']">{{ ch.label }}</button>
+                                :class="['codex-tab-item', codexChapter === ch.key ? 'codex-tab-item--active' : '']">{{
+                                ch.label }}</button>
                         </div>
                     </div>
                     <div class="codex-page-nav flex-shrink-0 flex items-center justify-between px-4 py-2">
-                        <button @click="codexPage = Math.max(0, codexPage - 1); flippedCardId = null" :disabled="codexPage === 0" class="codex-nav-btn">← 前頁</button>
+                        <button @click="codexPage = Math.max(0, codexPage - 1); flippedCardId = null"
+                            :disabled="codexPage === 0" class="codex-nav-btn">← 前頁</button>
                         <div class="codex-page-indicator flex items-baseline gap-1">
                             <span class="text-amber-900/55 text-xs">第</span>
                             <span class="codex-page-num">{{ codexPage + 1 }}</span>
                             <span class="text-amber-900/55 text-xs">頁 / 共 {{ codexTotalPages }} 頁</span>
                         </div>
-                        <button @click="codexPage = Math.min(codexTotalPages - 1, codexPage + 1); flippedCardId = null" :disabled="codexPage >= codexTotalPages - 1" class="codex-nav-btn">後頁 →</button>
+                        <button @click="codexPage = Math.min(codexTotalPages - 1, codexPage + 1); flippedCardId = null"
+                            :disabled="codexPage >= codexTotalPages - 1" class="codex-nav-btn">後頁 →</button>
                     </div>
                 </div>
             </div>
@@ -3917,13 +3968,11 @@
                 <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
 
                 <div
-
                     class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[400px] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col">
 
                     <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4">
 
                         <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">暫停 <span
-
                                 class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2">MENU</span></h2>
 
                         <button @click="isMenuOpen = false; resumeBattle(); playSfx('click');"
@@ -3950,7 +3999,6 @@
                                 </div>
 
                                 <button @click="isMuted = !isMuted; saveAudioSettings(); playBgm();"
-
                                     class="text-xs px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 transition-colors border border-white/5">
 
                                     {{ isMuted ? '取消靜音' : '設為靜音' }}
@@ -3962,29 +4010,23 @@
                             <div class="space-y-2">
 
                                 <label
-
                                     class="flex items-center justify-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
 
                                     <span class="w-8">BGM</span>
 
                                     <input type="range" min="0" max="1" step="0.01" v-model.number="bgmVolume"
-
                                         @input="playBgm(); saveAudioSettings()"
-
                                         class="flex-1 accent-amber-500 h-1.5 bg-black/30 rounded-full appearance-none">
 
                                 </label>
 
                                 <label
-
                                     class="flex items-center justify-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
 
                                     <span class="w-8">SFX</span>
 
                                     <input type="range" min="0" max="1" step="0.01" v-model.number="sfxVolume"
-
                                         @input="saveAudioSettings()"
-
                                         class="flex-1 accent-amber-500 h-1.5 bg-black/30 rounded-full appearance-none">
 
                                 </label>
@@ -4000,9 +4042,7 @@
                         <div class="grid grid-cols-1 gap-2.5">
 
                             <button
-
                                 @click="isAdvancedSettingsOpen = true; isMenuOpen = false; isLevelJumpOpen = false; isMentorReplayOpen = false; isMistakesOpen = false; isInventoryOpen = false; isSkillUnlockModalOpen = false;"
-
                                 class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 hover:bg-indigo-500/20 border border-white/10 text-slate-200 text-sm font-bold shadow transition-all group">
 
                                 <span class="group-hover:rotate-45 transition-transform duration-500">⚙️</span> 進階設定
@@ -4016,7 +4056,6 @@
                         <div class="grid grid-cols-2 gap-2.5">
 
                             <button @click="isMentorReplayOpen = true; isMenuOpen = false;"
-
                                 class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-400/20 text-blue-100 text-sm font-bold transition-all">
 
                                 🧙‍♂️ 教學
@@ -4024,7 +4063,6 @@
                             </button>
 
                             <button @click="isLevelJumpOpen = true; isMenuOpen = false;"
-
                                 class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-400/20 text-purple-100 text-sm font-bold transition-all">
 
                                 ⏭️ 關卡
@@ -4036,7 +4074,6 @@
 
 
                         <button @click="openChangelog();"
-
                             class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-400/20 text-indigo-100 text-sm font-bold transition-all">
 
                             📋 更新日誌
@@ -4046,15 +4083,11 @@
 
 
                         <button @pointerdown="startRunAwayPress" @pointerup="cancelRunAwayPress"
-
                             @pointerleave="cancelRunAwayPress" @pointercancel="cancelRunAwayPress" @contextmenu.prevent
-
                             class="relative w-full px-4 py-3.5 rounded-xl bg-rose-950/30 border border-rose-500/30 hover:bg-rose-900/40 text-rose-100 text-xs font-black shadow-lg transition-all overflow-hidden select-none active:scale-95 mt-2"
-
                             :class="{ 'border-rose-400/50 shadow-rose-500/10': isRunAwayPressing }">
 
                             <div class="absolute left-0 top-0 bottom-0 bg-rose-500/30 pointer-events-none"
-
                                 :style="{ width: isRunAwayPressing ? '100%' : '0%', transition: isRunAwayPressing ? 'width 3s linear' : 'width 0.2s ease-out' }">
 
                             </div>
@@ -4080,13 +4113,11 @@
                 <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
 
                 <div
-
                     class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[400px] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col">
 
                     <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4">
 
                         <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">設定 <span
-
                                 class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2">SETTINGS</span></h2>
 
                         <button @click="isAdvancedSettingsOpen = false; resumeBattle(); playSfx('click');"
@@ -4105,7 +4136,6 @@
                             <label class="flex items-center justify-between cursor-pointer group">
 
                                 <span
-
                                     class="text-sm font-bold text-slate-200 group-hover:text-white transition-colors">答錯時自動朗讀句子</span>
 
                                 <div class="relative inline-flex items-center cursor-pointer">
@@ -4113,7 +4143,6 @@
                                     <input type="checkbox" v-model="settings.autoReadOnWrong" class="sr-only peer">
 
                                     <div
-
                                         class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
 
                                     </div>
@@ -4133,17 +4162,13 @@
                             <div>
 
                                 <span
-
                                     class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">答對後自動前進</span>
 
                                 <div class="flex bg-black/30 rounded-xl p-1">
 
                                     <button v-for="v in [0, 1000, 2000, 3000]" :key="'adv_'+v"
-
                                         @click="settings.correctAdvanceDelayMs = v"
-
                                         class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all"
-
                                         :class="settings.correctAdvanceDelayMs === v ? 'bg-amber-500 text-indigo-950' : 'text-slate-400 hover:text-slate-200'">
 
                                         {{ v === 0 ? '手動' : (v/1000) + 's' }}
@@ -4157,17 +4182,13 @@
                             <div>
 
                                 <span
-
                                     class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">答錯後自動前進</span>
 
                                 <div class="flex bg-black/30 rounded-xl p-1">
 
                                     <button v-for="v in [0, 2000, 3000, 5000]" :key="'err_'+v"
-
                                         @click="settings.wrongAdvanceDelayMs = v"
-
                                         class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all"
-
                                         :class="settings.wrongAdvanceDelayMs === v ? 'bg-amber-500 text-indigo-950' : 'text-slate-400 hover:text-slate-200'">
 
                                         {{ v === 0 ? '手動' : (v/1000) + 's' }}
@@ -4189,15 +4210,12 @@
                             <div>
 
                                 <span
-
                                     class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">回饋風格</span>
 
                                 <div class="grid grid-cols-2 gap-2">
 
                                     <button @click="settings.feedbackStyle = 'oneesan'"
-
                                         class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
-
                                         :class="settings.feedbackStyle === 'oneesan' ? 'bg-indigo-500/20 border-indigo-500 text-indigo-100 shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
 
                                         播報姊姊
@@ -4205,9 +4223,7 @@
                                     </button>
 
                                     <button @click="settings.feedbackStyle = 'combat'"
-
                                         class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
-
                                         :class="settings.feedbackStyle === 'combat' ? 'bg-indigo-500/20 border-indigo-500 text-indigo-100 shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
 
                                         爽快戰鬥
@@ -4221,15 +4237,12 @@
                             <div>
 
                                 <span
-
                                     class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">戰鬥模式</span>
 
                                 <div class="grid grid-cols-2 gap-2">
 
                                     <button @click="settings.enemyAttackMode = 'atb'"
-
                                         class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
-
                                         :class="settings.enemyAttackMode === 'atb' ? 'bg-rose-500/20 border-rose-500 text-rose-100 shadow-[0_0_15px_rgba(244,63,94,0.2)]' : 'bg-black/20 border-white/5 text-slate-400'">
 
                                         ATB(即時)
@@ -4237,7 +4250,6 @@
                                     </button>
 
                                     <button
-
                                         class="py-2 px-1 text-xs font-bold rounded-xl border border-white/5 bg-black/10 text-slate-600 cursor-not-allowed italic">
 
                                         回合制(TODO)
@@ -4278,13 +4290,11 @@
                 <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
 
                 <div
-
                     class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[500px] h-full max-h-[70vh] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden">
 
                     <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4 flex-shrink-0">
 
                         <h2 class="text-2xl font-black text-blue-400 tracking-[0.1em] drop-shadow-lg">教學 <span
-
                                 class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2 uppercase">REPLAY</span>
 
                         </h2>
@@ -4301,15 +4311,12 @@
                         <div v-for="skillId in unlockedSkillIds" :key="'mentor-'+skillId">
 
                             <button v-if="skillsAll[skillId] && skillsAll[skillId].mentorDialogue"
-
                                 @click="replaySpecificMentor(skillId)"
-
                                 class="w-full text-left px-5 py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-blue-500/30 shadow-md transition-all group active:scale-[0.98]">
 
                                 <div class="flex justify-between items-center">
 
                                     <span
-
                                         class="font-bold text-amber-400 text-lg group-hover:text-amber-300 transition-colors">{{
 
                                         skillsAll[skillId].name || skillId }}</span>
@@ -4353,13 +4360,11 @@
                 <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
 
                 <div
-
                     class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[600px] h-full max-h-[80vh] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden">
 
                     <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4 flex-shrink-0">
 
                         <h2 class="text-2xl font-black text-purple-400 tracking-[0.1em] drop-shadow-lg">關卡選擇 <span
-
                                 class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2 uppercase">STAGES</span>
 
                         </h2>
@@ -4372,15 +4377,11 @@
 
 
                     <div
-
                         class="flex-1 overflow-y-auto custom-scrollbar grid grid-cols-2 sm:grid-cols-3 gap-3 pr-1 pb-4 content-start">
 
                         <div v-for="l in maxLevel" :key="'jump_'+l"
-
                             @click="isLevelJumpOpen = false; debugJumpToLevel(l)"
-
                             class="relative group cursor-pointer overflow-hidden rounded-2xl border transition-all duration-300 active:scale-95 flex flex-col h-32"
-
                             :class="currentLevel === l ? 'bg-amber-500/20 border-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.15)]' : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'">
 
 
@@ -4390,13 +4391,11 @@
                             <div class="p-2.5 flex justify-between items-start border-b border-white/5 bg-black/10">
 
                                 <span class="text-[10px] font-black tracking-widest leading-none"
-
                                     :class="currentLevel === l ? 'text-amber-400' : 'text-slate-500'">STAGE {{ l
 
                                     }}</span>
 
                                 <span
-
                                     class="text-[8px] font-bold opacity-20 uppercase tracking-tighter truncate max-w-[60px]">{{
 
                                     LEVEL_CONFIG[l]?.levelName || '未知區域' }}</span>
@@ -4410,7 +4409,6 @@
                             <div class="flex-1 flex flex-col items-center justify-center p-2 relative overflow-hidden">
 
                                 <div
-
                                     class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none">
 
                                     <span class="text-7xl font-black italic">{{ l }}</span>
@@ -4418,7 +4416,6 @@
                                 </div>
 
                                 <div class="text-3xl font-black transition-transform group-hover:scale-110 duration-300 drop-shadow-md"
-
                                     :class="currentLevel === l ? 'text-amber-400' : 'text-amber-500/80'">
 
                                     {{ LEVEL_CONFIG[l]?.focusParticle || '?' }}
@@ -4463,19 +4460,16 @@
             <!-- Changelog -->
 
             <div v-if="isChangelogOpen" class="fixed inset-0 z-[6000] flex items-center justify-center p-4"
-
                 @click.self="isChangelogOpen = false">
 
                 <div class="absolute inset-0 bg-slate-950/50 backdrop-blur-md pointer-events-none"></div>
 
                 <div
-
                     class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[500px] h-full max-h-[75vh] shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
 
                     <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4 flex-shrink-0">
 
                         <h2 class="text-2xl font-black text-indigo-300 tracking-[0.1em] drop-shadow-lg">更新日誌 <span
-
                                 class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2 uppercase">CHANGELOG</span>
 
                         </h2>
@@ -4488,7 +4482,6 @@
 
 
                     <div v-if="changelogError"
-
                         class="flex-1 flex flex-col items-center justify-center p-10 text-center">
 
                         <span class="text-4xl mb-4">⚠️</span>
@@ -4498,11 +4491,9 @@
                     </div>
 
                     <div v-else-if="changelogData.length === 0"
-
                         class="flex-1 flex flex-col items-center justify-center p-10 text-center">
 
                         <div
-
                             class="w-8 h-8 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mb-4">
 
                         </div>
@@ -4514,19 +4505,16 @@
                     <div v-else class="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-1 pb-2">
 
                         <div v-for="(entry, index) in changelogData" :key="index"
-
                             class="p-5 bg-white/5 rounded-2xl border border-white/5 shadow-inner group">
 
                             <div class="flex items-center justify-between mb-3">
 
                                 <span
-
                                     class="text-indigo-300 font-black text-xl tracking-tight leading-none group-hover:text-indigo-200 transition-colors">v{{
 
                                     entry.version }}</span>
 
                                 <span
-
                                     class="text-[10px] font-bold text-slate-500 bg-black/20 px-2 py-0.5 rounded-full border border-white/5 uppercase tracking-tighter">{{
 
                                     entry.date }}</span>
@@ -4536,11 +4524,9 @@
                             <ul class="space-y-2">
 
                                 <li v-for="(change, cIndex) in entry.changes" :key="cIndex"
-
                                     class="flex items-start gap-3 text-slate-300 text-xs leading-relaxed">
 
                                     <span
-
                                         class="w-1.5 h-1.5 rounded-full bg-indigo-500/50 mt-1.5 flex-shrink-0 shadow-[0_0_8px_rgba(99,102,241,0.3)]"></span>
 
                                     <span>{{ change }}</span>
@@ -4570,11 +4556,11 @@
 
             <!-- Mistakes -->
 
-            <div v-if="isMistakesOpen" class="modal-overlay backdrop-blur-sm" @click.self="isMistakesOpen = false; playSfx('click');"
+            <div v-if="isMistakesOpen" class="modal-overlay backdrop-blur-sm"
+                @click.self="isMistakesOpen = false; playSfx('click');"
                 style="z-index: 5000; background: rgba(15, 23, 42, 0.1);">
 
                 <div
-
                     class="modal-panel w-[500px] max-w-[95vw] !bg-slate-900/30 backdrop-blur-2xl border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
 
                     <h2 class="text-2xl font-black text-blue-400 mb-4 tracking-tighter">📒 出題本</h2>
@@ -4584,9 +4570,7 @@
                     <div v-else class="space-y-3 mb-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
 
                         <div v-for="(m, i) in stageLog" :key="i"
-
                             class="p-4 rounded-2xl border border-white/10 shadow-lg transition-all backdrop-blur-md"
-
                             :class="[
 
                                 m.isCorrect 
@@ -4604,25 +4588,21 @@
                                     <div class="flex items-center gap-2 mb-0.5">
 
                                         <span
-
                                             class="text-[10px] font-mono text-slate-400 bg-white/5 px-2 py-0.5 rounded-full border border-white/5">#{{
 
                                             m.order }}</span>
 
                                         <span v-if="!m.isCorrect"
-
                                             class="text-[10px] font-black text-white bg-rose-600 px-2 py-0.5 rounded shadow-sm tracking-widest scale-90 origin-left">MISS</span>
 
                                     </div>
 
                                     <div class="text-slate-100 font-bold text-lg leading-relaxed tracking-wide"
-
                                         v-html="m.displayJp || m.sentenceText"></div>
 
                                 </div>
 
                                 <button @click="playMistakeVoice(m)"
-
                                     class="ml-3 bg-blue-600/80 hover:bg-blue-500 text-white rounded-xl px-3 py-2 shadow-lg flex-shrink-0 text-sm transition-all active:scale-95 backdrop-blur-md border border-white/10">🔊</button>
 
                             </div>
@@ -4630,7 +4610,6 @@
                             <div class="text-slate-400 text-sm mb-2 font-medium brightness-125">{{ m.prompt }}</div>
 
                             <div v-if="m.grammarTip"
-
                                 class="text-slate-400 text-xs mt-2 bg-slate-900/40 p-3 rounded-xl leading-relaxed border border-white/5">
 
                                 <span class="text-amber-400/80 font-bold mr-1">💡</span> {{ m.grammarTip }}
@@ -4644,7 +4623,6 @@
                     <div class="flex gap-3">
 
                         <button @click="clearMistakes"
-
                             class="flex-1 px-3 py-3 rounded-xl bg-red-600/80 hover:bg-red-500 text-white text-sm font-bold flex items-center justify-center gap-2 shadow-lg transition-transform active:scale-95">
 
                             🗑 清空
@@ -4667,13 +4645,11 @@
 
 
             <div v-if="isPreloading"
-
                 class="fixed inset-0 z-[3000] flex items-center justify-center bg-slate-900/90 backdrop-blur-sm">
 
                 <div class="flex flex-col items-center">
 
                     <div
-
                         class="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4">
 
                     </div>
@@ -4688,7 +4664,8 @@
 
             <!-- Inventory -->
 
-            <div v-if="isInventoryOpen" class="modal-overlay" @click.self="isInventoryOpen = false; resumeBattle(); playSfx('click');">
+            <div v-if="isInventoryOpen" class="modal-overlay"
+                @click.self="isInventoryOpen = false; resumeBattle(); playSfx('click');">
 
                 <div class="modal-panel w-[400px]">
 
@@ -4697,11 +4674,9 @@
                     <div class="space-y-3 mb-4">
 
                         <div
-
                             class="flex items-center justify-center gap-4 bg-slate-700/50 p-3 rounded-xl border border-slate-600/50">
 
                             <div
-
                                 class="w-14 h-14 flex-shrink-0 bg-gradient-to-tr from-cyan-900 to-cyan-500 rounded-lg flex items-center justify-center text-2xl shadow-inner border border-cyan-400/30">
 
                                 💨
@@ -4715,7 +4690,6 @@
                                     神速藥水
 
                                     <span
-
                                         class="bg-cyan-600/50 text-cyan-200 text-xs px-2 py-0.5 rounded-full border border-cyan-500/30">
 
                                         x {{ inventory.speedPotions }}
@@ -4733,7 +4707,6 @@
                                 </p>
 
                                 <div v-if="evasionBuffAttacksLeft > 0"
-
                                     class="text-cyan-300 text-xs mt-1 font-bold animate-pulse">
 
                                     效果持續中... (剩餘 {{ evasionBuffAttacksLeft }} 次)
@@ -4745,9 +4718,7 @@
 
 
                             <button @click="useSpeedPotion"
-
                                 class="shrink-0 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-lg transition-transform active:scale-95 shadow-md disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
-
                                 :disabled="inventory.speedPotions <= 0 || evasionBuffAttacksLeft > 0 || monsterDead || playerDead">
 
                                 使用

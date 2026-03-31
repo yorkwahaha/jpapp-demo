@@ -9,7 +9,7 @@
     "id": "moss-boar", "name": "苔牙野豬",
     "image": "assets/images/monsters/moss-boar.png", "imageHit": null,
     "trait": "背中には湿った苔や落ち葉がびっしりと付着しており、突進する前には低く鼻を鳴らす",
-    "spawnLevels": [2], "hpMax": 100, "size": 2.0, "posX": null, "posY": null
+    "spawnLevels": [2], "hpMax": 100, "size": 2.0, "posX": null, "posY": null, "infoOffsetY": 55
   },
   {
     "id": "rune-moth", "name": "符紋蛾",
@@ -27,7 +27,7 @@
     "id": "man-eater-bloom", "name": "食人花之母",
     "image": "assets/images/monsters/man-eater-bloom.png", "imageHit": "assets/images/monsters/man-eater-bloom2.png",
     "trait": "巨大的花瓣一張一合，甜膩香氣裡藏著會把獵物慢慢吞下去的耐心",
-    "spawnLevels": [5], "hpMax": 400, "size": 1.5, "posX": null, "posY": null
+    "spawnLevels": [5], "hpMax": 400, "size": 2.0, "posX": null, "posY": 13, "infoOffsetY": 35
   },
   {
     "id": "ash-goblin", "name": "灰枝小鬼",
@@ -54,10 +54,10 @@
     "spawnLevels": [9], "hpMax": 250, "size": 1.0, "posX": null, "posY": null
   },
   {
-    "id": "frost-roc", "name": "冰原巨鳥",
-    "image": "assets/images/monsters/frost-roc.png", "imageHit": "assets/images/monsters/frost-roc2.png",
-    "trait": "展翼時像暴風雪壓過天空，羽尖會抖落寒霜，連呼吸都像被凍住",
-    "spawnLevels": [15], "hpMax": 500, "size": 2.3, "posX": null, "posY": 30
+    "id": "orc-warlord", "name": "半獸人之王",
+    "image": "assets/images/monsters/orc-warlord.png", "imageHit": "assets/images/monsters/orc-warlord2.png",
+    "trait": "披著沉重戰甲，目光像鐵鎚一樣砸下來，光站在那裡就有王者般的壓迫感",
+    "spawnLevels": [10], "hpMax": 500, "size": 2.0, "posX": null, "posY": 19, "infoOffsetY": 45
   },
   {
     "id": "ember-imp", "name": "燼火小惡魔",
@@ -83,11 +83,11 @@
     "trait": "半透明的身體像月光融進水裡，安靜時反而更讓人發毛",
     "spawnLevels": [14], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
   },
-  {
-    "id": "orc-warlord", "name": "半獸人之王",
-    "image": "assets/images/monsters/orc-warlord.png", "imageHit": "assets/images/monsters/orc-warlord2.png",
-    "trait": "披著沉重戰甲，目光像鐵鎚一樣砸下來，光站在那裡就有王者般的壓迫感",
-    "spawnLevels": [10], "hpMax": 500, "size": 1.6, "posX": null, "posY": null
+    {
+    "id": "frost-roc", "name": "冰原巨鳥",
+    "image": "assets/images/monsters/frost-roc.png", "imageHit": "assets/images/monsters/frost-roc2.png",
+    "trait": "展翼時像暴風雪壓過天空，羽尖會抖落寒霜，連呼吸都像被凍住",
+    "spawnLevels": [15], "hpMax": 500, "size": 2.2, "posX": null, "posY": 16, "infoOffsetY": 40
   },
   {
     "id": "shadow-hound", "name": "影跡獵犬",
@@ -117,7 +117,7 @@
     "id": "ruin-guardian", "name": "墮殿守衛",
     "image": "assets/images/monsters/ruin-guardian.png", "imageHit": null,
     "trait": "曾守護古老聖所的石衛，如今只剩扭曲的執念支撐身軀",
-    "spawnLevels": [20], "hpMax": 260, "size": 2.5, "posX": null, "posY": null
+    "spawnLevels": [20], "hpMax": 260, "size": 2.4, "posX": null, "posY": 20, "infoOffsetY": 45
   },
   {
     "id": "gloom-crawler", "name": "幽暗爬行者",
@@ -147,7 +147,7 @@
     "id": "dark-knight", "name": "漆黑騎士",
     "image": "assets/images/monsters/dark-knight.png", "imageHit": null,
     "trait": "穿著鏽跡斑斑的鎧甲，手中的長劍依舊鋒利",
-    "spawnLevels": [25], "hpMax": 300, "size": 2.0, "posX": null, "posY": null
+    "spawnLevels": [25], "hpMax": 300, "size": 2.2, "posX": null, "posY": 20, "infoOffsetY": 45
   },
   {
     "id": "blood-crystal-wraith", "name": "血晶怨靈",
@@ -177,7 +177,7 @@
     "id": "crimson-throne-lord", "name": "緋紅王座之主",
     "image": "assets/images/monsters/crimson-throne-lord.png", "imageHit": null,
     "trait": "盤踞於血色王座的深淵支配者，光是注視就像會被拖進無盡詛咒",
-    "spawnLevels": [30], "hpMax": 400, "size": 2.2, "posX": null, "posY": null
+    "spawnLevels": [30], "hpMax": 400, "size": 2.2, "posX": null, "posY": 17, "infoOffsetY": 45
   },
   {
     "id": "sky-sanctum-warden", "name": "雲庭守門者",
@@ -207,7 +207,7 @@
     "id": "celestial-throne-arbiter", "name": "天座裁決王",
     "image": "assets/images/monsters/celestial-throne-arbiter.png", "imageHit": null,
     "trait": "端坐雲上終殿的裁決者，聖潔威壓之下連呼吸都像是一種冒犯",
-    "spawnLevels": [35], "hpMax": 1000, "size": 2.9, "posX": null, "posY": null
+    "spawnLevels": [35], "hpMax": 1000, "size": 2.5, "posX": null, "posY": 20, "infoOffsetY": 45
   },
   {
   "id": "void-throne-lord",
@@ -215,6 +215,6 @@
   "image": "assets/images/monsters/lord-of-darkness.png",
   "imageHit": null,
   "trait": "端坐於斷界王座深處的終焉支配者，黑暗與星屑都只是祂意志的餘燼",
-  "spawnLevels": [36], "hpMax": 2000, "size": 3.2, "posX": null, "posY": 50
+  "spawnLevels": [36], "hpMax": 2000, "size": 3.2, "posX": null, "posY": 25, "infoOffsetY": 45
 }
 ]

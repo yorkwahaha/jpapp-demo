@@ -29,7 +29,7 @@ window.__initViewportHooks = function (watch, showLevelSelect) {
 
                 }
 
-                if (currentY - touchStartY > 0) {
+                if (currentY - touchStartY > 0 && e.cancelable) {
 
                     e.preventDefault();
 
