@@ -3437,8 +3437,8 @@ window.EARLY_GAME_POOLS = {
                     "zh": "什麼都沒有",
                     "left": "何",
                     "leftRuby": "なに",
-                    "right": "もない",
-                    "rightRuby": "もない"
+                    "right": "ない",
+                    "rightRuby": "ない"
                 },
                 {
                     "j": "誰もいない",
@@ -3446,8 +3446,8 @@ window.EARLY_GAME_POOLS = {
                     "zh": "誰都不在",
                     "left": "誰",
                     "leftRuby": "だれ",
-                    "right": "もいない",
-                    "rightRuby": "もいない"
+                    "right": "いない",
+                    "rightRuby": "いない"
                 },
                 {
                     "j": "どこも行かない",
@@ -3455,8 +3455,8 @@ window.EARLY_GAME_POOLS = {
                     "zh": "哪裡都不去",
                     "left": "どこ",
                     "leftRuby": "どこ",
-                    "right": "も行かない",
-                    "rightRuby": "もいかない"
+                    "right": "行かない",
+                    "rightRuby": "いかない"
                 },
                 {
                     "j": "何も食べない",
@@ -3464,8 +3464,8 @@ window.EARLY_GAME_POOLS = {
                     "zh": "什麼都不吃",
                     "left": "何",
                     "leftRuby": "なに",
-                    "right": "も食べない",
-                    "rightRuby": "もたべない"
+                    "right": "食べない",
+                    "rightRuby": "たべない"
                 },
                 {
                     "j": "何も飲まない",
@@ -3473,8 +3473,8 @@ window.EARLY_GAME_POOLS = {
                     "zh": "什麼都不喝",
                     "left": "何",
                     "leftRuby": "なに",
-                    "right": "も飲まない",
-                    "rightRuby": "ものまない"
+                    "right": "飲まない",
+                    "rightRuby": "のまない"
                 },
                 {
                     "j": "誰も来ない",
@@ -3482,8 +3482,8 @@ window.EARLY_GAME_POOLS = {
                     "zh": "誰都不會來",
                     "left": "誰",
                     "leftRuby": "だれ",
-                    "right": "も来ない",
-                    "rightRuby": "もこない"
+                    "right": "来ない",
+                    "rightRuby": "こない"
                 },
                 {
                     "j": "誰も知らない",
@@ -3491,8 +3491,8 @@ window.EARLY_GAME_POOLS = {
                     "zh": "誰都不知道",
                     "left": "誰",
                     "leftRuby": "だれ",
-                    "right": "も知らない",
-                    "rightRuby": "もしらない"
+                    "right": "知らない",
+                    "rightRuby": "しらない"
                 },
                 {
                     "j": "何も見えない",
@@ -3500,8 +3500,8 @@ window.EARLY_GAME_POOLS = {
                     "zh": "什麼都看不見",
                     "left": "何",
                     "leftRuby": "なに",
-                    "right": "も見えない",
-                    "rightRuby": "もみえない"
+                    "right": "見えない",
+                    "rightRuby": "みえない"
                 },
                 {
                     "j": "何も言わない",
@@ -3509,8 +3509,8 @@ window.EARLY_GAME_POOLS = {
                     "zh": "什麼都不說",
                     "left": "何",
                     "leftRuby": "なに",
-                    "right": "も言わない",
-                    "rightRuby": "もいわない"
+                    "right": "言わない",
+                    "rightRuby": "いわない"
                 },
                 {
                     "j": "何も分からない",
@@ -3518,8 +3518,8 @@ window.EARLY_GAME_POOLS = {
                     "zh": "什麼都不懂",
                     "left": "何",
                     "leftRuby": "なに",
-                    "right": "も分からない",
-                    "rightRuby": "もわからない"
+                    "right": "分からない",
+                    "rightRuby": "わからない"
                 },
                 {
                     "j": "何もできない",
@@ -3527,8 +3527,8 @@ window.EARLY_GAME_POOLS = {
                     "zh": "什麼都做不到",
                     "left": "何",
                     "leftRuby": "なに",
-                    "right": "もできない",
-                    "rightRuby": "もできない"
+                    "right": "できない",
+                    "rightRuby": "できない"
                 },
                 {
                     "j": "どこも分からない",
@@ -3536,8 +3536,8 @@ window.EARLY_GAME_POOLS = {
                     "zh": "哪裡都不知道",
                     "left": "どこ",
                     "leftRuby": "どこ",
-                    "right": "も分からない",
-                    "rightRuby": "もわからない"
+                    "right": "分からない",
+                    "rightRuby": "わからない"
                 },
                 {
                     "j": "一人もいない",
@@ -3545,8 +3545,8 @@ window.EARLY_GAME_POOLS = {
                     "zh": "一個人都沒有",
                     "left": "一人",
                     "leftRuby": "ひとり",
-                    "right": "もいない",
-                    "rightRuby": "もいない"
+                    "right": "いない",
+                    "rightRuby": "いない"
                 },
                 {
                     "j": "一つもない",
@@ -3554,8 +3554,8 @@ window.EARLY_GAME_POOLS = {
                     "zh": "一個也沒有",
                     "left": "一つ",
                     "leftRuby": "ひとつ",
-                    "right": "もない",
-                    "rightRuby": "もない"
+                    "right": "ない",
+                    "rightRuby": "ない"
                 },
                 {
                     "j": "一円もない",
@@ -3563,8 +3563,8 @@ window.EARLY_GAME_POOLS = {
                     "zh": "一塊錢也沒有",
                     "left": "一円",
                     "leftRuby": "いちえん",
-                    "right": "もない",
-                    "rightRuby": "もない"
+                    "right": "ない",
+                    "rightRuby": "ない"
                 },
                 {
                     "j": "一回も行かない",
@@ -3572,8 +3572,8 @@ window.EARLY_GAME_POOLS = {
                     "zh": "一次也不去",
                     "left": "一回",
                     "leftRuby": "いっかい",
-                    "right": "も行かない",
-                    "rightRuby": "もいかない"
+                    "right": "行かない",
+                    "rightRuby": "いかない"
                 },
                 {
                     "j": "一日も休まない",
@@ -3581,8 +3581,8 @@ window.EARLY_GAME_POOLS = {
                     "zh": "一天也不休息",
                     "left": "一日",
                     "leftRuby": "いちにち",
-                    "right": "も休まない",
-                    "rightRuby": "もやすまない"
+                    "right": "休まない",
+                    "rightRuby": "やすまない"
                 },
                 {
                     "j": "誰も話さない",
@@ -3590,8 +3590,8 @@ window.EARLY_GAME_POOLS = {
                     "zh": "誰都不說話",
                     "left": "誰",
                     "leftRuby": "だれ",
-                    "right": "も話さない",
-                    "rightRuby": "もはなさない"
+                    "right": "話さない",
+                    "rightRuby": "はなさない"
                 },
                 {
                     "j": "少しも寒くない",
@@ -3599,8 +3599,8 @@ window.EARLY_GAME_POOLS = {
                     "zh": "一點也不冷",
                     "left": "少し",
                     "leftRuby": "すこし",
-                    "right": "も寒くない",
-                    "rightRuby": "もさむくない"
+                    "right": "寒くない",
+                    "rightRuby": "さむくない"
                 },
                 {
                     "j": "少しも難しくない",
@@ -3608,8 +3608,8 @@ window.EARLY_GAME_POOLS = {
                     "zh": "一點也不難",
                     "left": "少し",
                     "leftRuby": "すこし",
-                    "right": "も難しくない",
-                    "rightRuby": "もむずかしくない"
+                    "right": "難しくない",
+                    "rightRuby": "むずかしくない"
                 }
             ]
         },

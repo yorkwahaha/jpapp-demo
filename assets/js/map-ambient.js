@@ -448,7 +448,7 @@ window.MapAmbient = (() => {
         if (birdTimer >= birdInterval) {
             if (birds.length < cfg.maxOnScreen) {
                 birds.push(spawnBird(w, h));
-                console.log('MapAmbient: Bird spawned');
+                if (window.__DEBUG__) console.log('MapAmbient: Bird spawned');
             }
             birdInterval = cfg.interval.min + Math.floor(Math.random() * cfg.interval.max);
             birdTimer = 0;
@@ -701,7 +701,7 @@ window.MapAmbient = (() => {
             resizeObs.observe(container);
 
             active = true;
-            console.log('MapAmbient particles started');
+            if (window.__DEBUG__) console.log('MapAmbient particles started');
             rafId = requestAnimationFrame(loop);
         };
 

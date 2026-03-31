@@ -224,7 +224,7 @@ function updateHeroStatusBar() {
     if (overlay) {
         overlay.innerHTML = '';
 
-        if (heroBuffs.giragiraTurns > 0 || heroBuffs.morimoriTurns > 0 || heroBuffs.jiwajiwaTurns > 0 || heroBuffs.wakuwakuTurns > 0) {
+        if (heroBuffs.giragiraTurns > 0 || heroBuffs.morimoriTurns > 0 || heroBuffs.jiwajiwaTurns > 0 || heroBuffs.wakuwakuTurns > 0 || heroBuffs.gachigachiTurns > 0) {
             // Match hero's exact screen rect so aura + badge align with hero
             const heroEl = document.getElementById('heroAvatar');
             const r = heroEl ? heroEl.getBoundingClientRect() : null;
@@ -251,6 +251,18 @@ function updateHeroStatusBar() {
 
             let badgesHtml = '';
             
+            // GACHIGACHI Badge (硬)
+            if (heroBuffs.gachigachiTurns > 0) {
+                badgesHtml += 
+                    '<div style="display:flex;align-items:center;gap:3px;' +
+                    'padding:2px 7px 2px 5px;' +
+                    'background:rgba(51,65,85,0.92);border:1.5px solid #94a3b8;border-radius:10px;' +
+                    'color:#f1f5f9;font-size:13px;font-weight:900;line-height:1;' +
+                    'box-shadow:0 2px 8px rgba(0,0,0,0.65);text-shadow:0 1px 3px rgba(0,0,0,0.8);' +
+                    'animation:badge-pop 0.3s cubic-bezier(0.34,1.56,0.64,1);">' +
+                    '\u786c\u00a0' + heroBuffs.gachigachiTurns + '</div>';
+            }
+
             // GIRAGIRA Badge
             if (heroBuffs.giragiraTurns > 0) {
                 badgesHtml += 

@@ -811,7 +811,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26033001";
+        const APP_VERSION = window.APP_VERSION || "26033101";
 
         const appVersion = ref(APP_VERSION);
 
@@ -2167,6 +2167,7 @@ const _jpApp = Vue.createApp({
         const bgmEnabled = ref(true);
 
         const needsUserGestureToResumeBgm = ref(false);
+        const isBgmSuppressed = ref(false);
 
         const audioSettingsKey = 'jpRpgAudioV1';
 
@@ -2826,6 +2827,7 @@ const _jpApp = Vue.createApp({
 
         const handleGameOver = () => {
             isDefeated.value = true;
+            isBgmSuppressed.value = true; // Lock BGM after death
             setHeroAvatar('lose');
 
             // 🌚 Apply grayscale filter to battle scene
@@ -3035,8 +3037,9 @@ const _jpApp = Vue.createApp({
         const handleVisibilityChange = () => {
 
             if (document.hidden) return;
+            if (isBgmSuppressed.value) return; // Prevent BGM resume if suppressed
 
-            const inBattle = !showLevelSelect.value && !isFinished.value && currentLevel.value > 0;
+            const inBattle = !showLevelSelect.value && !isFinished.value && currentLevel.value > 0 && !isDefeated.value;
 
             if (inBattle && bgmAudio.value && !isMuted.value && bgmVolume.value > 0) {
 
@@ -3082,7 +3085,7 @@ const _jpApp = Vue.createApp({
 
             if (!audioInited.value) initAudio();
 
-            if (!bgmEnabled.value || isMuted.value || bgmVolume.value <= 0) return;
+            if (!bgmEnabled.value || isMuted.value || bgmVolume.value <= 0 || isBgmSuppressed.value) return;
 
             if (bgmAudio.value && bgmAudio.value.paused) {
 
@@ -3897,8 +3900,8 @@ const _jpApp = Vue.createApp({
 
 
 
-        // L20 ruin-guardian: 城塞受困
-        const playBossChainSwipeVfx = () => {
+        // L20 ruin-guardian: 巨大石拳斜上鉤拳
+        const playBossStoneFistUppercutVfx = () => {
 
             if (_isBossSpecialAttackPlaying) return;
             _isBossSpecialAttackPlaying = true;
@@ -3907,36 +3910,28 @@ const _jpApp = Vue.createApp({
             if (!vfxLayer) { _isBossSpecialAttackPlaying = false; return; }
 
             const group = document.createElement('div');
-            group.className = 'boss-fortress-group';
+            group.className = 'boss-stone-fist-group';
             vfxLayer.appendChild(group);
 
-            // 邊緣壓迫 vignette
-            const vig = document.createElement('div');
-            vig.className = 'boss-vfx-fortress-vignette';
-            group.appendChild(vig);
+            const fist = document.createElement('div');
+            fist.className = 'boss-vfx-stone-fist is-attacking';
+            
+            // 目標定位在勇者區域 (畫面中下)
+            fist.style.left = '50%';
+            fist.style.bottom = '10%';
+            
+            group.appendChild(fist);
 
-            // 四方鎖鏈向中心收束（略微錯開）
-            ['left', 'right', 'top', 'bottom'].forEach((dir, i) => {
-                const c = document.createElement('div');
-                c.className = 'boss-fortress-chain boss-fortress-chain-' + dir;
-                c.style.animationDelay = (0.05 * i) + 's';
-                group.appendChild(c);
-            });
-
-            // 600ms 收束完成：震動 + 邊緣鎖定感（無中心爆炸）
+            // 在動畫進行到約 0.55s 時觸發命中震動 (總長 0.85s)
             setTimeout(() => {
                 bossScreenShake.value = true;
-                setTimeout(() => { bossScreenShake.value = false; }, 450);
-
-                const lock = document.createElement('div');
-                lock.className = 'boss-vfx-fortress-lock';
-                group.appendChild(lock);
-            }, 600);
+                setTimeout(() => { bossScreenShake.value = false; }, 400);
+            }, 550);
 
             setTimeout(() => {
                 if (vfxLayer.contains(group)) vfxLayer.removeChild(group);
                 _isBossSpecialAttackPlaying = false;
-            }, 1450);
+            }, 1200);
 
         };
 
@@ -4238,8 +4233,8 @@ const _jpApp = Vue.createApp({
                         playMonsterClawAttackVfx();
                         playSfx('damage3');
                     } else if (mid === 'ruin-guardian') {
-                        _attackType = 'chain-swipe';
-                        playBossChainSwipeVfx();
+                        _attackType = 'stone-fist-uppercut';
+                        playBossStoneFistUppercutVfx();
                         playSfx('damage4');
                     } else if (mid === 'dark-knight') {
                         _attackType = 'void-cross-slash';
@@ -4263,7 +4258,9 @@ const _jpApp = Vue.createApp({
                         playSfx('damage2');
                     }
 
-                    console.debug('[BOSS-DISPATCH] level=' + currentLevel.value + ' enemyId=' + (mid || 'UNDEFINED') + ' attackType=' + _attackType);
+                    if (window.__DEBUG__) {
+                        console.debug('[BOSS-DISPATCH] level=' + currentLevel.value + ' enemyId=' + (mid || 'UNDEFINED') + ' attackType=' + _attackType);
+                    }
 
                 } else {
 
@@ -4575,7 +4572,9 @@ const _jpApp = Vue.createApp({
                     else if (tier1.has(sid)) nT1++;
                     else                     nOther++;
                 });
-                console.log(`[QMix] L36 (HiddenBoss) | Total:${total} Tier3:${pct(nT3)} Tier2:${pct(nT2)} Tier1:${pct(nT1)} Other:${nOther} | Dup:${dupCount}`);
+                if (window.__DEBUG__) {
+                    console.log(`[QMix] L36 (HiddenBoss) | Total:${total} Tier3:${pct(nT3)} Tier2:${pct(nT2)} Tier1:${pct(nT1)} Other:${nOther} | Dup:${dupCount}`);
+                }
 
             } else if (isBoss) {
                 // 魔王關：sameMap (lv-4 ~ lv-1) vs previousMap
@@ -4590,7 +4589,9 @@ const _jpApp = Vue.createApp({
                     else if (sameMapIds.has(sid)) nSame++;
                     else                          nPrev++;
                 });
-                console.log(`[QMix] L${lv} (Boss) | Total:${total} SameMap:${pct(nSame)} PrevMap:${pct(nPrev)} Fallback:${nFallback} | Dup:${dupCount}`);
+                if (window.__DEBUG__) {
+                    console.log(`[QMix] L${lv} (Boss) | Total:${total} SameMap:${pct(nSame)} PrevMap:${pct(nPrev)} Fallback:${nFallback} | Dup:${dupCount}`);
+                }
 
             } else {
                 // 一般關：new (本關 unlockSkills) vs old
@@ -4602,10 +4603,12 @@ const _jpApp = Vue.createApp({
                     else if (newIds.has(sid))  nNew++;
                     else                       nOld++;
                 });
-                console.log(`[QMix] L${lv} (Normal) | Total:${total} New:${pct(nNew)} Old:${pct(nOld)} Fallback:${nFallback} | Dup:${dupCount}`);
+                if (window.__DEBUG__) {
+                    console.log(`[QMix] L${lv} (Normal) | Total:${total} New:${pct(nNew)} Old:${pct(nOld)} Fallback:${nFallback} | Dup:${dupCount}`);
+                }
             }
 
-            console.table(skillCount);
+            if (window.__DEBUG__) console.table(skillCount);
         };
 
 
@@ -6574,6 +6577,8 @@ const _jpApp = Vue.createApp({
         // ================= [ BATTLE INIT ] =================
         /** 主戰鬥初始化：依關卡 ID 生成題庫、配置怪物、重置所有 battle state、啟動計時器。 */
         const initGame = (level, skipMentor = false, forceMentor = false) => {
+
+            isBgmSuppressed.value = false;
 
             window._battlePopPlayed = false;
 
@@ -8570,13 +8575,19 @@ const _jpApp = Vue.createApp({
 
 
 
-        const retryLevel = () => { needsUserGestureToResumeBgm.value = false; stopAllAudio(); initGame(currentLevel.value); };
+        const retryLevel = () => {
+            needsUserGestureToResumeBgm.value = false;
+            isBgmSuppressed.value = false; // Explicitly unlock on retry
+            stopAllAudio();
+            initGame(currentLevel.value);
+        };
 
 
 
         const startOver = () => {
 
             setHeroAvatar('neutral');
+            isBgmSuppressed.value = false; // Unlock on returning home
 
             clearSpeedStatus();
 
@@ -8611,6 +8622,7 @@ const _jpApp = Vue.createApp({
         const revive = () => {
 
             isDefeated.value = false;
+            isBgmSuppressed.value = false; // Unlock on revive
             const _sc = document.getElementById('battleScene');
             if (_sc) _sc.classList.remove('grayscale-filter');
             const _ov = document.getElementById('defeatOverlay');
