@@ -1856,12 +1856,12 @@
 
                 <div class="map-nodes-container" v-if="mapChapters[activeChapter].segments[selectedSegmentIdx]">
 
-                    <img :src="mapChapters[activeChapter].segments[selectedSegmentIdx].background" class="map-base-img"
+                    <img :src="isSpecialSceneActive ? specialSceneBg : mapChapters[activeChapter].segments[selectedSegmentIdx].background" class="map-base-img"
                         alt="Base Map">
 
 
 
-                    <div v-if="mapChapters[activeChapter].segments[selectedSegmentIdx].nodes['1']"
+                    <div v-if="!isSpecialSceneActive && mapChapters[activeChapter].segments[selectedSegmentIdx].nodes['1']"
                         class="map-progress-paths">
 
                         <div class="map-progress-line route-1"></div>
@@ -1876,7 +1876,7 @@
 
 
 
-                    <template v-for="(node, n) in mapChapters[activeChapter].segments[selectedSegmentIdx].nodes"
+                    <template v-if="!isSpecialSceneActive" v-for="(node, n) in mapChapters[activeChapter].segments[selectedSegmentIdx].nodes"
                         :key="'node_overlay_' + n">
 
                         <div class="stage-node-wrap" :style="getMapNodeStyle(node)" :class="[getStageNodeClass(n)]">
@@ -1976,7 +1976,7 @@
 
                     <!-- [DESKTOP ONLY UI] (Anchored to map width) -->
 
-                    <div class="map-ui-desktop-zone">
+                    <div v-if="!isSpecialSceneActive" class="map-ui-desktop-zone">
 
                         <!-- ── FLOATING HEADER ── -->
 
@@ -2093,7 +2093,7 @@
 
             <!-- [MOBILE ONLY UI] (Anchored to screen viewport) -->
 
-            <div class="map-ui-mobile-zone">
+            <div v-if="!isSpecialSceneActive" class="map-ui-mobile-zone">
 
                 <!-- ── FLOATING HEADER ── -->
 

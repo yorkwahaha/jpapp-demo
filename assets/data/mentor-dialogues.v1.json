@@ -2,6 +2,11 @@
   "PROLOGUE_OPENING": {
     "dialogue": [
       {
+        "text": "……",
+        "audio": "",
+        "emotion": "surprised"
+      },
+      {
         "text": "……咦。\n你看得見我嗎？",
         "audio": "",
         "emotion": "surprised"

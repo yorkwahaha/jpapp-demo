@@ -311,6 +311,11 @@ const { ref, reactive, computed, watch, onMounted, nextTick } = Vue;
 const _jpApp = Vue.createApp({
 
     setup() {
+        // ---- [ NEW: ONE-TIME SCENE CONSTANTS ] ----
+        const PROLOGUE_BG = ''; // Add path here if needed
+        const PROLOGUE_BGM = ''; // Add path here if needed
+        const MAIN_ENDING_BG = 'assets/images/levels/bg_lv1.webp';
+        const MAIN_ENDING_BGM = ''; // Add path here if needed
 
         onMounted(async () => {
             // Load Map Chapter Data (Ensuring this runs on all environments)
@@ -397,6 +402,8 @@ const _jpApp = Vue.createApp({
         const selectedStageToConfirm = ref(null);
 
         const isBattleConfirmOpen = ref(false);
+        const isSpecialSceneActive = ref(false);
+        const specialSceneBg = ref('');
 
         // --- Knowledge Card Unlock State ---
         const pendingKnowledgeCards = ref([]);
@@ -599,9 +606,65 @@ const _jpApp = Vue.createApp({
 
         loadProgression();
 
+        // ---- [ NEW: PROLOGUE TRIGGER ] ----
+        const checkPrologueTrigger = () => {
+            if (!localStorage.getItem('jpapp_seen_prologue_opening')) {
+                // Determine background
+                const bg = PROLOGUE_BG || 'assets/images/bg_home_painterly.png';
+                
+                // Initialize Scene
+                isSpecialSceneActive.value = true;
+                specialSceneBg.value = bg;
+                showMap.value = true;
+                showLevelSelect.value = false;
+
+                // Stop any home screen audio
+                stopAllAudio();
+
+                window._resumeAfterMentor = () => {
+                    isSpecialSceneActive.value = false;
+                    localStorage.setItem('jpapp_seen_prologue_opening', 'true');
+                    
+                    // Proceed to normal map BGM
+                    Vue.nextTick(() => {
+                        if (typeof MapAmbient !== 'undefined') {
+                            MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value, activeSegment.value?.themeKey);
+                        }
+                        ensureBgmPlaying(currentMapBgm.value);
+                    });
+                };
+
+                // Trigger dialogue (Wait for MENTOR_AUDIO_MAP to be ready)
+                const trigger = () => {
+                    if (MENTOR_AUDIO_MAP.value && MENTOR_AUDIO_MAP.value['PROLOGUE_OPENING']) {
+                        setupMentorDialogue({
+                            id: 'PROLOGUE_OPENING',
+                            name: 'Selene姐姐',
+                            mentorDialogue: MENTOR_AUDIO_MAP.value['PROLOGUE_OPENING'].dialogue
+                        });
+                        // Play BGM if set
+                        if (PROLOGUE_BGM && bgmAudio.value) {
+                            bgmAudio.value.src = PROLOGUE_BGM;
+                            bgmAudio.value.play().catch(() => {});
+                        }
+                    } else {
+                        setTimeout(trigger, 100);
+                    }
+                };
+                trigger();
+                return true; // Triggered
+            }
+            return false; // Already seen
+        };
+
+        // REMOVED: Auto trigger on mount
+        // setTimeout(checkPrologueTrigger, 300);
+
 
 
         const openMap = () => {
+            // Check for first-time prologue BEFORE entering normal map
+            if (checkPrologueTrigger()) return;
 
             // 在能確定屬於 user gesture 的 handler 中先解鎖並首播 map BGM (第二版修正)
 
@@ -895,6 +958,42 @@ const _jpApp = Vue.createApp({
         }
 
         const checkGlobalEndingTriggers = () => {
+            // ---- [ NEW: MAIN ENDING FINALE ] ----
+            // Trigger immediately after defeating Level 36 for the first time
+            if (clearedLevels.value.includes(36) && currentLevel.value === 36) {
+                const hasSeenFinale = localStorage.getItem('jpapp_seen_main_ending_finale');
+                if (!hasSeenFinale) {
+                    // Set Scene
+                    isSpecialSceneActive.value = true;
+                    specialSceneBg.value = MAIN_ENDING_BG;
+                    showMap.value = true;
+                    showLevelSelect.value = false; // Hide home screen if debug-triggered from home
+                    
+                    // Stop ongoing audio
+                    stopAllAudio();
+                    
+                    // BGM override if set
+                    if (MAIN_ENDING_BGM && bgmAudio.value) {
+                        bgmAudio.value.src = MAIN_ENDING_BGM;
+                        bgmAudio.value.play().catch(() => {});
+                    }
+
+                    setTimeout(() => {
+                        setupMentorDialogue({
+                            id: 'MAIN_ENDING_FINALE',
+                            name: 'Selene姐姐',
+                            mentorDialogue: MENTOR_AUDIO_MAP.value['MAIN_ENDING_FINALE']?.dialogue || []
+                        });
+                        window._resumeAfterMentor = () => {
+                            isSpecialSceneActive.value = false;
+                            localStorage.setItem('jpapp_seen_main_ending_finale', 'true');
+                            openMap(); 
+                        };
+                    }, 800);
+                    return;
+                }
+            }
+
             if (clearedLevels.value.includes(36) && currentLevel.value === 36) {
                 const hasSeenTrueEnding = localStorage.getItem('jpRpgTrueEndingSeen');
                 if (!hasSeenTrueEnding) {
@@ -918,6 +1017,20 @@ const _jpApp = Vue.createApp({
                 localStorage.setItem('jpRpgL35EndingSeen', 'true');
                 setTimeout(() => setupMentorDialogue(window.ENDING_DIALOGUES.ENDING_L35_NORMAL), 800);
             }
+        };
+
+        const playPrologueOpening = () => {
+            localStorage.removeItem('jpapp_seen_prologue_opening');
+            checkPrologueTrigger();
+        };
+
+        const playMainEndingFinale = () => {
+            stopAllAudio();
+            localStorage.removeItem('jpapp_seen_main_ending_finale');
+            // Force state to satisfy trigger conditions
+            if (!clearedLevels.value.includes(36)) clearedLevels.value.push(36);
+            currentLevel.value = 36;
+            checkGlobalEndingTriggers();
         };
 
         const returnToMap = () => {
@@ -9241,7 +9354,8 @@ const _jpApp = Vue.createApp({
             levelTitle, player, monster, currentQuestion,
             startLevel, retryLevel, initGame, generateQuestionBySkill,
             mentorTutorialSeen, saveMentorState, skillsAll, setupMentorDialogue,
-            pauseBattle, db, VOCAB, startBossQueue, unlockedSkillIds
+            pauseBattle, db, VOCAB, startBossQueue, unlockedSkillIds,
+            playPrologueOpening, playMainEndingFinale
         });
 
         return {
@@ -9253,6 +9367,7 @@ const _jpApp = Vue.createApp({
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
             isMentorModalOpen, isMentorReplayOpen, isLevelJumpOpen, isAdvancedSettingsOpen, replaySpecificMentor, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
             displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,
+            playPrologueOpening, playMainEndingFinale,
             isMentorSkipPressing, startMentorSkipPress, cancelMentorSkipPress,
             isMonsterImageError, handleMonsterImageError, handleMapImageError, currentMonsterSprite, monsterPositionStyle, monsterIsEntering, monsterIsDying, monsterTrulyDead, monsterResultShown,
             showMap, unlockedLevels, clearedLevels, showMentorChoice, selectedMapLevel,
@@ -9269,6 +9384,7 @@ const _jpApp = Vue.createApp({
             isMapMentorOpen, mentorPages, mentorDialogueIndex, displayedMentorText, isTypingMentor, nextMentorLine, finishMentorDialogue,
 
             pendingKnowledgeCards, activeKnowledgeCard, isKnowledgeCardShowing, isKnowledgeCardAbsorbing, triggerNextKnowledgeCard, closeKnowledgeCard,
+            isSpecialSceneActive, specialSceneBg,
             unlockedOnomatopeIds, BOSS_ONOMATOPE_MAP,
             playCardFlip: () => playSfx('cardFlip')
 

@@ -8,7 +8,8 @@ window.__attachDebugTools = function (refs) {
         levelTitle, player, monster, currentQuestion,
         startLevel, retryLevel, initGame, goHome, generateQuestionBySkill,
         mentorTutorialSeen, saveMentorState, skillsAll, setupMentorDialogue,
-        pauseBattle, db, VOCAB, unlockedSkillIds, startBossQueue
+        pauseBattle, db, VOCAB, unlockedSkillIds, startBossQueue,
+        playPrologueOpening, playMainEndingFinale
     } = refs || {};
 
     // --- Audit State ---
@@ -466,6 +467,24 @@ window.__attachDebugTools = function (refs) {
                     setupMentorDialogue(skill);
                     pauseBattle();
                     console.log(`[jpDebug] Replaying mentor dialogue for: ${skillId}`);
+                },
+                
+                playPrologueOpening() {
+                    if (typeof playPrologueOpening === 'function') {
+                        playPrologueOpening();
+                        console.log("[jpDebug] Playing Prologue Opening...");
+                    } else {
+                        console.warn("[jpDebug] playPrologueOpening function not found in refs");
+                    }
+                },
+
+                playMainEndingFinale() {
+                    if (typeof playMainEndingFinale === 'function') {
+                        playMainEndingFinale();
+                        console.log("[jpDebug] Playing Main Ending Finale...");
+                    } else {
+                        console.warn("[jpDebug] playMainEndingFinale function not found in refs");
+                    }
                 },
 
                 // --- Audit Tools ---
@@ -975,6 +994,8 @@ Audit Tools (Question Distribution):
 Mentor/Tutorial:
 - jpDebug.resetMentorTutorials()
 - jpDebug.replayMentor('WA_TOPIC_BASIC')
+- jpDebug.playPrologueOpening()
+- jpDebug.playMainEndingFinale()
       `.trim();
                     console.log(msg);
                     return msg;
