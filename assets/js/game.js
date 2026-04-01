@@ -1109,7 +1109,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26033103";
+        const APP_VERSION = window.APP_VERSION || "26040102";
 
         const appVersion = ref(APP_VERSION);
 
@@ -1563,7 +1563,8 @@ const _jpApp = Vue.createApp({
                 }
 
                 const audio = new Audio(path);
-                audio.volume = masterVolume.value * Math.max(0.1, bgmVolume.value);
+                // 導師語音應保持高音量，不應被 bgmVolume (預設 0.35) 的窄閾值限制
+                audio.volume = masterVolume.value * 0.95; 
                 currentMentorAudio = audio;
 
                 audio.addEventListener('ended', () => {
@@ -2993,9 +2994,8 @@ const _jpApp = Vue.createApp({
 
 
             if (isMentorVoicePlaying.value) {
-
-                bScale = (bScale === 1.0) ? 0.5 : 0.35;
-
+                // 加強對對話期間 BGM 的減壓力度，使語音更清晰 (從原先的 0.5 改為 0.25)
+                bScale = (bScale === 1.0) ? 0.25 : 0.15;
             }
 
 

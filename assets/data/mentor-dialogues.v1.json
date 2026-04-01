@@ -132,12 +132,18 @@
         "emotion": "encourage"
       },
       {
-        "text": "乖孩子。\n有這孩子陪著你，第一道關卡一定跨得過去。\n只要你能看出是誰站到了前面，\n就已經踏出很重要的第一步了。\n來，我們開始吧。",
+        "text": "有這孩子陪著你，第一道關卡一定跨得過去。\n只要你能看出這句話主要是在說誰，\n就已經踏出很重要的第一步了。\n來，我們開始吧。",
         "audio": "",
         "emotion": "happy"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/wa-topic-basic-p01.mp3",
+      "assets/audio/mentor/wa-topic-basic-p02.mp3",
+      "assets/audio/mentor/wa-topic-basic-p03.mp3",
+      "assets/audio/mentor/wa-topic-basic-p04.mp3",
+      "assets/audio/mentor/wa-topic-basic-p05.mp3"
+    ]
   },
   "NO_POSSESSIVE": {
     "dialogue": [
