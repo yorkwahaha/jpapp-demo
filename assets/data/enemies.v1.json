@@ -1,220 +1,515 @@
 [
   {
-    "id": "glow-slime", "name": "微光史萊姆",
-    "image": "assets/images/monsters/glow-slime.png", "imageHit": null,
+    "id": "glow-slime",
+    "name": "微光史萊姆",
+    "image": "assets/images/monsters/glow-slime.png",
+    "imageHit": null,
     "trait": "体からほのかに青い光を放ち、近づくとポコポコという音が聞こえる",
-    "spawnLevels": [1], "hpMax": 60, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [
+      1
+    ],
+    "hpMax": 100,
+    "size": 1.0,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "moss-boar", "name": "苔牙野豬",
-    "image": "assets/images/monsters/moss-boar.png", "imageHit": null,
+    "id": "moss-boar",
+    "name": "苔牙野豬",
+    "image": "assets/images/monsters/moss-boar.png",
+    "imageHit": null,
     "trait": "背中には湿った苔や落ち葉がびっしりと付着しており、突進する前には低く鼻を鳴らす",
-    "spawnLevels": [2], "hpMax": 100, "size": 2.0, "posX": null, "posY": null, "infoOffsetY": 55
+    "spawnLevels": [
+      2
+    ],
+    "hpMax": 180,
+    "size": 2.0,
+    "posX": null,
+    "posY": null,
+    "infoOffsetY": 55
   },
   {
-    "id": "rune-moth", "name": "符紋蛾",
-    "image": "assets/images/monsters/rune-moth.png", "imageHit": null,
+    "id": "rune-moth",
+    "name": "符紋蛾",
+    "image": "assets/images/monsters/rune-moth.png",
+    "imageHit": null,
     "trait": "翅面浮著像文字碎片般的紋路，飛行時會灑下淡金粉末",
-    "spawnLevels": [3], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [
+      3
+    ],
+    "hpMax": 220,
+    "size": 1.0,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "mist-bat", "name": "霧羽蝠",
-    "image": "assets/images/monsters/mist-bat.png", "imageHit": null,
+    "id": "mist-bat",
+    "name": "霧羽蝠",
+    "image": "assets/images/monsters/mist-bat.png",
+    "imageHit": null,
     "trait": "總在薄霧裡忽隱忽現，翅膀一振就像夜風掠過耳邊",
-    "spawnLevels": [4], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [
+      4
+    ],
+    "hpMax": 220,
+    "size": 1.0,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "man-eater-bloom", "name": "食人花之母",
-    "image": "assets/images/monsters/man-eater-bloom.png", "imageHit": "assets/images/monsters/man-eater-bloom2.png",
+    "id": "man-eater-bloom",
+    "name": "食人花之母",
+    "image": "assets/images/monsters/man-eater-bloom.png",
+    "imageHit": "assets/images/monsters/man-eater-bloom2.png",
     "trait": "巨大的花瓣一張一合，甜膩香氣裡藏著會把獵物慢慢吞下去的耐心",
-    "spawnLevels": [5], "hpMax": 400, "size": 2.0, "posX": null, "posY": 13, "infoOffsetY": 35
+    "spawnLevels": [
+      5
+    ],
+    "hpMax": 400,
+    "size": 2.0,
+    "posX": null,
+    "posY": 13,
+    "infoOffsetY": 35
   },
   {
-    "id": "ash-goblin", "name": "灰枝小鬼",
-    "image": "assets/images/monsters/ash-goblin.png", "imageHit": "assets/images/monsters/ash-goblin2.png",
+    "id": "ash-goblin",
+    "name": "灰枝小鬼",
+    "image": "assets/images/monsters/ash-goblin.png",
+    "imageHit": "assets/images/monsters/ash-goblin2.png",
     "trait": "披著破布與枯枝，眼神鬼祟，最愛躲在陰影裡偷襲",
-    "spawnLevels": [6], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [
+      6
+    ],
+    "hpMax": 220,
+    "size": 1.0,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "shell-sprout", "name": "殼芽獸",
-    "image": "assets/images/monsters/shell-sprout.png", "imageHit": null,
+    "id": "shell-sprout",
+    "name": "殼芽獸",
+    "image": "assets/images/monsters/shell-sprout.png",
+    "imageHit": null,
     "trait": "背甲像剛長出的樹芽，移動慢，但意外地很耐打",
-    "spawnLevels": [7], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [
+      7
+    ],
+    "hpMax": 220,
+    "size": 1.0,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "forest-cat", "name": "林影妖貓",
-    "image": "assets/images/monsters/forest-cat.png", "imageHit": null,
+    "id": "forest-cat",
+    "name": "林影妖貓",
+    "image": "assets/images/monsters/forest-cat.png",
+    "imageHit": null,
     "trait": "步伐輕得像沒踩到地面，尾巴一甩就不見蹤影",
-    "spawnLevels": [8], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [
+      8
+    ],
+    "hpMax": 220,
+    "size": 1.0,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "stone-mimic", "name": "岩殼擬怪",
-    "image": "assets/images/monsters/stone-mimic.png", "imageHit": null,
+    "id": "stone-mimic",
+    "name": "岩殼擬怪",
+    "image": "assets/images/monsters/stone-mimic.png",
+    "imageHit": null,
     "trait": "蜷起身子時像一塊不起眼的石頭，張眼後才知道被盯上了",
-    "spawnLevels": [9], "hpMax": 250, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [
+      9
+    ],
+    "hpMax": 250,
+    "size": 1.0,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "orc-warlord", "name": "半獸人之王",
-    "image": "assets/images/monsters/orc-warlord.png", "imageHit": "assets/images/monsters/orc-warlord2.png",
+    "id": "orc-warlord",
+    "name": "半獸人之王",
+    "image": "assets/images/monsters/orc-warlord.png",
+    "imageHit": "assets/images/monsters/orc-warlord2.png",
     "trait": "披著沉重戰甲，目光像鐵鎚一樣砸下來，光站在那裡就有王者般的壓迫感",
-    "spawnLevels": [10], "hpMax": 500, "size": 2.0, "posX": null, "posY": 19, "infoOffsetY": 45
+    "spawnLevels": [
+      10
+    ],
+    "hpMax": 500,
+    "size": 2.0,
+    "posX": null,
+    "posY": 19,
+    "infoOffsetY": 45
   },
   {
-    "id": "ember-imp", "name": "燼火小惡魔",
-    "image": "assets/images/monsters/ember-imp.png", "imageHit": null,
+    "id": "ember-imp",
+    "name": "燼火小惡魔",
+    "image": "assets/images/monsters/ember-imp.png",
+    "imageHit": null,
     "trait": "耳尖與尾端閃著火星，脾氣暴躁，笑聲比火還惱人",
-    "spawnLevels": [11], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [
+      11
+    ],
+    "hpMax": 220,
+    "size": 1.0,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "shore-wisp", "name": "潮燈幼靈",
-    "image": "assets/images/monsters/shore-wisp.png", "imageHit": null,
+    "id": "shore-wisp",
+    "name": "潮燈幼靈",
+    "image": "assets/images/monsters/shore-wisp.png",
+    "imageHit": null,
     "trait": "像漂在岸邊的微弱燈火，忽遠忽近，讓人很難抓準距離",
-    "spawnLevels": [12], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [
+      12
+    ],
+    "hpMax": 220,
+    "size": 1.0,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "thorn-wolf", "name": "棘原狼",
-    "image": "assets/images/monsters/thorn-wolf.png", "imageHit": null,
+    "id": "thorn-wolf",
+    "name": "棘原狼",
+    "image": "assets/images/monsters/thorn-wolf.png",
+    "imageHit": null,
     "trait": "毛皮間夾著細刺，奔跑時像一團貼地掠過的灰影",
-    "spawnLevels": [13], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [
+      13
+    ],
+    "hpMax": 220,
+    "size": 1.0,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "moon-jelly", "name": "月沫水母",
-    "image": "assets/images/monsters/moon-jelly.png", "imageHit": null,
+    "id": "moon-jelly",
+    "name": "月沫水母",
+    "image": "assets/images/monsters/moon-jelly.png",
+    "imageHit": null,
     "trait": "半透明的身體像月光融進水裡，安靜時反而更讓人發毛",
-    "spawnLevels": [14], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [
+      14
+    ],
+    "hpMax": 220,
+    "size": 1.0,
+    "posX": null,
+    "posY": null
   },
-    {
-    "id": "frost-roc", "name": "冰原巨鳥",
-    "image": "assets/images/monsters/frost-roc.png", "imageHit": "assets/images/monsters/frost-roc2.png",
+  {
+    "id": "frost-roc",
+    "name": "冰原巨鳥",
+    "image": "assets/images/monsters/frost-roc.png",
+    "imageHit": "assets/images/monsters/frost-roc2.png",
     "trait": "展翼時像暴風雪壓過天空，羽尖會抖落寒霜，連呼吸都像被凍住",
-    "spawnLevels": [15], "hpMax": 500, "size": 2.2, "posX": null, "posY": 16, "infoOffsetY": 40
+    "spawnLevels": [
+      15
+    ],
+    "hpMax": 500,
+    "size": 2.2,
+    "posX": null,
+    "posY": 16,
+    "infoOffsetY": 40
   },
   {
-    "id": "shadow-hound", "name": "影跡獵犬",
-    "image": "assets/images/monsters/slime.png", "imageHit": null,
+    "id": "shadow-hound",
+    "name": "影跡獵犬",
+    "image": "assets/images/monsters/slime.png",
+    "imageHit": null,
     "trait": "潛伏在影子裡的獵食者，腳步聲極輕",
-    "spawnLevels": [16], "hpMax": 250, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [
+      16
+    ],
+    "hpMax": 250,
+    "size": 1.0,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "void-spirit", "name": "虛空靈體",
-    "image": "assets/images/monsters/slime.png", "imageHit": null,
+    "id": "void-spirit",
+    "name": "虛空靈體",
+    "image": "assets/images/monsters/slime.png",
+    "imageHit": null,
     "trait": "沒有實體的靈魂，散發著令人不安的寒氣",
-    "spawnLevels": [17], "hpMax": 250, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [
+      17
+    ],
+    "hpMax": 250,
+    "size": 1.0,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "lord-of-darkness", "name": "暗影主宰",
-    "image": "assets/images/monsters/slime.png", "imageHit": null,
+    "id": "lord-of-darkness",
+    "name": "暗影主宰",
+    "image": "assets/images/monsters/slime.png",
+    "imageHit": null,
     "trait": "操縱陰影的大師，能將光芒徹底吞噬",
-    "spawnLevels": [18], "hpMax": 400, "size": 2.5, "posX": null, "posY": null
+    "spawnLevels": [
+      18
+    ],
+    "hpMax": 400,
+    "size": 2.5,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "abyss-eyeball", "name": "深淵之眼",
-    "image": "assets/images/monsters/slime.png", "imageHit": null,
+    "id": "abyss-eyeball",
+    "name": "深淵之眼",
+    "image": "assets/images/monsters/slime.png",
+    "imageHit": null,
     "trait": "無數眼球凝視著你，讓人感到毛骨悚然",
-    "spawnLevels": [19], "hpMax": 300, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [
+      19
+    ],
+    "hpMax": 300,
+    "size": 1.0,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "ruin-guardian", "name": "墮殿守衛",
-    "image": "assets/images/monsters/ruin-guardian.png", "imageHit": null,
+    "id": "ruin-guardian",
+    "name": "墮殿守衛",
+    "image": "assets/images/monsters/ruin-guardian.png",
+    "imageHit": null,
     "trait": "曾守護古老聖所的石衛，如今只剩扭曲的執念支撐身軀",
-    "spawnLevels": [20], "hpMax": 260, "size": 2.4, "posX": null, "posY": 20, "infoOffsetY": 45
+    "spawnLevels": [
+      20
+    ],
+    "hpMax": 260,
+    "size": 2.4,
+    "posX": null,
+    "posY": 20,
+    "infoOffsetY": 45
   },
   {
-    "id": "gloom-crawler", "name": "幽暗爬行者",
-    "image": "assets/images/monsters/slime.png", "imageHit": null,
+    "id": "gloom-crawler",
+    "name": "幽暗爬行者",
+    "image": "assets/images/monsters/slime.png",
+    "imageHit": null,
     "trait": "在岩壁縫隙中穿梭的怪物，動作極其敏捷",
-    "spawnLevels": [21], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [
+      21
+    ],
+    "hpMax": 220,
+    "size": 1.0,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "skeletal-warrior", "name": "骷髏戰士",
-    "image": "assets/images/monsters/slime.png", "imageHit": null,
+    "id": "skeletal-warrior",
+    "name": "骷髏戰士",
+    "image": "assets/images/monsters/slime.png",
+    "imageHit": null,
     "trait": "白骨構成的士兵，即使粉碎也會再次重組",
-    "spawnLevels": [22], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [
+      22
+    ],
+    "hpMax": 220,
+    "size": 1.0,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "wraith", "name": "怨靈",
-    "image": "assets/images/monsters/slime.png", "imageHit": null,
+    "id": "wraith",
+    "name": "怨靈",
+    "image": "assets/images/monsters/slime.png",
+    "imageHit": null,
     "trait": "帶著強烈的執念而無法超脫，尖叫聲能震懾靈魂",
-    "spawnLevels": [23], "hpMax": 220, "size": 1.0, "posX": null, "posY": null
+    "spawnLevels": [
+      23
+    ],
+    "hpMax": 220,
+    "size": 1.0,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "demon-gatekeeper", "name": "煉獄守門人",
-    "image": "assets/images/monsters/slime.png", "imageHit": null,
+    "id": "demon-gatekeeper",
+    "name": "煉獄守門人",
+    "image": "assets/images/monsters/slime.png",
+    "imageHit": null,
     "trait": "守護著通往更深處的門戶，力量驚人",
-    "spawnLevels": [24], "hpMax": 220, "size": 1.2, "posX": null, "posY": null
+    "spawnLevels": [
+      24
+    ],
+    "hpMax": 220,
+    "size": 1.2,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "dark-knight", "name": "漆黑騎士",
-    "image": "assets/images/monsters/dark-knight.png", "imageHit": null,
+    "id": "dark-knight",
+    "name": "漆黑騎士",
+    "image": "assets/images/monsters/dark-knight.png",
+    "imageHit": null,
     "trait": "穿著鏽跡斑斑的鎧甲，手中的長劍依舊鋒利",
-    "spawnLevels": [25], "hpMax": 300, "size": 2.2, "posX": null, "posY": 20, "infoOffsetY": 45
+    "spawnLevels": [
+      25
+    ],
+    "hpMax": 300,
+    "size": 2.2,
+    "posX": null,
+    "posY": 20,
+    "infoOffsetY": 45
   },
   {
-    "id": "blood-crystal-wraith", "name": "血晶怨靈",
-    "image": "assets/images/monsters/slime.png", "imageHit": null,
+    "id": "blood-crystal-wraith",
+    "name": "血晶怨靈",
+    "image": "assets/images/monsters/slime.png",
+    "imageHit": null,
     "trait": "被血色結晶束縛的亡魂，在裂縫間發出令人心寒的低鳴",
-    "spawnLevels": [26], "hpMax": 240, "size": 1.1, "posX": null, "posY": null
+    "spawnLevels": [
+      26
+    ],
+    "hpMax": 240,
+    "size": 1.1,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "abyss-lord", "name": "深淵領主",
-    "image": "assets/images/monsters/slime.png", "imageHit": null,
+    "id": "abyss-lord",
+    "name": "深淵領主",
+    "image": "assets/images/monsters/slime.png",
+    "imageHit": null,
     "trait": "支配深淵的強大存在，散發著壓倒性的魔力",
-    "spawnLevels": [27], "hpMax": 400, "size": 1.8, "posX": null, "posY": null
+    "spawnLevels": [
+      27
+    ],
+    "hpMax": 400,
+    "size": 1.8,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "scarlet-ooze", "name": "赤淵魔漿",
-    "image": "assets/images/monsters/slime.png", "imageHit": null,
+    "id": "scarlet-ooze",
+    "name": "赤淵魔漿",
+    "image": "assets/images/monsters/slime.png",
+    "imageHit": null,
     "trait": "自血河深處爬出的詭異流體，會吞噬接近的一切生命",
-    "spawnLevels": [28], "hpMax": 270, "size": 1.15, "posX": null, "posY": null
+    "spawnLevels": [
+      28
+    ],
+    "hpMax": 270,
+    "size": 1.15,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "throne-hexer", "name": "王座咒術師",
-    "image": "assets/images/monsters/slime.png", "imageHit": null,
+    "id": "throne-hexer",
+    "name": "王座咒術師",
+    "image": "assets/images/monsters/slime.png",
+    "imageHit": null,
     "trait": "侍奉黑紅王座的禁術使者，能以詛咒侵蝕意志與肉體",
-    "spawnLevels": [29], "hpMax": 280, "size": 1.15, "posX": null, "posY": null
+    "spawnLevels": [
+      29
+    ],
+    "hpMax": 280,
+    "size": 1.15,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "crimson-throne-lord", "name": "緋紅王座之主",
-    "image": "assets/images/monsters/crimson-throne-lord.png", "imageHit": null,
+    "id": "crimson-throne-lord",
+    "name": "緋紅王座之主",
+    "image": "assets/images/monsters/crimson-throne-lord.png",
+    "imageHit": null,
     "trait": "盤踞於血色王座的深淵支配者，光是注視就像會被拖進無盡詛咒",
-    "spawnLevels": [30], "hpMax": 400, "size": 2.2, "posX": null, "posY": 17, "infoOffsetY": 45
+    "spawnLevels": [
+      30
+    ],
+    "hpMax": 400,
+    "size": 2.2,
+    "posX": null,
+    "posY": 17,
+    "infoOffsetY": 45
   },
   {
-    "id": "sky-sanctum-warden", "name": "雲庭守門者",
-    "image": "assets/images/monsters/slime.png", "imageHit": null,
+    "id": "sky-sanctum-warden",
+    "name": "雲庭守門者",
+    "image": "assets/images/monsters/slime.png",
+    "imageHit": null,
     "trait": "長年守望浮空聖域的古老衛士，腳步聲在雲海間格外沉重",
-    "spawnLevels": [31], "hpMax": 300, "size": 1.2, "posX": null, "posY": null
+    "spawnLevels": [
+      31
+    ],
+    "hpMax": 300,
+    "size": 1.2,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "luminous-judicator", "name": "輝光審判者",
-    "image": "assets/images/monsters/slime.png", "imageHit": null,
+    "id": "luminous-judicator",
+    "name": "輝光審判者",
+    "image": "assets/images/monsters/slime.png",
+    "imageHit": null,
     "trait": "身披聖光而來的審判者，目光冷冽得像能看穿一切虛妄",
-    "spawnLevels": [32], "hpMax": 320, "size": 1.25, "posX": null, "posY": null
+    "spawnLevels": [
+      32
+    ],
+    "hpMax": 320,
+    "size": 1.25,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "fallen-seraph-shade", "name": "墮輝熾靈",
-    "image": "assets/images/monsters/slime.png", "imageHit": null,
+    "id": "fallen-seraph-shade",
+    "name": "墮輝熾靈",
+    "image": "assets/images/monsters/slime.png",
+    "imageHit": null,
     "trait": "失去榮耀的熾天殘影，殘存的神聖與墮落彼此拉扯，令人不敢直視",
-    "spawnLevels": [33], "hpMax": 340, "size": 1.35, "posX": null, "posY": null
+    "spawnLevels": [
+      33
+    ],
+    "hpMax": 340,
+    "size": 1.35,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "astral-temple-seer", "name": "星殿觀測者",
-    "image": "assets/images/monsters/slime.png", "imageHit": null,
+    "id": "astral-temple-seer",
+    "name": "星殿觀測者",
+    "image": "assets/images/monsters/slime.png",
+    "imageHit": null,
     "trait": "徘徊於高空神殿的預言者，低語間像在宣告凡人無法違逆的命運",
-    "spawnLevels": [34], "hpMax": 360, "size": 1.25, "posX": null, "posY": null
+    "spawnLevels": [
+      34
+    ],
+    "hpMax": 360,
+    "size": 1.25,
+    "posX": null,
+    "posY": null
   },
   {
-    "id": "celestial-throne-arbiter", "name": "天座裁決王",
-    "image": "assets/images/monsters/celestial-throne-arbiter.png", "imageHit": null,
+    "id": "celestial-throne-arbiter",
+    "name": "天座裁決王",
+    "image": "assets/images/monsters/celestial-throne-arbiter.png",
+    "imageHit": null,
     "trait": "端坐雲上終殿的裁決者，聖潔威壓之下連呼吸都像是一種冒犯",
-    "spawnLevels": [35], "hpMax": 1000, "size": 2.5, "posX": null, "posY": 20, "infoOffsetY": 45
+    "spawnLevels": [
+      35
+    ],
+    "hpMax": 1000,
+    "size": 2.5,
+    "posX": null,
+    "posY": 20,
+    "infoOffsetY": 45
   },
   {
-  "id": "void-throne-lord",
-  "name": "虛空王座之主",
-  "image": "assets/images/monsters/lord-of-darkness.png",
-  "imageHit": null,
-  "trait": "端坐於斷界王座深處的終焉支配者，黑暗與星屑都只是祂意志的餘燼",
-  "spawnLevels": [36], "hpMax": 2000, "size": 3.2, "posX": null, "posY": 25, "infoOffsetY": 45
-}
+    "id": "void-throne-lord",
+    "name": "虛空王座之主",
+    "image": "assets/images/monsters/lord-of-darkness.png",
+    "imageHit": null,
+    "trait": "端坐於斷界王座深處的終焉支配者，黑暗與星屑都只是祂意志的餘燼",
+    "spawnLevels": [
+      36
+    ],
+    "hpMax": 2000,
+    "size": 3.2,
+    "posX": null,
+    "posY": 25,
+    "infoOffsetY": 45
+  }
 ]

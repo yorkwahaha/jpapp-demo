@@ -1109,7 +1109,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26040102";
+        const APP_VERSION = window.APP_VERSION || "26040201";
 
         const appVersion = ref(APP_VERSION);
 

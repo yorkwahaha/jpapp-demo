@@ -240,13 +240,15 @@ function updateHeroStatusBar() {
                     'pointer-events:none!important;' +
                     'overflow:visible!important;' +
                     'display:block!important;' +
+                    'transform:none!important;' +
                     'margin:0!important;padding:0!important;background:none!important;';
             } else {
                 overlay.style.cssText =
                     'position:fixed!important;bottom:200px!important;left:4px!important;' +
                     'width:110px!important;height:110px!important;z-index:47!important;' +
                     'pointer-events:none!important;overflow:visible!important;' +
-                    'display:block!important;margin:0!important;padding:0!important;background:none!important;';
+                    'display:block!important;transform:none!important;' +
+                    'margin:0!important;padding:0!important;background:none!important;';
             }
 
             let badgesHtml = '';
@@ -321,7 +323,7 @@ function updateHeroStatusBar() {
                 'z-index:0;pointer-events:none;"></div>' : '') +
                 
                 // Badges container at top-right of hero
-                '<div id="heroBadgeContainer" style="position:absolute;top:-14px;right:-10px;' +
+                '<div id="heroBadgeContainer" style="position:absolute;top:-14px;right:-30px;' +
                 'display:flex;flex-direction:column;align-items:flex-end;gap:4px;z-index:2;">' +
                 badgesHtml + '</div>';
         } else {
