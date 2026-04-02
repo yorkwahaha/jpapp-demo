@@ -242,24 +242,7 @@ rt {
     }
 }
 
-/* Original block remains below for manual removal or overlapping */
-@keyframes OLD_HIT {
 
-    0% {
-        transform: scale(1);
-        filter: brightness(1);
-    }
-
-    20% {
-        transform: scale(1.15) rotate(1deg);
-        filter: brightness(2.5) contrast(1.2);
-    }
-
-    100% {
-        transform: scale(1) rotate(0);
-        filter: brightness(1);
-    }
-}
 
 .hit {
     animation: hit 0.25s ease-in-out;
@@ -416,9 +399,6 @@ rt {
         inset 0 0 20px rgba(255, 255, 255, 0.02);
 }
 
-.log-bubble {
-    display: none !important;
-}
 
 .flash-card {
     animation: popPulsing 0.8s ease-out;

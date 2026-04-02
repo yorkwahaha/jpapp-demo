@@ -9,13 +9,12 @@
       "newSkillWeight": 0.8,
       "oldSkillWeight": 0.2
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "boss": null,
     "levelNumber": 1,
     "levelName": "新手村",
     "focusParticle": "は",
     "focusLabel": "主題",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map1_village.webp",
     "bgm": null
   },
@@ -29,13 +28,12 @@
       "newSkillWeight": 0.7,
       "oldSkillWeight": 0.3
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "boss": null,
     "levelNumber": 2,
     "levelName": "村莊外圍",
     "focusParticle": "の",
     "focusLabel": "所屬",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map1_outskirts.webp",
     "bgm": null
   },
@@ -49,14 +47,13 @@
       "newSkillWeight": 0.6,
       "oldSkillWeight": 0.4
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "boss": null,
     "levelNumber": 3,
     "levelName": "岔路口",
     "focusParticle": "が",
     "focusLabel": "自然發生",
-    "bgKey": "",
-    "bgImage": "assets/images/backgrounds/map1_crossroad.webp",
+    "bgImage": "assets/images/backgrounds/map1_crossroad_v2.webp",
     "bgm": null
   },
   {
@@ -69,13 +66,12 @@
       "newSkillWeight": 0.6,
       "oldSkillWeight": 0.4
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "boss": null,
     "levelNumber": 4,
     "levelName": "森林入口",
     "focusParticle": "を",
     "focusLabel": "受詞",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map1_forest_entrance.webp",
     "bgm": null
   },
@@ -84,7 +80,7 @@
     "name": "魔王關：語感守門人",
     "skillId": "BOSS_REVIEW_01",
     "unlockSkills": [],
-    "questionCount": 15,
+    "questionCount": 40,
     "rewardAbilityId": "ODOODO",
     "boss": {
       "everyNLevels": 5,
@@ -95,8 +91,7 @@
     "levelName": "森林深處",
     "focusParticle": "Boss",
     "focusLabel": "複習",
-    "bgKey": "",
-    "bgImage": "assets/images/backgrounds/boss_l5.png",
+    "bgImage": "assets/images/backgrounds/boss_l5.webp",
     "bgm": "BGM_boss.mp3"
   },
   {
@@ -110,13 +105,12 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "boss": null,
     "levelNumber": 6,
     "levelName": "高地入口",
     "focusParticle": "へ",
     "focusLabel": "方向",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map2_entrance.webp",
     "bgm": null
   },
@@ -131,13 +125,12 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "boss": null,
     "levelNumber": 7,
     "levelName": "懸崖邊",
     "focusParticle": "も",
     "focusLabel": "也",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map2_cliff.webp",
     "bgm": null
   },
@@ -152,13 +145,12 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "boss": null,
     "levelNumber": 8,
     "levelName": "山影小徑",
     "focusParticle": "に",
     "focusLabel": "時間",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map2_path.webp",
     "bgm": null
   },
@@ -173,13 +165,12 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "boss": null,
     "levelNumber": 9,
     "levelName": "巨石陣",
     "focusParticle": "と",
     "focusLabel": "並列",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map2_monolith.webp",
     "bgm": null
   },
@@ -188,7 +179,7 @@
     "name": "魔王關：半獸人之王",
     "skillId": "BOSS_REVIEW_02",
     "unlockSkills": [],
-    "questionCount": 15,
+    "questionCount": 50,
     "rewardAbilityId": "GACHIGACHI",
     "boss": {
       "everyNLevels": 5,
@@ -199,8 +190,7 @@
     "levelName": "獸人塔樓",
     "focusParticle": "Boss",
     "focusLabel": "複習",
-    "bgKey": "",
-    "bgImage": "assets/images/backgrounds/boss_l10_v2.png",
+    "bgImage": "assets/images/backgrounds/boss_l10_v2.webp",
     "bgm": "BGM_boss.mp3"
   },
   {
@@ -214,13 +204,12 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "boss": null,
     "levelNumber": 11,
     "levelName": "石橋",
     "focusParticle": "で",
     "focusLabel": "動作地點",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map3_bridge.webp",
     "bgm": null
   },
@@ -235,13 +224,12 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "boss": null,
     "levelNumber": 12,
     "levelName": "眺望平台",
     "focusParticle": "に",
     "focusLabel": "存在地點",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map3_platform.webp",
     "bgm": null
   },
@@ -256,13 +244,12 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "boss": null,
     "levelNumber": 13,
     "levelName": "冰晶石柱",
     "focusParticle": "が",
     "focusLabel": "存在主體",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map3_icepillar.webp",
     "bgm": null
   },
@@ -277,14 +264,13 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "boss": null,
     "levelNumber": 14,
     "levelName": "冰城牆下",
     "focusParticle": "と",
     "focusLabel": "共同動作",
-    "bgKey": "",
-    "bgImage": "assets/images/backgrounds/map3_wall.webp",
+    "bgImage": "assets/images/backgrounds/map3_glacier_sanctum.webp",
     "bgm": null
   },
   {
@@ -292,7 +278,7 @@
     "name": "魔王關：冰原巨鳥",
     "skillId": "BOSS_REVIEW_03",
     "unlockSkills": [],
-    "questionCount": 15,
+    "questionCount": 60,
     "rewardAbilityId": "UTOUTO",
     "boss": {
       "everyNLevels": 5,
@@ -303,8 +289,7 @@
     "levelName": "冰鳥巢穴",
     "focusParticle": "Boss",
     "focusLabel": "複習",
-    "bgKey": "",
-    "bgImage": "assets/images/backgrounds/boss_l15.png",
+    "bgImage": "assets/images/backgrounds/boss_l15.webp",
     "bgm": "BGM_boss.mp3"
   },
   {
@@ -318,13 +303,12 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "boss": null,
     "levelNumber": 16,
     "levelName": "城門長廊",
     "focusParticle": "から",
     "focusLabel": "起點",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map4_corridor.webp",
     "bgm": null
   },
@@ -339,13 +323,12 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "boss": null,
     "levelNumber": 17,
     "levelName": "幽靜階梯",
     "focusParticle": "まで",
     "focusLabel": "終點",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map4_stairs.webp",
     "bgm": null
   },
@@ -360,13 +343,12 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "boss": null,
     "levelNumber": 18,
     "levelName": "石橋",
     "focusParticle": "に",
     "focusLabel": "落點",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map4_bridge.webp",
     "bgm": null
   },
@@ -381,13 +363,12 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "boss": null,
     "levelNumber": 19,
     "levelName": "城內外苑",
     "focusParticle": "で",
     "focusLabel": "手段",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map4_garden.webp",
     "bgm": null
   },
@@ -396,7 +377,7 @@
     "name": "魔王關：外廊守護者",
     "skillId": "BOSS_REVIEW_04",
     "unlockSkills": [],
-    "questionCount": 15,
+    "questionCount": 70,
     "rewardAbilityId": "JIWAJIWA",
     "boss": {
       "everyNLevels": 5,
@@ -407,8 +388,7 @@
     "levelName": "外廊出口",
     "focusParticle": "Boss",
     "focusLabel": "複習",
-    "bgKey": "",
-    "bgImage": "assets/images/backgrounds/boss_l20_v2.png",
+    "bgImage": "assets/images/backgrounds/boss_l20_v2.webp",
     "bgm": "BGM_boss.mp3"
   },
   {
@@ -422,12 +402,11 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "levelNumber": 21,
     "levelName": "幽暗入口",
     "focusParticle": "に",
     "focusLabel": "對象",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map5_entrance.webp",
     "bgm": null
   },
@@ -442,12 +421,11 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "levelNumber": 22,
     "levelName": "骨骸路",
     "focusParticle": "が",
     "focusLabel": "轉折",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map5_bonepath.webp",
     "bgm": null
   },
@@ -462,12 +440,11 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "levelNumber": 23,
     "levelName": "無盡長廊",
     "focusParticle": "も",
     "focusLabel": "全否定",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map5_corridor.webp",
     "bgm": null
   },
@@ -482,12 +459,11 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "levelNumber": 24,
     "levelName": "深淵盡頭",
     "focusParticle": "と",
     "focusLabel": "條件",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map5_abyss.webp",
     "bgm": null
   },
@@ -495,7 +471,7 @@
     "id": "L25_BOSS",
     "name": "魔王關：深淵盡頭",
     "unlockSkills": [],
-    "questionCount": 15,
+    "questionCount": 80,
     "rewardAbilityId": "WAKUWAKU",
     "boss": {
       "everyNLevels": 5,
@@ -506,8 +482,7 @@
     "levelName": "封印大門",
     "focusParticle": "Boss",
     "focusLabel": "複習",
-    "bgKey": "",
-    "bgImage": "assets/images/backgrounds/boss_l25_v2.png",
+    "bgImage": "assets/images/backgrounds/boss_l25_v2.webp",
     "bgm": "BGM_boss.mp3"
   },
   {
@@ -521,12 +496,11 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "levelNumber": 26,
     "levelName": "幻影長廊",
     "focusParticle": "や",
     "focusLabel": "並列",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map6_phantom.webp",
     "bgm": null
   },
@@ -541,12 +515,11 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "levelNumber": 27,
     "levelName": "禁忌書庫",
     "focusParticle": "で",
     "focusLabel": "範圍",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map6_library.webp",
     "bgm": null
   },
@@ -561,12 +534,11 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "levelNumber": 28,
     "levelName": "抉擇之廳",
     "focusParticle": "に",
     "focusLabel": "目的",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map6_hall.webp",
     "bgm": null
   },
@@ -581,12 +553,11 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "levelNumber": 29,
     "levelName": "獻祭廣場",
     "focusParticle": "と",
     "focusLabel": "引用",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map6_square.webp",
     "bgm": null
   },
@@ -595,7 +566,7 @@
     "name": "魔王關：王座之間",
     "skillId": "BOSS_REVIEW_06",
     "unlockSkills": [],
-    "questionCount": 15,
+    "questionCount": 90,
     "rewardAbilityId": "MORIMORI",
     "boss": {
       "everyNLevels": 5,
@@ -606,8 +577,7 @@
     "levelName": "王座之間",
     "focusParticle": "Boss",
     "focusLabel": "複習",
-    "bgKey": "",
-    "bgImage": "assets/images/backgrounds/boss_l30_v3.png",
+    "bgImage": "assets/images/backgrounds/boss_l30_v3.webp",
     "bgm": "BGM_boss.mp3"
   },
   {
@@ -621,12 +591,11 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "levelNumber": 31,
     "levelName": "起源石碑",
     "focusParticle": "から",
     "focusLabel": "原因",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map7_stele.webp",
     "bgm": null
   },
@@ -641,12 +610,11 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "levelNumber": 32,
     "levelName": "試煉迴廊",
     "focusParticle": "より",
     "focusLabel": "比較",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map7_trial.webp",
     "bgm": null
   },
@@ -661,12 +629,11 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "levelNumber": 33,
     "levelName": "神域祭壇",
     "focusParticle": "に",
     "focusLabel": "頻率",
-    "bgKey": "",
     "bgImage": "assets/images/backgrounds/map7_altar.webp",
     "bgm": null
   },
@@ -681,13 +648,12 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 10,
+    "questionCount": 20,
     "levelNumber": 34,
     "levelName": "禁忌鍛爐",
     "focusParticle": "で",
     "focusLabel": "材料",
-    "bgKey": "",
-    "bgImage": "assets/images/backgrounds/map7_forge.webp",
+    "bgImage": "assets/images/backgrounds/map7_forge_battle.webp",
     "bgm": null
   },
   {
@@ -695,7 +661,7 @@
     "name": "最終魔王：世界之巔",
     "skillId": "FINAL_BOSS_35",
     "unlockSkills": [],
-    "questionCount": 20,
+    "questionCount": 100,
     "rewardAbilityId": "GIRAGIRA",
     "boss": {
       "everyNLevels": 5,
@@ -706,8 +672,7 @@
     "levelName": "世界之巔",
     "focusParticle": "Boss",
     "focusLabel": "最終",
-    "bgKey": "",
-    "bgImage": "assets/images/backgrounds/boss_l35_v4.png",
+    "bgImage": "assets/images/backgrounds/boss_l35_v4.webp",
     "bgm": "BGM_boss.mp3"
   },
   {
@@ -716,7 +681,7 @@
     "skillId": "HIDDEN_BOSS_36",
     "isBoss": true,
     "unlockSkills": [],
-    "questionCount": 35,
+    "questionCount": 500,
     "rewardAbilityId": "GIRAGIRA",
     "boss": {
       "everyNLevels": 5,
@@ -727,8 +692,7 @@
     "levelName": "真正的終結",
     "focusParticle": "Boss",
     "focusLabel": "極限",
-    "bgKey": "",
-    "bgImage": "assets/images/backgrounds/boss_l36.png",
+    "bgImage": "assets/images/backgrounds/boss_l36.webp",
     "bgm": "Do_not_go_against_me.mp3"
   }
 ]

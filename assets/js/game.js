@@ -86,147 +86,7 @@ window.spawnFloatingDamage = function (target, amount, type = 'hp') {
 
 
 
-window.spawnSkillActivationVfx = function (id) {
-    const vfxLayer = (typeof window.getVfxLayer === 'function') ? window.getVfxLayer() : document.getElementById('global-vfx-layer');
-    if (!vfxLayer) return;
-
-    const heroEl = document.getElementById('heroAvatar');
-    const hr = heroEl ? heroEl.getBoundingClientRect() : null;
-    const hx = hr ? hr.left + hr.width / 2 : window.innerWidth * 0.2;
-    const hy = hr ? hr.top + hr.height / 2 : window.innerHeight * 0.75;
-
-    const monsterEl = document.querySelector('img[alt="monster"]') || document.querySelector('.monster-img-normal') || document.querySelector('.monster-img-boss');
-    const mr = monsterEl ? monsterEl.getBoundingClientRect() : null;
-    const mx = mr ? mr.left + mr.width / 2 : window.innerWidth * 0.65;
-    const my = mr ? mr.top + mr.height / 2 : window.innerHeight * 0.35;
-
-    const spawn = (css, dur, frames, easing) => {
-        const el = document.createElement('div');
-        el.style.cssText = css;
-        vfxLayer.appendChild(el);
-        el.animate(frames, { duration: dur, easing: easing || 'ease-out', fill: 'forwards' });
-        setTimeout(() => { if (el.isConnected) el.remove(); }, dur + 50);
-    };
-
-    if (id === 'GIRAGIRA') {
-        spawn(
-            `position:absolute;width:150px;height:150px;left:${hx - 75}px;top:${hy - 75}px;border-radius:50%;` +
-            `background:radial-gradient(circle,rgba(255,255,220,0.92) 0%,rgba(251,191,36,0.55) 45%,transparent 75%);pointer-events:none;`,
-            420, [{ opacity: 0.95, transform: 'scale(0.25)' }, { opacity: 0, transform: 'scale(2)' }]);
-        [[-38, 1], [38, -1]].forEach(([rot, dir]) => {
-            spawn(
-                `position:absolute;width:4px;height:190px;left:${hx - 2}px;top:${hy - 95}px;` +
-                `background:linear-gradient(to bottom,transparent 5%,rgba(255,255,200,0.95) 35%,rgba(251,191,36,1) 60%,transparent 95%);` +
-                `border-radius:2px;pointer-events:none;transform-origin:center center;`,
-                360,
-                [{ opacity: 1, transform: `rotate(${rot}deg) scaleY(0.08)` }, { opacity: 0, transform: `rotate(${rot + dir * 9}deg) scaleY(1.2)` }],
-                'cubic-bezier(0.05,0.9,0.25,1)');
-        });
-        for (let i = 0; i < 6; i++) {
-            const ang = (Math.PI * 2 / 6) * i;
-            const dist = 55 + Math.random() * 25;
-            spawn(
-                `position:absolute;width:5px;height:15px;left:${hx - 2.5}px;top:${hy - 7.5}px;` +
-                `background:#fde047;box-shadow:0 0 6px #f59e0b;border-radius:3px;pointer-events:none;`,
-                280 + Math.random() * 80,
-                [{ opacity: 1, transform: `rotate(${ang + Math.PI / 2}rad) translate(0,0) scale(1)` }, { opacity: 0, transform: `rotate(${ang + Math.PI / 2}rad) translate(0,-${dist}px) scale(0.15)` }]);
-        }
-    } else if (id === 'MORIMORI') {
-        spawn(
-            `position:absolute;width:110px;height:110px;left:${hx - 55}px;top:${hy - 55}px;` +
-            `border:3px solid rgba(96,165,250,0.88);border-radius:50%;` +
-            `box-shadow:0 0 14px rgba(59,130,246,0.65),inset 0 0 8px rgba(59,130,246,0.25);pointer-events:none;`,
-            520, [{ opacity: 1, transform: 'scale(0.35)' }, { opacity: 0, transform: 'scale(1.9)' }]);
-        for (let i = 0; i < 8; i++) {
-            const ox = (Math.random() - 0.5) * 65, oy = Math.random() * 22;
-            spawn(
-                `position:absolute;width:8px;height:8px;left:${hx + ox - 4}px;top:${hy + oy - 4}px;` +
-                `background:rgba(96,165,250,0.9);border-radius:50%;box-shadow:0 0 8px #60a5fa;pointer-events:none;`,
-                380 + Math.random() * 200,
-                [{ opacity: 0.9, transform: 'translateY(0) scale(1)' }, { opacity: 0, transform: `translateY(-${50 + Math.random() * 30}px) scale(0.25)` }]);
-        }
-    } else if (id === 'JIWAJIWA') {
-        [0, 160].forEach((delay, i) => {
-            const sz = 90 + i * 35;
-            setTimeout(() => {
-                spawn(
-                    `position:absolute;width:${sz}px;height:${sz}px;left:${hx - sz / 2}px;top:${hy - sz / 2}px;` +
-                    `border:2px solid rgba(74,222,128,0.72);border-radius:50%;` +
-                    `box-shadow:0 0 10px rgba(34,197,94,0.45);pointer-events:none;`,
-                    620, [{ opacity: 0.8, transform: 'scale(0.45)' }, { opacity: 0, transform: 'scale(1.7)' }]);
-            }, delay);
-        });
-        spawn(
-            `position:absolute;width:85px;height:85px;left:${hx - 42.5}px;top:${hy - 42.5}px;` +
-            `border-radius:50%;background:radial-gradient(circle,rgba(167,243,208,0.72) 0%,transparent 70%);pointer-events:none;`,
-            520, [{ opacity: 0.8, transform: 'scale(0.35)' }, { opacity: 0, transform: 'scale(1.5)' }]);
-    } else if (id === 'WAKUWAKU') {
-        [-18, 2, 22].forEach((oy, i) => {
-            const w = 55 + Math.random() * 45;
-            setTimeout(() => {
-                spawn(
-                    `position:absolute;height:3px;width:${w}px;left:${hx - 85}px;top:${hy + oy}px;` +
-                    `background:linear-gradient(to right,transparent,rgba(56,189,248,0.88),transparent);` +
-                    `border-radius:2px;pointer-events:none;`,
-                    220,
-                    [{ opacity: 1, transform: 'scaleX(0.08) translateX(-50px)' }, { opacity: 0, transform: 'scaleX(1) translateX(70px)' }],
-                    'ease-in');
-            }, i * 45);
-        });
-        spawn(
-            `position:absolute;width:115px;height:115px;left:${hx - 57.5}px;top:${hy - 57.5}px;` +
-            `border-radius:50%;background:radial-gradient(circle,rgba(186,230,253,0.65) 0%,transparent 70%);pointer-events:none;`,
-            350, [{ opacity: 0.85, transform: 'scale(0.28)' }, { opacity: 0, transform: 'scale(1.9)' }]);
-    } else if (id === 'ODOODO') {
-        [0, 110].forEach((delay, i) => {
-            const sz = 80 + i * 45;
-            setTimeout(() => {
-                spawn(
-                    `position:absolute;width:${sz}px;height:${sz}px;left:${mx - sz / 2}px;top:${my - sz / 2}px;` +
-                    `border:2px solid rgba(134,239,172,0.68);border-radius:50%;` +
-                    `box-shadow:0 0 10px rgba(74,222,128,0.38);pointer-events:none;`,
-                    520, [{ opacity: 0.75, transform: 'scale(0.38)' }, { opacity: 0, transform: 'scale(2.1)' }]);
-            }, delay);
-        });
-        spawn(
-            `position:absolute;width:120px;height:120px;left:${mx - 60}px;top:${my - 60}px;` +
-            `border-radius:50%;background:radial-gradient(circle,rgba(74,222,128,0.32) 0%,transparent 70%);pointer-events:none;`,
-            400, [{ opacity: 0.8 }, { opacity: 0 }]);
-    } else if (id === 'GACHIGACHI') {
-        spawn(
-            `position:absolute;width:105px;height:105px;left:${hx - 52.5}px;top:${hy - 52.5}px;` +
-            `border:4px solid rgba(148,163,184,0.88);border-radius:50%;` +
-            `box-shadow:0 0 16px rgba(203,213,225,0.55),inset 0 0 8px rgba(148,163,184,0.28);pointer-events:none;`,
-            480, [{ opacity: 1, transform: 'scale(0.28)' }, { opacity: 0, transform: 'scale(1.65)' }]);
-        [[0, -1], [1, 0], [0, 1], [-1, 0]].forEach(([dx, dy], i) => {
-            const sx = hx + dx * 68, sy = hy + dy * 68;
-            spawn(
-                `position:absolute;width:13px;height:13px;left:${sx - 6.5}px;top:${sy - 6.5}px;` +
-                `background:rgba(203,213,225,0.88);border-radius:2px;` +
-                `box-shadow:0 0 6px rgba(148,163,184,0.75);pointer-events:none;`,
-                360,
-                [{ opacity: 1, transform: `translate(0,0) rotate(${i * 45}deg) scale(1)` }, { opacity: 0, transform: `translate(${-dx * 68}px,${-dy * 68}px) rotate(${i * 45 + 180}deg) scale(0.15)` }],
-                'cubic-bezier(0.25,0,0.15,1)');
-        });
-    } else if (id === 'UTOUTO') {
-        for (let i = 0; i < 3; i++) {
-            const sz = 14 + i * 8, ox = (i - 1) * 30;
-            setTimeout(() => {
-                spawn(
-                    `position:absolute;width:${sz}px;height:${sz}px;left:${hx + ox - sz / 2}px;top:${hy - sz / 2}px;` +
-                    `background:rgba(167,139,250,0.62);border-radius:50%;` +
-                    `border:1.5px solid rgba(196,181,253,0.68);` +
-                    `box-shadow:0 0 8px rgba(139,92,246,0.48);pointer-events:none;`,
-                    680 + i * 80,
-                    [{ opacity: 0.8, transform: 'translateY(0) scale(1)' }, { opacity: 0, transform: `translateY(-${65 + i * 22}px) scale(0.25)` }]);
-            }, i * 130);
-        }
-        spawn(
-            `position:absolute;width:120px;height:120px;left:${mx - 60}px;top:${my - 60}px;` +
-            `border-radius:50%;background:radial-gradient(circle,rgba(167,139,250,0.38) 0%,transparent 70%);pointer-events:none;`,
-            620, [{ opacity: 0.7, transform: 'scale(0.48)' }, { opacity: 0, transform: 'scale(1.55)' }]);
-    }
-};
+// window.spawnSkillActivationVfx — 已移至 assets/js/skill-vfx.js (載入順序在本檔之前)
 
 
 
@@ -1109,7 +969,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26040201";
+        const APP_VERSION = window.APP_VERSION || "26040301";
 
         const appVersion = ref(APP_VERSION);
 
@@ -4406,7 +4266,7 @@ const _jpApp = Vue.createApp({
 
         // L36 void-throne-lord: 虛無侵蝕
         const playBossVoidErosionVfx = () => {
-            console.debug('[VFX] entered L36 void-erosion');
+
             if (_isBossSpecialAttackPlaying) return;
             _isBossSpecialAttackPlaying = true;
             const vfxLayer = getVfxLayer();
@@ -5766,7 +5626,7 @@ const _jpApp = Vue.createApp({
                 // Logging filtered items (low-noise debug)
                 const filteredOut = rawPool.filter(p => !safePool.includes(p) && p !== correctAns);
                 if (filteredOut.length > 0) {
-                    console.debug(`[ChoiceFilter] Skill:${skillDef.id} Filtered:`, filteredOut, "From:", rawPool);
+
                 }
 
                 if (correctAns && !safePool.includes(correctAns)) {
@@ -5887,991 +5747,30 @@ const _jpApp = Vue.createApp({
                 });
             }
 
-            if (skillDef.id === 'NO_POSSESS' || skillDef.id === 'NO_POSSESSIVE') {
 
-                const lv = Number(currentLevel.value || 1);
 
 
 
-                const skillPool = (pool.skills?.NO_POSSESSIVE) || {};
 
-                const safePeople = skillPool.safePeople || [];
 
-                const safePlaces = skillPool.safePlaces || [];
 
-                const safeOwnedObjects = skillPool.safeOwnedObjects || [];
 
-                const safePlacedObjects = skillPool.safePlacedObjects || [];
 
-                const safeTemplates = skillPool.safeTemplates || [];
 
 
 
-                if (lv <= 2) {
 
-                    const personTemplates = [
 
-                        { a: safePeople[0], b: safeOwnedObjects[0] },
 
-                        { a: safePeople[1], b: safeOwnedObjects[4] },
 
-                        { a: safePeople[2], b: safeOwnedObjects[1] },
 
-                        { a: safePeople[3], b: safeOwnedObjects[2] },
 
-                        { a: safePeople[4], b: safeOwnedObjects[3] }
 
-                    ];
 
 
 
-                    const placeTemplates = [
 
-                        { a: safePlaces[0], b: safePlacedObjects[0] },
 
-                        { a: safePlaces[2], b: safePlacedObjects[1] },
-
-                        { a: safePlaces[4], b: safePlacedObjects[2] },
-
-                        { a: safePlaces[1], b: safePlacedObjects[3] },
-
-                        { a: safePlaces[3], b: safePlacedObjects[0] }
-
-                    ];
-
-
-
-                    const tpl = Math.random() < 0.5 ? pickOne(personTemplates) : pickOne(placeTemplates);
-
-                    const finalTpl = tpl || safeTemplates[0];
-
-
-
-                    q = makeParticleQuestion({
-
-                        chinese: `${zhOf(finalTpl.a)}的${zhOf(finalTpl.b)}`,
-
-                        leftText: finalTpl.a.j,
-
-                        leftRuby: finalTpl.a.r,
-
-                        rightText: finalTpl.b.j,
-
-                        rightRuby: finalTpl.b.r,
-
-                        answer: 'の',
-
-                        skillId: skillDef.id,
-
-                        grammarTip: tipText,
-
-                        choices: (Number(blanks ?? 1) === 1) ? getChoices(["の", "は", "が", "を"], 'の') : undefined
-
-                    });
-
-                } else {
-
-                    let personPool = [...(db?.people || []), ...(safeVocab.people || []), ...safePeople];
-
-                    let placePool = [...(db?.places || []), ...(safeVocab.places || []), ...safePlaces];
-
-                    let objPool = [...(db?.objects || []), ...(safeVocab.objects || []), ...safeOwnedObjects, ...safePlacedObjects];
-
-
-
-                    let ownableObjPool = objPool.filter(o => o && o.ownable !== false);
-
-                    let placeableObjPool = objPool.filter(o => o && o.placeable !== false);
-
-
-
-                    if (!personPool.length) personPool = safePeople;
-
-                    if (!placePool.length) placePool = safePlaces;
-
-                    if (!ownableObjPool.length) ownableObjPool = safeOwnedObjects;
-
-                    if (!placeableObjPool.length) placeableObjPool = safePlacedObjects;
-
-
-
-                    const isPersonA = Math.random() < 0.5;
-
-                    let a, b, validObj = false, attempts = 0;
-
-
-
-                    while (!validObj && attempts < 20) {
-
-                        if (isPersonA) {
-
-                            a = pickOne(personPool);
-
-                            b = pickOne(ownableObjPool);
-
-                            validObj = !!(a && b);
-
-                        } else {
-
-                            a = pickOne(placePool);
-
-                            b = pickOne(placeableObjPool);
-
-                            validObj = !!(a && b);
-
-
-
-                            if (validObj && Array.isArray(b.domain) && b.domain.length > 0) {
-
-                                const placeKey = a?.id || a?.key || a?.slug || a?.j || null;
-
-                                if (placeKey && !b.domain.includes(placeKey) && !b.domain.includes("general")) {
-
-                                    validObj = false;
-
-                                }
-
-                            }
-
-                        }
-
-                        attempts++;
-
-                    }
-
-
-
-                    if (!validObj || !a || !b) {
-
-                        const tpl = pickOne(safeTemplates);
-
-                        a = tpl.a;
-
-                        b = tpl.b;
-
-                    }
-
-
-
-                    q = makeParticleQuestion({
-
-                        chinese: `${zhOf(a)}的${zhOf(b)}`,
-
-                        leftText: a.j,
-
-                        leftRuby: a.r,
-
-                        rightText: b.j,
-
-                        rightRuby: b.r,
-
-                        answer: 'の',
-
-                        skillId: skillDef.id,
-
-                        grammarTip: tipText,
-
-                        choices: (Number(blanks ?? 1) === 1) ? getChoices(["の", "は", "が", "を"], 'の') : undefined
-
-                    });
-
-                }
-
-            }
-
-            else if (skillDef.id === 'WA_TOPIC' || skillDef.id === 'WA_TOPIC_BASIC') {
-
-                const lv = Number(currentLevel.value || 1);
-
-
-
-                const skillPool = (pool.skills?.WA_TOPIC_BASIC) || {};
-
-                const safePeople = skillPool.safePeople || [];
-
-                const timePool = skillPool.timePool || [];
-
-                const identityPool = skillPool.identityPool || [];
-
-                const statePool = skillPool.statePool || [];
-
-
-
-                // 前幾關偏向時間/狀態句（例如：今天是晴天），較自然
-
-                const useIdentity = lv >= 3 ? Math.random() < 0.45 : Math.random() < 0.15;
-
-
-
-                let x, y, zhPrompt;
-
-                if (useIdentity) {
-
-                    x = pickOne(safePeople);
-
-                    y = pickOne(identityPool.filter(r => r.j !== x.j)) || identityPool[0];
-
-                    zhPrompt = `${zhOf(x)}是${zhOf(y)}`;
-
-                } else {
-
-                    x = pickOne(timePool);
-
-                    y = pickOne(statePool);
-
-                    zhPrompt = `${zhOf(x)}是${zhOf(y)}`;
-
-                }
-
-
-
-                const right = combineDesu(y.j, y.r);
-
-                q = makeParticleQuestion({
-
-                    chinese: zhPrompt,
-
-                    leftText: x.j,
-
-                    leftRuby: x.r,
-
-                    rightText: right.text,
-
-                    rightRuby: right.ruby,
-
-                    answer: 'は',
-
-                    skillId: skillDef.id,
-
-                    grammarTip: tipText,
-
-                    choices: (Number(blanks ?? 1) === 1) ? getChoices(["は", "が", "を", "に"], 'は') : undefined
-
-                });
-
-            }
-
-            else if (skillDef.id === 'GA_EXIST' || skillDef.id === 'GA_INTRANSITIVE') {
-
-                const lv = Number(currentLevel.value || 1);
-
-
-
-                const skillPool = (pool.skills?.GA_INTRANSITIVE) || {};
-
-                const safeCombos = skillPool.safeCombos || [];
-
-
-
-                let picked = null;
-
-
-
-                // 前 1~4 關直接用自然安全句
-
-                if (lv <= 4) {
-
-                    picked = pickOne(safeCombos);
-
-                } else {
-
-                    const poolNature = safeVocab.nature || [];
-
-                    const poolVerbsNature = safeVocab.verbs_nature || [];
-
-                    const poolPhenomena = safeVocab.phenomena || [];
-
-                    const poolVerbsPhenomena = safeVocab.verbs_phenomena || [];
-
-
-
-                    const allNouns = [...poolNature, ...poolPhenomena];
-
-                    const allVerbs = [...poolVerbsNature, ...poolVerbsPhenomena];
-
-
-
-                    let n = null, v = null, attempt = 0, valid = false;
-
-                    while (!valid && attempt < 30) {
-
-                        n = pickOne(allNouns);
-
-                        if (!n) { attempt++; continue; }
-
-                        const candidates = allVerbs.filter(verb => (verb.kinds || []).includes(n.kind));
-
-                        if (!candidates.length) { attempt++; continue; }
-
-                        v = pickOne(candidates);
-
-                        if (n && v) valid = true;
-
-                        attempt++;
-
-                    }
-
-
-
-                    picked = valid ? { n, v } : pickOne(safeCombos);
-
-                }
-
-
-
-                q = makeParticleQuestion({
-
-                    chinese: buildIntransitiveChinese(picked.n, picked.v),
-
-                    leftText: picked.n.j,
-
-                    leftRuby: picked.n.r,
-
-                    rightText: picked.v.j,
-
-                    rightRuby: picked.v.r,
-
-                    answer: 'が',
-
-                    skillId: skillDef.id,
-
-                    grammarTip: tipText,
-
-                    choices: (Number(blanks ?? 1) === 1) ? getChoices(["が", "を", "に", "で", "は", "へ", "と", "の"], 'が') : undefined
-
-                });
-
-            }
-
-            else if (skillDef.id === 'WO_OBJECT' || skillDef.id === 'WO_OBJECT_BASIC') {
-
-                const skillPool = (pool.skills?.WO_OBJECT_BASIC) || {};
-
-                const basicCombos = skillPool.basicCombos || [];
-
-
-
-                // BASIC 直接走安全自然搭配，避免 verbs_do 偏科
-
-                const picked = pickOne(basicCombos);
-
-
-
-                q = makeParticleQuestion({
-
-                    chinese: `${zhOf(picked.v)}${zhOf(picked.o)}`,
-
-                    leftText: picked.o.j,
-
-                    leftRuby: picked.o.r,
-
-                    rightText: picked.v.j,
-
-                    rightRuby: picked.v.r,
-
-                    answer: 'を',
-
-                    skillId: skillDef.id,
-
-                    grammarTip: tipText,
-
-                    choices: (Number(blanks ?? 1) === 1) ? getChoices(["を", "に", "が", "で"], 'を') : undefined
-
-                });
-
-            }
-
-
-
-            else if (skillDef.id === 'HE_DEST' || skillDef.id === 'HE_DIRECTION') {
-
-                const skillPool = (pool.skills?.HE_DIRECTION) || {};
-
-                const safeCombos = skillPool.safeCombos || [];
-
-                const picked = pickOne(safeCombos);
-
-
-
-                if (picked) {
-
-                    // 支援全句格式 (j 有 へ) 或 舊版格式 (j/v 分開)
-
-                    let left = picked.j, leftR = picked.r, right = picked.v, rightR = picked.vr || picked.v;
-
-                    if (!right && picked.j.includes('へ')) {
-
-                        const parts = picked.j.split('へ');
-
-                        left = parts[0];
-
-                        right = parts[1];
-
-                        const rParts = (picked.r || picked.j).split('へ');
-
-                        leftR = rParts[0];
-
-                        rightR = rParts[1];
-
-                    }
-
-
-
-                    // Choice generation: explicitly exclude 'に' but maintain count
-                    const targetCount = forceTargetCount ?? getChoiceCountForLevel(currentLevel.value);
-                    const allSafeParticles = ["へ", "を", "は", "が", "の", "も", "と", "で"];
-                    let finalChoices = getChoices(allSafeParticles, 'へ').filter(c => c !== 'に');
-
-                    // If filtering 'に' made us short, fill back up
-                    if (finalChoices.length < targetCount) {
-                        const currentSet = new Set(finalChoices);
-                        const candidates = allSafeParticles.filter(p => !currentSet.has(p));
-                        while (finalChoices.length < targetCount && candidates.length > 0) {
-                            const extra = candidates.splice(Math.floor(Math.random() * candidates.length), 1)[0];
-                            finalChoices.push(extra);
-                        }
-                    }
-
-                    // [Foolproof Final Backfill] Ensure targetCount is met
-                    if ((skillDef.id === 'HE_DEST' || skillDef.id === 'HE_DIRECTION') && finalChoices.length < targetCount) {
-                        const fallbackList = ["は", "が", "の", "も", "と", "で", "を", "へ"];
-                        const currentSet = new Set(finalChoices);
-                        for (const p of fallbackList) {
-                            if (finalChoices.length >= targetCount) break;
-                            if (p !== 'に' && !currentSet.has(p)) {
-                                finalChoices.push(p);
-                                currentSet.add(p);
-                            }
-                        }
-                    }
-
-                    // Diagnostic debug for HE_DIRECTION
-                    if (finalChoices.length !== 4 && window.__DEBUG__) {
-                        console.debug(`[ChoiceCountError] ${skillDef.id}: length=${finalChoices.length}`, {
-                            prompt: picked.zh,
-                            sentence: (left || '') + '【へ】' + (right || ''),
-                            choices: finalChoices,
-                            count: finalChoices.length
-                        });
-                    }
-
-
-
-                    q = makeParticleQuestion({
-
-                        chinese: picked.zh,
-
-                        leftText: left,
-
-                        leftRuby: leftR,
-
-                        rightText: right,
-
-                        rightRuby: rightR,
-
-                        answer: 'へ',
-
-                        skillId: skillDef.id,
-
-                        grammarTip: tipText,
-
-                        choices: finalChoices.sort(() => Math.random() - 0.5)
-
-                    });
-
-                }
-
-            }
-
-            else if (skillDef.id === 'MO_ALSO' || skillDef.id === 'MO_ALSO_BASIC') {
-
-                const skillPool = (pool.skills?.MO_ALSO_BASIC) || {};
-
-                const pList = skillPool.personPool || [];
-
-                const iList = skillPool.identityPool || [];
-
-                const vList = skillPool.verbPool || [];
-
-
-
-                const p = pickOne(pList);
-
-
-
-                // 50/50 branch: Identity (AもBです) vs Action (AもVます)
-
-                const isAction = vList.length > 0 && Math.random() < 0.5;
-
-
-
-                if (isAction) {
-
-                    const v = pickOne(vList);
-
-                    q = makeParticleQuestion({
-
-                        chinese: `${zhOf(p)}也要${v.zh}`,
-
-                        leftText: p.j,
-
-                        leftRuby: p.r,
-
-                        rightText: v.polite,
-
-                        rightRuby: v.politer || v.polite,
-
-                        answer: 'も',
-
-                        skillId: skillDef.id,
-
-                        grammarTip: tipText,
-
-                        choices: getChoices(["も", "は", "が", "を"], 'も')
-
-                    });
-
-                } else {
-
-                    const i = pickOne(iList);
-
-                    q = makeParticleQuestion({
-
-                        chinese: `${zhOf(p)}也是${zhOf(i)}`,
-
-                        leftText: p.j,
-
-                        leftRuby: p.r,
-
-                        rightText: `${i.j}です`,
-
-                        rightRuby: `${i.r}です`,
-
-                        answer: 'も',
-
-                        skillId: skillDef.id,
-
-                        grammarTip: tipText,
-
-                        choices: getChoices(["も", "は", "が", "を"], 'も')
-
-                    });
-
-                }
-
-            }
-
-            else if (skillDef.id === 'DE_LOC' || skillDef.id === 'DE_ACTION_PLACE') {
-
-                const skillPool = (pool.skills?.DE_ACTION_PLACE) || {};
-
-                const safeCombos = (skillPool.safeCombos && skillPool.safeCombos.length > 0) ? skillPool.safeCombos : [
-                    { p: { j: "教室", r: "きょうしつ", zh: "教室" }, v: { j: "勉強する", r: "べんきょうする", zh: "讀書" } }
-                ];
-
-                const combo = pickOne(safeCombos) || safeCombos[0];
-                const p = combo.p;
-                const v = combo.v;
-
-
-
-                q = makeParticleQuestion({
-
-                    chinese: `在${zhOf(p)}${zhOf(v)}`,
-
-                    leftText: p.j,
-
-                    leftRuby: p.r,
-
-                    rightText: v.j,
-
-                    rightRuby: v.r,
-
-                    answer: 'で',
-
-                    skillId: skillDef.id,
-
-                    grammarTip: tipText,
-
-                    choices: getChoices(["で", "に", "へ", "を"], 'で')
-
-                });
-
-            }
-
-            else if (skillDef.id === 'TO_AND') {
-
-                const skillPool = (pool.skills?.TO_AND) || {};
-
-                const safeCombos = (skillPool.safeCombos && skillPool.safeCombos.length > 0) ? skillPool.safeCombos : [
-                    { a: { j: "犬", r: "いぬ", zh: "狗" }, b: { j: "猫", r: "ねこ", zh: "貓" } },
-                    { a: { j: "パン", r: "ぱん", zh: "麵包" }, b: { j: "牛乳", r: "ぎゅうにゅう", zh: "牛奶" } },
-                    { a: { j: "本", r: "ほん", zh: "書" }, b: { j: "ペン", r: "ぺん", zh: "筆" } }
-                ];
-
-                const combo = pickOne(safeCombos) || safeCombos[0];
-                const a = combo.a;
-                const b = combo.b;
-
-
-
-                q = makeParticleQuestion({
-
-                    chinese: `${zhOf(a)}和${zhOf(b)}`,
-
-                    leftText: a.j,
-
-                    leftRuby: a.r,
-
-                    rightText: b.j,
-
-                    rightRuby: b.r,
-
-                    answer: 'と',
-
-                    skillId: skillDef.id,
-
-                    grammarTip: tipText,
-
-                    choices: getChoices(["と", "は", "が", "の", "へ", "も", "を"], 'と')
-
-                });
-
-            }
-
-            else if (skillDef.id === 'TO_WITH') {
-
-                const skillPool = (pool.skills?.TO_WITH) || {};
-
-                const xList = (skillPool.people && skillPool.people.length > 0) ? skillPool.people : [{ j: "友達", r: "ともだち", zh: "朋友" }];
-                const vList = (skillPool.actions && skillPool.actions.length > 0) ? skillPool.actions : [{ j: "話す", r: "はなす", zh: "說話" }];
-
-                const x = pickOne(xList) || xList[0];
-                const v = pickOne(vList) || vList[0];
-
-
-
-                q = makeParticleQuestion({
-
-                    chinese: `和${zhOf(x)}${zhOf(v)}`,
-
-                    leftText: x.j,
-
-                    leftRuby: x.r,
-
-                    rightText: v.j,
-
-                    rightRuby: v.r,
-
-                    answer: 'と',
-
-                    skillId: skillDef.id,
-
-                    grammarTip: tipText,
-
-                    choices: getChoices(["と", "に", "で", "へ"], 'と')
-
-                });
-
-            }
-
-
-
-            else if (skillDef.id === 'GA_EXIST_SUBJECT') {
-
-                const skillPool = (pool.skills?.GA_EXIST_SUBJECT) || {};
-
-                const nounList = skillPool.nouns || [{ j: "猫", r: "ねこ", zh: "貓", existType: 'person' }];
-
-
-
-                let n = pickOne(nounList);
-
-                const verb = n.existType === 'person'
-
-                    ? { j: "いる", r: "いる", zh: "有" }
-
-                    : { j: "ある", r: "ある", zh: "有" };
-
-
-
-                q = makeParticleQuestion({
-
-                    chinese: `有${zhOf(n)}`,
-
-                    leftText: n.j,
-
-                    leftRuby: n.r,
-
-                    rightText: verb.j,
-
-                    rightRuby: verb.r,
-
-                    answer: 'が',
-
-                    skillId: skillDef.id,
-
-                    grammarTip: tipText,
-
-                    choices: getChoices(["が", "は", "に", "で"], 'が')
-
-                });
-
-            }
-
-            else if (skillDef.id === 'KARA_FROM') {
-
-                const skillPool = (pool.skills?.KARA_FROM) || {};
-
-                const useTime = Math.random() < 0.5;
-
-
-
-                if (useTime) {
-
-                    const tList = skillPool.timePool || [{ j: "明日", r: "あした", zh: "明天" }];
-
-                    const time = pickOne(tList);
-
-                    const vList = [
-
-                        { j: "始まる", r: "はじまる", zh: "開始" },
-
-                        { j: "終わる", r: "おわる", zh: "結束" }
-
-                    ];
-
-                    const v = pickOne(vList);
-
-
-
-                    q = makeParticleQuestion({
-
-                        chinese: `從${zhOf(time)}${zhOf(v)}`,
-
-                        leftText: time.j,
-
-                        leftRuby: time.r,
-
-                        rightText: v.j,
-
-                        rightRuby: v.r,
-
-                        answer: 'から',
-
-                        skillId: skillDef.id,
-
-                        grammarTip: tipText,
-
-                        choices: getChoices(["から", "まで", "へ", "に"], 'から')
-
-                    });
-
-                } else {
-
-                    const pList = skillPool.placePool || [{ j: "家", r: "いえ", zh: "家" }];
-
-                    const p = pickOne(pList);
-
-                    const moveList = skillPool.movePool || [
-
-                        { j: "来る", r: "くる", zh: "來" },
-
-                        { j: "行く", r: "いく", zh: "去" }
-
-                    ];
-
-                    const v = pickOne(moveList);
-
-
-
-                    q = makeParticleQuestion({
-
-                        chinese: `從${zhOf(p)}${zhOf(v)}`,
-
-                        leftText: p.j,
-
-                        leftRuby: p.r,
-
-                        rightText: v.j,
-
-                        rightRuby: v.r,
-
-                        answer: 'から',
-
-                        skillId: skillDef.id,
-
-                        grammarTip: tipText,
-
-                        choices: getChoices(["から", "まで", "へ", "に"], 'から')
-
-                    });
-
-                }
-
-            }
-
-            else if (skillDef.id === 'KARA_SOURCE_START') {
-
-                const skillPool = (pool.skills?.KARA_SOURCE_START) || {};
-
-                const list = Math.random() < 0.5 ? (skillPool.timeCombos || []) : (skillPool.placeCombos || []);
-
-                const combo = pickOne(list);
-
-                if (combo) {
-
-                    const parts = combo.j.split('から');
-
-                    q = makeParticleQuestion({
-
-                        chinese: combo.zh,
-
-                        leftText: parts[0],
-
-                        leftRuby: combo.r?.split('から')[0] || parts[0],
-
-                        rightText: parts[1],
-
-                        rightRuby: combo.r?.split('から')[1] || parts[1],
-
-                        answer: 'から',
-
-                        skillId: skillDef.id,
-
-                        grammarTip: tipText,
-
-                        choices: getChoices(["から", "まで", "へ", "に"], 'から')
-
-                    });
-
-                }
-
-            }
-
-            else if (skillDef.id === 'MADE_LIMIT_END') {
-
-                const skillPool = (pool.skills?.MADE_LIMIT_END) || {};
-
-                const list = Math.random() < 0.5 ? (skillPool.timeCombos || []) : (skillPool.placeCombos || []);
-
-                const combo = pickOne(list);
-
-                if (combo) {
-
-                    const parts = combo.j.split('まで');
-
-                    q = makeParticleQuestion({
-
-                        chinese: combo.zh,
-
-                        leftText: parts[0],
-
-                        leftRuby: combo.r?.split('まで')[0] || parts[0],
-
-                        rightText: parts[1],
-
-                        rightRuby: combo.r?.split('まで')[1] || parts[1],
-
-                        answer: 'まで',
-
-                        skillId: skillDef.id,
-
-                        grammarTip: tipText,
-
-                        choices: getChoices(["まで", "から", "へ", "に"], 'まで')
-
-                    });
-
-                }
-
-            }
-
-            else if (skillDef.id === 'TO_WITH' || skillDef.id === 'TO_COMPANION') {
-
-                const skillPool = (pool.skills?.TO_WITH) || (pool.skills?.TO_COMPANION) || {};
-
-                const list = skillPool.safeCombos || [];
-
-                const combo = pickOne(list);
-
-                if (combo) {
-
-                    const parts = combo.j.split('と');
-
-                    q = makeParticleQuestion({
-
-                        chinese: combo.zh,
-
-                        leftText: parts[0],
-
-                        leftRuby: combo.r?.split('と')[0] || parts[0],
-
-                        rightText: parts[1],
-
-                        rightRuby: combo.r?.split('と')[1] || parts[1],
-
-                        answer: 'と',
-
-                        skillId: skillDef.id,
-
-                        grammarTip: tipText,
-
-                        choices: getChoices(["と", "に", "で", "を"], 'と')
-
-                    });
-
-                }
-
-            }
-
-            else if (skillDef.id === 'DE_TOOL_MEANS') {
-
-                const skillPool = (pool.skills?.DE_TOOL_MEANS) || {};
-
-                const r = Math.random();
-
-                let list;
-
-                if (r < 0.33) list = skillPool.toolCombos || [];
-
-                else if (r < 0.66) list = skillPool.languageCombos || [];
-
-                else list = skillPool.transportCombos || [];
-
-
-
-                const combo = pickOne(list);
-
-                if (combo) {
-
-                    const parts = combo.j.split('で');
-
-                    q = makeParticleQuestion({
-
-                        chinese: combo.zh,
-
-                        leftText: parts[0],
-
-                        leftRuby: combo.r?.split('で')[0] || parts[0],
-
-                        rightText: parts[1],
-
-                        rightRuby: combo.r?.split('で')[1] || parts[1],
-
-                        answer: 'で',
-
-                        skillId: skillDef.id,
-
-                        grammarTip: tipText,
-
-                        choices: getChoices(["で", "に", "と", "へ"], 'で')
-
-                    });
-
-                }
-
-            }
 
             else if (skillDef.id === 'BOSS_REVIEW_01') {
                 const reviewSkills = ['WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE', 'WO_OBJECT_BASIC'];
@@ -7123,7 +6022,6 @@ const _jpApp = Vue.createApp({
 
 
 
-            const typePool = config.types;
 
             const blanks = config.blanks;
 
@@ -7342,11 +6240,11 @@ const _jpApp = Vue.createApp({
 
                         let valid = true;
 
-                        if ((skillId === 'NO_POSSESS' || skillId === 'NO_POSSESSIVE') && ansStr !== 'の') valid = false;
+                        if (skillId === 'NO_POSSESSIVE' && ansStr !== 'の') valid = false;
 
-                        if ((skillId === 'WA_TOPIC' || skillId === 'WA_TOPIC_BASIC') && ansStr !== 'は') valid = false;
+                        if (skillId === 'WA_TOPIC_BASIC' && ansStr !== 'は') valid = false;
 
-                        if ((skillId === 'GA_EXIST' || skillId === 'GA_INTRANSITIVE' || skillId === 'GA_EXIST_SUBJECT') && ansStr !== 'が') valid = false;
+                        if ((skillId === 'GA_INTRANSITIVE' || skillId === 'GA_EXIST_SUBJECT') && ansStr !== 'が') valid = false;
 
                         if ((skillId === 'WO_OBJECT' || skillId === 'WO_OBJECT_BASIC') && ansStr !== 'を') valid = false;
 
@@ -7354,13 +6252,13 @@ const _jpApp = Vue.createApp({
 
                         if ((skillId === 'HE_DEST' || skillId === 'HE_DIRECTION') && ansStr !== 'へ') valid = false;
 
-                        if ((skillId === 'MO_ALSO' || skillId === 'MO_ALSO_BASIC') && ansStr !== 'も') valid = false;
+                        if (skillId === 'MO_ALSO_BASIC' && ansStr !== 'も') valid = false;
 
-                        if ((skillId === 'DE_LOC' || skillId === 'DE_ACTION_PLACE') && ansStr !== 'で') valid = false;
+                        if (skillId === 'DE_ACTION_PLACE' && ansStr !== 'で') valid = false;
 
                         if ((skillId === 'TO_WITH' || skillId === 'TO_AND') && ansStr !== 'と') valid = false;
 
-                        if (skillId === 'KARA_FROM' && ansStr !== 'から') valid = false;
+
 
 
 
@@ -7556,7 +6454,12 @@ const _jpApp = Vue.createApp({
 
                     if (q) { q.skillId = fallbackSkillId; }
 
+
                 } else if (!generatedFromSkill) {
+                    console.warn(`[DEAD_CODE_TRAP] Reached switch(type) fallback loop for skill: ${skillId}! Type: ${typeof type !== 'undefined' ? type : 'undefined'}`);
+                    // Safety: if reached, return null to let safeFallbackQuestion handle it or skip loop
+                    q = null;
+                    continue;
 
                     switch (type) {
 
@@ -7851,8 +6754,7 @@ const _jpApp = Vue.createApp({
             if (config.bgImage && typeof config.bgImage === 'string' && config.bgImage.trim() !== '') {
                 currentBg.value = config.bgImage;
             } else {
-                const bgIdx = Math.floor(Math.random() * 6) + 1;
-                currentBg.value = `assets/images/bg_0${bgIdx}.jpg`;
+                currentBg.value = '';
             }
 
             pushBattleLog(monster.value.name + ' 出現了！', 'info');
@@ -9386,7 +8288,7 @@ const _jpApp = Vue.createApp({
             pendingKnowledgeCards, activeKnowledgeCard, isKnowledgeCardShowing, isKnowledgeCardAbsorbing, triggerNextKnowledgeCard, closeKnowledgeCard,
             isSpecialSceneActive, specialSceneBg,
             unlockedOnomatopeIds, BOSS_ONOMATOPE_MAP,
-            playCardFlip: () => playSfx('cardFlip')
+            playCardFlip: () => playSfx('cardFlip'),
 
         };
 

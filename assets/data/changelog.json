@@ -1,5 +1,16 @@
 [
     {
+        "version": "26040301",
+        "date": "2026-04-03",
+        "title": "資料池內容質量審核、自然度盤點與收斂整理",
+        "changes": [
+            "進行 earlyGamePools.v1.js 多個核心技能資料池 (NO_POSSESSIVE, WO_OBJECT_BASIC, GA_INTRANSITIVE, NI_TIME, NI_DESTINATION, HE_DIRECTION, DE_TOOL_MEANS, YA_AND_OTHERS, NI_PURPOSE) 的內容品質審核。",
+            "盤點前中期主線常用 pools 的句型自然度、重複感、語義歧義與中文 Gloss 對齊一致性。",
+            "收斂出 3 筆資料替換暫定 Proposal（涉及 WO_OBJECT_BASIC 與 NI_DESTINATION），優化教學多樣性並排除語法異物 (ベッドで寝る)。",
+            "今日工作聚焦於 Audit 盤點與收斂整理，維持資料檔基線穩定，暫未正式套用修改。"
+        ]
+    },
+    {
         "version": "26040201",
         "date": "2026-04-02",
         "title": "劇情接入、戰鬥介面修正與地圖背景擴充",
