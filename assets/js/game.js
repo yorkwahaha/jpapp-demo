@@ -94,36 +94,197 @@ window.spawnGiraGiraHitVfx = function (x, y) {
     const vfxLayer = (typeof window.getVfxLayer === 'function') ? window.getVfxLayer() : document.getElementById('global-vfx-layer');
     if (!vfxLayer) return;
 
-    const spawn = (css, dur, frames, easing) => {
-        const el = document.createElement('div');
-        el.style.cssText = css;
-        vfxLayer.appendChild(el);
-        el.animate(frames, { duration: dur, easing: easing || 'ease-out', fill: 'forwards' });
-        setTimeout(() => { if (el.isConnected) el.remove(); }, dur + 50);
+    const spawn = (css, dur, frames, easing, delayMs = 0) => {
+        const run = () => {
+            const el = document.createElement('div');
+            el.style.cssText = css;
+            vfxLayer.appendChild(el);
+            el.animate(frames, { duration: dur, easing: easing || 'ease-out', fill: 'forwards' });
+            setTimeout(() => { if (el.isConnected) el.remove(); }, dur + 100);
+        };
+        if (delayMs > 0) setTimeout(run, delayMs);
+        else run();
     };
 
+    const tImpact = 82;
+
+    // 前搖：聚光收束（與主爆分開，讀感更像「斬落前一瞬」）
     spawn(
-        `position:absolute;width:65px;height:65px;left:${x - 32.5}px;top:${y - 32.5}px;` +
-        `border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,1) 0%,rgba(253,224,71,0.65) 50%,transparent 80%);pointer-events:none;`,
-        240, [{ opacity: 1, transform: 'scale(0.25)' }, { opacity: 0, transform: 'scale(2.6)' }]);
-    [[-42, 1], [42, -1]].forEach(([rot, dir]) => {
+        `position:absolute;width:118px;height:118px;left:${x - 59}px;top:${y - 59}px;z-index:20;pointer-events:none;` +
+        `border-radius:50%;` +
+        `background:radial-gradient(circle,rgba(255,252,245,0.58) 0%,rgba(254,243,199,0.38) 38%,rgba(251,191,36,0.24) 58%,transparent 74%);` +
+        `box-shadow:0 0 26px rgba(251,191,36,0.38),0 0 40px rgba(255,255,255,0.1),inset 0 0 16px rgba(255,255,255,0.08);`,
+        110,
+        [
+            { opacity: 0.55, transform: 'scale(1.22)' },
+            { opacity: 1, transform: 'scale(0.74)' },
+            { opacity: 0, transform: 'scale(0.58)' }
+        ],
+        'cubic-bezier(0.32, 0, 0.15, 1)',
+        0
+    );
+    [[-31, 1], [31, -1]].forEach(([rot, dir]) => {
         spawn(
-            `position:absolute;width:3px;height:145px;left:${x - 1.5}px;top:${y - 72.5}px;` +
-            `background:linear-gradient(to bottom,transparent 5%,rgba(255,255,200,0.95) 30%,rgba(251,191,36,1) 60%,transparent 95%);` +
-            `border-radius:2px;pointer-events:none;transform-origin:center center;`,
-            270,
-            [{ opacity: 1, transform: `rotate(${rot}deg) scaleY(0.08)` }, { opacity: 0, transform: `rotate(${rot + dir * 7}deg) scaleY(1.1)` }],
-            'cubic-bezier(0.05,0.9,0.25,1)');
+            `position:absolute;width:2px;height:108px;left:${x - 1}px;top:${y - 54}px;z-index:21;pointer-events:none;` +
+            `transform-origin:center center;mix-blend-mode:screen;` +
+            `background:linear-gradient(to bottom,transparent 10%,rgba(255,250,230,0.55) 42%,rgba(253,224,71,0.75) 52%,transparent 90%);` +
+            `box-shadow:0 0 8px rgba(255,255,255,0.45);`,
+            105,
+            [
+                { opacity: 0.2, transform: `rotate(${rot}deg) scaleY(0.14)` },
+                { opacity: 0.95, transform: `rotate(${rot + dir * 5}deg) scaleY(0.52)` },
+                { opacity: 0, transform: `rotate(${rot + dir * 8}deg) scaleY(0.62)` }
+            ],
+            'cubic-bezier(0.28, 0.82, 0.32, 1)',
+            0
+        );
     });
-    for (let i = 0; i < 4; i++) {
-        const ang = (Math.PI * 2 / 4) * i + Math.PI / 4;
-        const dist = 40 + Math.random() * 20;
+
+    // 命中核：金白集中爆閃（輪廓收緊、減少中心霧白，亮度仍高）
+    spawn(
+        `position:absolute;width:38px;height:38px;left:${x - 19}px;top:${y - 19}px;z-index:26;pointer-events:none;mix-blend-mode:screen;` +
+        `border-radius:50%;` +
+        `background:radial-gradient(circle,rgba(255,255,255,1) 0%,rgba(255,252,240,0.94) 9%,rgba(253,224,71,0.88) 26%,rgba(251,191,36,0.55) 46%,transparent 72%);` +
+        `box-shadow:0 0 1px #fff,0 0 10px rgba(255,255,255,0.82),0 0 24px rgba(254,240,138,0.58),0 0 36px rgba(251,191,36,0.32);`,
+        62,
+        [
+            { opacity: 0, transform: 'scale(0.28)' },
+            { opacity: 1, transform: 'scale(1)' },
+            { opacity: 0.72, transform: 'scale(1.04)' },
+            { opacity: 0, transform: 'scale(1.16)' }
+        ],
+        'cubic-bezier(0.12, 0.62, 0.2, 1)',
+        tImpact
+    );
+    spawn(
+        `position:absolute;width:50px;height:50px;left:${x - 25}px;top:${y - 25}px;z-index:25;pointer-events:none;` +
+        `border-radius:50%;border:1.5px solid rgba(255,248,230,0.95);` +
+        `box-shadow:0 0 8px rgba(255,255,255,0.72),0 0 22px rgba(251,191,36,0.58),inset 0 0 6px rgba(255,255,255,0.22);`,
+        205,
+        [
+            { opacity: 0, transform: 'scale(0.18)' },
+            { opacity: 1, transform: 'scale(0.52)' },
+            { opacity: 0.38, transform: 'scale(1.12)' },
+            { opacity: 0, transform: 'scale(1.92)' }
+        ],
+        'cubic-bezier(0.06, 0.88, 0.22, 1)',
+        tImpact
+    );
+    spawn(
+        `position:absolute;width:92px;height:92px;left:${x - 46}px;top:${y - 46}px;z-index:23;pointer-events:none;` +
+        `border-radius:50%;` +
+        `background:radial-gradient(circle,rgba(255,253,245,0.9) 0%,rgba(253,224,71,0.7) 38%,rgba(251,191,36,0.46) 54%,rgba(234,88,12,0.1) 68%,transparent 78%);` +
+        `box-shadow:0 0 32px rgba(254,215,102,0.42),0 0 48px rgba(251,146,60,0.16);`,
+        275,
+        [{ opacity: 1, transform: 'scale(0.14)' }, { opacity: 0, transform: 'scale(2.72)' }],
+        'cubic-bezier(0.05, 0.9, 0.18, 1)',
+        tImpact
+    );
+
+    // 刺入軸 + 極細短促斬線（高光芯、讀成「切進去」而非光團）
+    spawn(
+        `position:absolute;width:1.5px;height:96px;left:${x - 0.75}px;top:${y - 48}px;z-index:29;pointer-events:none;transform-origin:center center;mix-blend-mode:screen;` +
+        `background:linear-gradient(to bottom,transparent 6%,rgba(255,255,255,0.98) 44%,rgba(255,255,255,1) 50%,rgba(255,250,220,0.95) 56%,transparent 94%);` +
+        `box-shadow:0 0 6px rgba(255,255,255,0.95),0 0 3px rgba(253,224,71,0.9);border-radius:1px;`,
+        58,
+        [
+            { opacity: 0, transform: 'scaleY(0.12)' },
+            { opacity: 1, transform: 'scaleY(1)' },
+            { opacity: 0, transform: 'scaleY(1.06)' }
+        ],
+        'cubic-bezier(0.18, 0.75, 0.2, 1)',
+        tImpact
+    );
+    [[-9, 1], [9, -1], [-83, 1], [83, -1]].forEach(([rot, dir], si) => {
         spawn(
-            `position:absolute;width:4px;height:12px;left:${x - 2}px;top:${y - 6}px;` +
-            `background:#fde047;box-shadow:0 0 5px #f59e0b;border-radius:2px;pointer-events:none;`,
-            240,
-            [{ opacity: 1, transform: `rotate(${ang + Math.PI / 2}rad) translate(0,0)` }, { opacity: 0, transform: `rotate(${ang + Math.PI / 2}rad) translate(0,-${dist}px) scale(0.1)` }]);
+            `position:absolute;width:1px;height:84px;left:${x - 0.5}px;top:${y - 42}px;z-index:29;pointer-events:none;transform-origin:center center;mix-blend-mode:screen;` +
+            `background:linear-gradient(to bottom,transparent 8%,rgba(255,255,255,1) 42%,rgba(254,249,232,0.98) 50%,rgba(253,224,71,0.75) 62%,transparent 92%);` +
+            `box-shadow:0 0 5px rgba(255,255,255,0.88);border-radius:1px;`,
+            72 + si * 6,
+            [
+                { opacity: 0, transform: `rotate(${rot}deg) scaleY(0.08)` },
+                { opacity: 1, transform: `rotate(${rot + dir * 6}deg) scaleY(1)` },
+                { opacity: 0, transform: `rotate(${rot + dir * 10}deg) scaleY(1.12)` }
+            ],
+            'cubic-bezier(0.12, 0.88, 0.22, 1)',
+            tImpact + 2
+        );
+    });
+
+    // 斬擊刃：兩主兩副交叉（略收體積、刃緣更硬）
+    const slashes = [
+        [-54, 1, 4.5, 198, 0],
+        [54, -1, 4.5, 198, 0],
+        [-17, -1, 2.8, 158, 14],
+        [17, 1, 2.8, 158, 14]
+    ];
+    slashes.forEach(([rot, dir, sw, sh, extraDelay]) => {
+        const halfW = sw / 2;
+        const halfH = sh / 2;
+        spawn(
+            `position:absolute;width:${sw}px;height:${sh}px;left:${x - halfW}px;top:${y - halfH}px;z-index:28;pointer-events:none;` +
+            `transform-origin:center center;mix-blend-mode:screen;` +
+            `background:linear-gradient(to bottom,transparent 2%,rgba(255,255,255,0.98) 24%,rgba(255,248,220,0.96) 46%,rgba(251,191,36,1) 56%,rgba(249,115,22,0.5) 66%,transparent 97%);` +
+            `border-radius:1px;box-shadow:0 0 8px rgba(255,255,255,0.68),0 0 6px rgba(251,191,36,0.75);`,
+            242,
+            [
+                { opacity: 1, transform: `rotate(${rot}deg) scaleY(0.05)` },
+                { opacity: 1, transform: `rotate(${rot + dir * 12}deg) scaleY(1.32)` },
+                { opacity: 0, transform: `rotate(${rot + dir * 19}deg) scaleY(1.48)` }
+            ],
+            'cubic-bezier(0.05, 0.93, 0.16, 1)',
+            tImpact + extraDelay
+        );
+    });
+
+    // 星芒火花：貼近命中點的崩裂碎光（非外向煙火）
+    for (let i = 0; i < 8; i++) {
+        const ang = (Math.PI * 2 / 8) * i + (i % 2 ? 0.07 : -0.05);
+        const dist = 22 + Math.random() * 20;
+        const len = 5 + Math.random() * 7;
+        spawn(
+            `position:absolute;width:3px;height:${len}px;left:${x - 1.5}px;top:${y - len / 2}px;z-index:27;pointer-events:none;mix-blend-mode:screen;` +
+            `border-radius:1px;` +
+            `background:linear-gradient(to top,transparent,rgba(255,255,255,0.96),#fef08a,rgba(251,191,36,0.92));` +
+            `box-shadow:0 0 6px rgba(255,255,255,0.75),0 0 5px rgba(251,191,36,0.65);`,
+            118 + Math.random() * 42,
+            [
+                { opacity: 1, transform: `rotate(${ang + Math.PI / 2}rad) translate(0,0) scaleY(0.35)` },
+                { opacity: 0.9, transform: `rotate(${ang + Math.PI / 2}rad) translate(0,-${dist * 0.32}px) scaleY(1)` },
+                { opacity: 0, transform: `rotate(${ang + Math.PI / 2}rad) translate(0,-${dist}px) scaleY(0.08)` }
+            ],
+            'cubic-bezier(0.2, 0.82, 0.32, 1)',
+            tImpact + Math.floor(Math.random() * 14)
+        );
     }
+    for (let i = 0; i < 4; i++) {
+        const r = i * 45;
+        spawn(
+            `position:absolute;width:16px;height:1.5px;left:${x - 8}px;top:${y - 0.75}px;z-index:28;pointer-events:none;mix-blend-mode:screen;` +
+            `border-radius:1px;` +
+            `background:linear-gradient(90deg,transparent,rgba(255,255,255,1),rgba(255,250,220,0.92),transparent);` +
+            `box-shadow:0 0 6px rgba(255,255,255,0.88),0 0 3px rgba(251,191,36,0.65);`,
+            98,
+            [
+                { opacity: 0, transform: `rotate(${r}deg) scaleX(0.12)` },
+                { opacity: 1, transform: `rotate(${r}deg) scaleX(1)` },
+                { opacity: 0, transform: `rotate(${r}deg) scaleX(0.42)` }
+            ],
+            'ease-out',
+            tImpact + 5 + i * 6
+        );
+    }
+
+    // 極短殘光：斬過一瞬熱痕
+    spawn(
+        `position:absolute;width:98px;height:98px;left:${x - 49}px;top:${y - 49}px;z-index:19;pointer-events:none;` +
+        `border-radius:50%;` +
+        `background:radial-gradient(circle,transparent 0%,rgba(255,237,200,0.2) 38%,rgba(251,191,36,0.12) 58%,transparent 76%);`,
+        108,
+        [{ opacity: 0.55, transform: 'scale(0.92)' }, { opacity: 0, transform: 'scale(1.22)' }],
+        'ease-out',
+        tImpact + 68
+    );
 };
 
 

@@ -302,7 +302,7 @@
     "id": "ruin-guardian",
     "name": "墮殿守衛",
     "image": "assets/images/monsters/ruin-guardian.png",
-    "imageHit": null,
+    "imageHit": "assets/images/monsters/ruin-guardian2.png",
     "trait": "曾守護古老聖所的石衛，如今只剩扭曲的執念支撐身軀",
     "spawnLevels": [
       20
@@ -378,7 +378,7 @@
     "id": "dark-knight",
     "name": "漆黑騎士",
     "image": "assets/images/monsters/dark-knight.png",
-    "imageHit": null,
+    "imageHit": "assets/images/monsters/dark-knight2.png",
     "trait": "穿著鏽跡斑斑的鎧甲，手中的長劍依舊鋒利",
     "spawnLevels": [
       25
@@ -453,7 +453,7 @@
     "id": "crimson_throne_lord",
     "name": "緋紅王座之主",
     "image": "assets/images/monsters/crimson-throne-lord.png",
-    "imageHit": null,
+    "imageHit": "assets/images/monsters/crimson-throne-lord2.png",
     "trait": "盤踞於血色王座的深淵支配者，光是注視就像會被拖進無盡詛咒",
     "spawnLevels": [
       30
@@ -529,7 +529,7 @@
     "id": "celestial-throne-arbiter",
     "name": "天座裁決王",
     "image": "assets/images/monsters/celestial-throne-arbiter.png",
-    "imageHit": null,
+    "imageHit": "assets/images/monsters/celestial-throne-arbiter2.png",
     "trait": "端坐雲上終殿的裁決者，聖潔威壓之下連呼吸都像是一種冒犯",
     "spawnLevels": [
       35
@@ -544,7 +544,7 @@
     "id": "void-throne-lord",
     "name": "虛空王座之主",
     "image": "assets/images/monsters/void-throne-lord.png",
-    "imageHit": null,
+    "imageHit": "assets/images/monsters/void-throne-lord2.png",
     "trait": "端坐於斷界王座深處的終焉支配者，黑暗與星屑都只是祂意志的餘燼",
     "spawnLevels": [
       36
