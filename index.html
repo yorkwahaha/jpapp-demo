@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26040301'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26040302'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -58,7 +58,7 @@
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/styles.css?v=26040301">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26040302">
 
 
 
@@ -2921,7 +2921,8 @@
                             <div class="flex flex-col items-center" :class="{ 
                                     hit: monsterHit,
                                     'hit-boss': monsterHit && currentLevel % 5 === 0,
-                                    'monster-dodge': monsterDodge
+                                    'monster-dodge': monsterDodge,
+                                    'monster-attack-lunge': monsterAttackLunge
                                 }">
                                 <div v-if="heroBuffs.monsterSleep" class="zzz-indicator-wrap z-50">
                                     <div class="zzz-item text-3xl" style="animation-delay: 0s; top: 0; left: 0;">Z</div>
@@ -2936,9 +2937,9 @@
                                 <div class="rounded-full flex items-center justify-center text-5xl mb-3 shadow-[0_0_30px_rgba(225,29,72,0.3)] ring-2 ring-rose-500/20"
                                     :style="{ 
 
-                                    background: 'conic-gradient(rgba(225, 29, 72, 0.6) ' + ((10 - timeLeft) / 10 * 360) + 'deg, rgba(136, 19, 55, 0.2) 0deg)',
+                                    background: 'conic-gradient(rgba(225, 29, 72, 0.6) ' + (((monster.attackIntervalMs ? monster.attackIntervalMs / 1000 : 10) - timeLeft) / (monster.attackIntervalMs ? monster.attackIntervalMs / 1000 : 10) * 360) + 'deg, rgba(136, 19, 55, 0.2) 0deg)',
 
-                                    transform: 'scale(' + (monster.size || 1) + ')',
+                                    transform: 'scale(' + ((monster.size || 1) * (monster.attackRingScale || 1)) + ')',
 
                                     '--m-scale': (monster.size || 1)
 
@@ -2948,9 +2949,15 @@
                                     <img v-if="monster.sprite && monster.sprite.includes('/')"
                                         :src="currentMonsterSprite" @error="handleMonsterImageError" alt="monster"
                                         class="object-contain drop-shadow-2xl monster-breath"
-                                        :class="currentLevel % 5 === 0 ? 'monster-img-boss' : 'monster-img-normal'">
+                                        :class="currentLevel % 5 === 0 ? 'monster-img-boss' : 'monster-img-normal'"
+                                        :style="{ transform: 'scale(' + (1 / (monster.attackRingScale || 1)) + ')' }">
 
-                                    <span v-else class="monster-breath inline-block">{{ monster.sprite || '👹' }}</span>
+                                    <span v-else class="monster-breath inline-block"
+                                        :style="{ transform: 'scale(' + (1 / (monster.attackRingScale || 1)) + ')' }">{{ monster.sprite || '👹' }}</span>
+
+                                    <!-- Boss Aura (Foreground Layers) -->
+                                    <div v-if="currentLevel % 5 === 0" class="boss-aura-layer"></div>
+                                    <div v-if="currentLevel % 5 === 0" class="boss-aura-layer-luminous"></div>
 
                                 </div>
 
@@ -3483,9 +3490,15 @@
 
 
             <div v-if="!isFinished" id="heroAvatar"
-                class="fixed md:absolute bottom-0 left-4 md:left-1/2 md:-translate-x-1/2 md:ml-[-180px] z-[45] pointer-events-none"
-                style="width: clamp(110px, 7vw, 160px); height: clamp(110px, 7vw, 160px);"
-                :style="{ marginBottom: HERO_VISUAL_CONFIG.battle.marginBottom }">
+                class="fixed md:absolute bottom-0 z-[45] pointer-events-none md:-translate-x-1/2"
+                :style="{ 
+                    marginBottom: HERO_VISUAL_CONFIG.battle.marginBottom,
+                    width: HERO_VISUAL_CONFIG.battle.width,
+                    height: HERO_VISUAL_CONFIG.battle.height,
+                    '--hero-left-mobile': HERO_VISUAL_CONFIG.battle.leftMobile,
+                    '--hero-left-desktop': HERO_VISUAL_CONFIG.battle.leftDesktop,
+                    '--hero-ml-desktop': HERO_VISUAL_CONFIG.battle.desktopOffsetX
+                }">
 
                 <img src="assets/images/hero/hero_neutral.png"
                     class="w-full h-full object-contain drop-shadow-[0_8px_12px_rgba(0,0,0,0.6)]"

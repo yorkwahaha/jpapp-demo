@@ -280,7 +280,12 @@ const _jpApp = Vue.createApp({
         // thresholds: hp-based steady-state expression; hpPct is lower bound (>= value uses expression)
         const HERO_VISUAL_CONFIG = {
             battle: {
-                marginBottom: '150px'
+                marginBottom: '150px',
+                width: 'clamp(110px, 7vw, 160px)',
+                height: 'clamp(110px, 7vw, 160px)',
+                leftMobile: '1rem',
+                leftDesktop: '50%',
+                desktopOffsetX: '-180px'
             },
             map: {
                 src: 'assets/images/hero/hero_001.png'
@@ -969,7 +974,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26040301";
+        const APP_VERSION = window.APP_VERSION || "26040302";
 
         const appVersion = ref(APP_VERSION);
 
@@ -2266,6 +2271,7 @@ const _jpApp = Vue.createApp({
 
         const monsterHit = ref(false);
         const monsterDodge = ref(false);
+        const monsterAttackLunge = ref(false);
 
         const monsterStunSeconds = ref(0); // 怪物處於受擊僵直的時間 (秒)
 
@@ -3706,7 +3712,7 @@ const _jpApp = Vue.createApp({
 
                 applyMonsterAttack();
 
-                timeLeft.value = 10;
+                timeLeft.value = (monster.value?.attackIntervalMs || 10000) / 1000;
 
             }
 
@@ -3723,7 +3729,7 @@ const _jpApp = Vue.createApp({
 
             if (isFinished.value) return;
 
-            timeLeft.value = 10;
+            timeLeft.value = (monster.value?.attackIntervalMs || 10000) / 1000;
 
             questionStartTime = Date.now();
 
@@ -4329,7 +4335,10 @@ const _jpApp = Vue.createApp({
 
 
         const applyMonsterAttack = () => {
-            // Buff counters based on monster attacks
+            monsterAttackLunge.value = true;
+            setTimeout(() => { monsterAttackLunge.value = false; }, 300);
+
+            // Buff counters based on monster attacks (State updates stay immediate)
             if (heroBuffs.odoodoTurns > 0) {
                 heroBuffs.odoodoTurns--;
                 if (heroBuffs.odoodoTurns <= 0) {
@@ -4348,133 +4357,101 @@ const _jpApp = Vue.createApp({
             }
 
             let isMiss = Math.random() < 0.05;
-
             if (evasionBuffAttacksLeft.value > 0) {
                 isMiss = Math.random() < 0.50;
                 evasionBuffAttacksLeft.value--;
                 heroBuffs.wakuwakuTurns = evasionBuffAttacksLeft.value;
                 if (typeof updateHeroStatusBar === 'function') updateHeroStatusBar();
-
                 if (evasionBuffAttacksLeft.value <= 0) {
                     if (evasionBuffTimerId) { clearTimeout(evasionBuffTimerId); evasionBuffTimerId = null; }
                     clearSpeedStatus();
                 }
             }
 
+            // --- IMPACT SYNC: Delay damage/sfx to match lunge bottom ---
+            setTimeout(() => {
+                screenShake.value = true;
+                setTimeout(() => { screenShake.value = false; }, 400);
 
-
-            screenShake.value = true;
-
-            setTimeout(() => { screenShake.value = false; }, 400);
-
-
-
-            if (isMiss) {
-
-                isPlayerDodging.value = true;
-
-                setTimeout(() => { isPlayerDodging.value = false; }, 300);
-
-                playSfx('miss');
-
-                pushBattleLog(`怪物攻擊失誤！勇者閃開了！`, 'info');
-
-            } else {
-
-                const isBoss = (currentLevel.value % 5 === 0) || currentLevel.value === 36;
-
-                if (isBoss) {
-
-                    const mid = monster.value.id;
-
-                    let _attackType = 'claw-default';
-
-                    if (mid === 'man-eater-bloom') {
-                        _attackType = 'vine';
-                        playBossVineAttackVfx();
-                        playSfx('damage1');
-                    } else if (mid === 'orc-warlord') {
-                        _attackType = 'smash';
-                        playBossSmashAttackVfx();
-                        playSfx('damage2');
-                    } else if (mid === 'frost-roc') {
-                        _attackType = 'claw-roc';
-                        playMonsterClawAttackVfx();
-                        playSfx('damage3');
-                    } else if (mid === 'ruin-guardian') {
-                        _attackType = 'stone-fist-uppercut';
-                        playBossStoneFistUppercutVfx();
-                        playSfx('damage4');
-                    } else if (mid === 'dark-knight') {
-                        _attackType = 'void-cross-slash';
-                        playBossVoidCrossSlashVfx();
-                        playSfx('damage5');
-                    } else if (mid === 'crimson-throne-lord') {
-                        _attackType = 'star-collapse';
-                        playBossStarCollapseVfx();
-                        playSfx('damage6');
-                    } else if (mid === 'celestial-throne-arbiter') {
-                        _attackType = 'dual-judgement';
-                        playBossDualJudgementVfx();
-                        playSfx('damage7');
-                    } else if (mid === 'void-throne-lord') {
-                        _attackType = 'void-erosion';
-                        playBossVoidErosionVfx();
-                        playSfx('damage8');
-                    } else {
-                        _attackType = 'claw-default';
-                        playMonsterClawAttackVfx();
-                        playSfx('damage2');
-                    }
-
-                    if (window.__DEBUG__) {
-                        console.debug('[BOSS-DISPATCH] level=' + currentLevel.value + ' enemyId=' + (mid || 'UNDEFINED') + ' attackType=' + _attackType);
-                    }
-
+                if (isMiss) {
+                    isPlayerDodging.value = true;
+                    setTimeout(() => { isPlayerDodging.value = false; }, 300);
+                    playSfx('miss');
+                    pushBattleLog(`怪物攻擊失誤！勇者閃開了！`, 'info');
                 } else {
+                    const isBoss = (currentLevel.value % 5 === 0) || currentLevel.value === 36;
+                    if (isBoss) {
+                        const mid = monster.value.id;
+                        let _attackType = 'claw-default';
+                        if (mid === 'man-eater-bloom') {
+                            _attackType = 'vine';
+                            playBossVineAttackVfx();
+                            playSfx('damage1');
+                        } else if (mid === 'orc-warlord') {
+                            _attackType = 'smash';
+                            playBossSmashAttackVfx();
+                            playSfx('damage2');
+                        } else if (mid === 'frost-roc') {
+                            _attackType = 'claw-roc';
+                            playMonsterClawAttackVfx();
+                            playSfx('damage3');
+                        } else if (mid === 'ruin-guardian') {
+                            _attackType = 'stone-fist-uppercut';
+                            playBossStoneFistUppercutVfx();
+                            playSfx('damage4');
+                        } else if (mid === 'dark-knight') {
+                            _attackType = 'void-cross-slash';
+                            playBossVoidCrossSlashVfx();
+                            playSfx('damage5');
+                        } else if (mid === 'crimson_throne_lord') {
+                            _attackType = 'star-collapse';
+                            playBossStarCollapseVfx();
+                            playSfx('damage6');
+                        } else if (mid === 'celestial-throne-arbiter') {
+                            _attackType = 'dual-judgement';
+                            playBossDualJudgementVfx();
+                            playSfx('damage7');
+                        } else if (mid === 'void-throne-lord') {
+                            _attackType = 'void-erosion';
+                            playBossVoidErosionVfx();
+                            playSfx('damage8');
+                        } else {
+                            _attackType = 'claw-default';
+                            playMonsterClawAttackVfx();
+                            playSfx('damage2');
+                        }
+                    } else {
+                        playerBlink.value = true;
+                        setTimeout(() => { playerBlink.value = false; }, 500);
+                        playSfx('damage');
+                    }
 
-                    playerBlink.value = true;
+                    flashOverlay.value = true;
+                    setTimeout(() => { flashOverlay.value = false; }, 300);
 
-                    setTimeout(() => { playerBlink.value = false; }, 500);
+                    let dMin = monster.value?.attackDamageMin;
+                    let dMax = monster.value?.attackDamageMax;
+                    if (dMin === undefined && dMax === undefined) { dMin = 10; dMax = 20; }
+                    else if (dMin === undefined) dMin = dMax;
+                    else if (dMax === undefined) dMax = dMin;
+                    if (dMin > dMax) [dMin, dMax] = [dMax, dMin];
+                    let dmg = Math.floor(Math.random() * (dMax - dMin + 1)) + dMin;
+                    dmg = Math.max(1, Math.floor(dmg * heroBuffs.enemyDmgMult));
 
-                    playSfx('damage');
+                    player.value.hp = Math.max(0, player.value.hp - dmg);
+                    window.spawnFloatingDamage('player', dmg);
+                    flashHeroHit(player.value.hp / player.value.maxHp);
+                    if (player.value.hp <= 0) handleGameOver();
 
+                    hpBarDanger.value = true;
+                    setTimeout(() => { hpBarDanger.value = false; }, 500);
                 }
 
-
-
-                flashOverlay.value = true;
-
-                setTimeout(() => { flashOverlay.value = false; }, 300);
-
-                let dmg = Math.floor(Math.random() * 11) + 10;
-
-                dmg = Math.max(1, Math.floor(dmg * heroBuffs.enemyDmgMult));
-
-                player.value.hp = Math.max(0, player.value.hp - dmg);
-
-                window.spawnFloatingDamage('player', dmg);
-
-                flashHeroHit(player.value.hp / player.value.maxHp);
-
-                if (player.value.hp <= 0) handleGameOver();
-
-                hpBarDanger.value = true;
-
-                setTimeout(() => { hpBarDanger.value = false; }, 500);
-
-            }
-
-
-
-            wrongAnswerPause.value = true;
-
-            wrongAnswerPauseCountdown.value = difficulty.value === 'hard' ? 3 : 2;
-
-            if (pauseTimerId) clearInterval(pauseTimerId);
-
-            pauseTimerId = setInterval(runPauseTimerLogic, 1000);
-
+                wrongAnswerPause.value = true;
+                wrongAnswerPauseCountdown.value = difficulty.value === 'hard' ? 3 : 2;
+                if (pauseTimerId) clearInterval(pauseTimerId);
+                pauseTimerId = setInterval(runPauseTimerLogic, 1000);
+            }, 100);
         };
 
 
@@ -6718,7 +6695,15 @@ const _jpApp = Vue.createApp({
 
                     posY: enemyMatch.posY ?? null,
 
-                    infoOffsetY: enemyMatch.infoOffsetY ?? 0
+                    infoOffsetY: enemyMatch.infoOffsetY ?? 0,
+
+                    attackIntervalMs: enemyMatch.attackIntervalMs || 10000,
+
+                    attackDamageMin: enemyMatch.attackDamageMin ?? 10,
+
+                    attackDamageMax: enemyMatch.attackDamageMax ?? 20,
+
+                    attackRingScale: enemyMatch.attackRingScale || 1.0
 
                 };
 
@@ -6744,7 +6729,15 @@ const _jpApp = Vue.createApp({
 
                     posY: null,
 
-                    infoOffsetY: 0
+                    infoOffsetY: 0,
+
+                    attackIntervalMs: 10000,
+
+                    attackDamageMin: 10,
+
+                    attackDamageMax: 20,
+
+                    attackRingScale: 1.0
 
                 };
 
@@ -8271,7 +8264,7 @@ const _jpApp = Vue.createApp({
             displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,
             playPrologueOpening, playMainEndingFinale,
             isMentorSkipPressing, startMentorSkipPress, cancelMentorSkipPress,
-            isMonsterImageError, handleMonsterImageError, handleMapImageError, currentMonsterSprite, monsterPositionStyle, monsterIsEntering, monsterIsDying, monsterTrulyDead, monsterResultShown,
+            isMonsterImageError, handleMonsterImageError, handleMapImageError, currentMonsterSprite, monsterPositionStyle, monsterIsEntering, monsterIsDying, monsterTrulyDead, monsterResultShown, monsterAttackLunge,
             showMap, unlockedLevels, clearedLevels, showMentorChoice, selectedMapLevel,
             openMap, isLevelUnlocked, isLevelCleared, getStageNodeClass, getLevelTitle, hasMentor,
 

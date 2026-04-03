@@ -142,6 +142,26 @@ rt {
     }
 }
 
+@keyframes monster-attack-lunge {
+    0% {
+        transform: translateY(0);
+    }
+
+    45% {
+        transform: translateY(16px);
+        animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    100% {
+        transform: translateY(0);
+        animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    }
+}
+
+.monster-attack-lunge {
+    animation: monster-attack-lunge 0.26s forwards;
+}
+
 .monster-shake {
     animation: monster-shake 0.4s ease-in-out;
 }
@@ -671,6 +691,17 @@ rt {
     object-fit: cover;
     border: 1px solid rgba(255, 255, 255, 0.10);
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+/* Data-Driven Hero Positioning */
+#heroAvatar {
+    left: var(--hero-left-mobile);
+}
+@media (min-width: 768px) {
+    #heroAvatar {
+        left: var(--hero-left-desktop);
+        margin-left: var(--hero-ml-desktop);
+    }
 }
 
 .hero-statusbar {
@@ -3034,6 +3065,138 @@ body.lock-scroll {
 .monster-container-boss {
     width: 10rem !important;
     height: 10rem !important;
+}
+
+/* Boss Aura Effect: High-Intensity 'Subtraction Mindset' Overhaul */
+.boss-aura-layer, .boss-aura-layer-luminous {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150%;
+    height: 150%;
+    z-index: 10;
+    pointer-events: none;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.boss-aura-layer-luminous {
+    z-index: 11; /* Even more in front */
+}
+
+/* Layer 1: Ambient Evil Miasma & Ghostly Sparks */
+.boss-aura-layer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+        radial-gradient(ellipse at 50% 90%, rgba(88, 28, 135, 0.6) 0%, transparent 65%),
+        radial-gradient(circle at 10% 60%, rgba(168, 85, 247, 0.25) 0%, transparent 45%),
+        radial-gradient(circle at 90% 60%, rgba(168, 85, 247, 0.25) 0%, transparent 45%);
+    filter: blur(12px);
+    animation: wisp-flicker-flow 3.5s infinite ease-in-out;
+}
+
+/* Layer 1 Particles: Ghostly/Faded Soul-fire (Increased Density & Frequency) */
+.boss-aura-layer::after {
+    content: '';
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: transparent;
+    border-radius: 50%;
+    bottom: 5%;
+    left: 50%;
+    opacity: 0.8;
+    /* Faster cycle for higher frequency */
+    animation: soul-fire-ascent 2.2s infinite linear;
+}
+
+/* Layer 2: SHARP Luminous Core Fragments (High Frequency Stream) */
+.boss-aura-layer-luminous::after {
+    content: '';
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background: transparent;
+    border-radius: 50%;
+    bottom: 0%;
+    left: 50%;
+    animation: luminous-fire-rise 1.8s infinite ease-out;
+}
+
+/* Layer 3 [NEW]: Continuous Stream Layer (Offset Timing) */
+.boss-aura-layer-luminous::before {
+    content: '';
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: transparent;
+    border-radius: 50%;
+    bottom: -10%;
+    left: 45%;
+    /* Desynchronized to fill the gaps */
+    animation: luminous-fire-rise 2.1s infinite ease-out;
+    animation-delay: -1s;
+}
+
+@keyframes wisp-flicker-flow {
+    0%, 100% { opacity: 0.3; transform: scale(1) translateY(0); }
+    50% { opacity: 0.8; transform: scale(1.15) translateY(-15px) skewX(4deg); }
+}
+
+/* Regular/Ghostly Ascent (Denser stream) */
+@keyframes soul-fire-ascent {
+    0% {
+        opacity: 0;
+        box-shadow: 
+            -40px 10px 4px #a855f7, 45px 15px 2px #fff, -25px 30px 4px #7c3aed, 
+            35px 40px 3px rgba(168, 85, 247, 0.8), -60px 10px 2px #fff,
+            -75px 50px 3px #a855f7, 70px 45px 2px #fff, 10px 80px 4px #7c3aed,
+            -20px 40px 5px #a855f7, 55px 60px 3px #fff, -50px 20px 4px #7c3aed,
+            /* Dense cluster bottom */
+            -10px 90px 2px #fff, 15px 100px 3px #a855f7;
+        transform: translateY(40px) translateX(0);
+    }
+    20% { opacity: 1; }
+    80% { opacity: 0.7; }
+    100% {
+        opacity: 0;
+        box-shadow: 
+            -50px -90px 10px transparent, 55px -80px 8px transparent, -35px -100px 12px transparent, 
+            45px -70px 10px transparent, -70px -110px 8px transparent,
+            -85px -60px 8px transparent, 80px -55px 6px transparent, 20px -130px 10px transparent,
+            -30px -40px 12px transparent, 65px -50px 10px transparent, -60px -30px 12px transparent,
+            -15px -100px 5px transparent, 25px -120px 6px transparent;
+        transform: translateY(-150px) translateX(-20px);
+    }
+}
+
+/* HIGH BRIGHTNESS / CORE FRAGMENTS (High Speed Stream) */
+@keyframes luminous-fire-rise {
+    0% {
+        opacity: 0;
+        box-shadow: 
+            -30px 5px 1px #fff, 35px 15px 1px #fff, 
+            -60px 35px 2px #c084fc, 65px 25px 2px #c084fc,
+            -15px 60px 10px 3px #a855f7, 20px 75px 8px 3px #fff,
+            -80px 40px 1px 1px #fff, 85px 50px 1px 1px #fff,
+            -45px 10px 1px #fff, 50px 20px 1px #c084fc;
+        transform: translateY(50px) scale(0.8);
+    }
+    10% { opacity: 1; filter: brightness(1.6); }
+    90% { opacity: 0.9; }
+    100% {
+        opacity: 0;
+        box-shadow: 
+            -35px -100px 2px #fff, 40px -115px 2px #fff, 
+            -70px -90px 4px #c084fc, 75px -105px 4px #c084fc,
+            -20px -140px 15px 5px transparent, 25px -150px 12px 5px transparent,
+            -90px -80px 2px transparent, 95px -90px 2px transparent,
+            -55px -110px 2px transparent, 60px -120px 2px transparent;
+        transform: translateY(-180px) scale(1.6);
+    }
 }
 
 .monster-img-normal {
@@ -6891,22 +7054,10 @@ body.lock-scroll {
    ============================================================ */
 .battle-buff-overlay {
     position: fixed;
-    bottom: 0;
-    left: 4px;
-    width: clamp(110px, 7vw, 160px);
-    height: clamp(110px, 7vw, 160px);
     z-index: 47;
     pointer-events: none;
     overflow: visible;
-}
-
-@media (min-width: 768px) {
-    .battle-buff-overlay {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        margin-left: -180px;
-    }
+    display: none; /* Default hidden; JS will set display:block and calculate pos from heroAvatar */
 }
 
 /* Pulsing glow ring around hero */
