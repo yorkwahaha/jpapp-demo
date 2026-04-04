@@ -2110,39 +2110,38 @@ const _jpApp = Vue.createApp({
         // 1. 補回遺失的「技能專屬音效播放器」
 
         const playSkillSfx = (url) => {
-
             if (isMuted.value) return;
-
             try {
-
-                let a = audioPool.get(url);
-
-                if (!a) {
-
+                // 使用 cloneNode 達成複音播放，避免連續觸發時舊音效被砍掉
+                const cacheA = audioPool.get(url);
+                let a;
+                if (!cacheA) {
                     a = new Audio(url);
-
                     a.crossOrigin = "anonymous";
-
                     audioPool.set(url, a);
-
+                } else {
+                    a = cacheA.cloneNode(true);
                 }
 
-                if (audioCtx.value && !a._connected) {
-
-                    const source = audioCtx.value.createMediaElementSource(a);
-
-                    source.connect(sfxGain.value);
-
-                    a._connected = true;
-
+                if (audioCtx.value) {
+                    try {
+                        const source = audioCtx.value.createMediaElementSource(a);
+                        source.connect(sfxGain.value);
+                    } catch (_) {
+                        a.volume = sfxVolume.value * masterVolume.value;
+                    }
+                } else {
+                    a.volume = sfxVolume.value * masterVolume.value;
                 }
 
                 a.currentTime = 0;
+                a.play().catch(e => { });
 
-                a.play().catch(e => console.warn('[SFX] 技能音效播放失敗:', e));
-
+                // 自動清理 Clone
+                if (a !== cacheA) {
+                    a.onended = () => { a.src = ""; a.remove(); };
+                }
             } catch (e) { }
-
         };
 
 
@@ -2306,10 +2305,9 @@ const _jpApp = Vue.createApp({
 
 
 
+            if (typeof setBattleMessage === 'function') setBattleMessage(skill.name);
             if (typeof closeSkillOverlay === 'function') closeSkillOverlay();
-
             if (typeof resumeBattle === 'function') resumeBattle();
-
         };
 
 
@@ -2409,6 +2407,8 @@ const _jpApp = Vue.createApp({
         const timeLeft = ref(10);
 
         const timeUp = ref(false);
+        const battleMessage = ref('');
+        let battleMessageTimer = null;
 
         const wrongAnswerPause = ref(false);
 
@@ -3221,10 +3221,15 @@ const _jpApp = Vue.createApp({
 
         };
 
-        const setBattleMessage = (text, ttlMs = 5200) => {
-
+        const setBattleMessage = (text, ttlMs = 4500) => {
+            battleMessage.value = text;
             pushBattleLog(text, 'info');
 
+            if (battleMessageTimer) clearTimeout(battleMessageTimer);
+            battleMessageTimer = setTimeout(() => {
+                battleMessage.value = '';
+                battleMessageTimer = null;
+            }, ttlMs);
         };
 
 
@@ -3642,35 +3647,37 @@ const _jpApp = Vue.createApp({
 
 
             try {
-
+                const isFrequent = ['hit', 'hit2', 'click', 'damage', 'uiPop', 'battlePop'].includes(name);
                 let a = audioPool.get(src);
-
                 if (!a) {
-
                     a = new Audio(src);
-
                     a.crossOrigin = "anonymous";
-
                     audioPool.set(src, a);
-
+                } else if (isFrequent) {
+                    // 對於高頻次音效，使用 CloneNode 實現複音，避免 currentTime=0 造成的切音
+                    a = a.cloneNode(true);
                 }
 
-                if (audioCtx.value && !a._connected) {
-
-                    const source = audioCtx.value.createMediaElementSource(a);
-
-                    source.connect(sfxGain.value);
-
-                    a._connected = true;
-
+                if (audioCtx.value) {
+                    try {
+                        const source = audioCtx.value.createMediaElementSource(a);
+                        source.connect(sfxGain.value);
+                    } catch (_) {
+                        a.volume = sfxVolume.value * (SFX_SCALES[name] || 1.0);
+                    }
+                } else {
+                    a.volume = sfxVolume.value * (SFX_SCALES[name] || 1.0);
                 }
 
                 a.currentTime = 0;
-
                 a.play().catch(e => { });
 
-                return a;
+                // 如果是 Clone，結束後釋放資源
+                if (isFrequent && a !== audioPool.get(src)) {
+                    a.onended = () => { a.src = ""; a.remove(); };
+                }
 
+                return a;
             } catch (e) { return null; }
 
         };
@@ -8417,7 +8424,7 @@ const _jpApp = Vue.createApp({
         return {
             isNextBtnVisible,
             animatedExp, animatedGold,
-            uiMenuOpen, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, stageLog, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, playMistakeVoice, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, CODEX_PER_PAGE, closeCodex, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
+            uiMenuOpen, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, stageLog, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, playMistakeVoice, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, CODEX_PER_PAGE, closeCodex, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             heroBuffs,
             allAbilities, unlockedAbilityIds, skillList, castAbility, spState, handleReload, settings, shouldShowNextButton, praiseToast, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
