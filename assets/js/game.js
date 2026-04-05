@@ -3200,9 +3200,11 @@ const _jpApp = Vue.createApp({
             playSfx('escape');
             escapeOverlayVisible.value = true;
             // Allow browser to perform layout with opacity:0 before transitioning to 1
-            setTimeout(() => {
-                escapeOverlayOpacity.value = 1;
-            }, 50);
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    escapeOverlayOpacity.value = 1;
+                });
+            });
 
             // Phase 1: 1s fade to black, stay 2s
             setTimeout(() => {
