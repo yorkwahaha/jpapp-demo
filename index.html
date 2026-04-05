@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26040302'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26040501'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -59,6 +59,7 @@
         rel="stylesheet">
 
     <link rel="stylesheet" href="assets/css/styles.css?v=26040302">
+    <link rel="stylesheet" href="assets/css/escape.css?v=26040302">
 
 
 
@@ -1153,8 +1154,13 @@
         }
 
         @keyframes banner-glow {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
         }
 
         .skill-banner-v2-content {
@@ -1184,37 +1190,133 @@
         .banner-slide-enter-active {
             animation: banner-in 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
         .banner-slide-leave-active {
             animation: banner-out 0.4s cubic-bezier(0.7, 0, 0.84, 0) forwards;
         }
 
         @keyframes banner-in {
-            0% { transform: scaleX(0); opacity: 0; }
-            40% { transform: scaleX(1.1); opacity: 1; }
-            100% { transform: scaleX(1); opacity: 1; }
+            0% {
+                transform: scaleX(0);
+                opacity: 0;
+            }
+
+            40% {
+                transform: scaleX(1.1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scaleX(1);
+                opacity: 1;
+            }
         }
+
         @keyframes banner-out {
-            0% { transform: scaleX(1); opacity: 1; }
-            100% { transform: scaleX(0); opacity: 0; }
+            0% {
+                transform: scaleX(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scaleX(0);
+                opacity: 0;
+            }
         }
 
         /* --- [NEW] Mobile question readability overrides --- */
         .battle-question-text {
             font-family: 'Noto Sans JP', sans-serif;
             line-height: 1.6;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.9), 0 0 3px rgba(0,0,0,1);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 3px rgba(0, 0, 0, 1);
             letter-spacing: 0.02em;
+            flex-shrink: 0;
+            white-space: nowrap;
         }
-        
+
+        /* 中文輔助行：偏暖白、對比加強，不搶日文主行 */
+        .battle-question-cn {
+            color: #fff8f0;
+            font-weight: 900;
+            text-shadow: 0 0 1px rgba(0, 0, 0, 1),
+                0 0 4px rgba(0, 0, 0, 0.98),
+                0 1px 4px rgba(0, 0, 0, 1),
+                0 2px 8px rgba(0, 0, 0, 0.98),
+                0 2px 16px rgba(0, 0, 0, 0.92),
+                0 0 12px rgba(0, 0, 0, 0.5);
+            -webkit-text-stroke: 0.7px rgba(0, 0, 0, 0.52);
+            paint-order: stroke fill;
+        }
+
         rt {
             font-size: 0.55em !important;
-            padding-bottom: 0.1em;
-            text-shadow: 0 1px 4px rgba(0,0,0,1), 0 0 2px rgba(0,0,0,1) !important;
+            margin-bottom: -0.15em;
+            /* Narrow the gap with base text */
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 1), 0 0 2px rgba(0, 0, 0, 1) !important;
+        }
+
+        /* --- Long-question compact mode (JS detects overflow, toggles class) --- */
+        #question-area.question-compact>div:first-child {
+            gap: 0.25rem;
+        }
+
+        #question-area.question-compact>div:first-child>span>span,
+        #question-area.question-compact>div:first-child>span>.blank-slot,
+        #question-area.question-compact>div:first-child>span>.particle-input {
+            font-size: 1.375rem !important;
+        }
+
+        #question-area.question-compact>div:first-child>span>.blank-slot {
+            border-bottom-width: 3px !important;
+            min-width: 2.75rem !important;
+        }
+
+        @media (min-width: 768px) {
+
+            #question-area.question-compact>div:first-child>span>span,
+            #question-area.question-compact>div:first-child>span>.blank-slot,
+            #question-area.question-compact>div:first-child>span>.particle-input {
+                font-size: 1.75rem !important;
+            }
+        }
+
+
+        /* --- Ultra-compact fallback (second pass, only if compact still overflows) --- */
+        #question-area.question-ultra-compact>div:first-child {
+            gap: 0rem;
+        }
+
+        #question-area.question-ultra-compact>div:first-child>span>span,
+        #question-area.question-ultra-compact>div:first-child>span>.blank-slot,
+        #question-area.question-ultra-compact>div:first-child>span>.particle-input {
+            font-size: 1rem !important;
+        }
+
+        #question-area.question-ultra-compact>div:first-child>span>.blank-slot {
+            border-bottom-width: 2px !important;
+            min-width: 1.75rem !important;
+        }
+
+        @media (min-width: 768px) {
+
+            #question-area.question-ultra-compact>div:first-child>span>span,
+            #question-area.question-ultra-compact>div:first-child>span>.blank-slot,
+            #question-area.question-ultra-compact>div:first-child>span>.particle-input {
+                font-size: 1.25rem !important;
+            }
+        }
+
+        #question-area.question-ultra-compact rt {
+            font-size: 0.45em !important;
         }
 
 
 
-        .map-progress-paths {
+        .text-yellow-400.grade-badge,
+
+        .text-yellow-300.grade-badge {
+
+            color: #5b3708;
 
             position: absolute;
 
@@ -1728,7 +1830,7 @@
         @media (min-width: 768px) {
             .battle-buff-overlay {
                 /* Position handled by hero-status.js getBoundingClientRect() */
-                position: fixed; 
+                position: fixed;
             }
         }
 
@@ -1948,8 +2050,8 @@
 
                 <div class="map-nodes-container" v-if="mapChapters[activeChapter].segments[selectedSegmentIdx]">
 
-                    <img :src="isSpecialSceneActive ? specialSceneBg : mapChapters[activeChapter].segments[selectedSegmentIdx].background" class="map-base-img"
-                        alt="Base Map">
+                    <img :src="isSpecialSceneActive ? specialSceneBg : mapChapters[activeChapter].segments[selectedSegmentIdx].background"
+                        class="map-base-img" alt="Base Map">
 
 
 
@@ -1968,7 +2070,8 @@
 
 
 
-                    <template v-if="!isSpecialSceneActive" v-for="(node, n) in mapChapters[activeChapter].segments[selectedSegmentIdx].nodes"
+                    <template v-if="!isSpecialSceneActive"
+                        v-for="(node, n) in mapChapters[activeChapter].segments[selectedSegmentIdx].nodes"
                         :key="'node_overlay_' + n">
 
                         <div class="stage-node-wrap" :style="getMapNodeStyle(node)" :class="[getStageNodeClass(n)]">
@@ -2918,7 +3021,7 @@
 
                                 <!-- Monster Image -->
 
-                                <div class="rounded-full flex items-center justify-center text-5xl mb-3 shadow-[0_0_30px_rgba(225,29,72,0.3)] ring-2 ring-rose-500/20"
+                                <div class="relative rounded-full flex items-center justify-center text-5xl mb-3 shadow-[0_0_30px_rgba(225,29,72,0.3)] ring-2 ring-rose-500/20"
                                     :style="{ 
 
                                     background: 'conic-gradient(rgba(225, 29, 72, 0.6) ' + (((monster.attackIntervalMs ? monster.attackIntervalMs / 1000 : 10) - timeLeft) / (monster.attackIntervalMs ? monster.attackIntervalMs / 1000 : 10) * 360) + 'deg, rgba(136, 19, 55, 0.2) 0deg)',
@@ -2930,14 +3033,27 @@
                                 }"
                                     :class="[currentLevel % 5 === 0 ? 'monster-container-boss' : 'monster-container-normal', { 'monster-entrance': monsterIsEntering }]">
 
-                                    <img v-if="monster.sprite && monster.sprite.includes('/')"
-                                        :src="currentMonsterSprite" @error="handleMonsterImageError" alt="monster"
-                                        class="object-contain drop-shadow-2xl monster-breath"
-                                        :class="currentLevel % 5 === 0 ? 'monster-img-boss' : 'monster-img-normal'"
-                                        :style="{ transform: 'scale(' + (1 / (monster.attackRingScale || 1)) + ')' }">
+                                    <div class="relative inline-flex items-center justify-center min-h-0 min-w-0 z-[1]"
+                                        :class="{ 'odoodo-jitter-root': heroBuffs.odoodoTurns > 0 }">
+                                        <template v-if="heroBuffs.odoodoTurns > 0">
+                                            <div class="odoodo-echo odoodo-echo--back" aria-hidden="true"></div>
+                                            <div class="odoodo-echo odoodo-echo--left" aria-hidden="true"></div>
+                                            <div class="odoodo-echo odoodo-echo--right" aria-hidden="true"></div>
+                                            <div class="odoodo-sweat-cluster" aria-hidden="true">
+                                                <span class="odoodo-sweat odoodo-sweat--1"></span>
+                                                <span class="odoodo-sweat odoodo-sweat--2"></span>
+                                            </div>
+                                        </template>
+                                        <img v-if="monster.sprite && monster.sprite.includes('/')"
+                                            :src="currentMonsterSprite" @error="handleMonsterImageError" alt="monster"
+                                            class="relative z-[2] object-contain drop-shadow-2xl monster-breath"
+                                            :class="currentLevel % 5 === 0 ? 'monster-img-boss' : 'monster-img-normal'"
+                                            :style="{ transform: 'scale(' + (1 / (monster.attackRingScale || 1)) + ')' }">
 
-                                    <span v-else class="monster-breath inline-block"
-                                        :style="{ transform: 'scale(' + (1 / (monster.attackRingScale || 1)) + ')' }">{{ monster.sprite || '👹' }}</span>
+                                        <span v-else class="relative z-[2] monster-breath inline-block"
+                                            :style="{ transform: 'scale(' + (1 / (monster.attackRingScale || 1)) + ')' }">{{
+                                            monster.sprite || '👹' }}</span>
+                                    </div>
 
                                     <!-- Boss Aura (Foreground Layers) -->
                                     <div v-if="currentLevel % 5 === 0" class="boss-aura-layer"></div>
@@ -2948,40 +3064,42 @@
 
 
                                 <!-- Monster Info Block (name + HP + status): marginTop driven by infoOffsetY -->
-                                <div class="flex flex-col items-center" :style="monster.infoOffsetY ? { marginTop: monster.infoOffsetY + 'px' } : {}">
+                                <div class="flex flex-col items-center"
+                                    :style="monster.infoOffsetY ? { marginTop: monster.infoOffsetY + 'px' } : {}">
 
-                                <!-- Monster Info -->
+                                    <!-- Monster Info -->
 
-                                <div class="relative z-10 flex flex-col items-center">
+                                    <div class="relative z-10 flex flex-col items-center">
 
-                                    <span class="text-xl font-black text-white mb-0.5"
-                                        style="text-shadow: 0 2px 10px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9);">{{
+                                        <span class="text-xl font-black text-white mb-0.5"
+                                            style="text-shadow: 0 2px 10px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9);">{{
 
-                                        monster.name }}</span>
+                                            monster.name }}</span>
 
-                                    <span class="text-sm font-bold text-amber-300 text-center"
-                                        style="white-space: pre-line; line-height: 1.15; text-shadow: 0 2px 8px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9);">{{
+                                        <span class="text-sm font-bold text-amber-300 text-center"
+                                            style="white-space: pre-line; line-height: 1.15; text-shadow: 0 2px 8px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9);">{{
 
-                                        monster.trait?.replace(/，/g, '\n') }}</span>
+                                            monster.trait?.replace(/，/g, '\n') }}</span>
 
-                                </div>
-
-
-
-                                <!-- Monster HP -->
-
-                                <div class="h-2.5 bg-slate-950/80 rounded-full overflow-hidden mb-1 border border-white/20 shadow-lg mx-auto"
-                                    style="width: 160px;">
-
-                                    <div class="h-full bg-gradient-to-r from-rose-600 to-rose-400 shadow-[0_0_10px_rgba(225,29,72,0.6)] transition-all duration-500"
-                                        :style="{ width: (monster.hp / monster.maxHp * 100) + '%' }"></div>
-
-                                </div>
+                                    </div>
 
 
 
-                                <div id="monsterStatusBar" class="w-full flex justify-center gap-1 mt-1 min-h-[22px]">
-                                </div>
+                                    <!-- Monster HP -->
+
+                                    <div class="h-2.5 bg-slate-950/80 rounded-full overflow-hidden mb-1 border border-white/20 shadow-lg mx-auto"
+                                        style="width: 160px;">
+
+                                        <div class="h-full bg-gradient-to-r from-rose-600 to-rose-400 shadow-[0_0_10px_rgba(225,29,72,0.6)] transition-all duration-500"
+                                            :style="{ width: (monster.hp / monster.maxHp * 100) + '%' }"></div>
+
+                                    </div>
+
+
+
+                                    <div id="monsterStatusBar"
+                                        class="w-full flex justify-center gap-1 mt-1 min-h-[22px]">
+                                    </div>
 
                                 </div>
                             </div>
@@ -3040,7 +3158,8 @@
 
             <!-- [NEW] Skill Banner Layer -->
             <transition name="banner-slide">
-                <div v-if="battleMessage" class="absolute inset-0 pointer-events-none z-[55] flex flex-col items-center justify-center pt-[10dvh]">
+                <div v-if="battleMessage"
+                    class="absolute inset-0 pointer-events-none z-[55] flex flex-col items-center justify-center pt-[10dvh]">
                     <div class="skill-banner-v2">
                         <div class="skill-banner-v2-glow"></div>
                         <div class="skill-banner-v2-content">
@@ -3104,16 +3223,7 @@
 
                         <div id="question-area" class="w-full flex flex-col items-center justify-center min-h-[50px]">
 
-                            <div
-                                class="text-amber-100/80 font-bold mb-3 text-sm md:text-base tracking-widest text-shadow-sm text-center">
-
-                                {{ currentQuestion?.chinese || '' }}
-
-                            </div>
-
-
-
-                            <div class="flex flex-wrap justify-center items-center gap-2 leading-tight">
+                            <div class="flex flex-nowrap justify-center items-center gap-2 leading-tight mb-2 sm:mb-3">
 
                                 <span v-for="(seg, idx) in displaySegments"
                                     :key="'seg_' + currentLevel + '_' + currentIndex + '_' + idx"
@@ -3123,7 +3233,8 @@
                                         class="text-white text-3xl md:text-4xl font-black drop-shadow-lg">
 
                                         <ruby v-if="seg.ruby" class="ruby-text">{{ seg.text }}<rt
-                                                class="text-[13px] md:text-sm text-amber-300 font-black mb-1 drop-shadow-md">{{ seg.ruby
+                                                class="text-[13px] md:text-sm text-amber-300 font-black mb-1 drop-shadow-md">
+                                                {{ seg.ruby
 
                                                 }}</rt></ruby>
 
@@ -3149,6 +3260,12 @@
                                     </span>
 
                                 </span>
+
+                            </div>
+
+                            <div class="battle-question-cn text-sm md:text-base tracking-widest text-center">
+
+                                {{ currentQuestion?.chinese || '' }}
 
                             </div>
 
@@ -3478,17 +3595,20 @@
                     style="text-shadow: 0 0 40px rgba(225,29,72,0.6), 0 10px 20px rgba(0,0,0,0.8);">
                     敗北
                 </div>
-                <button @click="defeatReturn()"
-                    class="px-10 py-3 rounded-2xl bg-slate-800/90 border border-slate-500 text-white font-bold text-lg tracking-widest shadow-xl hover:bg-slate-700 active:scale-95 transition-all">
-                    回首頁
-                </button>
+                <div class="flex flex-col items-center gap-3">
+                    <button @click="isMistakesOpen = true; playSfx('uiPop');"
+                        class="px-10 py-3 rounded-2xl bg-slate-700/90 border border-slate-500 text-white font-bold text-lg tracking-widest shadow-xl hover:bg-slate-600 active:scale-95 transition-all">
+                        📒 出題本
+                    </button>
+                    <button @click="defeatReturn()"
+                        class="px-10 py-3 rounded-2xl bg-slate-800/90 border border-slate-500 text-slate-400 font-bold text-base tracking-widest shadow-xl hover:bg-slate-700 active:scale-95 transition-all">
+                        回首頁
+                    </button>
+                </div>
             </div>
 
-
-
             <div v-if="!isFinished" id="heroAvatar"
-                class="fixed md:absolute bottom-0 z-[45] pointer-events-none md:-translate-x-1/2"
-                :style="{ 
+                class="fixed md:absolute bottom-0 z-[45] pointer-events-none md:-translate-x-1/2" :style="{
                     marginBottom: HERO_VISUAL_CONFIG.battle.marginBottom,
                     width: HERO_VISUAL_CONFIG.battle.width,
                     height: HERO_VISUAL_CONFIG.battle.height,
@@ -3496,7 +3616,6 @@
                     '--hero-left-desktop': HERO_VISUAL_CONFIG.battle.leftDesktop,
                     '--hero-ml-desktop': HERO_VISUAL_CONFIG.battle.desktopOffsetX
                 }">
-
                 <img src="assets/images/hero/hero_neutral.png"
                     class="w-full h-full object-contain drop-shadow-[0_8px_12px_rgba(0,0,0,0.6)]"
                     data-state="neutral" />
@@ -3504,8 +3623,6 @@
 
             <!-- New Dedicated Buff Overlay Layer (Above HUD but below Modals) -->
             <div id="battleBuffOverlay" v-if="!isFinished" class="battle-buff-overlay"></div>
-
-
 
             <!-- Mentor Modal -->
 
@@ -3771,7 +3888,8 @@
 
                                 <div class="flex justify-between items-start mb-1">
 
-                                    <h3 class="font-bold text-slate-200 group-hover:text-amber-300 transition-colors">{{
+                                    <h3 class="font-bold text-slate-200 group-hover:text-amber-300 transition-colors">
+                                        {{
 
                                         skill.name }}</h3>
 
@@ -3831,13 +3949,16 @@
                                             :class="{ 'is-flipped': flippedCardId === codexPageSkills[0].id }">
                                             <div class="codex-face codex-face-front">
                                                 <div class="flex justify-center"><span
-                                                        class="codex-particle-badge-lg">{{ (codexPageSkills[0].particle
+                                                        class="codex-particle-badge-lg">{{
+                                                        (codexPageSkills[0].particle
                                                         || '技').length <= 3 ? (codexPageSkills[0].particle || '技' )
                                                             : '技' }}</span>
                                                 </div>
-                                                <h3 class="codex-face-name">{{ codexPageSkills[0].name.split('：')[1] ||
+                                                <h3 class="codex-face-name">{{ codexPageSkills[0].name.split('：')[1]
+                                                    ||
                                                     codexPageSkills[0].name }}</h3>
-                                                <p class="codex-face-meaning-text">{{ codexPageSkills[0].meaning || '—'
+                                                <p class="codex-face-meaning-text">{{ codexPageSkills[0].meaning ||
+                                                    '—'
                                                     }}</p>
                                                 <div class="codex-face-rule-block"><span
                                                         class="codex-label-mini codex-label-mini--rule">句型</span><code
@@ -3900,13 +4021,15 @@
                                             :class="{ 'is-flipped': flippedCardId === codexNextSkill.id }">
                                             <div class="codex-face codex-face-front">
                                                 <div class="flex justify-center"><span
-                                                        class="codex-particle-badge-lg">{{ (codexNextSkill.particle ||
+                                                        class="codex-particle-badge-lg">{{ (codexNextSkill.particle
+                                                        ||
                                                         '技').length <= 3 ? (codexNextSkill.particle || '技' ) : '技'
                                                             }}</span>
                                                 </div>
                                                 <h3 class="codex-face-name">{{ codexNextSkill.name.split('：')[1] ||
                                                     codexNextSkill.name }}</h3>
-                                                <p class="codex-face-meaning-text">{{ codexNextSkill.meaning || '—' }}
+                                                <p class="codex-face-meaning-text">{{ codexNextSkill.meaning || '—'
+                                                    }}
                                                 </p>
                                                 <div class="codex-face-rule-block"><span
                                                         class="codex-label-mini codex-label-mini--rule">句型</span><code
@@ -3921,7 +4044,8 @@
                                                         (codexNextSkill.particle || '技').length <= 3 ?
                                                             (codexNextSkill.particle || '技' ) : '技' }}</span>
                                                             <span class="codex-back-id-name">{{
-                                                                codexNextSkill.name.split('：')[1] || codexNextSkill.name
+                                                                codexNextSkill.name.split('：')[1] ||
+                                                                codexNextSkill.name
                                                                 }}</span>
                                                 </div>
                                                 <div class="codex-back-section">
@@ -4077,12 +4201,12 @@
 
                         <div class="grid grid-cols-2 gap-2.5">
 
-                            <button @click="isMentorReplayOpen = true; isMenuOpen = false;"
-                                class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-400/20 text-blue-100 text-sm font-bold transition-all">
-
-                                🧙‍♂️ 教學
-
+                            <button @click="handleEscapeToMap" v-if="!showLevelSelect"
+                                class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-400/20 text-rose-100 text-sm font-bold transition-all">
+                                🏳️ 逃回地圖
                             </button>
+                            <div v-else class="hidden"></div>
+
 
                             <button @click="isLevelJumpOpen = true; isMenuOpen = false;"
                                 class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-400/20 text-purple-100 text-sm font-bold transition-all">
@@ -4302,75 +4426,6 @@
 
             </div>
 
-
-
-            <!-- Mentor Replay -->
-
-            <div v-if="isMentorReplayOpen" class="fixed inset-0 z-[5000] flex items-center justify-center p-4"
-                @click.self="isMentorReplayOpen = false; resumeBattle(); playSfx('click');">
-
-                <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
-
-                <div
-                    class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[500px] h-full max-h-[70vh] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden">
-
-                    <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4 flex-shrink-0">
-
-                        <h2 class="text-2xl font-black text-blue-400 tracking-[0.1em] drop-shadow-lg">教學 <span
-                                class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2 uppercase">REPLAY</span>
-
-                        </h2>
-
-                        <button @click="isMentorReplayOpen = false; resumeBattle(); playSfx('click');"
-                            class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
-
-                    </div>
-
-
-
-                    <div class="flex-1 overflow-y-auto custom-scrollbar space-y-2.5 pr-1 pb-2">
-
-                        <div v-for="skillId in unlockedSkillIds" :key="'mentor-'+skillId">
-
-                            <button v-if="skillsAll[skillId] && skillsAll[skillId].mentorDialogue"
-                                @click="replaySpecificMentor(skillId)"
-                                class="w-full text-left px-5 py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-blue-500/30 shadow-md transition-all group active:scale-[0.98]">
-
-                                <div class="flex justify-between items-center">
-
-                                    <span
-                                        class="font-bold text-amber-400 text-lg group-hover:text-amber-300 transition-colors">{{
-
-                                        skillsAll[skillId].name || skillId }}</span>
-
-                                    <span class="text-xs text-blue-400/50 font-black tracking-widest uppercase">REPLAY
-
-                                        ▶</span>
-
-                                </div>
-
-                                <div class="text-[11px] text-slate-400 mt-1 leading-relaxed opacity-80">{{
-
-                                    skillsAll[skillId].meaning || '' }}</div>
-
-                            </button>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <div class="flex justify-end pt-5 mt-3 border-t border-white/10 shrink-0">
-
-                        <button @click="isMentorReplayOpen = false; resumeBattle(); playSfx('click');"
-                            class="px-8 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold shadow-lg transition-all active:scale-95">關閉</button>
-
-                    </div>
-
-                </div>
-
-            </div>
 
 
 
@@ -4767,6 +4822,11 @@
 
 
         </div> <!-- #stageWrap -->
+
+        <!-- [ESCAPE] Black Transition Overlay -->
+        <div class="escape-fade-overlay"
+            :style="{ opacity: escapeOverlayOpacity, display: escapeOverlayVisible ? 'block' : 'none' }">
+        </div>
 
     </div><!-- #app -->
 

@@ -637,7 +637,7 @@ const _jpApp = Vue.createApp({
             if (!localStorage.getItem('jpapp_seen_prologue_opening')) {
                 // Determine background
                 const bg = PROLOGUE_BG || 'assets/images/bg_home_painterly.png';
-                
+
                 // Initialize Scene
                 isSpecialSceneActive.value = true;
                 specialSceneBg.value = bg;
@@ -650,7 +650,7 @@ const _jpApp = Vue.createApp({
                 window._resumeAfterMentor = () => {
                     isSpecialSceneActive.value = false;
                     localStorage.setItem('jpapp_seen_prologue_opening', 'true');
-                    
+
                     // Proceed to normal map BGM
                     Vue.nextTick(() => {
                         if (typeof MapAmbient !== 'undefined') {
@@ -671,7 +671,7 @@ const _jpApp = Vue.createApp({
                         // Play BGM if set
                         if (PROLOGUE_BGM && bgmAudio.value) {
                             bgmAudio.value.src = PROLOGUE_BGM;
-                            bgmAudio.value.play().catch(() => {});
+                            bgmAudio.value.play().catch(() => { });
                         }
                     } else {
                         setTimeout(trigger, 100);
@@ -994,14 +994,14 @@ const _jpApp = Vue.createApp({
                     specialSceneBg.value = MAIN_ENDING_BG;
                     showMap.value = true;
                     showLevelSelect.value = false; // Hide home screen if debug-triggered from home
-                    
+
                     // Stop ongoing audio
                     stopAllAudio();
-                    
+
                     // BGM override if set
                     if (MAIN_ENDING_BGM && bgmAudio.value) {
                         bgmAudio.value.src = MAIN_ENDING_BGM;
-                        bgmAudio.value.play().catch(() => {});
+                        bgmAudio.value.play().catch(() => { });
                     }
 
                     setTimeout(() => {
@@ -1013,7 +1013,7 @@ const _jpApp = Vue.createApp({
                         window._resumeAfterMentor = () => {
                             isSpecialSceneActive.value = false;
                             localStorage.setItem('jpapp_seen_main_ending_finale', 'true');
-                            openMap(); 
+                            openMap();
                         };
                     }, 800);
                     return;
@@ -1135,7 +1135,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26040302";
+        const APP_VERSION = window.APP_VERSION || "26040501";
 
         const appVersion = ref(APP_VERSION);
 
@@ -1299,8 +1299,6 @@ const _jpApp = Vue.createApp({
         const mentorTutorialSeen = ref([]);
 
         const isMentorModalOpen = ref(false);
-
-        const isMentorReplayOpen = ref(false);
 
         const isLevelJumpOpen = ref(false);
 
@@ -1590,7 +1588,7 @@ const _jpApp = Vue.createApp({
 
                 const audio = new Audio(path);
                 // 導師語音應保持高音量，不應被 bgmVolume (預設 0.35) 的窄閾值限制
-                audio.volume = masterVolume.value * 0.95; 
+                audio.volume = masterVolume.value * 0.95;
                 currentMentorAudio = audio;
 
                 audio.addEventListener('ended', () => {
@@ -2112,35 +2110,24 @@ const _jpApp = Vue.createApp({
         const playSkillSfx = (url) => {
             if (isMuted.value) return;
             try {
-                // 使用 cloneNode 達成複音播放，避免連續觸發時舊音效被砍掉
-                const cacheA = audioPool.get(url);
-                let a;
-                if (!cacheA) {
-                    a = new Audio(url);
-                    a.crossOrigin = "anonymous";
-                    audioPool.set(url, a);
-                } else {
-                    a = cacheA.cloneNode(true);
-                }
+                // Skills are relatively infrequent, so we can use a fresh Audio instance per call.
+                // This is more stable than MediaElementSource on clones for some browsers.
+                const a = new Audio(url);
+                a.crossOrigin = "anonymous";
+                a.volume = sfxVolume.value * masterVolume.value;
 
-                if (audioCtx.value) {
+                // If we can use the Web Audio path, connect it to the sfxGain node
+                if (audioCtx.value && sfxGain.value) {
                     try {
                         const source = audioCtx.value.createMediaElementSource(a);
                         source.connect(sfxGain.value);
                     } catch (_) {
-                        a.volume = sfxVolume.value * masterVolume.value;
+                        // Fallback to simple element playback volume
                     }
-                } else {
-                    a.volume = sfxVolume.value * masterVolume.value;
                 }
 
-                a.currentTime = 0;
                 a.play().catch(e => { });
-
-                // 自動清理 Clone
-                if (a !== cacheA) {
-                    a.onended = () => { a.src = ""; a.remove(); };
-                }
+                a.onended = () => { a.src = ""; a.remove(); };
             } catch (e) { }
         };
 
@@ -2305,7 +2292,7 @@ const _jpApp = Vue.createApp({
 
 
 
-            if (typeof setBattleMessage === 'function') setBattleMessage(skill.name);
+            if (typeof setBattleMessage === 'function') setBattleMessage(skill.name, 1600);
             if (typeof closeSkillOverlay === 'function') closeSkillOverlay();
             if (typeof resumeBattle === 'function') resumeBattle();
         };
@@ -2354,6 +2341,9 @@ const _jpApp = Vue.createApp({
         const isMistakesOpen = ref(false);
 
         const isInventoryOpen = ref(false);
+        const isEscaping = ref(false);
+        const escapeOverlayVisible = ref(false);
+        const escapeOverlayOpacity = ref(0);
 
         // ---- [ STATE — GAME BATTLE CORE ] ----
         const player = ref({ hp: 100, maxHp: 100, gold: 0, exp: 0 });
@@ -3203,6 +3193,43 @@ const _jpApp = Vue.createApp({
 
 
 
+        const handleEscapeToMap = () => {
+            if (isEscaping.value) return;
+            isEscaping.value = true;
+
+            playSfx('escape');
+            escapeOverlayVisible.value = true;
+            // Allow browser to perform layout with opacity:0 before transitioning to 1
+            setTimeout(() => {
+                escapeOverlayOpacity.value = 1;
+            }, 50);
+
+            // Phase 1: 1s fade to black, stay 2s
+            setTimeout(() => {
+                // Phase 2: Middle of darkness, reset everything
+                stopAllAudio();
+                isMenuOpen.value = false;
+                isAdvancedSettingsOpen.value = false;
+                hasSubmitted.value = false;
+                userAnswers.value = [];
+                slotFeedbacks.value = {};
+
+                // Return to map via standard map transition pipeline
+                returnToMap();
+            }, 1000 + 1000); // 1s fade + 1s buffer
+
+            // Phase 3: Start fade back after 3s total (1s fade + 2s black)
+            setTimeout(() => {
+                escapeOverlayOpacity.value = 0;
+            }, 3000);
+
+            // Phase 4: Full cleanup after 4s total
+            setTimeout(() => {
+                escapeOverlayVisible.value = false;
+                isEscaping.value = false;
+            }, 4000);
+        };
+
         const startRunAwayPress = () => {
 
             if (hasSubmitted.value) return;
@@ -3221,7 +3248,7 @@ const _jpApp = Vue.createApp({
 
         };
 
-        const setBattleMessage = (text, ttlMs = 4500) => {
+        const setBattleMessage = (text, ttlMs = 2000) => {
             battleMessage.value = text;
             pushBattleLog(text, 'info');
 
@@ -3371,7 +3398,7 @@ const _jpApp = Vue.createApp({
             if (document.hidden) return;
             if (isBgmSuppressed.value) return; // Prevent BGM resume if suppressed
 
-            const inBattle = !showLevelSelect.value && !isFinished.value && currentLevel.value > 0 && !isDefeated.value;
+            const inBattle = !showLevelSelect.value && !isFinished.value && currentLevel.value > 0 && !isDefeated.value && !levelPassed.value;
 
             if (inBattle && bgmAudio.value && !isMuted.value && bgmVolume.value > 0) {
 
@@ -3481,6 +3508,7 @@ const _jpApp = Vue.createApp({
             skillpop: 'assets/audio/sfx/skillpop.mp3',
             skillget: 'assets/audio/sfx/skillget.mp3',
             cardFlip: 'assets/audio/sfx/card-flip.mp3',
+            escape: 'assets/audio/sfx_escape.mp3',
         };
 
 
@@ -3726,6 +3754,8 @@ const _jpApp = Vue.createApp({
             initAudioCtx();
 
             if (!audioInited.value) initAudio();
+
+            if (needsUserGestureToResumeBgm.value) { ensureBgmPlaying('startFlick'); needsUserGestureToResumeBgm.value = false; }
 
 
 
@@ -4927,19 +4957,92 @@ const _jpApp = Vue.createApp({
 
 
 
-        const getChoiceCountForLevel = (lv) => (lv % 5 === 0 || lv >= 31) ? 4 : 3;
+        const getChoiceCountForLevel = (lv) => {
+            if (lv === 1 || lv === 2) return 2;
+            return (lv % 5 === 0 || lv >= 36) ? 4 : 3;
+        };
 
 
 
         const makeChoices = (correct) => {
 
-            const targetCount = getChoiceCountForLevel(currentLevel.value);
+            const lv = currentLevel.value;
+            const targetCount = getChoiceCountForLevel(lv);
 
             const correctArr = Array.isArray(correct) ? correct : [correct];
 
-            const wrong = ALL_PARTICLES.filter(p => !correctArr.includes(p));
+            let pool = ALL_PARTICLES;
+            if (lv === 1 || lv === 2) {
+                pool = ['は', 'の'];
+            } else if (lv === 3) {
+                pool = ['は', 'の', 'が'];
+            } else if (lv === 4 || lv === 5) {
+                pool = ['は', 'の', 'が', 'を'];
+            } else if (lv === 6) {
+                pool = ['は', 'の', 'が', 'を', 'へ'];
+            } else if (lv === 7) {
+                pool = ['は', 'の', 'が', 'を', 'へ', 'も'];
+            } else if (lv === 8) {
+                pool = ['は', 'の', 'が', 'を', 'へ', 'も', 'に'];
+            } else if (lv === 9 || lv === 10) {
+                pool = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と'];
+            } else if (lv >= 11 && lv <= 15) {
+                pool = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で'];
+            } else if (lv === 16) {
+                pool = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で', 'から'];
+            } else if (lv >= 17 && lv <= 25) {
+                pool = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で', 'から', 'まで'];
+            } else if (lv >= 26 && lv <= 31) {
+                pool = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で', 'から', 'まで', 'や'];
+            } else if (lv >= 32 && lv <= 35) {
+                pool = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で', 'から', 'まで', 'や', 'より'];
+            }
 
-            const picked = [correctArr[0], ...shuffle(wrong).slice(0, targetCount - 1)];
+            let wrongCandidates = pool.filter(p => !correctArr.includes(p));
+
+            let pickedWrong = [];
+            let needed = targetCount - 1;
+
+            if (lv >= 6 && lv <= 34 && needed > 0) {
+                let focusParticle = '';
+                if (lv === 6) focusParticle = 'へ';
+                else if (lv === 7) focusParticle = 'も';
+                else if (lv === 8) focusParticle = 'に';
+                else if (lv === 9) focusParticle = 'と';
+                else if (lv === 11) focusParticle = 'で';
+                else if (lv === 12) focusParticle = 'に';
+                else if (lv === 13) focusParticle = 'が';
+                else if (lv === 14) focusParticle = 'と';
+                else if (lv === 16) focusParticle = 'から';
+                else if (lv === 17) focusParticle = 'まで';
+                else if (lv === 18) focusParticle = 'に';
+                else if (lv === 19) focusParticle = 'で';
+                else if (lv === 21) focusParticle = 'に';
+                else if (lv === 22) focusParticle = 'が';
+                else if (lv === 23) focusParticle = 'も';
+                else if (lv === 24) focusParticle = 'と';
+                else if (lv === 26) focusParticle = 'や';
+                else if (lv === 27) focusParticle = 'で';
+                else if (lv === 28) focusParticle = 'に';
+                else if (lv === 29) focusParticle = 'と';
+                else if (lv === 31) focusParticle = 'から';
+                else if (lv === 32) focusParticle = 'より';
+                else if (lv === 33) focusParticle = 'に';
+                else if (lv === 34) focusParticle = 'で';
+
+                if (focusParticle && wrongCandidates.includes(focusParticle)) {
+                    // 55% chance to forcefully inject the new focus particle as a distractor
+                    if (Math.random() < 0.55) {
+                        pickedWrong.push(focusParticle);
+                        wrongCandidates = wrongCandidates.filter(x => x !== focusParticle);
+                        needed--;
+                    }
+                }
+            }
+
+            pickedWrong = pickedWrong.concat(shuffle(wrongCandidates).slice(0, needed));
+
+            const picked = [correctArr[0], ...pickedWrong];
 
             return shuffle(picked);
 
@@ -5394,23 +5497,23 @@ const _jpApp = Vue.createApp({
                     const tier3 = ['KARA_REASON', 'YORI_COMPARE', 'NI_FREQUENCY', 'DE_MATERIAL', 'TO_QUOTE', 'NI_PURPOSE', 'GA_BUT', 'TO_CONDITIONAL'];
                     const tier2 = ['KARA_SOURCE_START', 'MADE_LIMIT_END', 'TO_WITH', 'DE_TOOL_MEANS', 'HE_DIRECTION', 'NI_TARGET', 'NI_DESTINATION', 'MO_COMPLETE_NEGATION', 'TO_AND', 'DE_SCOPE'];
                     const tier1 = ['NI_TIME', 'NI_EXIST_PLACE', 'YA_AND_OTHERS', 'WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE', 'WO_OBJECT_BASIC', 'DE_ACTION_PLACE', 'GA_EXIST_SUBJECT', 'MO_ALSO_BASIC'];
-                    
+
                     const masterPool = [];
                     const seenKeys = new Set();
                     const allSkills = [...tier3, ...tier2, ...tier1];
                     const poolStats = {}; // 診斷用：紀錄每種技能最後進入大池的題數
-                    
+
                     // 隨機化處理順序，避免固定順序導致某些技能（如 Tier 3）永遠「佔住」 overlap 句子
                     const shuffledSkills = [...allSkills].sort(() => Math.random() - 0.5);
 
                     shuffledSkills.forEach(skillId => {
                         const skillPool = EARLY_GAME_POOLS.skills[skillId] || {};
                         const combos = skillPool.safeCombos || [];
-                        
+
                         combos.forEach(combo => {
                             const originalCombos = skillPool.safeCombos;
                             skillPool.safeCombos = [combo];
-                            
+
                             const q = generateQuestionBySkill(skillId, 1, EARLY_GAME_POOLS, VOCAB.value);
                             if (q) {
                                 const key = q.chinese + "|" + (q.segments ? q.segments.map(s => s.text).join('') : '');
@@ -5421,14 +5524,14 @@ const _jpApp = Vue.createApp({
                                     poolStats[skillId] = (poolStats[skillId] || 0) + 1;
                                 }
                             }
-                            
+
                             skillPool.safeCombos = originalCombos;
                         });
                     });
-                    
+
                     if (window.__DEBUG__) {
                         console.log(`[L36 Pool] Generated ${masterPool.length} unique questions.`);
-                        console.table(Object.entries(poolStats).map(([id, count]) => ({ Skill: id, Count: count })).sort((a,b) => b.Count - a.Count));
+                        console.table(Object.entries(poolStats).map(([id, count]) => ({ Skill: id, Count: count })).sort((a, b) => b.Count - a.Count));
                     }
                     return masterPool.sort(() => Math.random() - 0.5);
                 };
@@ -5747,12 +5850,42 @@ const _jpApp = Vue.createApp({
                 const targetCount = getChoiceCountForLevel(currentLevel.value);
                 const validParticles = ['は', 'の', 'が', 'を', 'に', 'へ', 'も', 'で', 'と', 'から', 'まで', 'や', 'より'];
 
+                const lv = currentLevel.value;
+                const isGatedPool = lv <= 35;
+                let allowedEarlyParticles = [];
+                if (lv === 1 || lv === 2) allowedEarlyParticles = ['は', 'の'];
+                else if (lv === 3) allowedEarlyParticles = ['は', 'の', 'が'];
+                else if (lv === 4 || lv === 5) allowedEarlyParticles = ['は', 'の', 'が', 'を'];
+                else if (lv === 6) allowedEarlyParticles = ['は', 'の', 'が', 'を', 'へ'];
+                else if (lv === 7) allowedEarlyParticles = ['は', 'の', 'が', 'を', 'へ', 'も'];
+                else if (lv === 8) allowedEarlyParticles = ['は', 'の', 'が', 'を', 'へ', 'も', 'に'];
+                else if (lv === 9 || lv === 10) allowedEarlyParticles = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と'];
+                else if (lv >= 11 && lv <= 15) allowedEarlyParticles = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で'];
+                else if (lv === 16) allowedEarlyParticles = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で', 'から'];
+                else if (lv >= 17 && lv <= 25) allowedEarlyParticles = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で', 'から', 'まで'];
+                else if (lv >= 26 && lv <= 31) allowedEarlyParticles = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で', 'から', 'まで', 'や'];
+                else if (lv >= 32 && lv <= 35) allowedEarlyParticles = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で', 'から', 'まで', 'や', 'より'];
+
                 // [Refined Safety Patch] Context-aware filtering
                 const isParticleSkill = skillDef.particle && validParticles.includes(skillDef.particle);
-                const rawPool = [...(skillDef.choiceSet || defaultChoices)];
+                let rawPool = [...(skillDef.choiceSet || defaultChoices)];
+
+                if (isGatedPool && isParticleSkill) {
+                    // Override local skill choiceSets with the global chapter-allowed pool
+                    // This allows new particles to effectively act as distractors for old questions!
+                    rawPool = [...allowedEarlyParticles];
+                } else if (!isGatedPool && isParticleSkill) {
+                    // Level 36+ : Fully unrestricted randomness. Completely overrides old skill-bound constraints.
+                    rawPool = [...validParticles];
+                }
 
                 let safePool = rawPool.filter(p => {
                     if (!p || typeof p !== 'string') return false;
+
+                    if (isGatedPool && isParticleSkill) {
+                        return allowedEarlyParticles.includes(p);
+                    }
+
                     if (isParticleSkill) {
                         // Strict mode for particle-based skills
                         return validParticles.includes(p);
@@ -5780,7 +5913,10 @@ const _jpApp = Vue.createApp({
 
                 // Backfill logic (Only for particle skills)
                 if (safePool.length < targetCount && isParticleSkill) {
-                    const fallback = ['は', 'の', 'が', 'を', 'に', 'で', 'と'].filter(p => !safePool.includes(p));
+                    let sourcePool = ['は', 'の', 'が', 'を', 'に', 'で', 'と'];
+                    if (isGatedPool) sourcePool = allowedEarlyParticles;
+
+                    const fallback = sourcePool.filter(p => !safePool.includes(p));
                     while (safePool.length < targetCount && fallback.length > 0) {
                         safePool.push(fallback.shift());
                     }
@@ -5794,7 +5930,45 @@ const _jpApp = Vue.createApp({
                     safePool = safePool.filter(x => x !== correctAns);
                 }
 
-                const needed = targetCount - selected.length;
+                let needed = targetCount - selected.length;
+
+                if (lv >= 6 && lv <= 34 && isParticleSkill && needed > 0) {
+                    let focusParticle = '';
+                    if (lv === 6) focusParticle = 'へ';
+                    else if (lv === 7) focusParticle = 'も';
+                    else if (lv === 8) focusParticle = 'に';
+                    else if (lv === 9) focusParticle = 'と';
+                    else if (lv === 11) focusParticle = 'で';
+                    else if (lv === 12) focusParticle = 'に';
+                    else if (lv === 13) focusParticle = 'が';
+                    else if (lv === 14) focusParticle = 'と';
+                    else if (lv === 16) focusParticle = 'から';
+                    else if (lv === 17) focusParticle = 'まで';
+                    else if (lv === 18) focusParticle = 'に';
+                    else if (lv === 19) focusParticle = 'で';
+                    else if (lv === 21) focusParticle = 'に';
+                    else if (lv === 22) focusParticle = 'が';
+                    else if (lv === 23) focusParticle = 'も';
+                    else if (lv === 24) focusParticle = 'と';
+                    else if (lv === 26) focusParticle = 'や';
+                    else if (lv === 27) focusParticle = 'で';
+                    else if (lv === 28) focusParticle = 'に';
+                    else if (lv === 29) focusParticle = 'と';
+                    else if (lv === 31) focusParticle = 'から';
+                    else if (lv === 32) focusParticle = 'より';
+                    else if (lv === 33) focusParticle = 'に';
+                    else if (lv === 34) focusParticle = 'で';
+
+                    if (focusParticle && safePool.includes(focusParticle)) {
+                        // 55% chance to forcefully inject the new focus particle as a distractor
+                        if (Math.random() < 0.55) {
+                            selected.push(focusParticle);
+                            safePool = safePool.filter(x => x !== focusParticle);
+                            needed--;
+                        }
+                    }
+                }
+
                 if (safePool.length >= needed) {
                     selected = selected.concat(safePool.slice(0, needed));
                 } else {
@@ -5972,7 +6146,10 @@ const _jpApp = Vue.createApp({
 
         // ================= [ BATTLE INIT ] =================
         /** 主戰鬥初始化：依關卡 ID 生成題庫、配置怪物、重置所有 battle state、啟動計時器。 */
+        let _mentorResumeToken = 0;
         const initGame = (level, skipMentor = false, forceMentor = false) => {
+
+            const _myMentorToken = ++_mentorResumeToken;
 
             isBgmSuppressed.value = false;
 
@@ -6116,6 +6293,7 @@ const _jpApp = Vue.createApp({
                             // Pause and wait for mentor to finish
 
                             window._resumeAfterMentor = () => {
+                                if (_mentorResumeToken !== _myMentorToken) return;
                                 // [Knowledge Card 1.0] Do not open old modal, it will show as Knowledge Card later
                                 // isSkillUnlockModalOpen.value = true;
                             };
@@ -6146,6 +6324,8 @@ const _jpApp = Vue.createApp({
                     // Ensure battle starts after mentor
 
                     window._resumeAfterMentor = () => {
+
+                        if (_mentorResumeToken !== _myMentorToken) return;
 
                         if (!window._battlePopPlayed) {
 
@@ -6251,7 +6431,8 @@ const _jpApp = Vue.createApp({
 
 
 
-            for (let i = 0; i < 100; i++) {
+            const _totalQ = (config.skillId === 'HIDDEN_BOSS_36') ? bossQuestionQueue.length : 100;
+            for (let i = 0; i < _totalQ; i++) {
 
                 let q = null;
 
@@ -6605,156 +6786,6 @@ const _jpApp = Vue.createApp({
                     // Safety: if reached, return null to let safeFallbackQuestion handle it or skip loop
                     q = null;
                     continue;
-
-                    switch (type) {
-
-                        case 0:
-
-                            const p0 = rand(db.places);
-
-                            q = { chinese: `去${p0.t}`, segments: [{ text: p0.j, ruby: p0.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: "行く", ruby: "い", isBlank: false }], answers: [["へ", "に"]], grammarTip: db.grammarTips.move };
-
-                            if (blanks === 1) q.choices = makeChoices(["へ", "に"]);
-
-                            break;
-
-                        case 1: {
-
-                            const verbTypes = [
-
-                                { type: "read", v: { j: "読む", r: "よ", full: "よむ" }, ch: "讀" },
-
-                                { type: "eat", v: { j: "食べる", r: "た", full: "たべる" }, ch: "吃" },
-
-                                { type: "hear", v: { j: "聞く", r: "き", full: "きく" }, ch: "聽" },
-
-                                { type: "write", v: { j: "書く", r: "か", full: "かく" }, ch: "寫" }
-
-                            ];
-
-                            const vt = rand(verbTypes);
-
-                            const pool1 = db.objects.filter(x => x.type === vt.type);
-
-                            const o1 = rand(pool1);
-
-                            const p1 = rand(db.places);
-
-                            if (blanks === 1) {
-
-                                const vReading = vt.v.full || vt.v.r + "む";
-
-                                q = { chinese: `在${p1.t}${vt.ch}${o1.t}`, segments: [{ text: p1.j, ruby: p1.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: o1.j + "を" + vt.v.j, ruby: o1.r + "を" + vReading, isBlank: false }], answers: ["で"], grammarTip: db.grammarTips.placeAction };
-
-                                q.choices = makeChoices("で");
-
-                            } else {
-
-                                q = { chinese: `在${p1.t}${vt.ch}${o1.t}`, segments: [{ text: p1.j, ruby: p1.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: o1.j, ruby: o1.r, isBlank: false }, { isBlank: true, blankIndex: 1 }, { text: vt.v.j, ruby: vt.v.r, isBlank: false }], answers: ["で", "を"], grammarTip: db.grammarTips.placeAction };
-
-                            }
-
-                            break;
-
-                        }
-
-                        case 2: {
-
-                            const p2 = rand(db.places);
-
-                            const pool2 = db.objects.filter(x => x.exists !== false);
-
-                            const o2 = rand(pool2);
-
-                            if (blanks === 1) {
-
-                                q = { chinese: `${p2.t}有${o2.t}`, segments: [{ text: p2.j, ruby: p2.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: o2.j + "が" + "ある", ruby: o2.r + "がある", isBlank: false }], answers: ["に"], grammarTip: db.grammarTips.existence };
-
-                                q.choices = makeChoices("に");
-
-                            } else {
-
-                                q = { chinese: `${p2.t}有${o2.t}`, segments: [{ text: p2.j, ruby: p2.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: o2.j, ruby: o2.r, isBlank: false }, { isBlank: true, blankIndex: 1 }, { text: "ある", isBlank: false }], answers: ["に", "が"], grammarTip: db.grammarTips.existence };
-
-                            }
-
-                            break;
-
-                        }
-
-                        case 3: {
-
-                            const pe3 = rand(db.people); const o3 = db.objects.filter(x => x.type === 'read').random();
-
-                            const v3 = { j: "読む", r: "よ", full: "よむ" };
-
-                            if (blanks === 1) {
-
-                                q = { chinese: `和${pe3.t}一起讀${o3.t}`, segments: [{ text: pe3.j, ruby: pe3.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: o3.j + "を" + v3.j, ruby: o3.r + "を" + v3.full, isBlank: false }], answers: ["と"], grammarTip: db.grammarTips.accompany };
-
-                                q.choices = makeChoices("と");
-
-                            } else {
-
-                                q = { chinese: `和${pe3.t}一起讀${o3.t}`, segments: [{ text: pe3.j, ruby: pe3.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: o3.j, ruby: o3.r, isBlank: false }, { isBlank: true, blankIndex: 1 }, { text: "読む", ruby: "よ", isBlank: false }], answers: ["と", "を"], grammarTip: db.grammarTips.accompany };
-
-                            }
-
-                            break;
-
-                        }
-
-                        case 4: {
-
-                            const useRead = Math.random() < 0.5;
-
-                            const t4 = useRead ? db.tools.find(x => x.j === "スマホ") : db.tools.find(x => x.j === "ペン");
-
-                            const pool4 = db.objects.filter(x => x.type === (useRead ? "read" : "write"));
-
-                            const o4 = rand(pool4);
-
-                            const verb4 = useRead ? { j: "読む", r: "よ", full: "よむ", ch: "看" } : { j: "書く", r: "か", full: "かく", ch: "寫" };
-
-                            if (blanks === 1) {
-
-                                q = { chinese: `用${t4.t}${verb4.ch}${o4.t}`, segments: [{ text: t4.j, ruby: t4.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: o4.j + "を" + verb4.j, ruby: o4.r + "を" + verb4.full, isBlank: false }], answers: ["で"], grammarTip: db.grammarTips.tool };
-
-                                q.choices = makeChoices("で");
-
-                            } else {
-
-                                q = { chinese: `用${t4.t}${verb4.ch}${o4.t}`, segments: [{ text: t4.j, ruby: t4.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: o4.j, ruby: o4.r, isBlank: false }, { isBlank: true, blankIndex: 1 }, { text: verb4.j, ruby: verb4.r, isBlank: false }], answers: ["で", "を"], grammarTip: db.grammarTips.tool };
-
-                            }
-
-                            break;
-
-                        }
-
-                        case 5: {
-
-                            const pe5 = rand(db.people); const o5 = rand(db.objects);
-
-                            if (blanks === 1) {
-
-                                q = { chinese: `給${pe5.t}${o5.t}`, segments: [{ text: pe5.j, ruby: pe5.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: o5.j + "をあげる", ruby: o5.r + "をあげる", isBlank: false }], answers: ["に"], grammarTip: db.grammarTips.give };
-
-                                q.choices = makeChoices("に");
-
-                            } else {
-
-                                q = { chinese: `給${pe5.t}${o5.t}`, segments: [{ text: pe5.j, ruby: pe5.r, isBlank: false }, { isBlank: true, blankIndex: 0 }, { text: o5.j, ruby: o5.r, isBlank: false }, { isBlank: true, blankIndex: 1 }, { text: "あげる", isBlank: false }], answers: ["に", "を"], grammarTip: db.grammarTips.give };
-
-                            }
-
-                            break;
-
-                        }
-
-                    }
-
-                    q.skillId = 'FALLBACK';
 
                 } // end of else (non-L5 global fallback)
 
@@ -7347,7 +7378,10 @@ const _jpApp = Vue.createApp({
 
 
 
-                        if (monster.value.hp <= 0) grantRewards();
+                        if (monster.value.hp <= 0) {
+                            if (window.__AUTO_ADVANCE_TIMEOUT) { clearTimeout(window.__AUTO_ADVANCE_TIMEOUT); window.__AUTO_ADVANCE_TIMEOUT = null; }
+                            grantRewards();
+                        }
 
                     }
 
@@ -7439,7 +7473,7 @@ const _jpApp = Vue.createApp({
 
 
 
-                if (delayMs > 0) {
+                if (delayMs > 0 && !monsterDead.value) {
 
                     window.__AUTO_ADVANCE_TIMEOUT = setTimeout(() => {
 
@@ -7479,17 +7513,9 @@ const _jpApp = Vue.createApp({
 
 
 
-            if (currentIndex.value < 49) {
+            currentIndex.value++;
 
-                currentIndex.value++;
-
-                if (currentIndex.value >= questions.value.length) currentIndex.value = 0;
-
-            } else {
-
-                currentIndex.value = 0;
-
-            }
+            if (currentIndex.value >= questions.value.length) currentIndex.value = 0;
 
 
 
@@ -8262,6 +8288,22 @@ const _jpApp = Vue.createApp({
 
             injectTapChoicesClass();
 
+            const checkQuestionCompact = () => {
+                const area = document.getElementById('question-area');
+                if (!area) return;
+                const row = area.firstElementChild;
+                if (!row) return;
+                area.classList.remove('question-compact', 'question-ultra-compact');
+                if (row.scrollWidth <= area.offsetWidth + 4) return;
+                area.classList.add('question-compact');
+                if (row.scrollWidth <= area.offsetWidth + 4) return;
+                area.classList.remove('question-compact');
+                area.classList.add('question-ultra-compact');
+            };
+            watch(displaySegments, () => { nextTick(checkQuestionCompact); });
+            watch([hasSubmitted, userAnswers], () => { nextTick(checkQuestionCompact); }, { deep: true });
+            nextTick(checkQuestionCompact);
+
 
             window.__initCornerMenu?.(watch, showLevelSelect, isFinished);
 
@@ -8284,42 +8326,6 @@ const _jpApp = Vue.createApp({
             return false;
 
         });
-
-
-
-        const replaySpecificMentor = (skillId) => {
-
-            isMenuOpen.value = false;
-
-            isMentorReplayOpen.value = false;
-
-            const skill = skillsAll.value[skillId];
-
-            if (!skill || !skill.mentorDialogue) return;
-
-
-
-            // 暫停戰鬥
-
-            pauseBattle();
-
-
-
-            // 設定關閉後的回呼：僅恢復戰鬥，不誤走首進流程 (如 Reveal Modal)
-
-            window._resumeAfterMentor = () => {
-
-                resumeBattle();
-
-            };
-
-
-
-            stopMentorAudio();
-
-            setupMentorDialogue(skill);
-
-        };
 
 
 
@@ -8372,8 +8378,6 @@ const _jpApp = Vue.createApp({
 
             isMentorModalOpen.value = false;
 
-            isMentorReplayOpen.value = false;
-
             isLevelJumpOpen.value = false;
 
             praiseToast.value.show = false;
@@ -8425,10 +8429,11 @@ const _jpApp = Vue.createApp({
             isNextBtnVisible,
             animatedExp, animatedGold,
             uiMenuOpen, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, stageLog, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, playMistakeVoice, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, CODEX_PER_PAGE, closeCodex, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
+            handleEscapeToMap, escapeOverlayVisible, escapeOverlayOpacity, isEscaping,
             heroBuffs,
             allAbilities, unlockedAbilityIds, skillList, castAbility, spState, handleReload, settings, shouldShowNextButton, praiseToast, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
-            isMentorModalOpen, isMentorReplayOpen, isLevelJumpOpen, isAdvancedSettingsOpen, replaySpecificMentor, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
+            isMentorModalOpen, isLevelJumpOpen, isAdvancedSettingsOpen, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
             displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,
             playPrologueOpening, playMainEndingFinale,
             isMentorSkipPressing, startMentorSkipPress, cancelMentorSkipPress,

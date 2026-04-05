@@ -19,37 +19,22 @@
     "attackDamageMax": 5
   },
   {
-    "id": "moss-boar",
-    "name": "苔牙野豬",
-    "image": "assets/images/monsters/moss-boar.png",
-    "imageHit": null,
-    "trait": "背中には湿った苔や落ち葉がびっしりと付着しており，突進する前には低く鼻を鳴らす",
-    "spawnLevels": [
-      2
-    ],
-    "hpMax": 180,
-    "size": 1.5,
-    "posX": null,
-    "posY": 30,
-    "infoOffsetY": -10,
-    "attackIntervalMs": 10000,
-    "attackRingScale": 1.0,
-    "attackDamageMin": 5,
-    "attackDamageMax": 10
-  },
-  {
     "id": "rune-moth",
     "name": "符紋蛾",
     "image": "assets/images/monsters/rune-moth.png",
     "imageHit": null,
     "trait": "翅面浮著像文字碎片般的紋路，飛行時會灑下淡金粉末",
     "spawnLevels": [
-      3
+      2
     ],
-    "hpMax": 220,
+    "hpMax": 160,
     "size": 1.0,
     "posX": null,
-    "posY": null
+    "posY": null,
+    "attackIntervalMs": 10000,
+    "attackRingScale": 1.0,
+    "attackDamageMin": 3,
+    "attackDamageMax": 6
   },
   {
     "id": "mist-bat",
@@ -58,12 +43,35 @@
     "imageHit": null,
     "trait": "總在薄霧裡忽隱忽現，翅膀一振就像夜風掠過耳邊",
     "spawnLevels": [
-      4
+      3
     ],
     "hpMax": 220,
     "size": 1.0,
     "posX": null,
-    "posY": null
+    "posY": null,
+    "attackIntervalMs": 10000,
+    "attackRingScale": 1.0,
+    "attackDamageMin": 5,
+    "attackDamageMax": 8
+  },
+  {
+    "id": "moss-boar",
+    "name": "苔牙野豬",
+    "image": "assets/images/monsters/moss-boar.png",
+    "imageHit": null,
+    "trait": "背中には湿った苔や落ち葉がびっしりと付着しており，突進する前には低く鼻を鳴らす",
+    "spawnLevels": [
+      4
+    ],
+    "hpMax": 300,
+    "size": 1.5,
+    "posX": null,
+    "posY": 30,
+    "infoOffsetY": -10,
+    "attackIntervalMs": 10000,
+    "attackRingScale": 1.0,
+    "attackDamageMin": 6,
+    "attackDamageMax": 10
   },
   {
     "id": "man-eater-bloom",
@@ -90,24 +98,32 @@
       6
     ],
     "hpMax": 220,
-    "size": 1.5,
+    "size": 1.2,
     "posX": null,
     "posY": 20,
-    "infoOffsetY": 0
+    "infoOffsetY": 0,
+    "attackIntervalMs": 10000,
+    "attackRingScale": 1.0,
+    "attackDamageMin": 8,
+    "attackDamageMax": 12
   },
   {
     "id": "shell-sprout",
     "name": "殼芽獸",
     "image": "assets/images/monsters/shell-sprout.png",
     "imageHit": null,
-    "trait": "背甲像剛長出的樹芽，移動慢，但意外地很耐打",
+    "trait": "背甲像剛長出的樹芽、移動慢，但意外地很耐打",
     "spawnLevels": [
       7
     ],
     "hpMax": 220,
-    "size": 1.0,
+    "size": 1.8,
     "posX": null,
-    "posY": null
+    "posY": 20,
+    "attackIntervalMs": 10000,
+    "attackRingScale": 1.0,
+    "attackDamageMin": 10,
+    "attackDamageMax": 14
   },
   {
     "id": "forest-cat",
@@ -119,9 +135,13 @@
       8
     ],
     "hpMax": 220,
-    "size": 1.0,
+    "size": 1.5,
     "posX": null,
-    "posY": null
+    "posY": 20,
+    "attackIntervalMs": 8000,
+    "attackRingScale": 1.0,
+    "attackDamageMin": 10,
+    "attackDamageMax": 12
   },
   {
     "id": "stone-mimic",
@@ -132,10 +152,14 @@
     "spawnLevels": [
       9
     ],
-    "hpMax": 250,
-    "size": 1.0,
+    "hpMax": 220,
+    "size": 1.3,
     "posX": null,
-    "posY": null
+    "posY": 20,
+    "attackIntervalMs": 10000,
+    "attackRingScale": 1.0,
+    "attackDamageMin": 10,
+    "attackDamageMax": 15
   },
   {
     "id": "orc-warlord",
@@ -146,26 +170,26 @@
     "spawnLevels": [
       10
     ],
-    "hpMax": 500,
+    "hpMax": 400,
     "size": 2.0,
     "posX": null,
     "posY": 19,
     "infoOffsetY": 45,
-    "attackIntervalMs": 8000,
-    "attackDamageMin": 20,
-    "attackDamageMax": 30
+    "attackIntervalMs": 10000,
+    "attackDamageMin": 15,
+    "attackDamageMax": 20
   },
   {
     "id": "ember-imp",
     "name": "燼火小惡魔",
     "image": "assets/images/monsters/ember-imp.png",
     "imageHit": null,
-    "trait": "耳尖與尾端閃著火星，脾氣暴躁，笑聲比火還惱人",
+    "trait": "耳尖與尾端閃著火星、脾氣暴躁，笑聲比火還惱人",
     "spawnLevels": [
       11
     ],
-    "hpMax": 220,
-    "size": 1.0,
+    "hpMax": 250,
+    "size": 1.5,
     "posX": null,
     "posY": null
   },
@@ -178,7 +202,7 @@
     "spawnLevels": [
       12
     ],
-    "hpMax": 220,
+    "hpMax": 250,
     "size": 1.0,
     "posX": null,
     "posY": null
@@ -192,7 +216,7 @@
     "spawnLevels": [
       13
     ],
-    "hpMax": 220,
+    "hpMax": 250,
     "size": 1.6,
     "posX": null,
     "posY": 20
@@ -206,7 +230,7 @@
     "spawnLevels": [
       14
     ],
-    "hpMax": 220,
+    "hpMax": 250,
     "size": 1.5,
     "posX": null,
     "posY": 20
@@ -220,7 +244,7 @@
     "spawnLevels": [
       15
     ],
-    "hpMax": 500,
+    "hpMax": 400,
     "size": 2.2,
     "posX": null,
     "posY": 16,
@@ -236,7 +260,7 @@
     "spawnLevels": [
       16
     ],
-    "hpMax": 250,
+    "hpMax": 280,
     "size": 1.6,
     "posX": null,
     "posY": 20,
@@ -255,7 +279,7 @@
     "spawnLevels": [
       17
     ],
-    "hpMax": 250,
+    "hpMax": 280,
     "size": 2.0,
     "posX": null,
     "posY": 20,
@@ -274,7 +298,7 @@
     "spawnLevels": [
       18
     ],
-    "hpMax": 400,
+    "hpMax": 280,
     "size": 2.0,
     "posX": null,
     "posY": 10,
@@ -292,7 +316,7 @@
     "spawnLevels": [
       19
     ],
-    "hpMax": 300,
+    "hpMax": 280,
     "size": 1.5,
     "posX": null,
     "posY": 20,
@@ -307,7 +331,7 @@
     "spawnLevels": [
       20
     ],
-    "hpMax": 260,
+    "hpMax": 400,
     "size": 2.4,
     "posX": null,
     "posY": 20,
@@ -383,7 +407,7 @@
     "spawnLevels": [
       25
     ],
-    "hpMax": 300,
+    "hpMax": 400,
     "size": 2.2,
     "posX": null,
     "posY": 20,
@@ -398,7 +422,7 @@
     "spawnLevels": [
       26
     ],
-    "hpMax": 240,
+    "hpMax": 250,
     "size": 2.0,
     "posX": null,
     "posY": 20,
@@ -413,7 +437,7 @@
     "spawnLevels": [
       27
     ],
-    "hpMax": 400,
+    "hpMax": 260,
     "size": 2.3,
     "posX": null,
     "posY": 20,
@@ -534,7 +558,7 @@
     "spawnLevels": [
       35
     ],
-    "hpMax": 1000,
+    "hpMax": 500,
     "size": 2.5,
     "posX": null,
     "posY": 20,

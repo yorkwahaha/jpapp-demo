@@ -11,6 +11,8 @@ const primeAudio = new Audio();
 
 let isTtsPrimed = false;
 
+let currentTtsSessionId = 0;
+
 
 
 window.primeVoiceOnGesture = () => {
@@ -90,7 +92,7 @@ async function audioFileExists(url) {
 
 
 function stopTtsAudio() {
-
+    currentTtsSessionId++;
     if (currentTtsAudio) {
 
         try {
@@ -170,13 +172,15 @@ async function playTtsKey(key, fallbackText, ttsVoiceName = null) {
 
     stopTtsAudio();
 
-
+    const playbackSessionId = currentTtsSessionId;
 
     const url = TTS_AUDIO_BASE + ttsKeyToFile(key);
 
 
 
     if (await audioFileExists(url)) {
+
+        if (playbackSessionId !== currentTtsSessionId) return { used: "none", key };
 
         console.log(`[FALLBACK] audio file exists: ${url}`);
 
@@ -187,6 +191,8 @@ async function playTtsKey(key, fallbackText, ttsVoiceName = null) {
         a.preload = "auto";
 
         currentTtsAudio = a;
+
+        if (playbackSessionId !== currentTtsSessionId) return { used: "none", key };
 
         try {
 
@@ -207,6 +213,7 @@ async function playTtsKey(key, fallbackText, ttsVoiceName = null) {
 
 
     if (fallbackText) {
+        if (playbackSessionId !== currentTtsSessionId) return { used: "none", key };
         const cloudTtsSuccess = await speakCloudTts(fallbackText, ttsVoiceName);
         if (cloudTtsSuccess) {
             return { used: "cloud", key };
@@ -389,6 +396,8 @@ async function speakCloudTts(text, voiceShortName = null) {
     stopWebSpeech();
     stopTtsAudio();
 
+    const playbackSessionId = currentTtsSessionId;
+
 
 
     let res;
@@ -426,11 +435,16 @@ async function speakCloudTts(text, voiceShortName = null) {
         return false;
     }
 
-
+    if (playbackSessionId !== currentTtsSessionId) return false;
 
     const blob = await res.blob();
 
     const url = URL.createObjectURL(blob);
+
+    if (playbackSessionId !== currentTtsSessionId) {
+        try { URL.revokeObjectURL(url); } catch { }
+        return false;
+    }
 
     const a = sharedTtsAudio;
 

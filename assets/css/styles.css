@@ -448,17 +448,19 @@ rt {
     }
 }
 
-.particle-slot {
+.particle-slot,
+.blank-slot {
     display: inline-block;
     min-width: 4rem;
-    padding: 0 0.25rem;
+    padding: 0.05em 0.25rem 0.15em 0.25rem;
+    /* Lower the border-bottom */
     margin: 0 0.25rem;
     text-align: center;
     border-bottom-width: 4px;
     border-bottom-style: solid;
     font-size: 1.25rem;
     font-weight: 900;
-    vertical-align: baseline;
+    vertical-align: middle;
     transition: all 0.3s ease;
     position: relative;
     margin: auto;
@@ -697,6 +699,7 @@ rt {
 #heroAvatar {
     left: var(--hero-left-mobile);
 }
+
 @media (min-width: 768px) {
     #heroAvatar {
         left: var(--hero-left-desktop);
@@ -1170,13 +1173,15 @@ rt {
         margin-bottom: 8px !important;
     }
 
+    /* 題目區：上日文主行、下中文輔助 */
     #question-area>div:first-child {
-        font-size: 13px !important;
-        margin-bottom: 4px !important;
+        font-size: 1.5rem !important;
+        margin-bottom: 6px !important;
     }
 
     #question-area>div:last-child {
-        font-size: 1.5rem !important;
+        font-size: 13px !important;
+        margin-bottom: 0 !important;
     }
 
     .flex.flex-wrap.justify-center.gap-3.w-full {
@@ -1805,14 +1810,16 @@ body.lock-scroll {
 }
 
 @media (max-width: 480px) {
+
+    /* 第一區為日文主行（較大）、第二區為中文輔助（較小） */
     #question-area>div:first-child {
-        font-size: clamp(20px, 4.8vw, 24px) !important;
+        font-size: clamp(24px, 5.6vw, 28px) !important;
         line-height: 1.5 !important;
         letter-spacing: 0.04em !important;
     }
 
     #question-area>div:nth-child(2) {
-        font-size: clamp(24px, 5.6vw, 28px) !important;
+        font-size: clamp(20px, 4.8vw, 24px) !important;
     }
 
     #question-area .text-slate-100,
@@ -2057,7 +2064,7 @@ body.lock-scroll {
 /* 題目區 Slot 強化 */
 .blank-slot {
     border-bottom: 4px solid #fbbf24 !important;
-    padding: 0px 12px 4px 12px !important;
+    padding: 0px 12px 14px 12px !important;
     transition: transform 0.2s, border-color 0.2s !important;
     cursor: pointer;
     display: inline-block;
@@ -3068,7 +3075,8 @@ body.lock-scroll {
 }
 
 /* Boss Aura Effect: High-Intensity 'Subtraction Mindset' Overhaul */
-.boss-aura-layer, .boss-aura-layer-luminous {
+.boss-aura-layer,
+.boss-aura-layer-luminous {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -3082,7 +3090,8 @@ body.lock-scroll {
 }
 
 .boss-aura-layer-luminous {
-    z-index: 11; /* Even more in front */
+    z-index: 11;
+    /* Even more in front */
 }
 
 /* Layer 1: Ambient Evil Miasma & Ghostly Sparks */
@@ -3090,7 +3099,7 @@ body.lock-scroll {
     content: '';
     position: absolute;
     inset: 0;
-    background: 
+    background:
         radial-gradient(ellipse at 50% 90%, rgba(88, 28, 135, 0.6) 0%, transparent 65%),
         radial-gradient(circle at 10% 60%, rgba(168, 85, 247, 0.25) 0%, transparent 45%),
         radial-gradient(circle at 90% 60%, rgba(168, 85, 247, 0.25) 0%, transparent 45%);
@@ -3142,16 +3151,25 @@ body.lock-scroll {
 }
 
 @keyframes wisp-flicker-flow {
-    0%, 100% { opacity: 0.3; transform: scale(1) translateY(0); }
-    50% { opacity: 0.8; transform: scale(1.15) translateY(-15px) skewX(4deg); }
+
+    0%,
+    100% {
+        opacity: 0.3;
+        transform: scale(1) translateY(0);
+    }
+
+    50% {
+        opacity: 0.8;
+        transform: scale(1.15) translateY(-15px) skewX(4deg);
+    }
 }
 
 /* Regular/Ghostly Ascent (Denser stream) */
 @keyframes soul-fire-ascent {
     0% {
         opacity: 0;
-        box-shadow: 
-            -40px 10px 4px #a855f7, 45px 15px 2px #fff, -25px 30px 4px #7c3aed, 
+        box-shadow:
+            -40px 10px 4px #a855f7, 45px 15px 2px #fff, -25px 30px 4px #7c3aed,
             35px 40px 3px rgba(168, 85, 247, 0.8), -60px 10px 2px #fff,
             -75px 50px 3px #a855f7, 70px 45px 2px #fff, 10px 80px 4px #7c3aed,
             -20px 40px 5px #a855f7, 55px 60px 3px #fff, -50px 20px 4px #7c3aed,
@@ -3159,12 +3177,19 @@ body.lock-scroll {
             -10px 90px 2px #fff, 15px 100px 3px #a855f7;
         transform: translateY(40px) translateX(0);
     }
-    20% { opacity: 1; }
-    80% { opacity: 0.7; }
+
+    20% {
+        opacity: 1;
+    }
+
+    80% {
+        opacity: 0.7;
+    }
+
     100% {
         opacity: 0;
-        box-shadow: 
-            -50px -90px 10px transparent, 55px -80px 8px transparent, -35px -100px 12px transparent, 
+        box-shadow:
+            -50px -90px 10px transparent, 55px -80px 8px transparent, -35px -100px 12px transparent,
             45px -70px 10px transparent, -70px -110px 8px transparent,
             -85px -60px 8px transparent, 80px -55px 6px transparent, 20px -130px 10px transparent,
             -30px -40px 12px transparent, 65px -50px 10px transparent, -60px -30px 12px transparent,
@@ -3177,20 +3202,28 @@ body.lock-scroll {
 @keyframes luminous-fire-rise {
     0% {
         opacity: 0;
-        box-shadow: 
-            -30px 5px 1px #fff, 35px 15px 1px #fff, 
+        box-shadow:
+            -30px 5px 1px #fff, 35px 15px 1px #fff,
             -60px 35px 2px #c084fc, 65px 25px 2px #c084fc,
             -15px 60px 10px 3px #a855f7, 20px 75px 8px 3px #fff,
             -80px 40px 1px 1px #fff, 85px 50px 1px 1px #fff,
             -45px 10px 1px #fff, 50px 20px 1px #c084fc;
         transform: translateY(50px) scale(0.8);
     }
-    10% { opacity: 1; filter: brightness(1.6); }
-    90% { opacity: 0.9; }
+
+    10% {
+        opacity: 1;
+        filter: brightness(1.6);
+    }
+
+    90% {
+        opacity: 0.9;
+    }
+
     100% {
         opacity: 0;
-        box-shadow: 
-            -35px -100px 2px #fff, 40px -115px 2px #fff, 
+        box-shadow:
+            -35px -100px 2px #fff, 40px -115px 2px #fff,
             -70px -90px 4px #c084fc, 75px -105px 4px #c084fc,
             -20px -140px 15px 5px transparent, 25px -150px 12px 5px transparent,
             -90px -80px 2px transparent, 95px -90px 2px transparent,
@@ -7057,7 +7090,8 @@ body.lock-scroll {
     z-index: 47;
     pointer-events: none;
     overflow: visible;
-    display: none; /* Default hidden; JS will set display:block and calculate pos from heroAvatar */
+    display: none;
+    /* Default hidden; JS will set display:block and calculate pos from heroAvatar */
 }
 
 /* Pulsing glow ring around hero */
@@ -7234,4 +7268,286 @@ body.lock-scroll {
         0 4px 8px rgba(0, 0, 0, 0.8);
     animation: zzz-float 3s infinite linear;
     opacity: 0;
+}
+
+/* [ODOODO] Persistent debuff — body micro-shake + faint echo (under boss aura) */
+.odoodo-jitter-root {
+    position: relative;
+    animation: odoodo-sprite-tremor 1.45s linear infinite;
+    transform: translateZ(0);
+}
+
+/* 約 0.84s 橫向抖動（幅度加大，手機可辨）→ 約 0.61s 靜止 */
+@keyframes odoodo-sprite-tremor {
+
+    0%,
+    58%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    1% {
+        transform: translate3d(-2.42px, 0, 0);
+    }
+
+    3% {
+        transform: translate3d(2.12px, 0, 0);
+    }
+
+    5% {
+        transform: translate3d(-1.89px, 0, 0);
+    }
+
+    7% {
+        transform: translate3d(1.66px, 0, 0);
+    }
+
+    9% {
+        transform: translate3d(-2.25px, 0, 0);
+    }
+
+    11% {
+        transform: translate3d(1.43px, 0, 0);
+    }
+
+    13% {
+        transform: translate3d(-1.56px, 0, 0);
+    }
+
+    15% {
+        transform: translate3d(2.02px, 0, 0);
+    }
+
+    17% {
+        transform: translate3d(-1.2px, 0, 0);
+    }
+
+    19% {
+        transform: translate3d(1.1px, 0, 0);
+    }
+
+    21% {
+        transform: translate3d(-2.12px, 0, 0);
+    }
+
+    23% {
+        transform: translate3d(1.79px, 0, 0);
+    }
+
+    25% {
+        transform: translate3d(-1.33px, 0, 0);
+    }
+
+    27% {
+        transform: translate3d(1.52px, 0, 0);
+    }
+
+    29% {
+        transform: translate3d(-2.35px, 0, 0);
+    }
+
+    31% {
+        transform: translate3d(1.2px, 0, 0);
+    }
+
+    33% {
+        transform: translate3d(-1.43px, 0, 0);
+    }
+
+    35% {
+        transform: translate3d(1.89px, 0, 0);
+    }
+
+    37% {
+        transform: translate3d(-1.66px, 0, 0);
+    }
+
+    39% {
+        transform: translate3d(1.33px, 0, 0);
+    }
+
+    41% {
+        transform: translate3d(-2.02px, 0, 0);
+    }
+
+    43% {
+        transform: translate3d(0.97px, 0, 0);
+    }
+
+    45% {
+        transform: translate3d(-1.1px, 0, 0);
+    }
+
+    47% {
+        transform: translate3d(1.66px, 0, 0);
+    }
+
+    49% {
+        transform: translate3d(-1.75px, 0, 0);
+    }
+
+    51% {
+        transform: translate3d(1.2px, 0, 0);
+    }
+
+    53% {
+        transform: translate3d(-1.33px, 0, 0);
+    }
+
+    55% {
+        transform: translate3d(0.87px, 0, 0);
+    }
+
+    57% {
+        transform: translate3d(-0.74px, 0, 0);
+    }
+}
+
+.odoodo-echo {
+    position: absolute;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.odoodo-echo--back {
+    width: 90%;
+    height: 90%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) translateX(-3px);
+    border-radius: 50%;
+    background: radial-gradient(ellipse 72% 88% at 46% 50%,
+            rgba(15, 23, 42, 0.26) 0%,
+            rgba(15, 118, 110, 0.07) 48%,
+            transparent 70%);
+    opacity: 0.5;
+    filter: blur(0.6px);
+}
+
+.odoodo-echo--left {
+    width: 26%;
+    height: 74%;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%) translateX(-2px);
+    border-radius: 45%;
+    background: linear-gradient(90deg, rgba(15, 23, 42, 0.2) 0%, rgba(6, 78, 59, 0.06) 55%, transparent 100%);
+    opacity: 0.35;
+    filter: blur(1.2px);
+}
+
+.odoodo-echo--right {
+    width: 26%;
+    height: 74%;
+    right: 0;
+    left: auto;
+    top: 50%;
+    transform: translateY(-50%) translateX(2px);
+    border-radius: 45%;
+    background: linear-gradient(270deg, rgba(15, 23, 42, 0.18) 0%, rgba(6, 95, 70, 0.05) 55%, transparent 100%);
+    opacity: 0.32;
+    filter: blur(1.2px);
+}
+
+/* 頭頂兩顆小冷汗（跟隨 jitter-root；停頓時變淡） */
+.odoodo-sweat-cluster {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -22px;
+    /* Move higher to accommodate larger size and avoid covering eyes */
+    height: 32px;
+    pointer-events: none;
+    z-index: 4;
+}
+
+.odoodo-sweat {
+    position: absolute;
+    width: 15px;
+    /* Scaled up ~3x */
+    height: 22px;
+    border-radius: 50% 50% 48% 48% / 62% 62% 38% 38%;
+    background: linear-gradient(165deg, rgba(236, 254, 255, 0.95) 0%, rgba(165, 243, 252, 0.8) 42%, rgba(56, 189, 248, 0.6) 100%);
+    box-shadow:
+        0 0 0 1px rgba(8, 145, 178, 0.25),
+        0 2px 5px rgba(15, 23, 42, 0.28);
+    opacity: 0.85;
+    animation: odoodo-sweat-pulse 1.45s linear infinite;
+}
+
+.odoodo-sweat--1 {
+    left: 12%;
+    top: 4px;
+    transform: rotate(14deg);
+}
+
+.odoodo-sweat--2 {
+    left: 30%;
+    top: 12px;
+    width: 12px;
+    /* Scaled up ~3x */
+    height: 18px;
+    transform: rotate(30deg);
+    animation: odoodo-sweat-pulse-b 1.45s linear infinite;
+    animation-delay: 0.1s;
+}
+
+@keyframes odoodo-sweat-pulse {
+
+    0%,
+    58%,
+    100% {
+        opacity: 0.22;
+        transform: translate3d(0, 0, 0) rotate(14deg);
+    }
+
+    10% {
+        opacity: 0.95;
+        transform: translate3d(0.5px, 0.5px, 0) rotate(16deg);
+    }
+
+    22% {
+        opacity: 0.45;
+        transform: translate3d(-0.3px, 0.3px, 0) rotate(12deg);
+    }
+
+    35% {
+        opacity: 1;
+        transform: translate3d(0.3px, 0.8px, 0) rotate(15deg);
+    }
+
+    48% {
+        opacity: 0.55;
+        transform: translate3d(-0.2px, 0.4px, 0) rotate(13deg);
+    }
+}
+
+@keyframes odoodo-sweat-pulse-b {
+
+    0%,
+    58%,
+    100% {
+        opacity: 0.2;
+        transform: translate3d(0, 0, 0) rotate(-16deg);
+    }
+
+    12% {
+        opacity: 0.92;
+        transform: translate3d(-0.4px, 0.6px, 0) rotate(-14deg);
+    }
+
+    26% {
+        opacity: 0.4;
+        transform: translate3d(0.3px, 0.25px, 0) rotate(-17deg);
+    }
+
+    38% {
+        opacity: 0.98;
+        transform: translate3d(-0.2px, 0.7px, 0) rotate(-15deg);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: translate3d(0.2px, 0.35px, 0) rotate(-16deg);
+    }
 }

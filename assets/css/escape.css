@@ -1,0 +1,10 @@
+
+/* [ESCAPE] Full-screen black overlay for battle-to-map transitions */
+.escape-fade-overlay {
+    position: fixed;
+    inset: 0;
+    background: #000000;
+    z-index: 99999;
+    pointer-events: none;
+    transition: opacity 1s linear;
+}

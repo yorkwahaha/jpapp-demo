@@ -6,8 +6,8 @@
       "WA_TOPIC_BASIC"
     ],
     "skillMix": {
-      "newSkillWeight": 0.8,
-      "oldSkillWeight": 0.2
+      "newSkillWeight": 0.9,
+      "oldSkillWeight": 0.1
     },
     "questionCount": 20,
     "boss": null,
@@ -25,8 +25,8 @@
       "NO_POSSESSIVE"
     ],
     "skillMix": {
-      "newSkillWeight": 0.7,
-      "oldSkillWeight": 0.3
+      "newSkillWeight": 0.6,
+      "oldSkillWeight": 0.4
     },
     "questionCount": 20,
     "boss": null,
@@ -44,8 +44,8 @@
       "GA_INTRANSITIVE"
     ],
     "skillMix": {
-      "newSkillWeight": 0.6,
-      "oldSkillWeight": 0.4
+      "newSkillWeight": 0.4,
+      "oldSkillWeight": 0.6
     },
     "questionCount": 20,
     "boss": null,
@@ -63,8 +63,8 @@
       "WO_OBJECT_BASIC"
     ],
     "skillMix": {
-      "newSkillWeight": 0.6,
-      "oldSkillWeight": 0.4
+      "newSkillWeight": 0.3,
+      "oldSkillWeight": 0.7
     },
     "questionCount": 20,
     "boss": null,
@@ -102,10 +102,10 @@
       "HE_DIRECTION"
     ],
     "skillMix": {
-      "newSkillWeight": 0.4,
-      "oldSkillWeight": 0.6
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
-    "questionCount": 20,
+    "questionCount": 30,
     "boss": null,
     "levelNumber": 6,
     "levelName": "高地入口",
@@ -122,10 +122,10 @@
       "MO_ALSO_BASIC"
     ],
     "skillMix": {
-      "newSkillWeight": 0.4,
-      "oldSkillWeight": 0.6
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
-    "questionCount": 20,
+    "questionCount": 30,
     "boss": null,
     "levelNumber": 7,
     "levelName": "懸崖邊",
@@ -142,10 +142,10 @@
       "NI_TIME"
     ],
     "skillMix": {
-      "newSkillWeight": 0.4,
-      "oldSkillWeight": 0.6
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
-    "questionCount": 20,
+    "questionCount": 30,
     "boss": null,
     "levelNumber": 8,
     "levelName": "山影小徑",
@@ -162,10 +162,10 @@
       "TO_AND"
     ],
     "skillMix": {
-      "newSkillWeight": 0.4,
-      "oldSkillWeight": 0.6
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
-    "questionCount": 20,
+    "questionCount": 30,
     "boss": null,
     "levelNumber": 9,
     "levelName": "巨石陣",
@@ -204,7 +204,7 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 20,
+    "questionCount": 40,
     "boss": null,
     "levelNumber": 11,
     "levelName": "石橋",
@@ -224,7 +224,7 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 20,
+    "questionCount": 40,
     "boss": null,
     "levelNumber": 12,
     "levelName": "眺望平台",
@@ -244,7 +244,7 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 20,
+    "questionCount": 40,
     "boss": null,
     "levelNumber": 13,
     "levelName": "冰晶石柱",
@@ -264,7 +264,7 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 20,
+    "questionCount": 40,
     "boss": null,
     "levelNumber": 14,
     "levelName": "冰城牆下",
@@ -303,7 +303,7 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 20,
+    "questionCount": 50,
     "boss": null,
     "levelNumber": 16,
     "levelName": "城門長廊",
@@ -323,7 +323,7 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 20,
+    "questionCount": 50,
     "boss": null,
     "levelNumber": 17,
     "levelName": "幽靜階梯",
@@ -343,7 +343,7 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 20,
+    "questionCount": 50,
     "boss": null,
     "levelNumber": 18,
     "levelName": "石橋",
@@ -363,7 +363,7 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 20,
+    "questionCount": 50,
     "boss": null,
     "levelNumber": 19,
     "levelName": "城內外苑",
@@ -402,7 +402,7 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 20,
+    "questionCount": 60,
     "levelNumber": 21,
     "levelName": "幽暗入口",
     "focusParticle": "に",
@@ -421,7 +421,7 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 20,
+    "questionCount": 60,
     "levelNumber": 22,
     "levelName": "骨骸路",
     "focusParticle": "が",
@@ -440,7 +440,7 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 20,
+    "questionCount": 60,
     "levelNumber": 23,
     "levelName": "無盡長廊",
     "focusParticle": "も",
@@ -459,7 +459,7 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 20,
+    "questionCount": 60,
     "levelNumber": 24,
     "levelName": "深淵盡頭",
     "focusParticle": "と",
@@ -496,7 +496,7 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 20,
+    "questionCount": 70,
     "levelNumber": 26,
     "levelName": "幻影長廊",
     "focusParticle": "や",
@@ -515,7 +515,7 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 20,
+    "questionCount": 70,
     "levelNumber": 27,
     "levelName": "禁忌書庫",
     "focusParticle": "で",
@@ -534,7 +534,7 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 20,
+    "questionCount": 70,
     "levelNumber": 28,
     "levelName": "抉擇之廳",
     "focusParticle": "に",
@@ -553,7 +553,7 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 20,
+    "questionCount": 70,
     "levelNumber": 29,
     "levelName": "獻祭廣場",
     "focusParticle": "と",
@@ -591,7 +591,7 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 20,
+    "questionCount": 80,
     "levelNumber": 31,
     "levelName": "起源石碑",
     "focusParticle": "から",
@@ -610,7 +610,7 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 20,
+    "questionCount": 80,
     "levelNumber": 32,
     "levelName": "試煉迴廊",
     "focusParticle": "より",
@@ -629,7 +629,7 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 20,
+    "questionCount": 80,
     "levelNumber": 33,
     "levelName": "神域祭壇",
     "focusParticle": "に",
@@ -648,7 +648,7 @@
       "newSkillWeight": 0.4,
       "oldSkillWeight": 0.6
     },
-    "questionCount": 20,
+    "questionCount": 80,
     "levelNumber": 34,
     "levelName": "禁忌鍛爐",
     "focusParticle": "で",
