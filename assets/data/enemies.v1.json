@@ -3,7 +3,7 @@
     "id": "glow-slime",
     "name": "微光史萊姆",
     "image": "assets/images/monsters/glow-slime.png",
-    "imageHit": null,
+    "imageHit": "assets/images/monsters/glow-slime2.png",
     "trait": "体からほのかに青い光を放ち，近づくとポコポコという音が聞こえる",
     "spawnLevels": [
       1
@@ -22,7 +22,7 @@
     "id": "rune-moth",
     "name": "符紋蛾",
     "image": "assets/images/monsters/rune-moth.png",
-    "imageHit": null,
+    "imageHit": "assets/images/monsters/rune-moth2.png",
     "trait": "翅面浮著像文字碎片般的紋路，飛行時會灑下淡金粉末",
     "spawnLevels": [
       2
@@ -32,7 +32,7 @@
     "posX": null,
     "posY": null,
     "attackIntervalMs": 10000,
-    "attackRingScale": 1.0,
+    "attackRingScale": 1.5,
     "attackDamageMin": 3,
     "attackDamageMax": 6
   },
@@ -40,7 +40,7 @@
     "id": "mist-bat",
     "name": "霧羽蝠",
     "image": "assets/images/monsters/mist-bat.png",
-    "imageHit": null,
+    "imageHit": "assets/images/monsters/mist-bat2.png",
     "trait": "總在薄霧裡忽隱忽現，翅膀一振就像夜風掠過耳邊",
     "spawnLevels": [
       3
@@ -50,7 +50,7 @@
     "posX": null,
     "posY": null,
     "attackIntervalMs": 10000,
-    "attackRingScale": 1.0,
+    "attackRingScale": 1.5,
     "attackDamageMin": 5,
     "attackDamageMax": 8
   },
@@ -58,7 +58,7 @@
     "id": "moss-boar",
     "name": "苔牙野豬",
     "image": "assets/images/monsters/moss-boar.png",
-    "imageHit": null,
+    "imageHit": "assets/images/monsters/moss-boar2.png",
     "trait": "背中には湿った苔や落ち葉がびっしりと付着しており，突進する前には低く鼻を鳴らす",
     "spawnLevels": [
       4
@@ -69,7 +69,7 @@
     "posY": 30,
     "infoOffsetY": -10,
     "attackIntervalMs": 10000,
-    "attackRingScale": 1.0,
+    "attackRingScale": 1.2,
     "attackDamageMin": 6,
     "attackDamageMax": 10
   },
@@ -103,7 +103,7 @@
     "posY": 20,
     "infoOffsetY": 0,
     "attackIntervalMs": 10000,
-    "attackRingScale": 1.0,
+    "attackRingScale": 1.2,
     "attackDamageMin": 8,
     "attackDamageMax": 12
   },
@@ -111,7 +111,7 @@
     "id": "shell-sprout",
     "name": "殼芽獸",
     "image": "assets/images/monsters/shell-sprout.png",
-    "imageHit": null,
+    "imageHit": "assets/images/monsters/shell-sprout2.png",
     "trait": "背甲像剛長出的樹芽、移動慢，但意外地很耐打",
     "spawnLevels": [
       7
@@ -121,7 +121,7 @@
     "posX": null,
     "posY": 20,
     "attackIntervalMs": 10000,
-    "attackRingScale": 1.0,
+    "attackRingScale": 1.1,
     "attackDamageMin": 10,
     "attackDamageMax": 14
   },
@@ -129,7 +129,7 @@
     "id": "forest-cat",
     "name": "林影妖貓",
     "image": "assets/images/monsters/forest-cat.png",
-    "imageHit": null,
+    "imageHit": "assets/images/monsters/forest-cat2.png",
     "trait": "步伐輕得像沒踩到地面，尾巴一甩就不見蹤影",
     "spawnLevels": [
       8
@@ -139,7 +139,7 @@
     "posX": null,
     "posY": 20,
     "attackIntervalMs": 8000,
-    "attackRingScale": 1.0,
+    "attackRingScale": 1.2,
     "attackDamageMin": 10,
     "attackDamageMax": 12
   },
@@ -147,7 +147,7 @@
     "id": "stone-mimic",
     "name": "岩殼擬怪",
     "image": "assets/images/monsters/stone-mimic.png",
-    "imageHit": null,
+    "imageHit": "assets/images/monsters/stone-mimic2.png",
     "trait": "蜷起身子時像一塊不起眼的石頭，張眼後才知道被盯上了",
     "spawnLevels": [
       9
@@ -183,13 +183,13 @@
     "id": "ember-imp",
     "name": "燼火小惡魔",
     "image": "assets/images/monsters/ember-imp.png",
-    "imageHit": null,
+    "imageHit": "assets/images/monsters/ember-imp2.png",
     "trait": "耳尖與尾端閃著火星、脾氣暴躁，笑聲比火還惱人",
     "spawnLevels": [
       11
     ],
     "hpMax": 250,
-    "size": 1.5,
+    "size": 1.3,
     "posX": null,
     "posY": null
   },
@@ -197,7 +197,7 @@
     "id": "shore-wisp",
     "name": "潮燈幼靈",
     "image": "assets/images/monsters/shore-wisp.png",
-    "imageHit": null,
+    "imageHit": "assets/images/monsters/shore-wisp2.png",
     "trait": "像漂在岸邊的微弱燈火，忽遠忽近，讓人很難抓準距離",
     "spawnLevels": [
       12
@@ -211,7 +211,7 @@
     "id": "thorn-wolf",
     "name": "棘原狼",
     "image": "assets/images/monsters/thorn-wolf.png",
-    "imageHit": null,
+    "imageHit": "assets/images/monsters/thorn-wolf2.png",
     "trait": "毛皮間夾著細刺，奔跑時像一團貼地掠過的灰影",
     "spawnLevels": [
       13
@@ -225,7 +225,7 @@
     "id": "moon-jelly",
     "name": "月沫水母",
     "image": "assets/images/monsters/moon-jelly.png",
-    "imageHit": null,
+    "imageHit": "assets/images/monsters/moon-jelly2.png",
     "trait": "半透明的身體像月光融進水裡，安靜時反而更讓人發毛",
     "spawnLevels": [
       14
@@ -290,11 +290,11 @@
     "attackDamageMax": 20
   },
   {
-    "id": "lord_of_darkness",
-    "name": "暗影主宰",
-    "image": "assets/images/monsters/lord_of_darkness.png",
-    "imageHit": "assets/images/monsters/lord_of_darkness2.png",
-    "trait": "操縱陰影的大師，能將光芒徹底吞噬",
+    "id": "bridge_shade_imp",
+    "name": "橋邊暗影小鬼",
+    "image": "assets/images/monsters/bridge_shade_imp.png",
+    "imageHit": "assets/images/monsters/bridge_shade_imp2.png",
+    "trait": "在橋邊徘徊的暗影小鬼，喜歡在黃昏時出沒",
     "spawnLevels": [
       18
     ],
