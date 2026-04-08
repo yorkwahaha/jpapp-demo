@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26040501'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26040901'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -50,7 +50,7 @@
 
     </script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.prod.js"></script>
 
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -69,7 +69,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26033101';
+            const v = window.APP_VERSION || '26040901';
 
 
 
@@ -4188,7 +4188,7 @@
                         <div class="grid grid-cols-1 gap-2.5">
 
                             <button
-                                @click="isAdvancedSettingsOpen = true; isMenuOpen = false; isLevelJumpOpen = false; isMentorReplayOpen = false; isMistakesOpen = false; isInventoryOpen = false; isSkillUnlockModalOpen = false;"
+                                @click="isAdvancedSettingsOpen = true; isMenuOpen = false; isLevelJumpOpen = false; isMentorReplayOpen = false; isMistakesOpen = false; isSkillUnlockModalOpen = false;"
                                 class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 hover:bg-indigo-500/20 border border-white/10 text-slate-200 text-sm font-bold shadow transition-all group">
 
                                 <span class="group-hover:rotate-45 transition-transform duration-500">⚙️</span> 進階設定
@@ -4738,86 +4738,6 @@
             </div>
 
 
-
-            <!-- Inventory -->
-
-            <div v-if="isInventoryOpen" class="modal-overlay"
-                @click.self="isInventoryOpen = false; resumeBattle(); playSfx('click');">
-
-                <div class="modal-panel w-[400px]">
-
-                    <h2 class="text-2xl font-black text-emerald-400 mb-4 flex items-center gap-2">🎒 冒險者背包</h2>
-
-                    <div class="space-y-3 mb-4">
-
-                        <div
-                            class="flex items-center justify-center gap-4 bg-slate-700/50 p-3 rounded-xl border border-slate-600/50">
-
-                            <div
-                                class="w-14 h-14 flex-shrink-0 bg-gradient-to-tr from-cyan-900 to-cyan-500 rounded-lg flex items-center justify-center text-2xl shadow-inner border border-cyan-400/30">
-
-                                💨
-
-                            </div>
-
-                            <div class="flex-1">
-
-                                <h3 class="text-slate-100 font-bold text-base flex justify-between items-center">
-
-                                    神速藥水
-
-                                    <span
-                                        class="bg-cyan-600/50 text-cyan-200 text-xs px-2 py-0.5 rounded-full border border-cyan-500/30">
-
-                                        x {{ inventory.speedPotions }}
-
-                                    </span>
-
-                                </h3>
-
-                                <p class="text-slate-400 text-xs mt-1 leading-relaxed">
-
-                                    飲用後的一分鐘內，面對怪物的接下來 6 次攻擊，自身閃避率提升至
-
-                                    <span class="text-amber-400 font-bold">50%</span>。
-
-                                </p>
-
-                                <div v-if="evasionBuffAttacksLeft > 0"
-                                    class="text-cyan-300 text-xs mt-1 font-bold animate-pulse">
-
-                                    效果持續中... (剩餘 {{ evasionBuffAttacksLeft }} 次)
-
-                                </div>
-
-                            </div>
-
-
-
-                            <button @click="useSpeedPotion"
-                                class="shrink-0 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-lg transition-transform active:scale-95 shadow-md disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
-                                :disabled="inventory.speedPotions <= 0 || evasionBuffAttacksLeft > 0 || monsterDead || playerDead">
-
-                                使用
-
-                            </button>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <div class="flex gap-2">
-
-                        <button @click="isInventoryOpen = false; resumeBattle(); playSfx('click');"
-                            class="w-full px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold shadow-md">關閉</button>
-
-                    </div>
-
-                </div>
-
-            </div>
 
 
 

@@ -408,9 +408,7 @@ const _jpApp = Vue.createApp({
 
         const clearedLevels = ref([]);
 
-        const showMentorChoice = ref(false);
 
-        const selectedMapLevel = ref(null);
 
 
 
@@ -683,11 +681,6 @@ const _jpApp = Vue.createApp({
             return false; // Already seen
         };
 
-        // REMOVED: Auto trigger on mount
-        // setTimeout(checkPrologueTrigger, 300);
-
-
-
         const openMap = () => {
             // Check for first-time prologue BEFORE entering normal map
             if (checkPrologueTrigger()) return;
@@ -952,7 +945,6 @@ const _jpApp = Vue.createApp({
         const startStageWithExplanation = (n) => {
             const lvNum = Number(n);
             if (!isLevelUnlocked(lvNum)) return;
-            selectedMapLevel.value = lvNum;
             const config = LEVEL_CONFIG.value[lvNum];
             if (config && config.skillId) {
                 const skill = skillsAll.value[config.skillId];
@@ -1135,7 +1127,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26040501";
+        const APP_VERSION = window.APP_VERSION || "26040901";
 
         const appVersion = ref(APP_VERSION);
 
@@ -1212,8 +1204,6 @@ const _jpApp = Vue.createApp({
 
 
         const isChangelogOpen = ref(false);
-
-        const uiMenuOpen = ref(false);
 
         const answerMode = ref('tap');
 
@@ -2260,7 +2250,7 @@ const _jpApp = Vue.createApp({
                     pushBattleLog(`使用了 ${skill.name}：6 回合內每回合恢復 HP +6！`, 'buff');
                 }
             } else if (id === 'WAKUWAKU') {
-                // Overhauled: Now grants 50% evasion for next 6 attacks (Speed Potion effect)
+                // Grants 50% evasion for next 6 attacks
                 evasionBuffAttacksLeft.value = 6;
                 heroBuffs.wakuwakuTurns = 6;
                 if (typeof setSpeedStatus === 'function') setSpeedStatus(25000);
@@ -2326,8 +2316,6 @@ const _jpApp = Vue.createApp({
 
         const showLevelSelect = ref(true);
 
-        const showGrammarDetail = ref(false);
-
         const runAwayPressTimer = ref(null);
 
         const isRunAwayPressing = ref(false);
@@ -2340,7 +2328,6 @@ const _jpApp = Vue.createApp({
 
         const isMistakesOpen = ref(false);
 
-        const isInventoryOpen = ref(false);
         const isEscaping = ref(false);
         const escapeOverlayVisible = ref(false);
         const escapeOverlayOpacity = ref(0);
@@ -2350,7 +2337,7 @@ const _jpApp = Vue.createApp({
 
         const monster = ref({ hp: MONSTER_HP, maxHp: MONSTER_HP, name: '助詞怪', size: 1 });
 
-        const inventory = ref({ potions: INITIAL_POTIONS, speedPotions: 3 });
+        const inventory = ref({ potions: INITIAL_POTIONS });
 
         const evasionBuffAttacksLeft = ref(0);
 
@@ -2494,7 +2481,6 @@ const _jpApp = Vue.createApp({
 
         let questionStartTime = 0;
 
-        let evasionBuffTimerId = null;
 
 
 
@@ -2551,7 +2537,7 @@ const _jpApp = Vue.createApp({
 
         const resumeBattle = () => {
 
-            if (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMentorModalOpen.value || isMistakesOpen.value || isInventoryOpen.value) return;
+            if (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMentorModalOpen.value || isMistakesOpen.value) return;
 
 
 
@@ -3367,7 +3353,7 @@ const _jpApp = Vue.createApp({
 
 
 
-        watch([isMenuOpen, isCodexOpen, isSkillUnlockModalOpen, isMentorModalOpen, isInventoryOpen, isMistakesOpen, bgmVolume, masterVolume, isMuted, sfxVolume], () => {
+        watch([isMenuOpen, isCodexOpen, isSkillUnlockModalOpen, isMentorModalOpen, isMistakesOpen, bgmVolume, masterVolume, isMuted, sfxVolume], () => {
 
             updateGainVolumes();
 
@@ -4563,7 +4549,6 @@ const _jpApp = Vue.createApp({
                 heroBuffs.wakuwakuTurns = evasionBuffAttacksLeft.value;
                 if (typeof updateHeroStatusBar === 'function') updateHeroStatusBar();
                 if (evasionBuffAttacksLeft.value <= 0) {
-                    if (evasionBuffTimerId) { clearTimeout(evasionBuffTimerId); evasionBuffTimerId = null; }
                     clearSpeedStatus();
                 }
             }
@@ -5339,51 +5324,6 @@ const _jpApp = Vue.createApp({
 
 
 
-        const useSpeedPotion = () => {
-
-            initAudioCtx();
-
-            if (!audioInited.value) initAudio();
-
-            if (needsUserGestureToResumeBgm.value) { ensureBgmPlaying('potion'); needsUserGestureToResumeBgm.value = false; }
-
-
-
-            if (inventory.value.speedPotions <= 0 || evasionBuffAttacksLeft.value > 0 || playerDead.value || monsterDead.value) return;
-
-
-
-            playSfx('potion');
-
-            inventory.value.speedPotions--;
-
-            evasionBuffAttacksLeft.value = 6;
-
-            setSpeedStatus(60000);
-
-            pushBattleLog(`使用了神速藥水！接下來 6 次閃避率提昇`, 'buff');
-
-
-
-            if (evasionBuffTimerId) clearTimeout(evasionBuffTimerId);
-
-            evasionBuffTimerId = setTimeout(() => {
-
-                if (evasionBuffAttacksLeft.value > 0) {
-
-                    evasionBuffAttacksLeft.value = 0;
-
-                    pushBattleLog(`神速藥水的藥效退去了。`, 'info');
-
-                }
-
-                clearSpeedStatus();
-
-                evasionBuffTimerId = null;
-
-            }, 60000);
-
-        };
 
 
 
@@ -6157,6 +6097,8 @@ const _jpApp = Vue.createApp({
 
             window._battlePopPlayed = false;
 
+            if (window.__AUTO_ADVANCE_TIMEOUT) { clearTimeout(window.__AUTO_ADVANCE_TIMEOUT); window.__AUTO_ADVANCE_TIMEOUT = null; }
+
             let triggeredMentor = false;
 
             const ratio = player.value.hp / player.value.maxHp;
@@ -6222,6 +6164,7 @@ const _jpApp = Vue.createApp({
             if (timerId) { clearInterval(timerId); timerId = null; }
 
             if (pauseTimerId) { clearInterval(pauseTimerId); pauseTimerId = null; }
+
 
 
 
@@ -6325,6 +6268,7 @@ const _jpApp = Vue.createApp({
 
                     // Ensure battle starts after mentor
 
+                    if (window._resumeAfterMentor) console.warn('[initGame] _resumeAfterMentor already set before instruction mentor; overwriting.');
                     window._resumeAfterMentor = () => {
 
                         if (_mentorResumeToken !== _myMentorToken) return;
@@ -6983,20 +6927,6 @@ const _jpApp = Vue.createApp({
 
 
 
-        const getFormattedAnswer = () => {
-
-            return currentQuestion.value.answers.map(ans => {
-
-                const parsed = parseAcceptableAnswers(ans);
-
-                return parsed.join('/');
-
-            }).join(' 、 ');
-
-        };
-
-
-
         let JA_VOICE = null;
 
         const initJapaneseVoice = () => {
@@ -7405,8 +7335,6 @@ const _jpApp = Vue.createApp({
 
                     if (window.__TTS_ON_WRONG_TIMEOUT) { clearTimeout(window.__TTS_ON_WRONG_TIMEOUT); window.__TTS_ON_WRONG_TIMEOUT = null; }
 
-                    if (window.__FLICK_ADVANCE_TIMEOUT) { clearTimeout(window.__FLICK_ADVANCE_TIMEOUT); window.__FLICK_ADVANCE_TIMEOUT = null; }
-
 
 
                     if (settings.autoReadOnWrong) {
@@ -7499,11 +7427,7 @@ const _jpApp = Vue.createApp({
 
         const nextQuestion = () => {
 
-            showGrammarDetail.value = false;
-
             if (window.__TTS_ON_WRONG_TIMEOUT) { clearTimeout(window.__TTS_ON_WRONG_TIMEOUT); window.__TTS_ON_WRONG_TIMEOUT = null; }
-
-            if (window.__FLICK_ADVANCE_TIMEOUT) { clearTimeout(window.__FLICK_ADVANCE_TIMEOUT); window.__FLICK_ADVANCE_TIMEOUT = null; }
 
             if (window.__AUTO_ADVANCE_TIMEOUT) { clearTimeout(window.__AUTO_ADVANCE_TIMEOUT); window.__AUTO_ADVANCE_TIMEOUT = null; }
 
@@ -8429,23 +8353,23 @@ const _jpApp = Vue.createApp({
 
         return {
             isNextBtnVisible,
-            animatedExp, animatedGold,
-            uiMenuOpen, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, showGrammarDetail, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, stageLog, isMenuOpen, isMistakesOpen, isInventoryOpen, formatCorrect, monsterHit, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, getFormattedAnswer, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, useSpeedPotion, evasionBuffAttacksLeft, clearMistakes, playBgm, pauseBgm, playSfx, playMistakeVoice, loadAudioSettings, saveAudioSettings, handleGameOver, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, getGradeColor, earnedExp, earnedGold, getHpColorClass, SKILLS, skillsAll, skillsWithUnlockLevel, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, CODEX_PER_PAGE, closeCodex, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
+            animatedExp,
+            answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, stageLog, isMenuOpen, isMistakesOpen, formatCorrect, monsterHit, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, clearMistakes, playBgm, pauseBgm, playSfx, playMistakeVoice, saveAudioSettings, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, earnedExp, earnedGold, getHpColorClass, skillsAll, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, CODEX_PER_PAGE, closeCodex, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             handleEscapeToMap, escapeOverlayVisible, escapeOverlayOpacity, isEscaping,
             heroBuffs,
-            allAbilities, unlockedAbilityIds, skillList, castAbility, spState, handleReload, settings, shouldShowNextButton, praiseToast, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG,
+            unlockedAbilityIds, skillList, castAbility, spState, settings, shouldShowNextButton, praiseToast, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
             isMentorModalOpen, isLevelJumpOpen, isAdvancedSettingsOpen, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
             displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,
             playPrologueOpening, playMainEndingFinale,
             isMentorSkipPressing, startMentorSkipPress, cancelMentorSkipPress,
             isMonsterImageError, handleMonsterImageError, handleMapImageError, currentMonsterSprite, monsterPositionStyle, monsterIsEntering, monsterIsDying, monsterTrulyDead, monsterResultShown, monsterAttackLunge,
-            showMap, unlockedLevels, clearedLevels, showMentorChoice, selectedMapLevel,
+            showMap, unlockedLevels, clearedLevels,
             openMap, isLevelUnlocked, isLevelCleared, getStageNodeClass, getLevelTitle, hasMentor,
 
             selectStageFromMap, startStageWithExplanation, returnToMap,
 
-            scrollToStage, lastClearedLevel, newUnlockLv, bestGrades, getGradeColor, sRankCount, totalGold,
+            newUnlockLv, bestGrades, getGradeColor, sRankCount, totalGold,
 
             mapChapters, activeChapter, getMapNodeStyle, selectedSegmentIdx, isSegmentUnlocked, handleMapTabClick, jumpToMapSegment, isMapDropdownOpen,
 

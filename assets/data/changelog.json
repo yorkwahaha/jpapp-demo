@@ -1,5 +1,17 @@
 [
     {
+        "version": "26040901",
+        "date": "2026-04-09",
+        "title": "程式碼精簡清理與正式部署整理",
+        "changes": [
+            "移除速度藥水與背包相關廢案殘留",
+            "清理多個 dead state / dead export / dead function",
+            "精簡 game.js return 物件",
+            "移除 legacy cleanup 與懸空 comment",
+            "將 Vue 切換為 production build（vue.global.prod.js）"
+        ]
+    },
+    {
         "version": "26040501",
         "date": "2026-04-05",
         "title": "敗北出題本、長題目顯示優化與 L36 完整循環實裝",

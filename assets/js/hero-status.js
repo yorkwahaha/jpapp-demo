@@ -252,10 +252,10 @@ function updateHeroStatusBar() {
             }
 
             let badgesHtml = '';
-            
+
             // GACHIGACHI Badge (硬)
             if (heroBuffs.gachigachiTurns > 0) {
-                badgesHtml += 
+                badgesHtml +=
                     '<div style="display:flex;align-items:center;gap:3px;' +
                     'padding:2px 7px 2px 5px;' +
                     'background:rgba(51,65,85,0.92);border:1.5px solid #94a3b8;border-radius:10px;' +
@@ -267,7 +267,7 @@ function updateHeroStatusBar() {
 
             // GIRAGIRA Badge
             if (heroBuffs.giragiraTurns > 0) {
-                badgesHtml += 
+                badgesHtml +=
                     '<div style="display:flex;align-items:center;gap:3px;' +
                     'padding:2px 7px 2px 5px;' +
                     'background:rgba(146,64,14,0.92);border:1.5px solid #fbbf24;border-radius:10px;' +
@@ -279,7 +279,7 @@ function updateHeroStatusBar() {
 
             // MORIMORI Badge
             if (heroBuffs.morimoriTurns > 0) {
-                badgesHtml += 
+                badgesHtml +=
                     '<div style="display:flex;align-items:center;gap:3px;' +
                     'padding:2px 7px 2px 5px;' +
                     'background:rgba(14,116,144,0.92);border:1.5px solid #22d3ee;border-radius:10px;' +
@@ -291,7 +291,7 @@ function updateHeroStatusBar() {
 
             // JIWAJIWA Badge (癒)
             if (heroBuffs.jiwajiwaTurns > 0) {
-                badgesHtml += 
+                badgesHtml +=
                     '<div style="display:flex;align-items:center;gap:3px;' +
                     'padding:2px 7px 2px 5px;' +
                     'background:rgba(21,128,61,0.92);border:1.5px solid #4ade80;border-radius:10px;' +
@@ -303,7 +303,7 @@ function updateHeroStatusBar() {
 
             // WAKUWAKU Badge (迅)
             if (heroBuffs.wakuwakuTurns > 0) {
-                badgesHtml += 
+                badgesHtml +=
                     '<div style="display:flex;align-items:center;gap:3px;' +
                     'padding:2px 7px 2px 5px;' +
                     'background:rgba(8,145,178,0.92);border:1.5px solid #0891b2;border-radius:10px;' +
@@ -315,13 +315,13 @@ function updateHeroStatusBar() {
 
             overlay.innerHTML =
                 // Aura glow ring (only if GIRAGIRA is active)
-                (heroBuffs.giragiraTurns > 0 ? 
-                '<div style="position:absolute;inset:-10px;border-radius:50%;' +
-                'border:2px solid rgba(251,191,36,0.75);' +
-                'box-shadow:0 0 14px 4px rgba(251,191,36,0.45),0 0 28px 8px rgba(251,191,36,0.2);' +
-                'animation:giragira-aurora 1.5s ease-in-out infinite;' +
-                'z-index:0;pointer-events:none;"></div>' : '') +
-                
+                (heroBuffs.giragiraTurns > 0 ?
+                    '<div style="position:absolute;inset:-10px;border-radius:50%;' +
+                    'border:2px solid rgba(251,191,36,0.75);' +
+                    'box-shadow:0 0 14px 4px rgba(251,191,36,0.45),0 0 28px 8px rgba(251,191,36,0.2);' +
+                    'animation:giragira-aurora 1.5s ease-in-out infinite;' +
+                    'z-index:0;pointer-events:none;"></div>' : '') +
+
                 // Badges container at top-right of hero
                 '<div id="heroBadgeContainer" style="position:absolute;top:-14px;right:-30px;' +
                 'display:flex;flex-direction:column;align-items:flex-end;gap:4px;z-index:2;">' +
@@ -331,13 +331,6 @@ function updateHeroStatusBar() {
         }
     }
 
-    // --- Cleanup Legacy Hooks (Safety) ---
-    const oldHero = document.getElementById('heroAvatar');
-    if (oldHero) {
-        oldHero.classList.remove('aura-giragira');
-        const oldList = document.getElementById('heroBuffList');
-        if (oldList) oldList.remove();
-    }
 }
 
 
