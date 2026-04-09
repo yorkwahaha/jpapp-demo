@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26040901'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26040903'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -69,7 +69,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26040901';
+            const v = window.APP_VERSION || '26040903';
 
 
 
@@ -2734,19 +2734,18 @@
                 <div
                     class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[400px] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col">
 
-                    <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4">
+                    <div class="modal-header-row">
 
                         <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">設定 <span
-                                class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2">SETTINGS</span></h2>
+                                class="modal-caption">SETTINGS</span></h2>
 
-                        <button @click="isAdvancedSettingsOpen = false"
-                            class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
+                        <button @click="isAdvancedSettingsOpen = false" class="modal-close-btn">✕</button>
 
                     </div>
 
                     <div class="flex-1 overflow-y-auto pr-1 space-y-4 custom-scrollbar max-h-[60vh]">
 
-                        <div class="bg-white/5 rounded-2xl p-4 border border-white/5 shadow-inner">
+                        <div class="modal-section-card">
 
                             <label class="flex items-center justify-between cursor-pointer group">
 
@@ -2768,10 +2767,6 @@
 
                         </div>
 
-                        <!-- Simplified settings: only keeping auto-read core feature -->
-                        <div class="bg-white/5 rounded-2xl p-4 border border-white/5 shadow-inner hidden">
-                            <!-- Hidden for mobile simplification as per user request -->
-                        </div>
 
                     </div>
 
@@ -2796,19 +2791,18 @@
                 <div
                     class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[400px] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col">
 
-                    <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4">
+                    <div class="modal-header-row">
 
                         <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">選單 <span
-                                class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2">MENU</span></h2>
+                                class="modal-caption">MENU</span></h2>
 
-                        <button @click="isMenuOpen = false; playSfx('click');"
-                            class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
+                        <button @click="isMenuOpen = false; playSfx('click');" class="modal-close-btn">✕</button>
 
                     </div>
 
                     <div class="space-y-4">
 
-                        <div class="bg-white/5 rounded-2xl p-4 border border-white/5 space-y-3 shadow-inner">
+                        <div class="modal-section-card space-y-3">
 
                             <div class="flex items-center justify-between mb-1">
 
@@ -2825,8 +2819,7 @@
 
                             <div class="space-y-2">
 
-                                <label
-                                    class="flex items-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                <label class="volume-control-label">
 
                                     <span class="w-8">BGM</span>
 
@@ -2836,8 +2829,7 @@
 
                                 </label>
 
-                                <label
-                                    class="flex items-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                <label class="volume-control-label">
 
                                     <span class="w-8">SFX</span>
 
@@ -2885,90 +2877,9 @@
 
             </div>
 
-            <!-- ── 更新日誌（地圖頁可用） ── -->
 
-            <div v-if="isChangelogOpen" class="fixed inset-0 z-[6000] flex items-center justify-center p-4"
-                @click.self="isChangelogOpen = false; playSfx('click');">
 
-                <div class="absolute inset-0 bg-slate-950/50 backdrop-blur-md pointer-events-none"></div>
 
-                <div
-                    class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[500px] h-full max-h-[75vh] shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
-
-                    <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4 flex-shrink-0">
-
-                        <h2 class="text-2xl font-black text-indigo-300 tracking-[0.1em] drop-shadow-lg">更新日誌 <span
-                                class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2 uppercase">CHANGELOG</span>
-                        </h2>
-
-                        <button @click="isChangelogOpen = false; playSfx('click');"
-                            class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
-
-                    </div>
-
-                    <div v-if="changelogError"
-                        class="flex-1 flex flex-col items-center justify-center p-10 text-center">
-
-                        <span class="text-4xl mb-4">⚠️</span>
-
-                        <div class="text-rose-400 font-bold">讀取失敗，請重新整理</div>
-
-                    </div>
-
-                    <div v-else-if="changelogData.length === 0"
-                        class="flex-1 flex flex-col items-center justify-center p-10 text-center">
-
-                        <div
-                            class="w-8 h-8 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mb-4">
-                        </div>
-
-                        <div class="text-slate-400 text-sm font-bold tracking-widest">載入中...</div>
-
-                    </div>
-
-                    <div v-else class="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-1 pb-2">
-
-                        <div v-for="(entry, index) in changelogData" :key="index"
-                            class="p-5 bg-white/5 rounded-2xl border border-white/5 shadow-inner group">
-
-                            <div class="flex items-center justify-between mb-3">
-
-                                <span class="text-indigo-300 font-black text-xl tracking-tight leading-none">v{{
-                                    entry.version }}</span>
-
-                                <span
-                                    class="text-[10px] font-bold text-slate-500 bg-black/20 px-2 py-0.5 rounded-full border border-white/5 uppercase tracking-tighter">{{
-                                    entry.date }}</span>
-
-                            </div>
-
-                            <ul class="space-y-2">
-
-                                <li v-for="(change, cIndex) in entry.changes" :key="cIndex"
-                                    class="flex items-start gap-3 text-slate-300 text-xs leading-relaxed">
-
-                                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-500/50 mt-1.5 flex-shrink-0"></span>
-
-                                    <span>{{ change }}</span>
-
-                                </li>
-
-                            </ul>
-
-                        </div>
-
-                    </div>
-
-                    <div class="flex justify-end pt-5 mt-3 border-t border-white/10 flex-shrink-0">
-
-                        <button @click="isChangelogOpen = false; playSfx('click');"
-                            class="px-8 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95">關閉</button>
-
-                    </div>
-
-                </div>
-
-            </div>
 
         </div>
 
@@ -3119,18 +3030,7 @@
 
 
 
-            <!-- [L3] Legacy Hero Stand Slot -->
 
-            <div id="heroStandContainer"
-                class="absolute left-0 w-[45%] max-w-[170px] z-[45] pointer-events-none flex items-end justify-start"
-                style="bottom: clamp(150px, 28dvh, 240px); height: min(35dvh, 260px); display: none;">
-
-                <img src="assets/images/hero/hero_neutral.png"
-                    class="object-contain object-bottom w-full h-full drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)] opacity-60 mix-blend-screen mask-image-b mask-gradient-b">
-
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent z-[-1]"></div>
-
-            </div>
 
 
 
@@ -3749,57 +3649,7 @@
                 </div>
             </transition>
 
-            <!-- Skill Unlock Modal -->
-
-            <div v-if="isSkillUnlockModalOpen" class="modal-overlay"
-                @click.self="isSkillUnlockModalOpen = false; playSfx('click');" style="z-index: 100;">
-
-                <div
-                    class="modal-panel max-w-sm rounded-[1rem] border-2 border-amber-600/60 bg-[#1e110a]/95 drop-shadow-[0_0_20px_rgba(217,119,6,0.3)] shadow-2xl overflow-hidden font-serif">
-
-                    <div class="text-6xl text-center mb-4 animate-bounce mt-4">✨</div>
-
-                    <h2 class="text-2xl font-black text-amber-500 mb-6 text-center tracking-wider">新招式習得！</h2>
-
-                    <div class="space-y-3 mb-8 px-2 max-h-64 overflow-y-auto custom-scrollbar">
-
-                        <div v-for="skill in newlyUnlocked" :key="skill.id"
-                            class="p-4 bg-[#3e2723]/60 rounded border border-amber-700/50 shadow-inner">
-
-                            <div class="font-bold text-lg text-amber-400 tracking-wide">{{ skill.name }}</div>
-
-                            <div class="text-sm text-amber-100/90 mt-2 leading-relaxed">{{ skill.meaning }}</div>
-
-                        </div>
-
-                    </div>
-
-                    <div class="flex gap-3 px-2 mb-2">
-
-                        <button @click="openCodexTo(newlyUnlocked[0]?.id)"
-                            class="flex-1 px-4 py-3 rounded bg-gradient-to-t from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500 text-amber-50 text-base font-bold shadow-lg transition-colors border border-amber-500/50">
-
-                            📖 立刻翻開秘笈
-
-                        </button>
-
-                        <button @click="isSkillUnlockModalOpen = false; resumeBattle(); playSfx('click');"
-                            class="px-4 py-3 rounded bg-[#2a1c15] hover:bg-[#3e2723] text-amber-600 hover:text-amber-500 text-base font-bold shadow-lg transition-colors border border-amber-900/50">
-
-                            稍後
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-
             <!-- Boss Ability Unlock Modal -->
-
             <div v-if="isAbilityUnlockModalOpen" class="modal-overlay" style="z-index: 3000;">
 
                 <div
@@ -4116,13 +3966,13 @@
                 <div
                     class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[400px] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col">
 
-                    <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4">
+                    <div class="modal-header-row">
 
                         <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">暫停 <span
-                                class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2">MENU</span></h2>
+                                class="modal-caption">MENU</span></h2>
 
                         <button @click="isMenuOpen = false; resumeBattle(); playSfx('click');"
-                            class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
+                            class="modal-close-btn">✕</button>
 
                     </div>
 
@@ -4132,7 +3982,7 @@
 
                         <!-- Volume Controls -->
 
-                        <div class="bg-white/5 rounded-2xl p-4 border border-white/5 space-y-3 shadow-inner">
+                        <div class="modal-section-card space-y-3">
 
                             <div class="flex items-center justify-between mb-1">
 
@@ -4155,8 +4005,7 @@
 
                             <div class="space-y-2">
 
-                                <label
-                                    class="flex items-center justify-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                <label class="volume-control-label justify-center">
 
                                     <span class="w-8">BGM</span>
 
@@ -4166,8 +4015,7 @@
 
                                 </label>
 
-                                <label
-                                    class="flex items-center justify-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                <label class="volume-control-label justify-center">
 
                                     <span class="w-8">SFX</span>
 
@@ -4188,7 +4036,7 @@
                         <div class="grid grid-cols-1 gap-2.5">
 
                             <button
-                                @click="isAdvancedSettingsOpen = true; isMenuOpen = false; isLevelJumpOpen = false; isMentorReplayOpen = false; isMistakesOpen = false; isSkillUnlockModalOpen = false;"
+                                @click="isAdvancedSettingsOpen = true; isMenuOpen = false; isLevelJumpOpen = false; isMistakesOpen = false;"
                                 class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 hover:bg-indigo-500/20 border border-white/10 text-slate-200 text-sm font-bold shadow transition-all group">
 
                                 <span class="group-hover:rotate-45 transition-transform duration-500">⚙️</span> 進階設定
@@ -4261,13 +4109,13 @@
                 <div
                     class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[400px] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col">
 
-                    <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4">
+                    <div class="modal-header-row">
 
                         <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">設定 <span
-                                class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2">SETTINGS</span></h2>
+                                class="modal-caption">SETTINGS</span></h2>
 
                         <button @click="isAdvancedSettingsOpen = false; resumeBattle(); playSfx('click');"
-                            class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
+                            class="modal-close-btn">✕</button>
 
                     </div>
 
@@ -4277,7 +4125,7 @@
 
                         <!-- Auto Read -->
 
-                        <div class="bg-white/5 rounded-2xl p-4 border border-white/5 shadow-inner">
+                        <div class="modal-section-card">
 
                             <label class="flex items-center justify-between cursor-pointer group">
 
@@ -4303,12 +4151,11 @@
 
                         <!-- Advancement delays -->
 
-                        <div class="bg-white/5 rounded-2xl p-4 border border-white/5 space-y-4 shadow-inner">
+                        <div class="modal-section-card space-y-4">
 
                             <div>
 
-                                <span
-                                    class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">答對後自動前進</span>
+                                <span class="settings-section-label">答對後自動前進</span>
 
                                 <div class="flex bg-black/30 rounded-xl p-1">
 
@@ -4327,8 +4174,7 @@
 
                             <div>
 
-                                <span
-                                    class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">答錯後自動前進</span>
+                                <span class="settings-section-label">答錯後自動前進</span>
 
                                 <div class="flex bg-black/30 rounded-xl p-1">
 
@@ -4351,12 +4197,11 @@
 
                         <!-- Visual/Feedback -->
 
-                        <div class="bg-white/5 rounded-2xl p-4 border border-white/5 space-y-4 shadow-inner">
+                        <div class="modal-section-card space-y-4">
 
                             <div>
 
-                                <span
-                                    class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">回饋風格</span>
+                                <span class="settings-section-label">回饋風格</span>
 
                                 <div class="grid grid-cols-2 gap-2">
 
@@ -4382,8 +4227,7 @@
 
                             <div>
 
-                                <span
-                                    class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">戰鬥模式</span>
+                                <span class="settings-section-label">戰鬥模式</span>
 
                                 <div class="grid grid-cols-2 gap-2">
 
@@ -4439,15 +4283,15 @@
                 <div
                     class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[600px] h-full max-h-[80vh] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden">
 
-                    <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4 flex-shrink-0">
+                    <div class="modal-header-row flex-shrink-0">
 
                         <h2 class="text-2xl font-black text-purple-400 tracking-[0.1em] drop-shadow-lg">關卡選擇 <span
-                                class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2 uppercase">STAGES</span>
+                                class="modal-caption uppercase">STAGES</span>
 
                         </h2>
 
                         <button @click="isLevelJumpOpen = false; resumeBattle(); playSfx('click');"
-                            class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
+                            class="modal-close-btn">✕</button>
 
                     </div>
 
@@ -4532,102 +4376,6 @@
 
             </div>
 
-
-
-            <!-- Changelog -->
-
-            <div v-if="isChangelogOpen" class="fixed inset-0 z-[6000] flex items-center justify-center p-4"
-                @click.self="isChangelogOpen = false">
-
-                <div class="absolute inset-0 bg-slate-950/50 backdrop-blur-md pointer-events-none"></div>
-
-                <div
-                    class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[500px] h-full max-h-[75vh] shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
-
-                    <div class="flex justify-between items-center mb-5 border-b border-white/10 pb-4 flex-shrink-0">
-
-                        <h2 class="text-2xl font-black text-indigo-300 tracking-[0.1em] drop-shadow-lg">更新日誌 <span
-                                class="text-[10px] font-bold opacity-30 tracking-[0.3em] ml-2 uppercase">CHANGELOG</span>
-
-                        </h2>
-
-                        <button @click="isChangelogOpen = false; playSfx('click');"
-                            class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
-
-                    </div>
-
-
-
-                    <div v-if="changelogError"
-                        class="flex-1 flex flex-col items-center justify-center p-10 text-center">
-
-                        <span class="text-4xl mb-4">⚠️</span>
-
-                        <div class="text-rose-400 font-bold">讀取失敗，請重新整理</div>
-
-                    </div>
-
-                    <div v-else-if="changelogData.length === 0"
-                        class="flex-1 flex flex-col items-center justify-center p-10 text-center">
-
-                        <div
-                            class="w-8 h-8 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mb-4">
-
-                        </div>
-
-                        <div class="text-slate-400 text-sm font-bold tracking-widest">載入中...</div>
-
-                    </div>
-
-                    <div v-else class="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-1 pb-2">
-
-                        <div v-for="(entry, index) in changelogData" :key="index"
-                            class="p-5 bg-white/5 rounded-2xl border border-white/5 shadow-inner group">
-
-                            <div class="flex items-center justify-between mb-3">
-
-                                <span
-                                    class="text-indigo-300 font-black text-xl tracking-tight leading-none group-hover:text-indigo-200 transition-colors">v{{
-
-                                    entry.version }}</span>
-
-                                <span
-                                    class="text-[10px] font-bold text-slate-500 bg-black/20 px-2 py-0.5 rounded-full border border-white/5 uppercase tracking-tighter">{{
-
-                                    entry.date }}</span>
-
-                            </div>
-
-                            <ul class="space-y-2">
-
-                                <li v-for="(change, cIndex) in entry.changes" :key="cIndex"
-                                    class="flex items-start gap-3 text-slate-300 text-xs leading-relaxed">
-
-                                    <span
-                                        class="w-1.5 h-1.5 rounded-full bg-indigo-500/50 mt-1.5 flex-shrink-0 shadow-[0_0_8px_rgba(99,102,241,0.3)]"></span>
-
-                                    <span>{{ change }}</span>
-
-                                </li>
-
-                            </ul>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <div class="flex justify-end pt-5 mt-3 border-t border-white/10 flex-shrink-0">
-
-                        <button @click="isChangelogOpen = false; playSfx('click');"
-                            class="px-8 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95">關閉</button>
-
-                    </div>
-
-                </div>
-
-            </div>
 
 
 
@@ -4742,6 +4490,93 @@
 
 
         </div> <!-- #stageWrap -->
+
+        <!-- ── 更新日誌（共享 / Map + Battle） ── -->
+
+        <div v-if="isChangelogOpen" class="fixed inset-0 z-[6000] flex items-center justify-center p-4"
+            style="z-index: 6000;" @click.self="isChangelogOpen = false; playSfx('click');">
+
+            <div class="absolute inset-0 bg-slate-950/50 backdrop-blur-md pointer-events-none"></div>
+
+            <div
+                class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[500px] h-full max-h-[75vh] shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
+
+                <div class="modal-header-row flex-shrink-0">
+
+                    <h2 class="text-2xl font-black text-indigo-300 tracking-[0.1em] drop-shadow-lg">更新日誌 <span
+                            class="modal-caption uppercase">CHANGELOG</span>
+
+                    </h2>
+
+                    <button @click="isChangelogOpen = false; playSfx('click');" class="modal-close-btn">✕</button>
+
+                </div>
+
+                <div v-if="changelogError" class="flex-1 flex flex-col items-center justify-center p-10 text-center">
+
+                    <span class="text-4xl mb-4">⚠️</span>
+
+                    <div class="text-rose-400 font-bold">讀取失敗，請重新整理</div>
+
+                </div>
+
+                <div v-else-if="changelogData.length === 0"
+                    class="flex-1 flex flex-col items-center justify-center p-10 text-center">
+
+                    <div
+                        class="w-8 h-8 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mb-4">
+
+                    </div>
+
+                    <div class="text-slate-400 text-sm font-bold tracking-widest">載入中...</div>
+
+                </div>
+
+                <div v-else class="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-1 pb-2">
+
+                    <div v-for="(entry, index) in changelogData" :key="index"
+                        class="p-5 bg-white/5 rounded-2xl border border-white/5 shadow-inner group">
+
+                        <div class="flex items-center justify-between mb-3">
+
+                            <span
+                                class="text-indigo-300 font-black text-xl tracking-tight leading-none group-hover:text-indigo-200 transition-colors">v{{
+                                entry.version }}</span>
+
+                            <span
+                                class="text-[10px] font-bold text-slate-500 bg-black/20 px-2 py-0.5 rounded-full border border-white/5 uppercase tracking-tighter">{{
+                                entry.date }}</span>
+
+                        </div>
+
+                        <ul class="space-y-2">
+
+                            <li v-for="(change, cIndex) in entry.changes" :key="cIndex"
+                                class="flex items-start gap-3 text-slate-300 text-xs leading-relaxed">
+
+                                <span
+                                    class="w-1.5 h-1.5 rounded-full bg-indigo-500/50 mt-1.5 flex-shrink-0 shadow-[0_0_8px_rgba(99,102,241,0.3)]"></span>
+
+                                <span>{{ change }}</span>
+
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+                </div>
+
+                <div class="flex justify-end pt-5 mt-3 border-t border-white/10 flex-shrink-0">
+
+                    <button @click="isChangelogOpen = false; playSfx('click');"
+                        class="px-8 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95">關閉</button>
+
+                </div>
+
+            </div>
+
+        </div>
 
         <!-- [ESCAPE] Black Transition Overlay -->
         <div class="escape-fade-overlay"

@@ -344,7 +344,7 @@ const _jpApp = Vue.createApp({
                 const resp = await fetch('assets/data/map-chapters.json?v=' + (window.APP_VERSION || Date.now()));
                 if (resp.ok) {
                     mapChapters.value = await resp.json();
-                    console.log('[MapData] chapters loaded');
+                    if (window.__DEBUG__) console.log('[MapData] chapters loaded');
                 }
             } catch (e) {
                 console.warn('[MapData] fetch error', e);
@@ -398,7 +398,6 @@ const _jpApp = Vue.createApp({
 
         const unlockedLevels = ref([1]);
 
-        const totalGold = ref(0);
 
         const lastClearedLevel = ref(null);
 
@@ -454,16 +453,6 @@ const _jpApp = Vue.createApp({
                 { hpPct: 0.4, expression: 'ase' },
                 { hpPct: 0.0, expression: 'lose' }
             ]
-        };
-
-        const BOSS_ONOMATOPE_MAP = {
-            5: { id: 'ODOODO', particle: 'おど', name: 'おどおど', meaning: '影響敵方 3 次攻擊（減速 30%）', isOnomatope: true, cost: 5, duration: 3 },
-            10: { id: 'GACHIGACHI', particle: 'がち', name: 'がちがち', meaning: '抵禦敵方 3 次攻擊（減傷 40%）', isOnomatope: true, cost: 5, duration: 3 },
-            15: { id: 'UTOUTO', particle: 'うと', name: 'うとうと', meaning: '敵人入眠，此期間我方攻擊必定命中', isOnomatope: true, cost: 5 },
-            20: { id: 'JIWAJIWA', particle: 'じわ', name: 'じわじわ', meaning: '6 回合內每回合恢復 HP +6', isOnomatope: true, cost: 5, duration: 6 },
-            25: { id: 'WAKUWAKU', particle: 'わく', name: 'わくわく', meaning: '6 次攻擊閃避率提升至 50%', isOnomatope: true, cost: 5, duration: 6 },
-            30: { id: 'MORIMORI', particle: 'もり', name: 'もりもり', meaning: '8 回合內每回合恢復 SP +1', isOnomatope: true, cost: 4, duration: 8 },
-            35: { id: 'GIRAGIRA', particle: 'ぎら', name: 'ぎらぎら', meaning: '3 次攻擊必定命中且傷害 +50%', isOnomatope: true, cost: 8, duration: 3 },
         };
 
         const activeSegment = computed(() => {
@@ -571,7 +560,6 @@ const _jpApp = Vue.createApp({
 
                     unlockedOnomatopeIds: unlockedOnomatopeIds.value,
 
-                    gold: totalGold.value,
 
                     lastViewedMap: { chapter: activeChapter.value, segment: selectedSegmentIdx.value }
 
@@ -609,7 +597,6 @@ const _jpApp = Vue.createApp({
 
                     if (parsed.unlockedOnomatopeIds) unlockedOnomatopeIds.value = parsed.unlockedOnomatopeIds;
 
-                    if (typeof parsed.gold === 'number') totalGold.value = parsed.gold;
 
                     if (parsed.lastViewedMap && isSegmentUnlocked(parsed.lastViewedMap.segment)) {
                         activeChapter.value = parsed.lastViewedMap.chapter || 'chapter1';
@@ -723,7 +710,7 @@ const _jpApp = Vue.createApp({
 
                     }
 
-                    if (bgmEnabled.value && !isMuted.value && bgmVolume.value > 0) {
+                    if (!isMuted.value && bgmVolume.value > 0) {
 
                         const playPromise = bgmAudio.value.play();
 
@@ -1127,7 +1114,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26040901";
+        const APP_VERSION = window.APP_VERSION || "26040903";
 
         const appVersion = ref(APP_VERSION);
 
@@ -1272,9 +1259,6 @@ const _jpApp = Vue.createApp({
 
         const unlockedSkillIds = ref([]);
 
-        const newlyUnlocked = ref([]);
-
-        const isSkillUnlockModalOpen = ref(false);
 
         // [ CODEX - STATE ]
         const isCodexOpen = ref(false);
@@ -2333,7 +2317,7 @@ const _jpApp = Vue.createApp({
         const escapeOverlayOpacity = ref(0);
 
         // ---- [ STATE — GAME BATTLE CORE ] ----
-        const player = ref({ hp: 100, maxHp: 100, gold: 0, exp: 0 });
+        const player = ref({ hp: 100, maxHp: 100, exp: 0 });
 
         const monster = ref({ hp: MONSTER_HP, maxHp: MONSTER_HP, name: '助詞怪', size: 1 });
 
@@ -2341,13 +2325,12 @@ const _jpApp = Vue.createApp({
 
         const evasionBuffAttacksLeft = ref(0);
 
-        const monsterShake = ref(false);
+
 
         const playerBlink = ref(false);
 
         const hpBarDanger = ref(false);
 
-        const goldDoubleNext = ref(false);
 
         const difficulty = ref('easy');
 
@@ -2364,8 +2347,6 @@ const _jpApp = Vue.createApp({
         const slotFeedbacks = ref({});
 
         const hasSubmitted = ref(false);
-
-        const totalScore = ref(0);
 
         const comboCount = ref(0);
 
@@ -2401,11 +2382,9 @@ const _jpApp = Vue.createApp({
 
         const earnedExp = ref(0);
 
-        const earnedGold = ref(0);
 
         const animatedExp = ref(0);
 
-        const animatedGold = ref(0);
 
         const monsterHit = ref(false);
         const monsterDodge = ref(false);
@@ -2468,7 +2447,6 @@ const _jpApp = Vue.createApp({
 
         const bufferPool = new Map();
 
-        const bgmEnabled = ref(true);
 
         const needsUserGestureToResumeBgm = ref(false);
         const isBgmSuppressed = ref(false);
@@ -2537,7 +2515,7 @@ const _jpApp = Vue.createApp({
 
         const resumeBattle = () => {
 
-            if (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMentorModalOpen.value || isMistakesOpen.value) return;
+            if (isMenuOpen.value || isCodexOpen.value || isMentorModalOpen.value || isMistakesOpen.value) return;
 
 
 
@@ -2576,18 +2554,6 @@ const _jpApp = Vue.createApp({
         };
 
 
-
-        const openCodexTo = (skillId) => {
-            isSkillUnlockModalOpen.value = false;
-            expandedSkillId.value = skillId;
-            flippedCardId.value = null;
-            codexChapter.value = 'all';
-            const idx = skillsWithUnlockLevel.value.findIndex(s => s.id === skillId);
-            codexPage.value = idx >= 0 ? Math.floor(idx / CODEX_PER_PAGE) : 0;
-            playSfx('uiPop');
-            isCodexOpen.value = true;
-            pauseBattle();
-        };
 
         const closeCodex = () => {
             isCodexOpen.value = false;
@@ -2992,7 +2958,7 @@ const _jpApp = Vue.createApp({
 
             const b = bgmVolume.value;
 
-            let bScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMentorModalOpen.value || isMistakesOpen.value) ? 0.35 : 1.0;
+            let bScale = (isMenuOpen.value || isCodexOpen.value || isMentorModalOpen.value || isMistakesOpen.value) ? 0.35 : 1.0;
 
 
 
@@ -3149,35 +3115,6 @@ const _jpApp = Vue.createApp({
 
 
 
-        const runAway = () => {
-
-            clearTimer(); if (pauseTimerId) { clearInterval(pauseTimerId); pauseTimerId = null; }
-
-            if (runAwayPressTimer.value) clearTimeout(runAwayPressTimer.value);
-
-            runAwayPressTimer.value = null;
-
-            isRunAwayPressing.value = false;
-
-            stopAllAudio();
-
-            pushBattleLog('你逃跑了！', 'info');
-
-            hasSubmitted.value = false;
-
-            isFinished.value = false;
-
-            userAnswers.value = [];
-
-            slotFeedbacks.value = {};
-
-            isMenuOpen.value = false;
-
-            setTimeout(() => { showLevelSelect.value = true; }, 900);
-
-        };
-
-
 
         const handleEscapeToMap = () => {
             if (isEscaping.value) return;
@@ -3319,13 +3256,12 @@ const _jpApp = Vue.createApp({
 
 
 
-        const ensureBattleBgmApplied = (forcePlay) => { playBgm(); };
 
 
 
         const resumeBattleBgm = (resumeAbs) => {
 
-            if (!bgmEnabled.value || isMuted.value || bgmVolume.value <= 0) return;
+            if (isMuted.value || bgmVolume.value <= 0) return;
 
             if (!bgmAudio.value) return;
 
@@ -3353,7 +3289,7 @@ const _jpApp = Vue.createApp({
 
 
 
-        watch([isMenuOpen, isCodexOpen, isSkillUnlockModalOpen, isMentorModalOpen, isMistakesOpen, bgmVolume, masterVolume, isMuted, sfxVolume], () => {
+        watch([isMenuOpen, isCodexOpen, isMentorModalOpen, isMistakesOpen, bgmVolume, masterVolume, isMuted, sfxVolume], () => {
 
             updateGainVolumes();
 
@@ -3432,7 +3368,7 @@ const _jpApp = Vue.createApp({
 
             if (!audioInited.value) initAudio();
 
-            if (!bgmEnabled.value || isMuted.value || bgmVolume.value <= 0 || isBgmSuppressed.value) return;
+            if (isMuted.value || bgmVolume.value <= 0 || isBgmSuppressed.value) return;
 
             if (bgmAudio.value && bgmAudio.value.paused) {
 
@@ -3460,11 +3396,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-        const pauseBgm = () => {
-
-            if (bgmAudio.value && !bgmAudio.value.paused) bgmAudio.value.pause();
-
-        };
 
 
 
@@ -3588,14 +3519,14 @@ const _jpApp = Vue.createApp({
             // BGM Ducking logic
             if (bgmGain.value && !isMuted.value && name !== 'click' && name !== 'uiPop' && name !== 'battlePop') {
                 const b = bgmVolume.value;
-                const bScale = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMentorModalOpen.value || isMistakesOpen.value) ? 0.35 : 1.0;
+                const bScale = (isMenuOpen.value || isCodexOpen.value || isMentorModalOpen.value || isMistakesOpen.value) ? 0.35 : 1.0;
                 clearTimeout(window._bgmDuckTimer);
                 window._bgmDuckTimer = setTimeout(() => {
                     if (bgmGain.value && !isMuted.value) {
                         bgmGain.value.gain.setTargetAtTime(b * bScale * 0.3, audioCtx.value.currentTime, 0.15);
                         setTimeout(() => {
                             if (bgmGain.value && !isMuted.value) {
-                                const vs = (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value || isMentorModalOpen.value || isMistakesOpen.value) ? 0.35 : 1.0;
+                                const vs = (isMenuOpen.value || isCodexOpen.value || isMentorModalOpen.value || isMistakesOpen.value) ? 0.35 : 1.0;
                                 bgmGain.value.gain.setTargetAtTime(b * vs, audioCtx.value.currentTime, 0.4);
                             }
                         }, 1200);
@@ -3921,7 +3852,7 @@ const _jpApp = Vue.createApp({
 
 
 
-            if (isMenuOpen.value || isCodexOpen.value || isSkillUnlockModalOpen.value) {
+            if (isMenuOpen.value || isCodexOpen.value) {
 
                 wasTimerRunning = true;
 
@@ -6191,6 +6122,8 @@ const _jpApp = Vue.createApp({
 
             isMenuOpen.value = false;
 
+            isChangelogOpen.value = false;
+
             stageLog.value = [];
 
             const lv = level ?? currentLevel.value;
@@ -6219,7 +6152,6 @@ const _jpApp = Vue.createApp({
 
                 if (newUnlocks.length > 0) {
 
-                    newlyUnlocked.value = newUnlocks.map(id => skillsAll.value[id]).filter(Boolean);
 
 
 
@@ -6239,12 +6171,9 @@ const _jpApp = Vue.createApp({
 
                             window._resumeAfterMentor = () => {
                                 if (_mentorResumeToken !== _myMentorToken) return;
-                                // [Knowledge Card 1.0] Do not open old modal, it will show as Knowledge Card later
-                                // isSkillUnlockModalOpen.value = true;
                             };
 
                         } else {
-                            // isSkillUnlockModalOpen.value = true;
                         }
 
                     }
@@ -6780,7 +6709,6 @@ const _jpApp = Vue.createApp({
 
             earnedExp.value = 0;
 
-            earnedGold.value = 0;
 
             isFinished.value = false;
 
@@ -6796,7 +6724,6 @@ const _jpApp = Vue.createApp({
 
             animatedExp.value = 0;
 
-            animatedGold.value = 0;
 
 
 
@@ -6956,40 +6883,6 @@ const _jpApp = Vue.createApp({
         }
 
 
-
-        const playQuestionVoice = async () => {
-
-            let azureTextBuilder = '';
-
-            currentQuestion.value.segments.forEach(s => {
-
-                if (s.isBlank) {
-
-                    let ans = currentQuestion.value.answers[s.blankIndex];
-
-                    if (Array.isArray(ans)) ans = ans[0];
-
-                    azureTextBuilder += ans;
-
-                } else {
-
-                    azureTextBuilder += s.text;
-
-                }
-
-            });
-
-            let cleanQuestionText = azureTextBuilder.replace(/[_ ]/g, '').replace(/（[^）]*）|\([^)]*\)/g, '');
-
-            if (!cleanQuestionText) cleanQuestionText = azureTextBuilder.replace(/[_ ]/g, '') || '';
-
-
-
-            voicePlayedForCurrentQuestion.value = true;
-
-            await speakCloudTts(cleanQuestionText);
-
-        };
 
 
 
@@ -7483,19 +7376,14 @@ const _jpApp = Vue.createApp({
 
             const baseExp = 50 + (lv * 20);
 
-            const baseGold = 30 + (lv * 15);
 
-            const comboBonus = maxComboCount.value * 5;
 
             earnedExp.value = baseExp;
 
-            earnedGold.value = baseGold + comboBonus;
 
             player.value.exp += earnedExp.value;
 
-            player.value.gold += earnedGold.value;
 
-            totalGold.value += earnedGold.value; // <--- Accumulate totalGold
 
             // Unconditional HP/SP Reset on Victory
             player.value.hp = player.value.maxHp;
@@ -7627,9 +7515,8 @@ const _jpApp = Vue.createApp({
 
                 const expTarget = earnedExp.value;
 
-                const goldTarget = earnedGold.value;
 
-                const maxUnits = Math.max(expTarget, goldTarget);
+                const maxUnits = expTarget;
 
                 let calculatedDuration = (maxUnits / 30) * 1000;
 
@@ -7649,7 +7536,6 @@ const _jpApp = Vue.createApp({
 
                     animatedExp.value = Math.floor(expTarget * progress);
 
-                    animatedGold.value = Math.floor(goldTarget * progress);
 
 
 
@@ -7663,7 +7549,6 @@ const _jpApp = Vue.createApp({
 
                         animatedExp.value = expTarget;
 
-                        animatedGold.value = goldTarget;
 
                         setTimeout(() => {
 
@@ -7884,47 +7769,6 @@ const _jpApp = Vue.createApp({
 
 
         // ================= [ PROGRESSION & REWARDS ] =================
-        /** 關卡推進入口：發放 Boss 能力獎勵 Modal，完成後呼叫 proceedToNextLevel。 */
-        const goNextLevel = () => {
-
-            needsUserGestureToResumeBgm.value = false;
-
-            stopAllAudio();
-
-
-
-            // 檢查本關 Boss 獎勵
-
-            const clearedLevelConfig = LEVEL_CONFIG.value[currentLevel.value];
-
-            if (clearedLevelConfig?.rewardAbilityId) {
-
-                const rewardedSkill = grantAbilityReward(clearedLevelConfig.rewardAbilityId);
-
-                if (rewardedSkill) {
-
-                    // 如果是新習得，則跳出 Modal
-
-                    pendingLevelUpAbility.value = rewardedSkill;
-                    playSfx('uiPop'); // Added for boss ability unlock
-                    isAbilityUnlockModalOpen.value = true;
-
-                    // 暫存下一關資訊，等玩家按確認
-
-                    queuedNextLevel.value = currentLevel.value + 1;
-
-                    pauseBattle(); // 確保計時器等狀態暫停
-
-                    return; // 中斷原本的 goNextLevel 流程
-
-                }
-
-            }
-
-            proceedToNextLevel();
-
-        };
-
 
 
         const confirmAbilityUnlockAndContinue = () => {
@@ -7966,39 +7810,6 @@ const _jpApp = Vue.createApp({
 
 
 
-        const startOver = () => {
-
-            setHeroAvatar('neutral');
-            isBgmSuppressed.value = false; // Unlock on returning home
-
-            clearSpeedStatus();
-
-            window.heroHP = 100;
-
-            window.heroMaxHP = 100;
-
-            updateHeroStatusBar();
-
-            isMistakesOpen.value = false;
-
-            isMenuOpen.value = false;
-
-            stopAllAudio();
-
-            clearTimer();
-
-            if (pauseTimerId) { clearInterval(pauseTimerId); pauseTimerId = null; }
-
-            needsUserGestureToResumeBgm.value = false;
-
-            showLevelSelect.value = true;
-
-            inventory.value.potions = INITIAL_POTIONS;
-
-            resetSP();
-
-        };
-
 
 
         const revive = () => {
@@ -8032,7 +7843,7 @@ const _jpApp = Vue.createApp({
 
             needsUserGestureToResumeBgm.value = false;
 
-            player.value = { hp: 100, maxHp: 100, gold: 0, exp: 0 };
+            player.value = { hp: 100, maxHp: 100, exp: 0 };
 
             inventory.value.potions = INITIAL_POTIONS;
 
@@ -8101,28 +7912,6 @@ const _jpApp = Vue.createApp({
         };
 
 
-
-        const getHpColorClass = (hp, maxHp) => {
-
-            const ratio = hp / maxHp;
-
-            if (ratio <= 0.4) return 'bg-rose-500';
-
-            if (ratio <= 0.79) return 'bg-amber-400';
-
-            return 'bg-emerald-500';
-
-        };
-
-
-
-        const formatCorrect = (ans) => {
-
-            if (Array.isArray(ans)) return ans.join('/');
-
-            return ans;
-
-        };
 
 
 
@@ -8354,10 +8143,10 @@ const _jpApp = Vue.createApp({
         return {
             isNextBtnVisible,
             animatedExp,
-            answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, slotFeedbacks, hasSubmitted, totalScore, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, monsterShake, playerBlink, hpBarDanger, goldDoubleNext, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, wrongAnswerPause, wrongAnswerPauseCountdown, mistakes, stageLog, isMenuOpen, isMistakesOpen, formatCorrect, monsterHit, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, masterVolume, isMuted, isPreloading, needsUserGestureToResumeBgm, monsterDead, playerDead, levelPassed, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, playQuestionVoice, initGame, goNextLevel, retryLevel, startOver, revive, startLevel, usePotion, clearMistakes, playBgm, pauseBgm, playSfx, playMistakeVoice, saveAudioSettings, stopAllAudio, runAway, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, setBattleMessage, ensureBgmPlaying, onUserGesture, currentBg, accuracyPct, calculatedGrade, earnedExp, earnedGold, getHpColorClass, skillsAll, unlockedSkillIds, newlyUnlocked, isSkillUnlockModalOpen, isCodexOpen, expandedSkillId, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, CODEX_PER_PAGE, closeCodex, pauseBattle, resumeBattle, openCodexTo, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
+            answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, skillsAll, unlockedSkillIds, isCodexOpen, expandedSkillId, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             handleEscapeToMap, escapeOverlayVisible, escapeOverlayOpacity, isEscaping,
             heroBuffs,
-            unlockedAbilityIds, skillList, castAbility, spState, settings, shouldShowNextButton, praiseToast, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG,
+            skillList, castAbility, spState, settings, shouldShowNextButton, praiseToast, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
             isMentorModalOpen, isLevelJumpOpen, isAdvancedSettingsOpen, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
             displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,
@@ -8369,17 +8158,16 @@ const _jpApp = Vue.createApp({
 
             selectStageFromMap, startStageWithExplanation, returnToMap,
 
-            newUnlockLv, bestGrades, getGradeColor, sRankCount, totalGold,
+            newUnlockLv, bestGrades, getGradeColor, sRankCount,
 
             mapChapters, activeChapter, getMapNodeStyle, selectedSegmentIdx, isSegmentUnlocked, handleMapTabClick, jumpToMapSegment, isMapDropdownOpen,
 
             isBattleConfirmOpen, selectedStageToConfirm, confirmAndStartBattle,
 
-            isMapMentorOpen, mentorPages, mentorDialogueIndex, displayedMentorText, isTypingMentor, nextMentorLine, finishMentorDialogue,
+            isMapMentorOpen,
 
             pendingKnowledgeCards, activeKnowledgeCard, isKnowledgeCardShowing, isKnowledgeCardAbsorbing, triggerNextKnowledgeCard, closeKnowledgeCard,
             isSpecialSceneActive, specialSceneBg,
-            unlockedOnomatopeIds, BOSS_ONOMATOPE_MAP,
             playCardFlip: () => playSfx('cardFlip'),
 
         };

@@ -43,7 +43,7 @@ window.primeVoiceOnGesture = () => {
 
                     isTtsPrimed = true;
 
-                    console.log('[PRAISE] flick-gesture prime ok');
+                    if (window.__DEBUG__) console.log('[PRAISE] flick-gesture prime ok');
 
                 }
 
@@ -137,7 +137,7 @@ function migrateVoice(voice) {
 
     // 處理舊 Azure 聲線遷移
     if (voice.includes('MayuNeural') || voice.includes('NanamiNeural') || voice.includes('NaokiNeural')) {
-        console.log(`[TTS] Migrating legacy Azure voice: ${voice} -> ja-JP-Neural2-B`);
+        if (window.__DEBUG__) console.log(`[TTS] Migrating legacy Azure voice: ${voice} -> ja-JP-Neural2-B`);
         return "ja-JP-Neural2-B";
     }
     return "ja-JP-Neural2-B";
@@ -155,7 +155,7 @@ function getPreferredTtsVoice() {
             if (originalVoice !== migratedVoice) {
                 parsed.ttsVoice = migratedVoice;
                 localStorage.setItem('jpRpgSettingsV1', JSON.stringify(parsed));
-                console.log(`[TTS] Settings migrated & saved: ${migratedVoice}`);
+                if (window.__DEBUG__) console.log(`[TTS] Settings migrated & saved: ${migratedVoice}`);
             }
             return migratedVoice;
         }
@@ -182,7 +182,7 @@ async function playTtsKey(key, fallbackText, ttsVoiceName = null) {
 
         if (playbackSessionId !== currentTtsSessionId) return { used: "none", key };
 
-        console.log(`[FALLBACK] audio file exists: ${url}`);
+        if (window.__DEBUG__) console.log(`[FALLBACK] audio file exists: ${url}`);
 
         const a = sharedTtsAudio;
 
@@ -198,7 +198,7 @@ async function playTtsKey(key, fallbackText, ttsVoiceName = null) {
 
             await a.play();
 
-            console.log(`[FALLBACK] audio play ok`);
+            if (window.__DEBUG__) console.log(`[FALLBACK] audio play ok`);
 
             return { used: "audio", key, url };
 
@@ -224,7 +224,7 @@ async function playTtsKey(key, fallbackText, ttsVoiceName = null) {
 
     if (fallbackText && "speechSynthesis" in window) {
 
-        console.log('[SPEECH] start (WebSpeech fallback)', fallbackText.slice(0, 20));
+        if (window.__DEBUG__) console.log('[SPEECH] start (WebSpeech fallback)', fallbackText.slice(0, 20));
 
         try {
 
@@ -238,7 +238,7 @@ async function playTtsKey(key, fallbackText, ttsVoiceName = null) {
 
 
 
-            u.onend = () => console.log('[SPEECH] end');
+            u.onend = () => { if (window.__DEBUG__) console.log('[SPEECH] end'); };
 
             u.onerror = (e) => console.warn('[SPEECH] error', e?.error || "unknown");
 
@@ -375,7 +375,7 @@ async function speakCloudTts(text, voiceShortName = null) {
                 if (migrated !== parsed.ttsVoice) {
                     parsed.ttsVoice = migrated;
                     localStorage.setItem('jpRpgSettingsV1', JSON.stringify(parsed));
-                    console.log(`[TTS] Session settings migrated & saved: ${migrated}`);
+                    if (window.__DEBUG__) console.log(`[TTS] Session settings migrated & saved: ${migrated}`);
                 }
                 voiceShortName = migrated;
             }

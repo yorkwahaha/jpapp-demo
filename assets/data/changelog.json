@@ -1,5 +1,27 @@
 [
     {
+        "version": "26040903",
+        "date": "2026-04-09",
+        "title": "Cleanup 系列正式收尾與部署",
+        "changes": [
+            "完成 JPAPP 本階段深度清理系列工作",
+            "移除所有已確認的 dead code、dead state 與冗餘 return tokens",
+            "確認 slotFeedbacks 與計時器等核心狀態保持活躍且穩定",
+            "優化 HTML 模板結構並完成全域語法健康檢查"
+        ]
+    },
+    {
+        "version": "26040902",
+        "date": "2026-04-09",
+        "title": "Cleanup 成果收尾與效能穩定化",
+        "changes": [
+            "完成多輪 dead code (monsterShake, totalScore 等) 整包清理",
+            "收斂 Vue return 物件，減少不必要的 Data 響應追蹤",
+            "移除 index.html 中 L2/L4 層級的孤立佔位符與 hidden 標籤",
+            "完成 game.js 語法健康檢查與版本號同步"
+        ]
+    },
+    {
         "version": "26040901",
         "date": "2026-04-09",
         "title": "程式碼精簡清理與正式部署整理",
