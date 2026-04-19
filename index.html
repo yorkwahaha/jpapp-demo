@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26040903'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26041901'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -58,8 +58,8 @@
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/styles.css?v=26040302">
-    <link rel="stylesheet" href="assets/css/escape.css?v=26040302">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26041901">
+    <link rel="stylesheet" href="assets/css/escape.css?v=26041901">
 
 
 
@@ -69,7 +69,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26040903';
+            const v = window.APP_VERSION || '26041901';
 
 
 
@@ -2901,7 +2901,27 @@
                     class="absolute inset-0 transition-all duration-300 bg-cover bg-center bg-no-repeat"
                     :style="{ backgroundImage: 'url(' + currentBg + ')' }" :class="{ 'bg-dodge': isPlayerDodging }">
 
-
+                    <!-- ✨ L36 Abyss Debris Layer ✨ -->
+                    <div v-if="currentLevel === 36" class="l36-debris-container">
+                        <!-- Rift Glows -->
+                        <div class="rift-glow rift-1"></div>
+                        <div class="rift-glow rift-2"></div>
+                        <div class="rift-glow rift-3"></div>
+                        <!-- Far layer (smaller, blurred, edge-hugging) -->
+                        <div class="debris far rock-1"></div>
+                        <div class="debris far rock-2"></div>
+                        <div class="debris far rock-3"></div>
+                        <div class="debris far rock-4"></div>
+                        <div class="debris far rock-5"></div>
+                        <div class="debris far rock-11"></div>
+                        <div class="debris far rock-12"></div>
+                        <!-- Mid layer (larger, visible, edge-hugging) -->
+                        <div class="debris mid rock-6"></div>
+                        <div class="debris mid rock-7"></div>
+                        <div class="debris mid rock-8"></div>
+                        <div class="debris mid rock-9"></div>
+                        <div class="debris mid rock-10"></div>
+                    </div>
 
                     <!-- Monster Container -->
 
@@ -2944,8 +2964,69 @@
                                 }"
                                     :class="[currentLevel % 5 === 0 ? 'monster-container-boss' : 'monster-container-normal', { 'monster-entrance': monsterIsEntering }]">
 
+                                    <div v-if="bossDeathVfxActive && currentLevel % 5 === 0"
+                                        class="boss-death-overlay-wrap">
+                                        <div class="boss-death-overlay" :class="`boss-death-stage-${bossDeathStage}`">
+                                            <div class="boss-death-vignette"></div>
+                                            <div class="boss-death-aura"></div>
+                                            <div class="boss-death-core"></div>
+                                            <div class="boss-death-ring boss-death-ring-a"></div>
+                                            <div class="boss-death-ring boss-death-ring-b"></div>
+                                            <div class="boss-death-afterglow"></div>
+                                            <div class="boss-death-leak-field">
+                                                <span v-for="n in 10" :key="'boss-death-leak-' + n" class="boss-death-leak"
+                                                    :style="{
+                                                        '--angle': (((n - 1) * 36) - 162) + 'deg',
+                                                        '--radius': (52 + (n % 3) * 14) + 'px',
+                                                        '--delay': ((n - 1) * 0.16) + 's'
+                                                    }"></span>
+                                            </div>
+                                            <div class="boss-death-fragment-field">
+                                                <span v-for="n in 10" :key="'boss-death-frag-' + n" class="boss-death-fragment"
+                                                    :style="{
+                                                        '--angle': (((n - 1) * 20) - 88) + 'deg',
+                                                        '--distance': (34 + (n % 4) * 11) + 'px',
+                                                        '--delay': ((n - 1) * 0.1) + 's'
+                                                    }"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div v-if="bossDeathVfxActive && currentLevel % 5 === 0"
+                                        class="boss-death-body-vfx"
+                                        :class="`boss-death-stage-${bossDeathStage}`">
+                                        <div class="boss-death-body-core"></div>
+                                        <div class="boss-death-body-glow"></div>
+                                        <div class="boss-death-body-distortion"></div>
+                                        <div class="boss-death-body-cracks">
+                                            <span v-for="n in 5" :key="'boss-body-crack-' + n" class="boss-death-body-crack"
+                                                :style="{
+                                                    '--crack-x': (16 + ((n - 1) * 16)) + '%',
+                                                    '--crack-y': (18 + ((n % 3) * 18)) + '%',
+                                                    '--crack-rot': (((n - 3) * 14)) + 'deg',
+                                                    '--crack-delay': ((n - 1) * 0.12) + 's'
+                                                }"></span>
+                                        </div>
+                                        <div class="boss-death-body-erosion"></div>
+                                        <div class="boss-death-body-fragments">
+                                            <span v-for="n in 8" :key="'boss-body-frag-' + n" class="boss-death-body-fragment"
+                                                :style="{
+                                                    '--body-frag-x': (18 + ((n % 4) * 18)) + '%',
+                                                    '--body-frag-y': (20 + (Math.floor((n - 1) / 4) * 32)) + '%',
+                                                    '--body-frag-angle': (((n - 4) * 11)) + 'deg',
+                                                    '--body-frag-delay': ((n - 1) * 0.1) + 's'
+                                                }"></span>
+                                        </div>
+                                    </div>
+
                                     <div class="relative inline-flex items-center justify-center min-h-0 min-w-0 z-[1]"
-                                        :class="{ 'odoodo-jitter-root': heroBuffs.odoodoTurns > 0 }">
+                                        :class="[
+                                            {
+                                                'odoodo-jitter-root': heroBuffs.odoodoTurns > 0,
+                                                'boss-death-sync-shell': bossDeathVfxActive && currentLevel % 5 === 0
+                                            },
+                                            bossDeathVfxActive && currentLevel % 5 === 0 ? `boss-death-stage-${bossDeathStage}` : ''
+                                        ]">
                                         <template v-if="heroBuffs.odoodoTurns > 0">
                                             <div class="odoodo-echo odoodo-echo--back" aria-hidden="true"></div>
                                             <div class="odoodo-echo odoodo-echo--left" aria-hidden="true"></div>

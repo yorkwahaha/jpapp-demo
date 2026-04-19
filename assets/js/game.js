@@ -669,6 +669,7 @@ const _jpApp = Vue.createApp({
         };
 
         const openMap = () => {
+            resetBattleOutcomePresentation();
             // Check for first-time prologue BEFORE entering normal map
             if (checkPrologueTrigger()) return;
 
@@ -1039,6 +1040,7 @@ const _jpApp = Vue.createApp({
         };
 
         const returnToMap = () => {
+            resetBattleOutcomePresentation();
             isFinished.value = true;
             showLevelSelect.value = false;
 
@@ -1114,7 +1116,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26040903";
+        const APP_VERSION = window.APP_VERSION || "26041901";
 
         const appVersion = ref(APP_VERSION);
 
@@ -1210,7 +1212,9 @@ const _jpApp = Vue.createApp({
 
             successOpt: null,
 
-            capturedEl: null
+            capturedEl: null,
+
+            pendingDirectionalMiss: false
 
         });
 
@@ -2400,6 +2404,8 @@ const _jpApp = Vue.createApp({
         const monsterTrulyDead = ref(false); // 動畫結束，真正從畫面移除
 
         const monsterResultShown = ref(false); // 結算視窗是否顯示
+        const bossDeathVfxActive = ref(false); // Boss 專屬死亡演出 overlay
+        const bossDeathStage = ref(0); // 1~4 對應四段演出
 
         const screenShake = ref(false);
 
@@ -2410,6 +2416,206 @@ const _jpApp = Vue.createApp({
         const isPlayerDodging = ref(false);
 
         const voicePlayedForCurrentQuestion = ref(false);
+        const battleFlowTimeouts = new Set();
+        let bossDeathSequenceToken = 0;
+
+        const scheduleBattleFlowTimeout = (callback, delayMs) => {
+            const timeoutId = setTimeout(() => {
+                battleFlowTimeouts.delete(timeoutId);
+                callback();
+            }, delayMs);
+            battleFlowTimeouts.add(timeoutId);
+            return timeoutId;
+        };
+
+        const clearBattleFlowTimeouts = () => {
+            battleFlowTimeouts.forEach(clearTimeout);
+            battleFlowTimeouts.clear();
+        };
+
+        const MONSTER_DEATH_CRY_SFX_PATH = 'assets/audio/sfx/monster_death_cry.mp3';
+        const BOSS_DEATH_CRY_SFX_PATH = 'assets/audio/sfx/boss_death_cry.mp3';
+        const BOSS_DEATH_EXPLOSION_SFX_PATH = 'assets/audio/sfx/boss_explosion.mp3';
+        const optionalSfxAvailability = new Map();
+
+        const clearBossDeathVfxNodes = () => {
+            const vfxLayer = (typeof window.getVfxLayer === 'function')
+                ? window.getVfxLayer()
+                : document.getElementById('global-vfx-layer');
+            if (!vfxLayer) return;
+            vfxLayer.querySelectorAll('[data-boss-death-vfx="1"]').forEach((node) => node.remove());
+        };
+
+        const cleanupBossDeathSequence = () => {
+            bossDeathSequenceToken++;
+            bossDeathVfxActive.value = false;
+            bossDeathStage.value = 0;
+            clearBossDeathVfxNodes();
+        };
+
+        const resetBattleOutcomePresentation = () => {
+            clearBattleFlowTimeouts();
+            cleanupBossDeathSequence();
+        };
+
+        const getBossDeathBurstOrigin = () => {
+            const bossImageEl = document.querySelector('.monster-img-boss');
+            if (bossImageEl) {
+                const rect = bossImageEl.getBoundingClientRect();
+                return {
+                    x: rect.left + (rect.width / 2),
+                    y: rect.top + (rect.height / 2),
+                    width: rect.width,
+                    height: rect.height
+                };
+            }
+
+            const targetEl = document.querySelector('.monster-container-boss')
+                || document.querySelector('.monster-breath')
+                || document.getElementById('monsterStatusBar');
+            if (!targetEl) {
+                return { x: window.innerWidth / 2, y: window.innerHeight * 0.38, width: 220, height: 220 };
+            }
+
+            const rect = targetEl.getBoundingClientRect();
+            return {
+                x: rect.left + (rect.width / 2),
+                y: rect.top + (rect.height * 0.52),
+                width: rect.width,
+                height: rect.height
+            };
+        };
+
+        const playOptionalSfxIfAvailable = (name, path) => {
+            if (optionalSfxAvailability.get(path) === false) return;
+            if (optionalSfxAvailability.get(path) === true) {
+                playSfx(name);
+                return;
+            }
+
+            optionalSfxAvailability.set(path, false);
+            fetch(path, { method: 'HEAD' })
+                .then((res) => {
+                    if (!res.ok) return;
+                    optionalSfxAvailability.set(path, true);
+                    playSfx(name);
+                })
+                .catch(() => { });
+        };
+
+        const playMonsterDeathCrySfx = () => {
+            playOptionalSfxIfAvailable('monsterDeathCry', MONSTER_DEATH_CRY_SFX_PATH);
+        };
+
+        const playBossDeathCrySfx = () => {
+            playOptionalSfxIfAvailable('bossDeathCry', BOSS_DEATH_CRY_SFX_PATH);
+        };
+
+        const playBossDeathExplosionSfx = () => {
+            playOptionalSfxIfAvailable('bossExplosion', BOSS_DEATH_EXPLOSION_SFX_PATH);
+        };
+
+        const spawnBossDeathBurst = (burstIndex = 0) => {
+            const vfxLayer = (typeof window.getVfxLayer === 'function')
+                ? window.getVfxLayer()
+                : document.getElementById('global-vfx-layer');
+            if (!vfxLayer) return;
+
+            const origin = getBossDeathBurstOrigin();
+            const burstProfiles = [
+                { spreadX: 0.035, spreadY: 0.045, sizeMin: 34, sizeMax: 44, lifeMs: 680, sparkCount: 3, ringScale: 1, coreScale: 1, sparkScale: 1, sparkDistanceMin: 14, sparkDistanceMax: 16 },
+                { spreadX: 0.05, spreadY: 0.06, sizeMin: 42, sizeMax: 54, lifeMs: 760, sparkCount: 4, ringScale: 1.1, coreScale: 1.08, sparkScale: 1.05, sparkDistanceMin: 16, sparkDistanceMax: 18 },
+                { spreadX: 0.04, spreadY: 0.05, sizeMin: 176, sizeMax: 216, lifeMs: 980, sparkCount: 6, ringScale: 1.72, coreScale: 2.35, sparkScale: 1.18, sparkDistanceMin: 18, sparkDistanceMax: 22 }
+            ];
+            const profile = burstProfiles[burstIndex % burstProfiles.length];
+            const spreadX = Math.max(origin.width * profile.spreadX, 6);
+            const spreadY = Math.max(origin.height * profile.spreadY, 6);
+            const x = origin.x + ((Math.random() - 0.5) * spreadX * 2);
+            const y = origin.y + ((Math.random() - 0.5) * spreadY * 2);
+            const burst = document.createElement('div');
+            const size = profile.sizeMin + Math.random() * (profile.sizeMax - profile.sizeMin);
+
+            burst.className = 'boss-death-burst';
+            burst.dataset.bossDeathVfx = '1';
+            burst.style.left = `${x}px`;
+            burst.style.top = `${y}px`;
+            burst.style.width = `${size}px`;
+            burst.style.height = `${size}px`;
+            burst.style.setProperty('--burst-life', `${profile.lifeMs}ms`);
+            burst.style.setProperty('--burst-ring-scale', `${profile.ringScale || 1}`);
+            burst.style.setProperty('--burst-core-scale', `${profile.coreScale || 1}`);
+            burst.style.setProperty('--burst-spark-scale', `${profile.sparkScale || 1}`);
+
+            const ring = document.createElement('div');
+            ring.className = 'boss-death-burst-ring';
+            burst.appendChild(ring);
+
+            const core = document.createElement('div');
+            core.className = 'boss-death-burst-core';
+            burst.appendChild(core);
+
+            const sparkCount = profile.sparkCount;
+            for (let i = 0; i < sparkCount; i++) {
+                const spark = document.createElement('span');
+                spark.className = 'boss-death-burst-spark';
+                spark.style.setProperty('--spark-angle', `${i * (360 / sparkCount) + Math.random() * 18}deg`);
+                spark.style.setProperty('--spark-distance', `${(profile.sparkDistanceMin || 14) + Math.random() * (profile.sparkDistanceMax || 16)}px`);
+                spark.style.setProperty('--spark-delay', `${Math.random() * 120}ms`);
+                burst.appendChild(spark);
+            }
+
+            vfxLayer.appendChild(burst);
+            let removed = false;
+            const removeBurst = () => {
+                if (removed) return;
+                removed = true;
+                burst.remove();
+            };
+            burst.addEventListener('animationend', removeBurst, { once: true });
+            scheduleBattleFlowTimeout(() => {
+                removeBurst();
+            }, profile.lifeMs + 220);
+        };
+
+        const startBossDeathSequence = (onComplete) => {
+            cleanupBossDeathSequence();
+
+            const sequenceToken = ++bossDeathSequenceToken;
+            bossDeathVfxActive.value = true;
+            bossDeathStage.value = 1;
+
+            [6840, 7760, 8720].forEach((delayMs, index) => {
+                scheduleBattleFlowTimeout(() => {
+                    if (sequenceToken !== bossDeathSequenceToken) return;
+                    spawnBossDeathBurst(index);
+                }, delayMs);
+            });
+
+            scheduleBattleFlowTimeout(() => {
+                if (sequenceToken !== bossDeathSequenceToken) return;
+                playBossDeathExplosionSfx();
+            }, 8720);
+
+            scheduleBattleFlowTimeout(() => {
+                if (sequenceToken !== bossDeathSequenceToken) return;
+                bossDeathStage.value = 2;
+            }, 1800);
+
+            scheduleBattleFlowTimeout(() => {
+                if (sequenceToken !== bossDeathSequenceToken) return;
+                bossDeathStage.value = 3;
+            }, 4000);
+
+            scheduleBattleFlowTimeout(() => {
+                if (sequenceToken !== bossDeathSequenceToken) return;
+                bossDeathStage.value = 4;
+            }, 7000);
+
+            scheduleBattleFlowTimeout(() => {
+                if (sequenceToken !== bossDeathSequenceToken) return;
+                onComplete();
+            }, 10000);
+        };
 
 
 
@@ -3139,6 +3345,12 @@ const _jpApp = Vue.createApp({
                 userAnswers.value = [];
                 slotFeedbacks.value = {};
 
+                // 🟢 FIX: Reset combat state to prevent HP carry-over
+                player.value.hp = player.value.maxHp;
+                resetSP();
+                setHeroAvatar('neutral');
+                clearSpeedStatus();
+
                 // Return to map via standard map transition pipeline
                 returnToMap();
             }, 1000 + 1000); // 1s fade + 1s buffer
@@ -3420,6 +3632,9 @@ const _jpApp = Vue.createApp({
             damage8: 'assets/audio/damage8.mp3',
             fanfare: 'assets/audio/fanfare.mp3',
             bossClear: '', // Map missing bossClear to fanfare
+            monsterDeathCry: MONSTER_DEATH_CRY_SFX_PATH,
+            bossDeathCry: BOSS_DEATH_CRY_SFX_PATH,
+            bossExplosion: BOSS_DEATH_EXPLOSION_SFX_PATH,
             uiPop: 'assets/audio/pop.mp3',
             battlePop: 'assets/audio/pop2.mp3',
             win: 'assets/audio/win.mp3',
@@ -3496,6 +3711,9 @@ const _jpApp = Vue.createApp({
         const SFX_SCALES = {
             fanfare: 0.6,    // Refined lower for comfort
             bossClear: 0.6,
+            monsterDeathCry: 0.78,
+            bossDeathCry: 0.82,
+            bossExplosion: 0.72,
             win: 0.7,        // Refined lower for comfort
             gameover: 0.8,
             skillget: 0.8,
@@ -3664,6 +3882,58 @@ const _jpApp = Vue.createApp({
 
         };
 
+        const FLICK_MIN_DISTANCE = 42;
+        const FLICK_MIN_UPWARD_RATIO = 0.18;
+        const FLICK_PROJECTILE_TRAVEL = 440;
+
+        const getFlickMonsterTarget = () => {
+            const monsterEl = document.querySelector('.monster-img-boss')
+                || document.querySelector('.monster-img-normal')
+                || document.querySelector('img[alt="monster"]')
+                || document.querySelector('.monster-breath');
+            if (!monsterEl || !monsterEl.getBoundingClientRect) return null;
+            const rect = monsterEl.getBoundingClientRect();
+            return {
+                rect,
+                center: rectCenter(monsterEl)
+            };
+        };
+
+        const resolveFlickShot = (startPoint, dx, dy) => {
+            const distance = Math.hypot(dx, dy);
+            if (distance < FLICK_MIN_DISTANCE) return null;
+
+            const dirX = dx / distance;
+            const dirY = dy / distance;
+            if (dirY > -FLICK_MIN_UPWARD_RATIO) return null;
+
+            let targetX = startPoint.x + (dirX * Math.max(distance * 3.2, FLICK_PROJECTILE_TRAVEL));
+            let targetY = startPoint.y + (dirY * Math.max(distance * 3.2, FLICK_PROJECTILE_TRAVEL));
+            targetX = Math.min(window.innerWidth - 24, Math.max(24, targetX));
+            targetY = Math.min(window.innerHeight - 24, Math.max(24, targetY));
+
+            const monsterTarget = getFlickMonsterTarget();
+            if (!monsterTarget?.center) return { targetX, targetY, hitsMonster: false };
+
+            const toMonsterX = monsterTarget.center.x - startPoint.x;
+            const toMonsterY = monsterTarget.center.y - startPoint.y;
+            const projection = (toMonsterX * dirX) + (toMonsterY * dirY);
+            if (projection <= 0) return { targetX, targetY, hitsMonster: false };
+
+            const closestX = startPoint.x + (dirX * projection);
+            const closestY = startPoint.y + (dirY * projection);
+            const closestDistance = Math.hypot(monsterTarget.center.x - closestX, monsterTarget.center.y - closestY);
+            const hitRadius = (Math.max(monsterTarget.rect.width, monsterTarget.rect.height) * 0.42) + 18;
+            const hitsMonster = closestDistance <= hitRadius;
+
+            if (hitsMonster) {
+                targetX = closestX;
+                targetY = closestY;
+            }
+
+            return { targetX, targetY, hitsMonster };
+        };
+
 
 
         const startFlick = (e, opt) => {
@@ -3730,43 +4000,15 @@ const _jpApp = Vue.createApp({
 
             const originEl = flickState.capturedEl;
 
+            const startPoint = getCenterOrFallback(originEl, flickState.startX, flickState.startY);
+            const shot = resolveFlickShot(startPoint, dx, dy);
 
-
-            if (dy <= -25 && Math.abs(dx) < 120) {
+            if (shot) {
 
                 if (e.cancelable) e.preventDefault();
 
-
-
-                const startPoint = getCenterOrFallback(originEl, flickState.startX, flickState.startY);
-
-                let toX = e.clientX;
-
-                let toY = e.clientY;
-
-
-
-                const monsterEl = document.querySelector('img[alt="monster"]') || document.querySelector('.w-28.h-28.rounded-full');
-
-                const monsterCenter = rectCenter(monsterEl);
-
-                if (monsterCenter && monsterCenter.x !== undefined && monsterCenter.y !== undefined) {
-
-                    toX = monsterCenter.x;
-
-                    toY = monsterCenter.y;
-
-                } else {
-
-                    toY = startPoint.y - 200;
-
-                    toX = startPoint.x;
-
-                }
-
-
-
-                spawnProjectile(startPoint.x, startPoint.y, toX, toY, opt);
+                flickState.pendingDirectionalMiss = !shot.hitsMonster;
+                spawnProjectile(startPoint.x, startPoint.y, shot.targetX, shot.targetY, opt);
 
                 handleRuneClick(opt, true);
 
@@ -3777,6 +4019,7 @@ const _jpApp = Vue.createApp({
             flickState.isArmed = false;
 
             flickState.activeOpt = null;
+            if (!shot) flickState.pendingDirectionalMiss = false;
 
             if (flickState.capturedEl) {
 
@@ -6096,6 +6339,7 @@ const _jpApp = Vue.createApp({
 
             if (pauseTimerId) { clearInterval(pauseTimerId); pauseTimerId = null; }
 
+            resetBattleOutcomePresentation();
 
 
 
@@ -6117,6 +6361,9 @@ const _jpApp = Vue.createApp({
             if (_sc) _sc.classList.remove('grayscale-filter');
             const _ov = document.getElementById('defeatOverlay');
             if (_ov) _ov.classList.add('hidden');
+
+            const globalVfxLayer = document.getElementById('global-vfx-layer');
+            if (globalVfxLayer) globalVfxLayer.innerHTML = '';
 
             isMistakesOpen.value = false;
 
@@ -7051,6 +7298,10 @@ const _jpApp = Vue.createApp({
 
             });
 
+            const flickDirectionalMiss = answerMode.value === 'flick' && flickState.pendingDirectionalMiss;
+            if (flickDirectionalMiss) allCorrect = false;
+            flickState.pendingDirectionalMiss = false;
+
             isCurrentCorrect.value = allCorrect;
 
             logStageQuestion(allCorrect);
@@ -7353,6 +7604,7 @@ const _jpApp = Vue.createApp({
                 flickState.isArmed = false;
 
                 flickState.activeOpt = null;
+                flickState.pendingDirectionalMiss = false;
 
             }
 
@@ -7371,6 +7623,9 @@ const _jpApp = Vue.createApp({
 
 
         const grantRewards = () => {
+            if (monsterIsDying.value || monsterTrulyDead.value || monsterResultShown.value) return;
+
+            resetBattleOutcomePresentation();
 
             const lv = currentLevel.value;
 
@@ -7393,23 +7648,15 @@ const _jpApp = Vue.createApp({
 
             clearTimer();
 
-
-
             const isBoss = currentLevel.value % 5 === 0;
-
-            // 🟢 26031301 Optimized: 死亡演出長度 (Boss 5.5s / 一般固定 2.0s)
-
-            const deathDuration = isBoss ? 5500 : 2000;
-
-
-
+            if (isBoss) {
+                playBossDeathCrySfx();
+            } else {
+                playMonsterDeathCrySfx();
+            }
             monsterIsDying.value = true;
-
-
-
-            // 🌟 第一階段：等待死亡演出完整播完
-
-            setTimeout(() => {
+            const finalizeVictoryFlow = () => {
+                cleanupBossDeathSequence();
 
                 monsterTrulyDead.value = true;
 
@@ -7487,7 +7734,7 @@ const _jpApp = Vue.createApp({
 
                 // 🌟 第二階段：死亡演出結束後，檢查是否有新技能知識卡需要播放
                 // 如果有卡片，播放完畢後才進入數字遞增環節
-                setTimeout(() => {
+                scheduleBattleFlowTimeout(() => {
 
                     const proceedToTally = () => {
                         playSfx('fanfare');
@@ -7505,7 +7752,13 @@ const _jpApp = Vue.createApp({
 
 
 
-            }, deathDuration);
+            };
+
+            if (isBoss) {
+                startBossDeathSequence(finalizeVictoryFlow);
+            } else {
+                scheduleBattleFlowTimeout(finalizeVictoryFlow, 2000);
+            }
 
 
 
@@ -7550,7 +7803,7 @@ const _jpApp = Vue.createApp({
                         animatedExp.value = expTarget;
 
 
-                        setTimeout(() => {
+                        scheduleBattleFlowTimeout(() => {
 
                             const clearedLevelConfig = LEVEL_CONFIG.value[currentLevel.value];
 
@@ -8046,6 +8299,7 @@ const _jpApp = Vue.createApp({
 
         // ================= [ DEBUG TOOLS — LEVEL JUMP ] =================
         const debugJumpToLevel = (level) => {
+            resetBattleOutcomePresentation();
 
             const lv = Math.max(1, Math.min(level, maxLevel.value || 99));
 
@@ -8078,6 +8332,8 @@ const _jpApp = Vue.createApp({
             flickState.isArmed = false;
 
             flickState.activeOpt = null;
+
+            flickState.pendingDirectionalMiss = false;
 
             if (flickState.capturedEl) {
 
@@ -8152,7 +8408,7 @@ const _jpApp = Vue.createApp({
             displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,
             playPrologueOpening, playMainEndingFinale,
             isMentorSkipPressing, startMentorSkipPress, cancelMentorSkipPress,
-            isMonsterImageError, handleMonsterImageError, handleMapImageError, currentMonsterSprite, monsterPositionStyle, monsterIsEntering, monsterIsDying, monsterTrulyDead, monsterResultShown, monsterAttackLunge,
+            isMonsterImageError, handleMonsterImageError, handleMapImageError, currentMonsterSprite, monsterPositionStyle, monsterIsEntering, monsterIsDying, monsterTrulyDead, monsterResultShown, bossDeathVfxActive, bossDeathStage, monsterAttackLunge,
             showMap, unlockedLevels, clearedLevels,
             openMap, isLevelUnlocked, isLevelCleared, getStageNodeClass, getLevelTitle, hasMentor,
 
