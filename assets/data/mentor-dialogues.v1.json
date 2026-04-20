@@ -3,32 +3,26 @@
     "dialogue": [
       {
         "text": "……",
-        "audio": "",
         "emotion": "surprised"
       },
       {
-        "text": "……咦。\n你，看得見我？",
-        "audio": "",
+        "text": "……咦。 你，看得見我？",
         "emotion": "surprised"
       },
       {
-        "text": "這座神殿，普通人是看不見的。\n這樣的話……那些孩子們的聲音，你也聽得到？ ",
-        "audio": "",
+        "text": "這座神殿，普通人是看不見的。 這樣的話……那些孩子們的聲音，你也聽得到？ ",
         "emotion": "wonder"
       },
       {
-        "text": "……聽得到啊。\n那麼，你不只是個普通的旅人。",
-        "audio": "",
+        "text": "……聽得到啊。 那麼，你不只是個普通的旅人。",
         "emotion": "realize"
       },
       {
-        "text": "我有件事想拜託你。\n現在還沒辦法全說清楚——\n但可以先聽聽這個孩子的聲音嗎？ ",
-        "audio": "",
+        "text": "我有件事想拜託你。 現在還沒辦法全說清楚—— 但可以先聽聽這個孩子的聲音嗎？",
         "emotion": "solemn"
       },
       {
-        "text": "……謝謝你願意相信我。剩下的，我們邊走邊說吧。",
-        "audio": "",
+        "text": "……謝謝你願意相信我。 剩下的，我們邊走邊說吧。",
         "emotion": "apologetic"
       }
     ],
@@ -44,22 +38,22 @@
   "WA_TOPIC_BASIC": {
     "dialogue": [
       {
-        "text": "我是月詠導師，瑟蕾涅。\n一直在這座言葉神殿裡，守護著小助靈(助詞精靈)們。",
+        "text": "我是月詠導師，瑟蕾涅。一直在這座言葉神殿裡，守護著小助靈(助詞精靈)們。",
         "audio": "",
         "emotion": "gentle"
       },
       {
-        "text": "小助靈們，一直靜靜地在語言裡呼吸著。\n有了祂們，語言才有了意義，心意才能傳遞，世界的形狀，才得以維持。 ",
+        "text": "小助靈們，一直靜靜地在語言裡呼吸著。有了祂們，語言才有了意義，心意才能傳遞，世界的形狀，才得以維持。 ",
         "audio": "",
         "emotion": "explain"
       },
       {
-        "text": "先從這個孩子開始——「は」。\n「は」啊，會在句子裡輕輕往前一站，告訴你「接下來要說的，就是這個人的事喔」。",
+        "text": "先從這個孩子開始——「は」。「は」啊，會在句子裡輕輕往前一站，告訴你「接下來要說的，就是這個人的事喔」。",
         "audio": "",
         "emotion": "explain"
       },
       {
-        "text": "比如說，「わたしは学生です（我是學生）」。\n這句話的主角是「わたし（我）」。\n「は」就輕輕地把它帶到前面來了。",
+        "text": "比如說，「わたしは学生です（我是學生）」。這句話的主角是「わたし（我）」。「は」就輕輕地把它帶到前面來了。",
         "audio": "",
         "emotion": "explain"
       },
@@ -85,12 +79,12 @@
         "emotion": "gentle"
       },
       {
-        "text": "這座神殿裡，助詞精靈們已經幾乎不剩了。有的嚇得躲了起來，有的迷失了方向……還有些，甚至被什麼東西吞噬了。",
+        "text": "這座神殿裡，小助靈們已經幾乎不剩了。有的嚇得躲了起來，有的迷失了方向……還有些，甚至被什麼東西吞噬了。",
         "audio": "",
         "emotion": "explain"
       },
       {
-        "text": "助詞精靈消失的話，語言就會一點一點地崩解。意思變得模糊，心意無法傳達——最終，連世界本身都會慢慢扭曲。",
+        "text": "小助靈消失的話，語言就會一點一點地崩解。意思變得模糊，心意無法傳達——最終，連世界本身都會慢慢扭曲。",
         "audio": "",
         "emotion": "explain"
       },
@@ -254,152 +248,200 @@
   "HE_DIRECTION": {
     "dialogue": [
       {
-        "text": "接下來，我們來看看「へ」的小助靈吧。\n這孩子最擅長告訴你的，\n不是站在哪裡，\n而是正朝哪裡去。",
+        "text": "前方的路，你看得見嗎。",
         "audio": "",
         "emotion": "gentle"
       },
       {
-        "text": "「へ」最基本的感覺，\n就是「往～、朝著～」。\n它像一支小小的箭頭，\n會把動作前方的目的地，輕輕指給你看。",
+        "text": "「へ」的孩子的聲音，總是從稍遠的地方傳來的。",
         "audio": "",
         "emotion": "explain"
       },
       {
-        "text": "例如：\n「学校へ行く。」\n就是「去學校」。\n重點不是人已經在那裡，\n而是正朝著那個地方前進。",
+        "text": "「へ」是表示朝某處前進的方向的孩子。不是「已經在那裡了」，而是「正要往那裡去」的感覺。",
         "audio": "",
         "emotion": "explain"
       },
       {
-        "text": "所以看到題目的時候，\n你可以先輕輕想一下：\n這句話，是不是正在往某個地方去呢？\n如果像是這樣，那多半就是「へ」在回應你了。",
+        "text": "比如說，「学校へ行く（去學校）」。有一個要前往的地方——那就是「へ」的聲音",
         "audio": "",
         "emotion": "encourage"
       },
       {
-        "text": "不用急。\n只要你開始看見那個前進的方向，\n這孩子的聲音就會慢慢變清楚。\n抓到「朝哪裡去」這個感覺，\n你就不容易迷路了。",
+        "text": "當你覺得「是不是正在往哪裡去呢」的時候，這個孩子就會回應你了。",
         "audio": "",
         "emotion": "happy"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/he-direction-p01.mp3",
+      "assets/audio/mentor/he-direction-p02.mp3",
+      "assets/audio/mentor/he-direction-p03.mp3",
+      "assets/audio/mentor/he-direction-p04.mp3",
+      "assets/audio/mentor/he-direction-p05.mp3"
+    ]
   },
   "MO_ALSO_BASIC": {
     "dialogue": [
       {
-        "text": "走到這裡，\n你應該已經慢慢看得出來，\n一句話現在是在說誰了吧。\n接下來，我們來看看「も」的小助靈。",
+        "text": "欸，你注意到了嗎？跟剛才的孩子，這個孩子有點像吧。",
         "audio": "",
         "emotion": "gentle"
       },
       {
-        "text": "「も」最基本的意思，\n就是「也」。\n前面已經成立的事情，\n到了這裡，這個也一樣成立。\n你先這樣去想，就很好懂了。",
+        "text": "但「も」稍微不一樣。她是輕輕疊上來說「我也在喔」的孩子。",
         "audio": "",
         "emotion": "explain"
       },
       {
-        "text": "例如：\n「わたしも学生です。」\n就是「我也是學生」。\n這孩子很擅長接住前面那個意思，\n再輕輕告訴你：\n「這個也一樣喔。」",
+        "text": "「も」是表示「也～」的孩子。前面已經有人了，然後「這個孩子也是」這樣接續下來的感覺。",
         "audio": "",
         "emotion": "explain"
       },
       {
-        "text": "所以看到題目的時候，\n你可以先想一想：\n前面是不是已經有一個人，或一樣東西了？\n而現在，這個也被算進去了嗎？\n如果像是這樣，那多半就是「も」在回應你了。",
+        "text": "比如說，「わたしも学生です（我也是學生）」。輕輕承接前面的語境，疊加上去。",
         "audio": "",
         "emotion": "encourage"
       },
       {
-        "text": "不用把它想得太難。\n只要你先抓住「這個也一樣」的感覺，\n就已經慢慢聽懂這孩子的聲音了。\n這孩子的聲音，很溫柔的。",
+        "text": "當你感覺到「這個也一樣」的時候，那就是「も」的聲音了。",
         "audio": "",
         "emotion": "happy"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/mo-also-p01.mp3",
+      "assets/audio/mentor/mo-also-p02.mp3",
+      "assets/audio/mentor/mo-also-p03.mp3",
+      "assets/audio/mentor/mo-also-p04.mp3",
+      "assets/audio/mentor/mo-also-p05.mp3"
+    ]
   },
   "NI_TIME": {
     "dialogue": [
       {
-        "text": "好孩子，接下來是表示時間的「に」小助靈。\n這孩子會在句子裡輕輕告訴你：\n事情是在什麼時候發生的。",
+        "text": "……你，有沒有感受過時間流逝的感覺？",
         "audio": "",
         "emotion": "gentle"
       },
       {
-        "text": "現在先不用想得太難，也沒關係。\n你先把它記成「在那個時間點」的感覺就好。\n像幾點、星期幾、幾月幾日這種時間詞，\n就很常和它一起出現。",
+        "text": "這個孩子，會輕輕地在語言裡刻下「什麼時候」。",
         "audio": "",
         "emotion": "explain"
       },
       {
-        "text": "最好認的樣子，\n就是時間詞後面接一個「に」。\n例如：\n「七時に起きる。」\n就是「七點起床」。",
+        "text": "表示時間的「に」，是告訴你「那是什麼時候發生的」的孩子。常常跟在表示時間的詞語後面出現。",
         "audio": "",
         "emotion": "explain"
       },
       {
-        "text": "所以看到題目的時候，\n你可以先輕輕想一下：\n這句話，是不是在說一個明確的時間呢？\n如果像是這樣，那多半就是「に」在回應你了。",
+        "text": "比如說，「七時に起きる（七點起床）」。「幾點・星期幾・幾月幾日」後面接了「に」，那就是這個孩子的聲音。",
         "audio": "",
         "emotion": "encourage"
       },
       {
-        "text": "不用急。\n時間的感覺，本來就是慢慢熟起來的。\n只要你開始看見那個「時間的點」，\n就已經慢慢抓到這孩子的力量了。",
+        "text": "當你看見一個明確的時間點的時候——「に」就會回應你了。",
         "audio": "",
         "emotion": "happy"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/ni-time-p01.mp3",
+      "assets/audio/mentor/ni-time-p02.mp3",
+      "assets/audio/mentor/ni-time-p03.mp3",
+      "assets/audio/mentor/ni-time-p04.mp3",
+      "assets/audio/mentor/ni-time-p05.mp3"
+    ]
   },
   "TO_AND": {
     "dialogue": [
       {
-        "text": "接下來，我們來看看「と」的小助靈吧。\n不過別擔心，\n這一關的它，\n還沒有那麼難懂。",
+        "text": "「と」的孩子啊，看起來不太像難相處的樣子。",
         "audio": "",
         "emotion": "gentle"
       },
       {
-        "text": "這一關的「と」，\n最基本的感覺就是「和、跟」。\n它會把兩個名詞並排放在一起，\n告訴你這兩樣東西都在裡面。",
+        "text": "但也正因為這樣，要好好聽她說的話喔。",
         "audio": "",
         "emotion": "explain"
       },
       {
-        "text": "例如：\n「パンと牛乳」\n就是「麵包和牛奶」。\n這孩子很擅長把兩樣東西排排站好，\n讓你一眼就看出它們是並列的。",
+        "text": "這一關的「と」是「～和～」，把兩樣東西並排在一起的孩子。",
         "audio": "",
         "emotion": "explain"
       },
       {
-        "text": "所以看到題目的時候，\n你可以先看一下：\n「と」的前後，是不是剛好有兩個名詞呢？\n如果像是在列東西、把東西並排說出來，\n那多半就是這一關的「と」在回應你了。",
+        "text": "比如說，「パンと牛乳（麵包和牛奶）」。「と」的前後，兩個名詞並排在一起。",
         "audio": "",
         "emotion": "encourage"
       },
       {
-        "text": "現在先記住一件事就好：\n這一關的「と」，是會把兩樣東西並排說出來的孩子。\n只要你先看懂那個並排的感覺，\n就已經慢慢聽懂它的聲音了。",
+        "text": "當你看見兩樣東西並排在一起的時候，這個孩子就會回應你了。",
         "audio": "",
         "emotion": "happy"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/to-and-p01.mp3",
+      "assets/audio/mentor/to-and-p02.mp3",
+      "assets/audio/mentor/to-and-p03.mp3",
+      "assets/audio/mentor/to-and-p04.mp3",
+      "assets/audio/mentor/to-and-p05.mp3"
+    ]
   },
   "BOSS_REVIEW_02": {
     "dialogue": [
       {
-        "text": "來，到這裡先把呼吸穩下來吧。\n這一戰，不是為了找新的小助靈。\n而是要看看你能不能把一路走來遇見的那些孩子，\n好好地一一分辨出來。",
+        "text": "你已經聆聽了八個孩子的聲音了呢。",
         "audio": "",
         "emotion": "gentle"
       },
       {
-        "text": "先把它們想起來吧。\n「へ」是指出朝哪裡去的孩子。\n「も」是輕輕告訴你「這個也一樣」的孩子。\n表示時間的「に」，會告訴你事情是在什麼時候發生的。\n而「と」，則是把兩樣東西並排放在一起的孩子。",
+        "text": "……老實說，我沒想到你真的走到了這裡。很高興，只是一點點喔。",
         "audio": "",
         "emotion": "explain"
       },
       {
-        "text": "如果一時有些亂掉，也沒關係。\n你就順著看下去：\n這句話是在說朝哪裡去嗎？\n是在說「這個也一樣」嗎？\n是在說一個明確的時間嗎？\n還是，正在把兩樣東西並排說出來呢？",
+        "text": "好了，這次是這四個孩子。「へ」「も」「に」「と」——能好好分辨出來嗎。",
         "audio": "",
         "emotion": "explain"
       },
       {
-        "text": "這一組最容易讓人弄混的地方，\n就是它們每一個看起來都很熟悉。\n越是覺得自己好像看過，\n就越容易一著急，聽錯了誰的聲音。\n所以別急，先看清楚，\n這孩子現在正在句子裡做什麼。",
+        "text": "如果迷惑了，就依序想想看。",
         "audio": "",
         "emotion": "encourage"
       },
       {
-        "text": "能走到這裡，你已經很厲害了。\n方向、附加、時間、並列——\n只要你開始看見它們之間的差別，就已經足夠了。\n來，這道關卡，我也會陪你一起穩穩跨過去。\n我一直都在你身邊。",
+        "text": "正在往某處去？→「へ」,「這個也一樣」在疊加？→「も」",
+        "audio": "",
+        "emotion": "happy"
+      },
+      {
+        "text": "有明確的時間點？→「に」／兩樣東西並排？→「と」",
+        "audio": "",
+        "emotion": "happy"
+      },
+      {
+        "text": "因為她們看起來都有點眼熟，一著急就容易搞混。別焦慮，只要看清楚這個孩子現在在做什麼就好。",
+        "audio": "",
+        "emotion": "happy"
+      },
+      {
+        "text": "能走到這裡的你，一定沒問題的。一起越過去吧。",
         "audio": "",
         "emotion": "happy"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/boss-review-02-p01.mp3",
+      "assets/audio/mentor/boss-review-02-p02.mp3",
+      "assets/audio/mentor/boss-review-02-p03.mp3",
+      "assets/audio/mentor/boss-review-02-p04.mp3",
+      "assets/audio/mentor/boss-review-02-p05.mp3",
+      "assets/audio/mentor/boss-review-02-p06.mp3",
+      "assets/audio/mentor/boss-review-02-p07.mp3",
+      "assets/audio/mentor/boss-review-02-p08.mp3"
+    ]
   },
   "DE_ACTION_PLACE": {
     "dialogue": [
