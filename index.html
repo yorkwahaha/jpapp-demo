@@ -2484,7 +2484,15 @@
 
                         <div class="mentor-portrait-shadow"></div>
 
-                        <img src="assets/images/ui/mentor-cover-fullbody.png" alt="Mentor"
+                        <video v-if="shouldUseMentorVideo" ref="mentorVideoEl" autoplay muted loop playsinline
+                            preload="metadata" :poster="mentorVideoPoster" @error="handleMentorVideoError"
+                            class="h-[65vh] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] mentor-portrait-fade mentor-scene-video"
+                            style="transform: translateY(20px);">
+                            <source v-for="source in mentorVideoSources" :key="source.src" :src="source.src"
+                                :type="source.type">
+                        </video>
+
+                        <img v-else src="assets/images/ui/mentor-cover-fullbody.png" alt="Mentor"
                             class="h-[65vh] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] mentor-portrait-fade"
                             style="transform: translateY(20px);">
 
@@ -2541,7 +2549,7 @@
 
             <!-- ── 秘笈本 Codex（地圖頁可用） ── -->
             <div v-if="isCodexOpen"
-                class="modal-overlay fixed inset-0 z-[2000] flex items-center justify-center p-3 sm:p-6"
+                class="modal-overlay codex-modal-overlay fixed inset-0 z-[2000] flex items-center justify-center p-3 sm:p-6"
                 @click.self="isCodexOpen = false; flippedCardId = null; playSfx('click')">
                 <div class="absolute inset-0 bg-black/72 backdrop-blur-sm pointer-events-none"></div>
                 <div class="codex-book relative w-full sm:max-w-4xl flex flex-col">
@@ -2566,7 +2574,7 @@
                             <div
                                 class="codex-book-page flex flex-1 items-center justify-center overflow-y-auto p-4 sm:p-8">
                                 <div v-if="codexPageSkills[0]" :id="'skill-card-' + codexPageSkills[0].id"
-                                    class="flex justify-center w-full">
+                                    class="codex-card-stack flex flex-col items-center justify-center gap-3 w-full">
                                     <div v-if="unlockedSkillIds.includes(codexPageSkills[0].id)" class="codex-flip-card"
                                         :class="{ 'codex-flip-card--highlight': expandedSkillId === codexPageSkills[0].id }"
                                         @click="flippedCardId = (flippedCardId === codexPageSkills[0].id ? null : codexPageSkills[0].id); playCardFlip()">
@@ -2626,6 +2634,17 @@
                                         <span class="codex-unlock-tip">{{ codexPageSkills[0].unlockLevel ? '第 ' +
                                             codexPageSkills[0].unlockLevel + ' 關解鎖' : '探索中' }}</span>
                                     </div>
+                                    <div v-if="unlockedSkillIds.includes(codexPageSkills[0].id) && codexPageSkills[0].particle"
+                                        class="codex-mastery-panel">
+                                        <div class="codex-mastery-row">
+                                            <span>熟練度</span>
+                                            <strong>{{ getSkillMastery(codexPageSkills[0].id) }}%</strong>
+                                        </div>
+                                        <div class="codex-mastery-track">
+                                            <div class="codex-mastery-fill"
+                                                :style="getSkillMasteryStyle(codexPageSkills[0].id)"></div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div v-else class="codex-page-empty">
                                     <p class="text-amber-900/40 text-sm">此章節尚無技能</p>
@@ -2635,7 +2654,7 @@
                             <div
                                 class="codex-book-page codex-book-page--right hidden sm:flex flex-1 items-center justify-center overflow-y-auto p-8">
                                 <div v-if="codexNextSkill" :id="'skill-card-r-' + codexNextSkill.id"
-                                    class="flex justify-center w-full">
+                                    class="codex-card-stack flex flex-col items-center justify-center gap-3 w-full">
                                     <div v-if="unlockedSkillIds.includes(codexNextSkill.id)" class="codex-flip-card"
                                         :class="{ 'codex-flip-card--highlight': expandedSkillId === codexNextSkill.id }"
                                         @click="flippedCardId = (flippedCardId === codexNextSkill.id ? null : codexNextSkill.id); playCardFlip()">
@@ -2694,6 +2713,17 @@
                                                 class="font-bold text-slate-500/70 text-sm">尚未習得</span></div>
                                         <span class="codex-unlock-tip">{{ codexNextSkill.unlockLevel ? '第 ' +
                                             codexNextSkill.unlockLevel + ' 關解鎖' : '探索中' }}</span>
+                                    </div>
+                                    <div v-if="unlockedSkillIds.includes(codexNextSkill.id) && codexNextSkill.particle"
+                                        class="codex-mastery-panel">
+                                        <div class="codex-mastery-row">
+                                            <span>熟練度</span>
+                                            <strong>{{ getSkillMastery(codexNextSkill.id) }}%</strong>
+                                        </div>
+                                        <div class="codex-mastery-track">
+                                            <div class="codex-mastery-fill"
+                                                :style="getSkillMasteryStyle(codexNextSkill.id)"></div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div v-else class="codex-page-fin text-center">
@@ -3627,7 +3657,14 @@
 
                         <div class="mentor-portrait-container">
 
-                            <img v-if="!isMentorPortraitError" src="assets/images/ui/mentor/mentor-neutral.png"
+                            <video v-if="shouldUseMentorVideo" ref="mentorVideoEl" autoplay muted loop playsinline
+                                preload="metadata" :poster="mentorVideoPoster" @error="handleMentorVideoError"
+                                class="mentor-portrait-video rounded-full">
+                                <source v-for="source in mentorVideoSources" :key="source.src" :src="source.src"
+                                    :type="source.type">
+                            </video>
+
+                            <img v-else-if="!isMentorPortraitError" src="assets/images/ui/mentor/mentor-neutral.png"
                                 @error="isMentorPortraitError = true" class="mentor-portrait-img rounded-full">
 
                             <div v-else class="mentor-portrait-placeholder">
@@ -3847,7 +3884,7 @@
 
             <!-- ── 秘笈本 Codex（戰鬥頁可用） ── -->
             <div v-if="isCodexOpen"
-                class="modal-overlay fixed inset-0 z-[2000] flex items-center justify-center p-3 sm:p-6"
+                class="modal-overlay codex-modal-overlay fixed inset-0 z-[2000] flex items-center justify-center p-3 sm:p-6"
                 @click.self="closeCodex(); if (!isSkillOpen) resumeBattle(); playSfx('click')">
                 <div class="absolute inset-0 bg-black/72 backdrop-blur-sm pointer-events-none"></div>
                 <div class="codex-book relative w-full sm:max-w-4xl flex flex-col">
@@ -3872,7 +3909,7 @@
                             <div
                                 class="codex-book-page flex flex-1 items-center justify-center overflow-y-auto p-4 sm:p-8">
                                 <div v-if="codexPageSkills[0]" :id="'skill-card-' + codexPageSkills[0].id"
-                                    class="flex justify-center w-full">
+                                    class="codex-card-stack flex flex-col items-center justify-center gap-3 w-full">
                                     <div v-if="unlockedSkillIds.includes(codexPageSkills[0].id)" class="codex-flip-card"
                                         :class="{ 'codex-flip-card--highlight': expandedSkillId === codexPageSkills[0].id }"
                                         @click="flippedCardId = (flippedCardId === codexPageSkills[0].id ? null : codexPageSkills[0].id); playCardFlip()">
@@ -3935,6 +3972,17 @@
                                         <span class="codex-unlock-tip">{{ codexPageSkills[0].unlockLevel ? '第 ' +
                                             codexPageSkills[0].unlockLevel + ' 關解鎖' : '探索中' }}</span>
                                     </div>
+                                    <div v-if="unlockedSkillIds.includes(codexPageSkills[0].id) && codexPageSkills[0].particle"
+                                        class="codex-mastery-panel">
+                                        <div class="codex-mastery-row">
+                                            <span>熟練度</span>
+                                            <strong>{{ getSkillMastery(codexPageSkills[0].id) }}%</strong>
+                                        </div>
+                                        <div class="codex-mastery-track">
+                                            <div class="codex-mastery-fill"
+                                                :style="getSkillMasteryStyle(codexPageSkills[0].id)"></div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div v-else class="codex-page-empty">
                                     <p class="text-amber-900/40 text-sm">此章節尚無技能</p>
@@ -3944,7 +3992,7 @@
                             <div
                                 class="codex-book-page codex-book-page--right hidden sm:flex flex-1 items-center justify-center overflow-y-auto p-8">
                                 <div v-if="codexNextSkill" :id="'skill-card-r-' + codexNextSkill.id"
-                                    class="flex justify-center w-full">
+                                    class="codex-card-stack flex flex-col items-center justify-center gap-3 w-full">
                                     <div v-if="unlockedSkillIds.includes(codexNextSkill.id)" class="codex-flip-card"
                                         :class="{ 'codex-flip-card--highlight': expandedSkillId === codexNextSkill.id }"
                                         @click="flippedCardId = (flippedCardId === codexNextSkill.id ? null : codexNextSkill.id); playCardFlip()">
@@ -4006,6 +4054,17 @@
                                                 class="font-bold text-slate-500/70 text-sm">尚未習得</span></div>
                                         <span class="codex-unlock-tip">{{ codexNextSkill.unlockLevel ? '第 ' +
                                             codexNextSkill.unlockLevel + ' 關解鎖' : '探索中' }}</span>
+                                    </div>
+                                    <div v-if="unlockedSkillIds.includes(codexNextSkill.id) && codexNextSkill.particle"
+                                        class="codex-mastery-panel">
+                                        <div class="codex-mastery-row">
+                                            <span>熟練度</span>
+                                            <strong>{{ getSkillMastery(codexNextSkill.id) }}%</strong>
+                                        </div>
+                                        <div class="codex-mastery-track">
+                                            <div class="codex-mastery-fill"
+                                                :style="getSkillMasteryStyle(codexNextSkill.id)"></div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div v-else class="codex-page-fin text-center">

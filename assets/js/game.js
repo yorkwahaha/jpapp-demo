@@ -432,6 +432,50 @@ const _jpApp = Vue.createApp({
         // --- オノマトペ Skills (unlocked on boss clear) ---
         const unlockedOnomatopeIds = ref([]);
 
+        const MASTERY_PARTICLES = ['は', 'の', 'が', 'を', 'に', 'へ', 'も', 'で', 'と', 'から', 'まで', 'や', 'より'];
+        const createParticleProgressMap = (initialValue = 0) => {
+            return MASTERY_PARTICLES.reduce((acc, particle) => {
+                acc[particle] = initialValue;
+                return acc;
+            }, {});
+        };
+        const normalizeParticleMasteryMap = (source = {}) => {
+            const base = createParticleProgressMap(0);
+            MASTERY_PARTICLES.forEach(particle => {
+                const value = Number(source?.[particle] ?? 0);
+                base[particle] = Number.isFinite(value) ? Math.min(100, Math.max(0, Math.floor(value))) : 0;
+            });
+            return base;
+        };
+        const normalizeParticleCorrectCountsMap = (source = {}) => {
+            const base = createParticleProgressMap(0);
+            MASTERY_PARTICLES.forEach(particle => {
+                const value = Number(source?.[particle] ?? 0);
+                base[particle] = Number.isFinite(value) ? Math.max(0, Math.floor(value)) % 2 : 0;
+            });
+            return base;
+        };
+        const normalizeSkillMasteryMap = (source = {}) => {
+            return Object.entries(source || {}).reduce((acc, [skillId, rawValue]) => {
+                if (!skillId || typeof skillId !== 'string') return acc;
+                const value = Number(rawValue ?? 0);
+                acc[skillId] = Number.isFinite(value) ? Math.min(100, Math.max(0, Math.floor(value))) : 0;
+                return acc;
+            }, {});
+        };
+        const normalizeSkillCorrectCountsMap = (source = {}) => {
+            return Object.entries(source || {}).reduce((acc, [skillId, rawValue]) => {
+                if (!skillId || typeof skillId !== 'string') return acc;
+                const value = Number(rawValue ?? 0);
+                acc[skillId] = Number.isFinite(value) ? Math.max(0, Math.floor(value)) % 2 : 0;
+                return acc;
+            }, {});
+        };
+        const particleMastery = ref(createParticleProgressMap(0));
+        const particleCorrectCounts = ref(createParticleProgressMap(0));
+        const skillMastery = ref({});
+        const skillCorrectCounts = ref({});
+
         // --- Hero Visual Data Configuration ---
         // battle.marginBottom: CSS string applied to #heroAvatar margin-bottom (e.g. '24px' or 'clamp(135px,18dvh,160px)')
         // map.src: image path for .map-hud-avatar-img elements
@@ -560,6 +604,14 @@ const _jpApp = Vue.createApp({
 
                     unlockedOnomatopeIds: unlockedOnomatopeIds.value,
 
+                    particleMastery: particleMastery.value,
+
+                    particleCorrectCounts: particleCorrectCounts.value,
+
+                    skillMastery: skillMastery.value,
+
+                    skillCorrectCounts: skillCorrectCounts.value,
+
 
                     lastViewedMap: { chapter: activeChapter.value, segment: selectedSegmentIdx.value }
 
@@ -596,6 +648,14 @@ const _jpApp = Vue.createApp({
                     if (parsed.unlockedAbilityIds) _pendingAbilityIds = parsed.unlockedAbilityIds;
 
                     if (parsed.unlockedOnomatopeIds) unlockedOnomatopeIds.value = parsed.unlockedOnomatopeIds;
+
+                    if (parsed.particleMastery) particleMastery.value = normalizeParticleMasteryMap(parsed.particleMastery);
+
+                    if (parsed.particleCorrectCounts) particleCorrectCounts.value = normalizeParticleCorrectCountsMap(parsed.particleCorrectCounts);
+
+                    if (parsed.skillMastery) skillMastery.value = normalizeSkillMasteryMap(parsed.skillMastery);
+
+                    if (parsed.skillCorrectCounts) skillCorrectCounts.value = normalizeSkillCorrectCountsMap(parsed.skillCorrectCounts);
 
 
                     if (parsed.lastViewedMap && isSegmentUnlocked(parsed.lastViewedMap.segment)) {
@@ -1294,6 +1354,12 @@ const _jpApp = Vue.createApp({
 
         const isMentorPortraitError = ref(false);
 
+        const mentorPortraitVideo = ref(null);
+
+        const mentorVideoEl = ref(null);
+
+        const isMentorVideoError = ref(false);
+
         const isMentorSkipPressing = ref(false);
 
         const mentorSkipPressTimer = ref(null);
@@ -1376,6 +1442,90 @@ const _jpApp = Vue.createApp({
 
 
 
+        const mentorVideoSources = computed(() => {
+
+            const config = mentorPortraitVideo.value;
+
+            if (!config) return [];
+
+            const supportsVideo = typeof document !== 'undefined' && !!document.createElement('video').canPlayType;
+
+            if (!supportsVideo) return [];
+
+            const sources = [];
+
+            if (config.webm) sources.push({ src: config.webm, type: 'video/webm' });
+
+            if (config.mp4) sources.push({ src: config.mp4, type: 'video/mp4' });
+
+            if (config.src) sources.push({ src: config.src, type: config.type || undefined });
+
+            return sources;
+
+        });
+
+        const shouldUseMentorVideo = computed(() => mentorVideoSources.value.length > 0 && !isMentorVideoError.value);
+
+        const mentorVideoPoster = computed(() => mentorPortraitVideo.value?.poster || 'assets/images/ui/mentor-cover-fullbody.png');
+
+        const getMentorVideoElement = () => {
+            const videoRef = mentorVideoEl.value;
+            if (Array.isArray(videoRef)) {
+                return videoRef.find(video => video && typeof video.play === 'function') || null;
+            }
+            return videoRef && typeof videoRef.play === 'function' ? videoRef : null;
+        };
+
+        const stopMentorVideo = () => {
+
+            const video = getMentorVideoElement();
+
+            if (!video) return;
+
+            try {
+
+                video.pause();
+
+                video.currentTime = 0;
+
+            } catch (e) { }
+
+        };
+
+        const playMentorVideo = async () => {
+
+            if (!shouldUseMentorVideo.value) return;
+
+            await nextTick();
+
+            const video = getMentorVideoElement();
+
+            if (!video) return;
+
+            try {
+
+                video.muted = true;
+
+                video.defaultMuted = true;
+
+                video.playsInline = true;
+
+                const playPromise = video.play();
+
+                if (playPromise && typeof playPromise.catch === 'function') playPromise.catch(() => { });
+
+            } catch (e) { }
+
+        };
+
+        const handleMentorVideoError = () => {
+
+            isMentorVideoError.value = true;
+
+            stopMentorVideo();
+
+        };
+
         const loadMentorState = () => {
 
             try {
@@ -1405,6 +1555,7 @@ const _jpApp = Vue.createApp({
             // 優先讀取集中化 JSON 內的對話資料，保留原有 skill 內的作為 fallback
             const centralizedData = MENTOR_AUDIO_MAP.value?.[skill.id];
             const dialogueSource = centralizedData?.dialogue || skill.mentorDialogue || [];
+            mentorPortraitVideo.value = centralizedData?.portraitVideo || skill.portraitVideo || null;
 
             mentorPages.value = fragmentMentorDialogue(dialogueSource);
 
@@ -1428,9 +1579,13 @@ const _jpApp = Vue.createApp({
 
             isMentorPortraitError.value = false;
 
+            isMentorVideoError.value = false;
+
             startMentorTyping(currentMentorLine.value || "");
 
             playMentorAudioForCurrentPage();
+
+            playMentorVideo();
 
         };
 
@@ -1609,9 +1764,13 @@ const _jpApp = Vue.createApp({
 
             mentorDialogueIndex.value = 0;
 
+            stopMentorVideo();
+
             startMentorTyping(currentMentorLine.value || "");
 
             playMentorAudioForCurrentPage();
+
+            playMentorVideo();
 
         };
 
@@ -1670,6 +1829,8 @@ const _jpApp = Vue.createApp({
             }
 
             stopMentorAudio();
+
+            stopMentorVideo();
 
             isMentorModalOpen.value = false;
 
@@ -1793,6 +1954,26 @@ const _jpApp = Vue.createApp({
         const codexNextSkill = computed(() =>
             codexFilteredSkills.value[codexPage.value + 1] || null
         );
+
+        const getParticleMastery = (particle) => {
+            if (!MASTERY_PARTICLES.includes(particle)) return 0;
+            const value = Number(particleMastery.value[particle] ?? 0);
+            return Number.isFinite(value) ? Math.min(100, Math.max(0, Math.floor(value))) : 0;
+        };
+
+        const getParticleMasteryStyle = (particle) => ({
+            width: `${getParticleMastery(particle)}%`
+        });
+
+        const getSkillMastery = (skillId) => {
+            if (!skillId || typeof skillId !== 'string') return 0;
+            const value = Number(skillMastery.value[skillId] ?? 0);
+            return Number.isFinite(value) ? Math.min(100, Math.max(0, Math.floor(value))) : 0;
+        };
+
+        const getSkillMasteryStyle = (skillId) => ({
+            width: `${getSkillMastery(skillId)}%`
+        });
         // [ /CODEX - COMPUTED ]
 
 
@@ -2299,6 +2480,15 @@ const _jpApp = Vue.createApp({
         const {
             MONSTER_HP, POTION_HP, INITIAL_POTIONS, MONSTERS
         } = pool.config || {};
+
+        const BASE_MAX_DAMAGE = 20;
+        const COMBO_DAMAGE_START = 5;
+        const COMBO_DAMAGE_BONUS_PER_STACK = 1;
+        const BOSS_PLAYER_DAMAGE_POPUP_DELAY_MS = 1200;
+
+        const getComboMaxDamage = (combo) => {
+            return BASE_MAX_DAMAGE + Math.max(0, combo - (COMBO_DAMAGE_START - 1)) * COMBO_DAMAGE_BONUS_PER_STACK;
+        };
 
 
 
@@ -4785,9 +4975,6 @@ const _jpApp = Vue.createApp({
                         playSfx('damage');
                     }
 
-                    flashOverlay.value = true;
-                    setTimeout(() => { flashOverlay.value = false; }, 300);
-
                     let dMin = monster.value?.attackDamageMin;
                     let dMax = monster.value?.attackDamageMax;
                     if (dMin === undefined && dMax === undefined) { dMin = 10; dMax = 20; }
@@ -4797,13 +4984,25 @@ const _jpApp = Vue.createApp({
                     let dmg = Math.floor(Math.random() * (dMax - dMin + 1)) + dMin;
                     dmg = Math.max(1, Math.floor(dmg * heroBuffs.enemyDmgMult));
 
-                    player.value.hp = Math.max(0, player.value.hp - dmg);
-                    window.spawnFloatingDamage('player', dmg);
-                    flashHeroHit(player.value.hp / player.value.maxHp);
-                    if (player.value.hp <= 0) handleGameOver();
+                    const applyPlayerDamageVisual = () => {
+                        flashOverlay.value = true;
+                        setTimeout(() => { flashOverlay.value = false; }, 300);
 
-                    hpBarDanger.value = true;
-                    setTimeout(() => { hpBarDanger.value = false; }, 500);
+                        player.value.hp = Math.max(0, player.value.hp - dmg);
+                        window.spawnFloatingDamage('player', dmg);
+                        flashHeroHit(player.value.hp / player.value.maxHp);
+                        if (player.value.hp <= 0) handleGameOver();
+
+                        hpBarDanger.value = true;
+                        setTimeout(() => { hpBarDanger.value = false; }, 500);
+                    };
+
+                    const playerDamageDelayMs = isBoss ? BOSS_PLAYER_DAMAGE_POPUP_DELAY_MS : 0;
+                    if (playerDamageDelayMs > 0) {
+                        setTimeout(applyPlayerDamageVisual, playerDamageDelayMs);
+                    } else {
+                        applyPlayerDamageVisual();
+                    }
                 }
 
                 wrongAnswerPause.value = true;
@@ -6990,7 +7189,15 @@ const _jpApp = Vue.createApp({
 
                 // 優先讀取 enemies.v1.json 的 hpMax，fallback 到舊 MONSTERS 表
 
-                const resolvedHp = enemyMatch.hpMax ?? mdef.hpMax;
+                const enemyStats = enemyMatch.enemyStats || {};
+                const enemyDamage = enemyStats.damage || {};
+                const resolvedHp = enemyStats.hp ?? enemyMatch.hpMax ?? mdef.hpMax;
+                const resolvedDamageMin = typeof enemyDamage === 'number'
+                    ? enemyDamage
+                    : (enemyDamage.min ?? enemyMatch.attackDamageMin ?? 10);
+                const resolvedDamageMax = typeof enemyDamage === 'number'
+                    ? enemyDamage
+                    : (enemyDamage.max ?? enemyMatch.attackDamageMax ?? 20);
 
                 monster.value = {
 
@@ -7016,11 +7223,13 @@ const _jpApp = Vue.createApp({
 
                     infoOffsetY: enemyMatch.infoOffsetY ?? 0,
 
-                    attackIntervalMs: enemyMatch.attackIntervalMs || 10000,
+                    attackIntervalMs: enemyStats.attackIntervalMs ?? enemyMatch.attackIntervalMs ?? 10000,
 
-                    attackDamageMin: enemyMatch.attackDamageMin ?? 10,
+                    attackDamageMin: resolvedDamageMin,
 
-                    attackDamageMax: enemyMatch.attackDamageMax ?? 20,
+                    attackDamageMax: resolvedDamageMax,
+
+                    evasionRate: enemyStats.evasionRate ?? enemyMatch.evasionRate ?? 0.05,
 
                     attackRingScale: enemyMatch.attackRingScale || 1.0
 
@@ -7055,6 +7264,8 @@ const _jpApp = Vue.createApp({
                     attackDamageMin: 10,
 
                     attackDamageMax: 20,
+
+                    evasionRate: 0.05,
 
                     attackRingScale: 1.0
 
@@ -7241,6 +7452,48 @@ const _jpApp = Vue.createApp({
 
 
         // ================= [ BATTLE LOGIC ] =================
+        const getMasteryParticlesForCurrentQuestion = () => {
+            const q = currentQuestion.value;
+            if (!q || !Array.isArray(q.answers)) return [];
+            const particles = [];
+            const blanks = levelConfig.value?.blanks || q.answers.length;
+            q.answers.slice(0, blanks).forEach(answerSet => {
+                const answer = Array.isArray(answerSet) ? answerSet[0] : answerSet;
+                if (MASTERY_PARTICLES.includes(answer) && !particles.includes(answer)) {
+                    particles.push(answer);
+                }
+            });
+            return particles;
+        };
+
+        const addParticleMasteryProgress = () => {
+            getMasteryParticlesForCurrentQuestion().forEach(particle => {
+                if (getParticleMastery(particle) >= 100) return;
+                const nextCount = (Number(particleCorrectCounts.value[particle] || 0) + 1);
+                if (nextCount >= 2) {
+                    particleCorrectCounts.value[particle] = nextCount - 2;
+                    particleMastery.value[particle] = Math.min(100, getParticleMastery(particle) + 1);
+                } else {
+                    particleCorrectCounts.value[particle] = nextCount;
+                }
+            });
+            saveProgression();
+        };
+
+        const addSkillMasteryProgress = () => {
+            const skillId = currentQuestion.value?.skillId;
+            if (!skillId || typeof skillId !== 'string') return;
+            if (getSkillMastery(skillId) >= 100) return;
+            const nextCount = (Number(skillCorrectCounts.value[skillId] || 0) + 1);
+            if (nextCount >= 2) {
+                skillCorrectCounts.value[skillId] = nextCount - 2;
+                skillMastery.value[skillId] = Math.min(100, getSkillMastery(skillId) + 1);
+            } else {
+                skillCorrectCounts.value[skillId] = nextCount;
+            }
+            saveProgression();
+        };
+
         /** 答案判定入口：計算是否正確、處理傘害 / combo 計數、觸發自動推進郏輯。 */
         const checkAnswer = () => {
 
@@ -7322,6 +7575,8 @@ const _jpApp = Vue.createApp({
 
                     correctAnswersAmount.value++;
 
+                    addSkillMasteryProgress();
+
                     playCorrectFeedback(comboCount.value + 1);
 
                     // 🔋 SP Reward: +1 on correct answer
@@ -7329,7 +7584,7 @@ const _jpApp = Vue.createApp({
 
 
 
-                    const isPlayerMiss = (heroBuffs.giragiraTurns > 0 || heroBuffs.monsterSleep) ? false : (Math.random() < 0.05);
+                    const isPlayerMiss = (heroBuffs.giragiraTurns > 0 || heroBuffs.monsterSleep) ? false : (Math.random() < (monster.value?.evasionRate ?? 0.05));
 
                     if (isPlayerMiss) {
 
@@ -7401,14 +7656,15 @@ const _jpApp = Vue.createApp({
                         if (comboCount.value > maxComboCount.value) maxComboCount.value = comboCount.value;
 
                         const timeTaken = (Date.now() - questionStartTime) / 1000;
-                        let baseDmg = 20;
-                        if (timeTaken <= 2) baseDmg = 20;
+                        const maxDamage = getComboMaxDamage(comboCount.value);
+                        let baseDmg = maxDamage;
+                        if (timeTaken <= 2) baseDmg = maxDamage;
                         else if (timeTaken >= 10) baseDmg = 5;
-                        else baseDmg = Math.round(20 - ((timeTaken - 2) / 8) * 15);
+                        else baseDmg = Math.round(maxDamage - ((timeTaken - 2) / 8) * (maxDamage - 5));
 
                         // 加入 ±1 隨機浮動
                         const jitter = Math.floor(Math.random() * 3) - 1; // -1, 0, 1
-                        let dmg = baseDmg + jitter;
+                        let dmg = Math.min(maxDamage, baseDmg + jitter);
                         // GIRAGIRA Bonus & Cap Bypass
                         if (heroBuffs.giragiraTurns > 0) {
                             dmg = Math.round(baseDmg * 1.5);
@@ -8403,9 +8659,11 @@ const _jpApp = Vue.createApp({
             handleEscapeToMap, escapeOverlayVisible, escapeOverlayOpacity, isEscaping,
             heroBuffs,
             skillList, castAbility, spState, settings, shouldShowNextButton, praiseToast, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG,
+            particleMastery, particleCorrectCounts, skillMastery, skillCorrectCounts, getParticleMastery, getParticleMasteryStyle, getSkillMastery, getSkillMasteryStyle,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
             isMentorModalOpen, isLevelJumpOpen, isAdvancedSettingsOpen, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
             displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,
+            mentorVideoEl, mentorVideoSources, shouldUseMentorVideo, mentorVideoPoster, handleMentorVideoError,
             playPrologueOpening, playMainEndingFinale,
             isMentorSkipPressing, startMentorSkipPress, cancelMentorSkipPress,
             isMonsterImageError, handleMonsterImageError, handleMapImageError, currentMonsterSprite, monsterPositionStyle, monsterIsEntering, monsterIsDying, monsterTrulyDead, monsterResultShown, bossDeathVfxActive, bossDeathStage, monsterAttackLunge,

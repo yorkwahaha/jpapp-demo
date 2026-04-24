@@ -9,14 +9,23 @@
       1
     ],
     "hpMax": 100,
-    "size": 1.0,
+    "size": 1,
     "posX": null,
     "posY": 50,
     "infoOffsetY": -20,
     "attackIntervalMs": 8000,
-    "attackRingScale": 1.0,
+    "attackRingScale": 1,
     "attackDamageMin": 2,
-    "attackDamageMax": 5
+    "attackDamageMax": 5,
+    "enemyStats": {
+      "hp": 95,
+      "attackIntervalMs": 9000,
+      "damage": {
+        "min": 2,
+        "max": 4
+      },
+      "evasionRate": 0.04
+    }
   },
   {
     "id": "rune-moth",
@@ -28,13 +37,22 @@
       2
     ],
     "hpMax": 160,
-    "size": 1.0,
+    "size": 1,
     "posX": null,
     "posY": null,
     "attackIntervalMs": 10000,
     "attackRingScale": 1.5,
     "attackDamageMin": 3,
-    "attackDamageMax": 6
+    "attackDamageMax": 6,
+    "enemyStats": {
+      "hp": 120,
+      "attackIntervalMs": 7600,
+      "damage": {
+        "min": 2,
+        "max": 5
+      },
+      "evasionRate": 0.12
+    }
   },
   {
     "id": "mist-bat",
@@ -46,13 +64,22 @@
       3
     ],
     "hpMax": 220,
-    "size": 1.0,
+    "size": 1,
     "posX": null,
     "posY": null,
     "attackIntervalMs": 10000,
     "attackRingScale": 1.5,
     "attackDamageMin": 5,
-    "attackDamageMax": 8
+    "attackDamageMax": 8,
+    "enemyStats": {
+      "hp": 130,
+      "attackIntervalMs": 7000,
+      "damage": {
+        "min": 3,
+        "max": 6
+      },
+      "evasionRate": 0.15
+    }
   },
   {
     "id": "moss-boar",
@@ -71,7 +98,16 @@
     "attackIntervalMs": 10000,
     "attackRingScale": 1.2,
     "attackDamageMin": 6,
-    "attackDamageMax": 10
+    "attackDamageMax": 10,
+    "enemyStats": {
+      "hp": 190,
+      "attackIntervalMs": 10500,
+      "damage": {
+        "min": 5,
+        "max": 9
+      },
+      "evasionRate": 0.03
+    }
   },
   {
     "id": "man-eater-bloom",
@@ -83,10 +119,19 @@
       5
     ],
     "hpMax": 400,
-    "size": 2.0,
+    "size": 2,
     "posX": null,
     "posY": 13,
-    "infoOffsetY": 35
+    "infoOffsetY": 35,
+    "enemyStats": {
+      "hp": 600,
+      "attackIntervalMs": 11000,
+      "damage": {
+        "min": 8,
+        "max": 13
+      },
+      "evasionRate": 0.03
+    }
   },
   {
     "id": "ash-goblin",
@@ -105,7 +150,16 @@
     "attackIntervalMs": 10000,
     "attackRingScale": 1.2,
     "attackDamageMin": 8,
-    "attackDamageMax": 12
+    "attackDamageMax": 12,
+    "enemyStats": {
+      "hp": 165,
+      "attackIntervalMs": 8200,
+      "damage": {
+        "min": 6,
+        "max": 10
+      },
+      "evasionRate": 0.09
+    }
   },
   {
     "id": "shell-sprout",
@@ -123,7 +177,16 @@
     "attackIntervalMs": 10000,
     "attackRingScale": 1.1,
     "attackDamageMin": 10,
-    "attackDamageMax": 14
+    "attackDamageMax": 14,
+    "enemyStats": {
+      "hp": 230,
+      "attackIntervalMs": 11500,
+      "damage": {
+        "min": 8,
+        "max": 13
+      },
+      "evasionRate": 0.02
+    }
   },
   {
     "id": "forest-cat",
@@ -141,7 +204,16 @@
     "attackIntervalMs": 8000,
     "attackRingScale": 1.2,
     "attackDamageMin": 10,
-    "attackDamageMax": 12
+    "attackDamageMax": 12,
+    "enemyStats": {
+      "hp": 175,
+      "attackIntervalMs": 7000,
+      "damage": {
+        "min": 6,
+        "max": 10
+      },
+      "evasionRate": 0.14
+    }
   },
   {
     "id": "stone-mimic",
@@ -157,9 +229,18 @@
     "posX": null,
     "posY": 20,
     "attackIntervalMs": 10000,
-    "attackRingScale": 1.0,
+    "attackRingScale": 1,
     "attackDamageMin": 10,
-    "attackDamageMax": 15
+    "attackDamageMax": 15,
+    "enemyStats": {
+      "hp": 255,
+      "attackIntervalMs": 12000,
+      "damage": {
+        "min": 10,
+        "max": 15
+      },
+      "evasionRate": 0.02
+    }
   },
   {
     "id": "orc-warlord",
@@ -171,13 +252,22 @@
       10
     ],
     "hpMax": 400,
-    "size": 2.0,
+    "size": 2,
     "posX": null,
     "posY": 19,
     "infoOffsetY": 45,
     "attackIntervalMs": 10000,
     "attackDamageMin": 15,
-    "attackDamageMax": 20
+    "attackDamageMax": 20,
+    "enemyStats": {
+      "hp": 810,
+      "attackIntervalMs": 11500,
+      "damage": {
+        "min": 13,
+        "max": 20
+      },
+      "evasionRate": 0.03
+    }
   },
   {
     "id": "ember-imp",
@@ -191,7 +281,16 @@
     "hpMax": 250,
     "size": 1.3,
     "posX": null,
-    "posY": null
+    "posY": null,
+    "enemyStats": {
+      "hp": 190,
+      "attackIntervalMs": 7600,
+      "damage": {
+        "min": 8,
+        "max": 13
+      },
+      "evasionRate": 0.1
+    }
   },
   {
     "id": "shore-wisp",
@@ -203,9 +302,18 @@
       12
     ],
     "hpMax": 250,
-    "size": 1.0,
+    "size": 1,
     "posX": null,
-    "posY": null
+    "posY": null,
+    "enemyStats": {
+      "hp": 185,
+      "attackIntervalMs": 8500,
+      "damage": {
+        "min": 9,
+        "max": 14
+      },
+      "evasionRate": 0.13
+    }
   },
   {
     "id": "thorn-wolf",
@@ -219,7 +327,16 @@
     "hpMax": 250,
     "size": 1.6,
     "posX": null,
-    "posY": 20
+    "posY": 20,
+    "enemyStats": {
+      "hp": 215,
+      "attackIntervalMs": 7200,
+      "damage": {
+        "min": 9,
+        "max": 14
+      },
+      "evasionRate": 0.11
+    }
   },
   {
     "id": "moon-jelly",
@@ -233,7 +350,16 @@
     "hpMax": 250,
     "size": 1.5,
     "posX": null,
-    "posY": 20
+    "posY": 20,
+    "enemyStats": {
+      "hp": 230,
+      "attackIntervalMs": 9800,
+      "damage": {
+        "min": 11,
+        "max": 17
+      },
+      "evasionRate": 0.08
+    }
   },
   {
     "id": "frost-roc",
@@ -249,7 +375,16 @@
     "posX": null,
     "posY": 16,
     "infoOffsetY": 40,
-    "attackIntervalMs": 8000
+    "attackIntervalMs": 8000,
+    "enemyStats": {
+      "hp": 1050,
+      "attackIntervalMs": 10500,
+      "damage": {
+        "min": 15,
+        "max": 23
+      },
+      "evasionRate": 0.04
+    }
   },
   {
     "id": "shadow_hound",
@@ -266,9 +401,18 @@
     "posY": 20,
     "infoOffsetY": 0,
     "attackIntervalMs": 10000,
-    "attackRingScale": 1.0,
+    "attackRingScale": 1,
     "attackDamageMin": 10,
-    "attackDamageMax": 20
+    "attackDamageMax": 20,
+    "enemyStats": {
+      "hp": 235,
+      "attackIntervalMs": 7000,
+      "damage": {
+        "min": 12,
+        "max": 17
+      },
+      "evasionRate": 0.13
+    }
   },
   {
     "id": "void_spirit",
@@ -280,14 +424,23 @@
       17
     ],
     "hpMax": 280,
-    "size": 2.0,
+    "size": 2,
     "posX": null,
     "posY": 20,
     "infoOffsetY": 15,
     "attackIntervalMs": 10000,
-    "attackRingScale": 1.0,
+    "attackRingScale": 1,
     "attackDamageMin": 10,
-    "attackDamageMax": 20
+    "attackDamageMax": 20,
+    "enemyStats": {
+      "hp": 250,
+      "attackIntervalMs": 9500,
+      "damage": {
+        "min": 14,
+        "max": 20
+      },
+      "evasionRate": 0.1
+    }
   },
   {
     "id": "bridge_shade_imp",
@@ -299,13 +452,22 @@
       18
     ],
     "hpMax": 280,
-    "size": 2.0,
+    "size": 2,
     "posX": null,
     "posY": 10,
     "infoOffsetY": 15,
     "attackIntervalMs": 10000,
     "attackDamageMin": 10,
-    "attackDamageMax": 20
+    "attackDamageMax": 20,
+    "enemyStats": {
+      "hp": 240,
+      "attackIntervalMs": 7800,
+      "damage": {
+        "min": 12,
+        "max": 18
+      },
+      "evasionRate": 0.11
+    }
   },
   {
     "id": "abyss_eyeball",
@@ -320,7 +482,16 @@
     "size": 1.5,
     "posX": null,
     "posY": 20,
-    "infoOffsetY": 15
+    "infoOffsetY": 15,
+    "enemyStats": {
+      "hp": 270,
+      "attackIntervalMs": 10000,
+      "damage": {
+        "min": 15,
+        "max": 22
+      },
+      "evasionRate": 0.07
+    }
   },
   {
     "id": "ruin-guardian",
@@ -336,7 +507,16 @@
     "posX": null,
     "posY": 20,
     "infoOffsetY": 45,
-    "attackIntervalMs": 12000
+    "attackIntervalMs": 12000,
+    "enemyStats": {
+      "hp": 1280,
+      "attackIntervalMs": 12500,
+      "damage": {
+        "min": 18,
+        "max": 27
+      },
+      "evasionRate": 0.02
+    }
   },
   {
     "id": "gloom_crawler",
@@ -348,10 +528,19 @@
       21
     ],
     "hpMax": 220,
-    "size": 2.0,
+    "size": 2,
     "posX": null,
     "posY": 20,
-    "infoOffsetY": 35
+    "infoOffsetY": 35,
+    "enemyStats": {
+      "hp": 250,
+      "attackIntervalMs": 6800,
+      "damage": {
+        "min": 13,
+        "max": 19
+      },
+      "evasionRate": 0.14
+    }
   },
   {
     "id": "skeletal_warrior",
@@ -363,10 +552,19 @@
       22
     ],
     "hpMax": 220,
-    "size": 2.0,
+    "size": 2,
     "posX": null,
     "posY": 20,
-    "infoOffsetY": 35
+    "infoOffsetY": 35,
+    "enemyStats": {
+      "hp": 330,
+      "attackIntervalMs": 10500,
+      "damage": {
+        "min": 16,
+        "max": 23
+      },
+      "evasionRate": 0.04
+    }
   },
   {
     "id": "wraith",
@@ -378,10 +576,19 @@
       23
     ],
     "hpMax": 220,
-    "size": 2.0,
+    "size": 2,
     "posX": null,
     "posY": 20,
-    "infoOffsetY": 35
+    "infoOffsetY": 35,
+    "enemyStats": {
+      "hp": 285,
+      "attackIntervalMs": 9200,
+      "damage": {
+        "min": 17,
+        "max": 25
+      },
+      "evasionRate": 0.1
+    }
   },
   {
     "id": "demon_gatekeeper",
@@ -393,10 +600,19 @@
       24
     ],
     "hpMax": 220,
-    "size": 2.0,
+    "size": 2,
     "posX": null,
     "posY": 20,
-    "infoOffsetY": 35
+    "infoOffsetY": 35,
+    "enemyStats": {
+      "hp": 360,
+      "attackIntervalMs": 11200,
+      "damage": {
+        "min": 19,
+        "max": 28
+      },
+      "evasionRate": 0.03
+    }
   },
   {
     "id": "dark-knight",
@@ -411,7 +627,16 @@
     "size": 2.2,
     "posX": null,
     "posY": 20,
-    "infoOffsetY": 45
+    "infoOffsetY": 45,
+    "enemyStats": {
+      "hp": 1530,
+      "attackIntervalMs": 12000,
+      "damage": {
+        "min": 21,
+        "max": 31
+      },
+      "evasionRate": 0.02
+    }
   },
   {
     "id": "blood_crystal_wraith",
@@ -423,10 +648,19 @@
       26
     ],
     "hpMax": 250,
-    "size": 2.0,
+    "size": 2,
     "posX": null,
     "posY": 20,
-    "infoOffsetY": 35
+    "infoOffsetY": 35,
+    "enemyStats": {
+      "hp": 320,
+      "attackIntervalMs": 9300,
+      "damage": {
+        "min": 20,
+        "max": 29
+      },
+      "evasionRate": 0.09
+    }
   },
   {
     "id": "abyss_lord",
@@ -441,7 +675,16 @@
     "size": 2.3,
     "posX": null,
     "posY": 20,
-    "infoOffsetY": 45
+    "infoOffsetY": 45,
+    "enemyStats": {
+      "hp": 410,
+      "attackIntervalMs": 10800,
+      "damage": {
+        "min": 23,
+        "max": 32
+      },
+      "evasionRate": 0.05
+    }
   },
   {
     "id": "scarlet_ooze",
@@ -453,10 +696,19 @@
       28
     ],
     "hpMax": 270,
-    "size": 2.0,
+    "size": 2,
     "posX": null,
     "posY": 30,
-    "infoOffsetY": 25
+    "infoOffsetY": 25,
+    "enemyStats": {
+      "hp": 390,
+      "attackIntervalMs": 11500,
+      "damage": {
+        "min": 22,
+        "max": 32
+      },
+      "evasionRate": 0.03
+    }
   },
   {
     "id": "throne_hexer",
@@ -468,10 +720,19 @@
       29
     ],
     "hpMax": 280,
-    "size": 2.0,
+    "size": 2,
     "posX": null,
     "posY": 18,
-    "infoOffsetY": 25
+    "infoOffsetY": 25,
+    "enemyStats": {
+      "hp": 360,
+      "attackIntervalMs": 9800,
+      "damage": {
+        "min": 24,
+        "max": 34
+      },
+      "evasionRate": 0.08
+    }
   },
   {
     "id": "crimson_throne_lord",
@@ -486,7 +747,16 @@
     "size": 2.2,
     "posX": null,
     "posY": 17,
-    "infoOffsetY": 45
+    "infoOffsetY": 45,
+    "enemyStats": {
+      "hp": 1800,
+      "attackIntervalMs": 12300,
+      "damage": {
+        "min": 25,
+        "max": 36
+      },
+      "evasionRate": 0.03
+    }
   },
   {
     "id": "sky_sanctum_warden",
@@ -501,7 +771,16 @@
     "size": 2.5,
     "posX": null,
     "posY": null,
-    "infoOffsetY": 30
+    "infoOffsetY": 30,
+    "enemyStats": {
+      "hp": 440,
+      "attackIntervalMs": 11800,
+      "damage": {
+        "min": 24,
+        "max": 34
+      },
+      "evasionRate": 0.03
+    }
   },
   {
     "id": "luminous_judicator",
@@ -517,7 +796,16 @@
     "posX": null,
     "posY": 20,
     "infoOffsetY": 25,
-    "attackRingScale": 1.0
+    "attackRingScale": 1,
+    "enemyStats": {
+      "hp": 390,
+      "attackIntervalMs": 10000,
+      "damage": {
+        "min": 25,
+        "max": 36
+      },
+      "evasionRate": 0.07
+    }
   },
   {
     "id": "fallen_seraph_shade",
@@ -532,7 +820,16 @@
     "size": 2.3,
     "posX": null,
     "posY": 20,
-    "infoOffsetY": 15
+    "infoOffsetY": 15,
+    "enemyStats": {
+      "hp": 380,
+      "attackIntervalMs": 9000,
+      "damage": {
+        "min": 24,
+        "max": 35
+      },
+      "evasionRate": 0.1
+    }
   },
   {
     "id": "astral_temple_seer",
@@ -547,7 +844,16 @@
     "size": 1.6,
     "posX": null,
     "posY": 20,
-    "infoOffsetY": 0
+    "infoOffsetY": 0,
+    "enemyStats": {
+      "hp": 400,
+      "attackIntervalMs": 10600,
+      "damage": {
+        "min": 27,
+        "max": 38
+      },
+      "evasionRate": 0.08
+    }
   },
   {
     "id": "celestial-throne-arbiter",
@@ -562,7 +868,16 @@
     "size": 2.5,
     "posX": null,
     "posY": 20,
-    "infoOffsetY": 45
+    "infoOffsetY": 45,
+    "enemyStats": {
+      "hp": 2090,
+      "attackIntervalMs": 12500,
+      "damage": {
+        "min": 28,
+        "max": 40
+      },
+      "evasionRate": 0.03
+    }
   },
   {
     "id": "void-throne-lord",
@@ -577,6 +892,15 @@
     "size": 3.2,
     "posX": null,
     "posY": 25,
-    "infoOffsetY": 45
+    "infoOffsetY": 45,
+    "enemyStats": {
+      "hp": 2500,
+      "attackIntervalMs": 13000,
+      "damage": {
+        "min": 31,
+        "max": 44
+      },
+      "evasionRate": 0.02
+    }
   }
 ]

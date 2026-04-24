@@ -33,7 +33,12 @@
       "assets/audio/mentor/prologue_03.mp3",
       "assets/audio/mentor/prologue_04.mp3",
       "assets/audio/mentor/prologue_05.mp3"
-    ]
+    ],
+    "portraitVideo": {
+      "webm": "assets/video/mentor/prologue-opening.webm",
+      "mp4": "assets/video/mentor/prologue-opening.mp4",
+      "poster": "assets/images/ui/mentor-cover-fullbody.png"
+    }
   },
   "WA_TOPIC_BASIC": {
     "dialogue": [
