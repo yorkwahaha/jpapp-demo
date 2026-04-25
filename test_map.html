@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<style>
+  body, html { margin: 0; height: 100%; }
+  .viewport {
+    width: 400px;
+    height: 800px;
+    background: #ccc;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .nodes-container {
+    height: 100%;
+    /* Let's try max-content */
+    width: max-content;
+    position: relative;
+    background: rgba(255,0,0,0.3);
+  }
+  .base-img {
+    height: 100%;
+    width: auto;
+    display: block;
+    pointer-events: none;
+  }
+  .node {
+    position: absolute;
+    left: 50%;
+    bottom: 50%;
+    width: 20px;
+    height: 20px;
+    background: blue;
+    transform: translate(-50%, 50%);
+  }
+</style>
+</head>
+<body>
+<div class="viewport">
+  <div class="nodes-container">
+    <img class="base-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1000' height='1000'%3E%3Crect width='1000' height='1000' fill='green'/%3E%3C/svg%3E">
+    <div class="node"></div>
+  </div>
+</div>
+</body>
+</html>

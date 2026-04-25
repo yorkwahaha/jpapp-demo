@@ -1184,6 +1184,13 @@ rt {
         margin-bottom: 0 !important;
     }
 
+    #question-area>div.battle-question-cn:last-child {
+        font-size: clamp(20px, 3.8vw, 24px) !important;
+        line-height: 1.45 !important;
+        margin-top: 2px !important;
+        letter-spacing: 0.08em !important;
+    }
+
     .flex.flex-wrap.justify-center.gap-3.w-full {
         display: grid !important;
         grid-template-columns: repeat(3, 1fr) !important;
@@ -3082,8 +3089,8 @@ body.lock-scroll {
     position: absolute;
     left: 50%;
     top: 50%;
-    width: clamp(18rem, 62vmin, 44rem);
-    height: clamp(18rem, 62vmin, 44rem);
+    width: clamp(13.5rem, 45vmin, 32rem);
+    height: clamp(13.5rem, 45vmin, 32rem);
     transform: translate(-50%, -50%);
     z-index: 4;
     pointer-events: none;
@@ -3316,10 +3323,10 @@ body.lock-scroll {
 }
 
 .boss-death-leak {
-    width: 6px;
-    height: 76px;
-    margin-left: -3px;
-    margin-top: -38px;
+    width: 10px;
+    height: 152px;
+    margin-left: -5px;
+    margin-top: -76px;
     background: linear-gradient(180deg,
             rgba(255, 255, 255, 0) 0%,
             rgba(255, 255, 255, 0.85) 20%,
@@ -4151,7 +4158,7 @@ body.lock-scroll {
         opacity: 0;
         transform:
             rotate(var(--angle, 0deg))
-            translateY(calc(var(--radius, 96px) * -0.15))
+            translateY(calc(var(--radius, 96px) * -0.22))
             scaleY(0.2);
     }
 
@@ -4159,7 +4166,7 @@ body.lock-scroll {
         opacity: 0.95;
         transform:
             rotate(var(--angle, 0deg))
-            translateY(calc(var(--radius, 96px) * -0.85))
+            translateY(calc(var(--radius, 96px) * -1.2))
             scaleY(1);
     }
 
@@ -4167,7 +4174,7 @@ body.lock-scroll {
         opacity: 0;
         transform:
             rotate(var(--angle, 0deg))
-            translateY(calc(var(--radius, 96px) * -1.2))
+            translateY(calc(var(--radius, 96px) * -1.7))
             scaleY(0.28);
     }
 }
@@ -4259,6 +4266,7 @@ body.lock-scroll {
     transform: translate(-50%, -50%);
     z-index: 999998;
     pointer-events: none;
+    --burst-circle-scale: 0.72;
     animation: boss-death-burst-shell-fade var(--burst-life, 1000ms) ease-out forwards;
 }
 
@@ -4301,10 +4309,10 @@ body.lock-scroll {
 }
 
 .boss-death-burst-spark {
-    width: 3px;
-    height: 16px;
-    margin-left: -1.5px;
-    margin-top: -8px;
+    width: 6px;
+    height: 32px;
+    margin-left: -3px;
+    margin-top: -16px;
     border-radius: 999px;
     background: linear-gradient(180deg,
             rgba(255, 255, 255, 1) 0%,
@@ -4383,24 +4391,24 @@ body.lock-scroll {
 @keyframes boss-death-burst-ring-pop {
     0% {
         opacity: 1;
-        transform: translate(-50%, -50%) scale(calc(0.2 * var(--burst-ring-scale, 1)));
+        transform: translate(-50%, -50%) scale(calc(0.2 * var(--burst-ring-scale, 1) * var(--burst-circle-scale, 1)));
     }
 
     100% {
         opacity: 0;
-        transform: translate(-50%, -50%) scale(calc(1.45 * var(--burst-ring-scale, 1)));
+        transform: translate(-50%, -50%) scale(calc(1.45 * var(--burst-ring-scale, 1) * var(--burst-circle-scale, 1)));
     }
 }
 
 @keyframes boss-death-burst-core-pop {
     0% {
         opacity: 1;
-        transform: translate(-50%, -50%) scale(calc(0.2 * var(--burst-core-scale, 1)));
+        transform: translate(-50%, -50%) scale(calc(0.2 * var(--burst-core-scale, 1) * var(--burst-circle-scale, 1)));
     }
 
     100% {
         opacity: 0;
-        transform: translate(-50%, -50%) scale(calc(2.6 * var(--burst-core-scale, 1)));
+        transform: translate(-50%, -50%) scale(calc(2.6 * var(--burst-core-scale, 1) * var(--burst-circle-scale, 1)));
     }
 }
 
@@ -4418,7 +4426,7 @@ body.lock-scroll {
         opacity: 0;
         transform:
             rotate(var(--spark-angle, 0deg))
-            translateY(calc(var(--spark-distance, 70px) * -1))
+            translateY(calc(var(--spark-distance, 70px) * -2))
             scale(var(--burst-spark-scale, 1), calc(0.1 * var(--burst-spark-scale, 1)));
     }
 }
@@ -5965,6 +5973,46 @@ body.lock-scroll {
     text-indent: 0.4em;
 }
 
+
+/* ── Landscape Adjustments for Cover ── */
+/* Refines the typography and spacing to reduce visual oppression on iPads/tablets in landscape */
+@media (orientation: landscape) {
+    .home-ui-layer {
+        padding: 12vh 2rem 6vh;
+    }
+
+    .home-title {
+        font-size: clamp(2.2rem, 5vw, 2.8rem);
+        margin-bottom: 0.1rem;
+    }
+
+    .home-title-accent {
+        height: 3px;
+        width: 80px;
+        margin: 0.5rem auto;
+    }
+
+    .home-title-sub {
+        font-size: clamp(1.2rem, 3vw, 1.5rem);
+        letter-spacing: 0.6em; /* Slightly looser for elegance */
+    }
+
+    .home-chinese-subtitle {
+        font-size: 1.15rem;
+        margin-top: 2.5vh;
+        letter-spacing: 0.35em;
+    }
+
+    .home-cta-box {
+        gap: 1.2rem;
+    }
+
+    .home-start-btn {
+        padding: 1rem 4.5rem;
+        font-size: 1.45rem;
+    }
+}
+
 /* Mobile Adjustments for Cover */
 @media (max-width: 768px) {
     .home-title {
@@ -6099,6 +6147,13 @@ body.lock-scroll {
 }
 
 /* --- Stage Map v1 Styles --- */
+/* MAP LAYOUT STRATEGY:
+   - .map-page-container: fixed inset:0, height = 100svh (Safari-stable small viewport)
+   - .map-viewport: absolute inset:0, overflow hidden, flex center
+   - .map-nodes-container: height:100%, width:auto (image-driven)
+   - .map-base-img: height:100%, width:auto, object-fit:fill
+   - HUD: position:fixed, fully independent of map image scale
+*/
 .map-page-container {
     position: fixed;
     inset: 0;
@@ -6114,6 +6169,17 @@ body.lock-scroll {
 
 .map-ui-mobile-zone {
     display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    pointer-events: none;
+}
+
+.map-page-container .map-ui-mobile-zone .map-float-header,
+.map-page-container .map-ui-mobile-zone .map-hud-bottom,
+.map-page-container .map-ui-mobile-zone .map-hud-actions,
+.map-page-container .map-ui-mobile-zone .map-hud-btn {
+    pointer-events: auto;
 }
 
 /* Desktop Fine-tuning (Anchored inside .map-nodes-container) */
@@ -6129,8 +6195,7 @@ body.lock-scroll {
     /* Ensure the map anchor container is not clamped to 400px on desktop graphical map */
     .map-page-container .map-nodes-container {
         max-width: none !important;
-        width: auto !important;
-    }
+        width: max-content !important;}
 
     /* Reduce header inset slightly inside the anchor */
     .map-ui-desktop-zone .map-float-header {
@@ -6503,6 +6568,87 @@ body.lock-scroll {
     flex-shrink: 0;
 }
 
+/* ── Mobile HUD: width tracks actual map image rendered width ── */
+/* HUD POSITIONING STRATEGY:
+   - .map-hud-bottom: fixed shell, width = --map-visible-width, centered, fixed height
+   - .map-hud-center: inner group (HP/SP + buttons), flex-row, centered inside shell
+   - .map-hud-avatar: fixed left:0 bottom:0, sits to the left of the shell
+   - On narrow phones, .map-hud-center nudged right via translateX to clear avatar
+*/
+.map-page-container .map-ui-mobile-zone .map-hud-bottom {
+    position: fixed;
+    left: 50%;
+    right: auto;
+    bottom: 0;
+    z-index: 48;
+    width: var(--map-visible-width, 100vw);
+    max-width: 100vw;
+    transform: translateX(-50%);
+    /* Fixed height prevents toolbar-show/hide from changing HUD thickness */
+    height: clamp(52px, 6.5dvh, 72px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 12px;
+    pointer-events: auto;
+    /* Absorb safe-area via padding-bottom fallback for iPhone home bar */
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
+}
+
+/* Inner content group: HP/SP bars + action buttons as one centered unit */
+.map-page-container .map-ui-mobile-zone .map-hud-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(10px, 2.5vw, 22px);
+    flex-shrink: 0;
+    height: 100%;
+}
+
+/* Tablet Landscape: lock HUD height so Safari toolbars or dvh don't thicken it */
+@media (orientation: landscape) and (min-width: 640px) {
+    .map-page-container .map-ui-mobile-zone .map-hud-bottom {
+        height: 56px;
+        min-height: 56px;
+        max-height: 56px;
+        padding-top: 0;
+        padding-bottom: 0;
+        box-sizing: border-box;
+        align-items: center;
+    }
+}
+
+/* On narrow phones (<640px): nudge the center group right to clear the avatar */
+@media (max-width: 639px) {
+    .map-page-container .map-ui-mobile-zone .map-hud-center {
+        transform: translateX(clamp(28px, 9vw, 52px));
+    }
+}
+
+.map-page-container .map-ui-mobile-zone .map-hud-avatar {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    z-index: 49;
+    pointer-events: none;
+}
+
+.map-page-container .map-ui-mobile-zone .map-hud-avatar-img {
+    height: auto;
+    width: clamp(88px, 24vw, 132px);
+    display: block;
+    pointer-events: none;
+}
+
+.map-page-container .map-ui-mobile-zone .map-hud-bars {
+    flex: 0 0 auto;
+    width: clamp(130px, 34vw, 200px);
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
 .map-hud-btn:active {
     transform: scale(0.87);
     background: rgba(255, 255, 255, 0.12);
@@ -6576,6 +6722,9 @@ body.lock-scroll {
     justify-content: center;
 }
 
+/* ── Map viewport + image: height-fill strategy ──
+   Fallback for non-graphical map list view.
+   Overridden below for .map-page-container context. */
 .map-nodes-container {
     display: flex;
     flex-direction: column;
@@ -6583,6 +6732,48 @@ body.lock-scroll {
     gap: 0;
     width: 100%;
     max-width: 400px;
+}
+
+/* ── Graphical map: viewport fills container, image fills height ── */
+.map-page-container .map-viewport {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.map-page-container .map-nodes-container {
+    /* Image-driven width: never clamped to 400px, fills full viewport height */
+    display: flex !important; /* flex makes max-content and centering more robust */
+    justify-content: center;
+    height: 100% !important;
+    width: max-content !important;
+    max-width: none !important;
+    flex-shrink: 0 !important;
+    position: relative;
+}
+
+.map-page-container .map-base-img {
+    /* Height fills viewport, width is natural (may letterbox or slightly crop) */
+    display: block;
+    height: 100% !important;
+    width: auto !important;
+    max-width: none !important;
+    object-fit: cover;
+    /* fill = stretch to exact h:100% without cropping — eliminates black stripe */
+    pointer-events: none;
+}
+
+/* Tablet portrait: same strategy, no special overrides needed.
+   Removed conflicting align-items:stretch / justify-content:center block. */
+@media (min-width: 640px) and (max-width: 1023px) and (orientation: portrait) {
+    /* Battle question text size tweak — unrelated to map layout, kept here */
+    #question-area>div.battle-question-cn:last-child {
+        font-size: clamp(22px, 2.8vw, 28px) !important;
+        line-height: 1.45 !important;
+    }
 }
 
 .stage-node-wrap {
@@ -9613,4 +9804,71 @@ body.lock-scroll {
     0%   { opacity: 0.55; transform: scale(0.92); }
     50%  { opacity: 0.90; transform: scale(1.06); }
     100% { opacity: 0.65; transform: scale(1.02); }
+}
+
+/* ── Battle UI Tablet Landscape Adjustments ── */
+/* Shrink the entire UI scale by ~16% on horizontal tablets to increase breathing room between the monster and top UI */
+@media (orientation: landscape) and (min-width: 768px) and (max-width: 1366px) and (pointer: coarse) {
+    :root {
+        --battle-landscape-scale: 0.84;
+    }
+    
+    .battle-top-ui-layer {
+        scale: var(--battle-landscape-scale);
+        transform-origin: top center;
+    }
+
+    .battle-monster-layer {
+        scale: var(--battle-landscape-scale);
+        transform-origin: center center;
+    }
+
+    #hud {
+        transform: translateX(-50%) scale(var(--battle-landscape-scale)) !important;
+        transform-origin: bottom center;
+        left: 50% !important; /* Lock to explicit center to override any external inline lefts */
+    }
+
+    #heroAvatar {
+        transform: translateX(-50%) scale(var(--battle-landscape-scale)) !important;
+        transform-origin: bottom center;
+    }
+
+    /* ── Question Card Compression ── */
+    .battle-top-ui-layer .question-card {
+        padding: 6px 16px !important;
+    }
+
+    /* Main Japanese Text Row */
+    .battle-top-ui-layer #question-area > div:first-child {
+        gap: 2px !important;
+        margin-bottom: 2px !important;
+    }
+
+    /* Main Japanese Characters */
+    .battle-top-ui-layer .battle-question-text > span:not(.blank-slot),
+    .battle-top-ui-layer .blank-slot {
+        font-size: 24px !important; /* down 2 steps from 36px */
+        line-height: 1.1 !important;
+    }
+
+    /* Blank Slot specific */
+    .battle-top-ui-layer .blank-slot {
+        padding: 0px 8px 4px 8px !important;
+        min-height: 28px !important;
+    }
+
+    /* Furigana (Ruby) */
+    .battle-top-ui-layer .ruby-text rt {
+        font-size: 11px !important; /* down 2 steps from 14px */
+        margin-bottom: 0px !important;
+        line-height: 1 !important;
+    }
+
+    /* Chinese Hint */
+    .battle-top-ui-layer .battle-question-cn {
+        font-size: 16px !important; /* restored from 13px for readability */
+        line-height: 1.25 !important;
+        margin-top: 2px !important;
+    }
 }

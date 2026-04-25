@@ -550,20 +550,8 @@ const _jpApp = Vue.createApp({
 
 
 
-            if (isDesktop) {
-
-                if (node.desktopX !== undefined) x = node.desktopX;
-
-                if (node.desktopY !== undefined) y = node.desktopY;
-
-            } else {
-
-                if (node.mobileX !== undefined) x = node.mobileX;
-
-                if (node.mobileY !== undefined) y = node.mobileY;
-
-            }
-
+            if (node.desktopX !== undefined) x = node.desktopX;
+            if (node.desktopY !== undefined) y = node.desktopY;
 
 
             return {
@@ -1176,7 +1164,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26041901";
+        const APP_VERSION = window.APP_VERSION || "26042601";
 
         const appVersion = ref(APP_VERSION);
 
@@ -2698,11 +2686,11 @@ const _jpApp = Vue.createApp({
         };
 
         const playBossDeathCrySfx = () => {
-            playOptionalSfxIfAvailable('bossDeathCry', BOSS_DEATH_CRY_SFX_PATH);
+            playSfx('bossDeathCry');
         };
 
         const playBossDeathExplosionSfx = () => {
-            playOptionalSfxIfAvailable('bossExplosion', BOSS_DEATH_EXPLOSION_SFX_PATH);
+            playSfx('bossExplosion');
         };
 
         const spawnBossDeathBurst = (burstIndex = 0) => {
@@ -3076,6 +3064,8 @@ const _jpApp = Vue.createApp({
                 damage: 'assets/audio/damage.mp3',
 
                 fanfare: 'assets/audio/fanfare.mp3',
+                bossDeathCry: BOSS_DEATH_CRY_SFX_PATH,
+                bossExplosion: BOSS_DEATH_EXPLOSION_SFX_PATH,
                 uiPop: 'assets/audio/pop.mp3',       // Lightweight for menus
                 battlePop: 'assets/audio/pop2.mp3', // Heavy for monsters/combat
                 win: 'assets/audio/win.mp3',
@@ -3175,6 +3165,8 @@ const _jpApp = Vue.createApp({
                 damage7: 'assets/audio/damage7.mp3',
                 damage8: 'assets/audio/damage8.mp3',
                 fanfare: 'assets/audio/fanfare.mp3',
+                bossDeathCry: BOSS_DEATH_CRY_SFX_PATH,
+                bossExplosion: BOSS_DEATH_EXPLOSION_SFX_PATH,
                 pop: 'assets/audio/pop.mp3',
                 win: 'assets/audio/win.mp3',
                 gameover: 'assets/audio/sfx_gameover.mp3',
@@ -3977,7 +3969,11 @@ const _jpApp = Vue.createApp({
 
                             playDecoded(decoded);
 
-                        }).catch(e => { });
+                        }).catch(e => {
+                            if (name === 'bossDeathCry' || name === 'bossExplosion') {
+                                console.warn('[SFX] Boss death decode failed:', name, e?.name || e);
+                            }
+                        });
 
                     }
 
@@ -4025,7 +4021,11 @@ const _jpApp = Vue.createApp({
                 }
 
                 a.currentTime = 0;
-                a.play().catch(e => { });
+                a.play().catch(e => {
+                    if (name === 'bossDeathCry' || name === 'bossExplosion') {
+                        console.warn('[SFX] Boss death playback failed:', name, e?.name || e);
+                    }
+                });
 
                 // 如果是 Clone，結束後釋放資源
                 if (isFrequent && a !== audioPool.get(src)) {
