@@ -368,13 +368,13 @@ const _jpApp = Vue.createApp({
         // ================= [ CONFIG & STATE — VUE REACTIVE SETUP ] =================
         // --- 資料抽離：讀取全域早期關卡資料庫 ---
 
-        const pool = window.EARLY_GAME_POOLS || { config: {}, legacyDb: {}, skills: {} };
+        const pool = window.EARLY_GAME_POOLS || { skills: {} };
 
-        const db = pool.legacyDb || {};
+        // legacy placeholder — legacyDb content removed; kept empty for debug.js compatibility
+        const db = {};
 
-        const fallbackLevels = pool.config?.fallbackLevels || {};
+        const LEVEL_CONFIG = ref({});
 
-        const LEVEL_CONFIG = ref(fallbackLevels);
 
         const SKILLS = ref([]);
 
@@ -2017,11 +2017,9 @@ const _jpApp = Vue.createApp({
 
                             ...lvl,
 
-                            title: lvl.name || fallbackLevels[lvNum]?.title,
+                            title: lvl.name,
 
-                            blanks: fallbackLevels[lvNum]?.blanks || 1,
-
-                            types: fallbackLevels[lvNum]?.types || [0, 1, 2, 3, 4, 5]
+                            blanks: lvl.blanks ?? 1
 
                         };
 
@@ -2463,11 +2461,11 @@ const _jpApp = Vue.createApp({
 
 
 
-        // --- 抽離遊戲常數 ---
+        // --- 遊戲核心常數 ---
+        const MONSTER_HP = 100;
+        const POTION_HP = 30;
+        const INITIAL_POTIONS = 3;
 
-        const {
-            MONSTER_HP, POTION_HP, INITIAL_POTIONS, MONSTERS
-        } = pool.config || {};
 
         const BASE_MAX_DAMAGE = 20;
         const COMBO_DAMAGE_START = 5;
@@ -3580,13 +3578,40 @@ const _jpApp = Vue.createApp({
 
 
 
+        // ── iOS Safari Background Audio Guard ──
+        // Returns true only when the page is visible and audio is allowed to play.
+        // All BGM play/resume entry points must call this before playing.
+        const isPageAudioAllowed = () => {
+            return document.visibilityState === 'visible' && !document.hidden;
+        };
+
+        const warnAudioResumeState = (reason, extra = {}) => {
+            console.warn('[audio resume]', {
+                reason,
+                visible: document.visibilityState,
+                hidden: document.hidden,
+                ctx: audioCtx.value?.state,
+                needsBgm: needsUserGestureToResumeBgm.value,
+                bgmPaused: bgmAudio.value?.paused,
+                bgmMuted: bgmAudio.value?.muted,
+                bgmVolume: bgmAudio.value?.volume,
+                ...extra
+            });
+        };
+
         const playBgm = async () => {
+
+            // Never play BGM when page is in background (iOS Safari fix)
+            if (!isPageAudioAllowed()) {
+                needsUserGestureToResumeBgm.value = true;
+                return;
+            }
 
             await initAudioCtx();
 
             if (!audioInited.value) await initAudio();
 
-            if (audioCtx.value && audioCtx.value.state === 'suspended') await audioCtx.value.resume();
+            if (audioCtx.value && (audioCtx.value.state === 'suspended' || audioCtx.value.state === 'interrupted')) await audioCtx.value.resume();
 
             updateGainVolumes();
 
@@ -3630,7 +3655,7 @@ const _jpApp = Vue.createApp({
 
                 bgmAudio.value.play().catch(e => {
 
-                    console.warn('[BGM] play failed', e.name, e.message);
+                    warnAudioResumeState('bgm-play-blocked', { error: e?.name || e?.message || e });
 
                     needsUserGestureToResumeBgm.value = true;
 
@@ -3659,6 +3684,12 @@ const _jpApp = Vue.createApp({
 
             if (!bgmAudio.value) return;
 
+            // Never resume in background (iOS Safari fix)
+            if (!isPageAudioAllowed()) {
+                needsUserGestureToResumeBgm.value = true;
+                return;
+            }
+
             bgmAudio.value.pause();
 
             const curSrc = bgmAudio.value.src || '';
@@ -3674,6 +3705,8 @@ const _jpApp = Vue.createApp({
             bgmAudio.value.currentTime = 0;
 
             bgmAudio.value.play().catch(e => {
+
+                warnAudioResumeState('resume-battle-bgm-blocked', { error: e?.name || e?.message || e });
 
                 needsUserGestureToResumeBgm.value = true;
 
@@ -3713,24 +3746,38 @@ const _jpApp = Vue.createApp({
 
         const handleVisibilityChange = () => {
 
-            if (document.hidden) return;
-            if (isBgmSuppressed.value) return; // Prevent BGM resume if suppressed
-
-            const inBattle = !showLevelSelect.value && !isFinished.value && currentLevel.value > 0 && !isDefeated.value && !levelPassed.value;
-
-            if (inBattle && bgmAudio.value && !isMuted.value && bgmVolume.value > 0) {
-
-                const isPlaying = !bgmAudio.value.paused && bgmAudio.value.currentTime > 0;
-
-                if (!isPlaying) playBgm();
-
+            if (document.hidden) {
+                // Page going to background — immediately pause BGM and flag for deferred resume
+                if (bgmAudio.value && !bgmAudio.value.paused) {
+                    bgmAudio.value.pause();
+                }
+                needsUserGestureToResumeBgm.value = true;
+                return;
             }
+
+            // Page became visible again — do NOT auto-play; wait for next user gesture
+            needsUserGestureToResumeBgm.value = true;
+            // Only clear isBgmSuppressed if it was set solely by visibility (not by defeat).
+            // (isBgmSuppressed is managed by game logic, not touched here.)
 
         };
 
         document.addEventListener("visibilitychange", handleVisibilityChange);
 
-        window.addEventListener("focus", handleVisibilityChange);
+        const markAudioNeedsGestureResume = () => {
+            if (isPageAudioAllowed() && (audioInited.value || bgmAudio.value)) {
+                needsUserGestureToResumeBgm.value = true;
+            }
+        };
+
+        window.addEventListener('pageshow', markAudioNeedsGestureResume);
+        window.addEventListener('focus', markAudioNeedsGestureResume);
+        window.addEventListener('pagehide', () => {
+            if (bgmAudio.value && !bgmAudio.value.paused) {
+                bgmAudio.value.pause();
+            }
+            needsUserGestureToResumeBgm.value = true;
+        });
 
 
 
@@ -3758,9 +3805,14 @@ const _jpApp = Vue.createApp({
 
 
 
-        const ensureBgmPlaying = (reason) => {
+        const ensureBgmPlaying = async (reason) => {
 
-            if (!audioInited.value) initAudio();
+            if (!isPageAudioAllowed()) {
+                needsUserGestureToResumeBgm.value = true;
+                return;
+            }
+
+            if (!audioInited.value) await initAudio();
 
             if (isMuted.value || bgmVolume.value <= 0 || isBgmSuppressed.value) return;
 
@@ -3780,7 +3832,9 @@ const _jpApp = Vue.createApp({
 
                 }
 
-                bgmAudio.value.play().catch(() => {
+                bgmAudio.value.play().catch((e) => {
+
+                    warnAudioResumeState('ensure-bgm-play-blocked', { reason, error: e?.name || e?.message || e });
 
                     needsUserGestureToResumeBgm.value = true;
 
@@ -3860,6 +3914,11 @@ const _jpApp = Vue.createApp({
 
         const playUiSfx = (name) => {
 
+            if (!isPageAudioAllowed()) {
+                needsUserGestureToResumeBgm.value = true;
+                return;
+            }
+
             if (isMuted.value) return;
 
             if (_voiceLockUntil > Date.now() && (name === 'damage' || name === 'miss')) return;
@@ -3876,7 +3935,9 @@ const _jpApp = Vue.createApp({
 
             a.currentTime = 0;
 
-            a.play().catch(e => { });
+            a.play().catch(e => {
+                warnAudioResumeState('ui-sfx-play-blocked', { sfx: name, error: e?.name || e?.message || e });
+            });
 
         };
 
@@ -3907,6 +3968,11 @@ const _jpApp = Vue.createApp({
         };
 
         const playSfx = (name) => {
+            if (!isPageAudioAllowed()) {
+                needsUserGestureToResumeBgm.value = true;
+                return;
+            }
+
             if (!audioInited.value) {
                 initAudioCtx().then(() => { initAudio().then(() => playSfx(name)); });
                 return;
@@ -3983,7 +4049,10 @@ const _jpApp = Vue.createApp({
 
                 if (audioCtx.value.state !== 'running') {
 
-                    audioCtx.value.resume().then(doPlay).catch(doPlay);
+                    audioCtx.value.resume().then(doPlay).catch((e) => {
+                        warnAudioResumeState('sfx-ctx-resume-failed', { sfx: name, error: e?.name || e?.message || e });
+                        doPlay();
+                    });
 
                 } else {
 
@@ -4134,7 +4203,8 @@ const _jpApp = Vue.createApp({
 
             if (!audioInited.value) initAudio();
 
-            if (needsUserGestureToResumeBgm.value) { ensureBgmPlaying('startFlick'); needsUserGestureToResumeBgm.value = false; }
+            resumePageAudioOnGesture();
+
 
 
 
@@ -5412,13 +5482,12 @@ const _jpApp = Vue.createApp({
 
         const _audioUnlockTried = ref(false);
 
+        // ── One-time AudioContext warmup (runs only on first user gesture) ──
         const unlockAudioOnce = () => {
 
             if (_audioUnlockTried.value) return;
 
             _audioUnlockTried.value = true;
-
-
 
             try {
 
@@ -5452,8 +5521,6 @@ const _jpApp = Vue.createApp({
 
             } catch (e) { }
 
-
-
             if (!window._audioWarmedUp) {
 
                 window._audioWarmedUp = true;
@@ -5472,8 +5539,6 @@ const _jpApp = Vue.createApp({
 
                 } catch (_) { }
 
-
-
                 try {
 
                     const dummyAudio = new Audio("data:audio/mp3;base64,//OlkAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAFAAAH8AADBQQOExUaHh8lJygqMTIzNzo9P0JFREQv");
@@ -5486,33 +5551,57 @@ const _jpApp = Vue.createApp({
 
             }
 
+        };
 
+        // ── Per-gesture AudioContext + BGM/SFX resume (runs on EVERY gesture after returning from background) ──
+        // Fixes iOS Safari regression: after page returns to foreground, AudioContext is suspended
+        // and BGM/SFX stay silent until this explicitly resumes them.
+        const resumePageAudioOnGesture = async (reason = 'gesture') => {
 
+            // Never auto-play if page is still in background
+            if (!isPageAudioAllowed()) return;
+
+            try {
+
+                await initAudioCtx();
+
+                // Re-resume AudioContext if iOS Safari suspended it during background
+                if (audioCtx.value && (audioCtx.value.state === 'suspended' || audioCtx.value.state === 'interrupted')) {
+
+                    await audioCtx.value.resume();
+
+                }
+
+                updateGainVolumes();
+
+            } catch (e) {
+
+                warnAudioResumeState(`${reason}:ctx-resume-failed`, { error: e?.name || e?.message || e });
+
+            }
+
+            // Restore BGM if a deferred resume was flagged (e.g. after returning from background)
             if (needsUserGestureToResumeBgm.value) {
 
                 needsUserGestureToResumeBgm.value = false;
 
-                if (showMap.value && !showLevelSelect.value) {
-
-                    if (bgmAudio.value && bgmAudio.value.paused) {
-
-                        bgmAudio.value.play().catch(() => { });
-
-                    } else {
-
-                        ensureBgmPlaying('unlocked');
-
-                    }
-
-                } else {
-
-                    ensureBgmPlaying('unlocked');
-
-                }
+                await ensureBgmPlaying(`${reason}:bgm`);
 
             }
 
         };
+
+        const handlePageAudioGesture = (event) => {
+
+            if (!isPageAudioAllowed()) return;
+
+            resumePageAudioOnGesture(`global-${event.type}`);
+
+        };
+
+        window.addEventListener('pointerdown', handlePageAudioGesture, { capture: true, passive: true });
+        window.addEventListener('touchstart', handlePageAudioGesture, { capture: true, passive: true });
+        window.addEventListener('click', handlePageAudioGesture, { capture: true, passive: true });
 
 
 
@@ -5520,7 +5609,11 @@ const _jpApp = Vue.createApp({
 
             unlockAudioOnce();
 
+            // Re-resume AudioContext + BGM on every gesture (handles iOS Safari post-background silence)
+            resumePageAudioOnGesture();
+
             if (!audioInited.value) initAudio();
+
 
 
 
@@ -5677,7 +5770,8 @@ const _jpApp = Vue.createApp({
 
             if (!audioInited.value) initAudio();
 
-            if (needsUserGestureToResumeBgm.value) { ensureBgmPlaying('potion'); needsUserGestureToResumeBgm.value = false; }
+            resumePageAudioOnGesture();
+
 
 
 
@@ -5990,10 +6084,6 @@ const _jpApp = Vue.createApp({
 
 
 
-            const zhOf = (obj) => obj?.zh || obj?.t || obj?.label || '…';
-
-
-
             const seg = (text, ruby = '') => ({
 
                 text,
@@ -6005,98 +6095,6 @@ const _jpApp = Vue.createApp({
             });
 
 
-
-            const combineDesu = (text, ruby) => ({
-
-                text: `${text}です`,
-
-                ruby: `${ruby}です`
-
-            });
-
-
-
-            const buildIntransitiveChinese = (noun, verb) => {
-
-                const nounZh = zhOf(noun);
-
-                const kind = noun?.kind || '';
-
-                const verbJ = verb?.j || '';
-
-
-
-                if (kind === 'precip') {
-
-                    if (noun?.j === '雨') return '下雨';
-
-                    if (noun?.j === '雪') return '下雪';
-
-                    return `${nounZh}下`;
-
-                }
-
-
-
-                if (kind === 'sky') {
-
-                    if (verbJ === '曇る') return `${nounZh}轉陰`;
-
-                    return `${nounZh}${zhOf(verb)}`;
-
-                }
-
-
-
-                if (kind === 'wind') {
-
-                    if (verbJ === '吹く') return `${nounZh}吹`;
-
-                    return `${nounZh}${zhOf(verb)}`;
-
-                }
-
-
-
-                if (kind === 'flower') {
-
-                    if (verbJ === '咲く') return `${nounZh}開了`;
-
-                    return `${nounZh}${zhOf(verb)}`;
-
-                }
-
-
-
-                if (kind === 'door') {
-
-                    if (verbJ === '開く') return `${nounZh}開了`;
-
-                    if (verbJ === '閉まる') return `${nounZh}關了`;
-
-                }
-
-
-
-                if (kind === 'light') {
-
-                    if (verbJ === '消える') return `${nounZh}熄了`;
-
-                }
-
-
-
-                if (kind === 'event' || (noun?.tags || []).includes('event')) {
-
-                    if (verbJ === '起きる') return `${nounZh}發生`;
-
-                }
-
-
-
-                return `${nounZh}${zhOf(verb)}`;
-
-            };
 
 
 
@@ -6576,7 +6574,7 @@ const _jpApp = Vue.createApp({
 
             currentLevel.value = lv;
 
-            const config = LEVEL_CONFIG.value[lv] || LEVEL_CONFIG.value[1] || { types: [0, 1, 2], blanks: 1 };
+            const config = LEVEL_CONFIG.value[lv] || LEVEL_CONFIG.value[1] || { blanks: 1 };
 
 
 
@@ -7173,7 +7171,8 @@ const _jpApp = Vue.createApp({
 
 
 
-            const mdef = MONSTERS[(lv - 1) % MONSTERS.length] || MONSTERS[0];
+            // 安全 fallback：全關卡已有 enemies.v1.json；若未比對則用預設屬性
+            const mdef = { hpMax: MONSTER_HP, name: '助詞怪', sprite: 'assets/images/monsters/slime.png', trait: '普通型' };
 
 
 
@@ -7186,8 +7185,6 @@ const _jpApp = Vue.createApp({
             const _isBossLv = (lv % 5 === 0);
 
             if (enemyMatch) {
-
-                // 優先讀取 enemies.v1.json 的 hpMax，fallback 到舊 MONSTERS 表
 
                 const enemyStats = enemyMatch.enemyStats || {};
                 const enemyDamage = enemyStats.damage || {};
@@ -7833,7 +7830,8 @@ const _jpApp = Vue.createApp({
 
             initAudio();
 
-            if (needsUserGestureToResumeBgm.value) { ensureBgmPlaying('nextQuestion'); needsUserGestureToResumeBgm.value = false; }
+            resumePageAudioOnGesture();
+
 
             playSfx('click');
 
@@ -8203,7 +8201,8 @@ const _jpApp = Vue.createApp({
 
             if (!audioInited.value) initAudio();
 
-            if (needsUserGestureToResumeBgm.value) { ensureBgmPlaying('selectChoice'); needsUserGestureToResumeBgm.value = false; }
+            resumePageAudioOnGesture();
+
 
             playSfx('click');
 

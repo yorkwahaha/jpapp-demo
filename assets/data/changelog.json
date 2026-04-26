@@ -1,5 +1,16 @@
 [
     {
+        "version": "26042602",
+        "date": "2026-04-26",
+        "title": "音訊系統健壯化、題庫與生成器純化清理",
+        "changes": [
+            "音訊系統：修正 iOS Safari 背景/鎖屏後 BGM 自動恢復播放的問題，改為回到頁面後不立即播音，待下一次使用者手勢才恢復 BGM/SFX，並修復 AudioContext resume 路徑。",
+            "題庫純化：earlyGamePools.v1.js 移除 legacyDb、舊 config.MONSTERS、fallbackLevels 等結構，純化為純題庫資料檔。",
+            "引擎清理：移除 generateQuestionBySkill 內已無人呼叫的舊版動態組裝 Helper 與 dead types field，提升程式碼可讀性。",
+            "穩定性修復：補回 db placeholder 以相容 debug 工具，並修正移除舊怪物資料後的防禦性 fallback ReferenceError。"
+        ]
+    },
+    {
         "version": "26042601",
         "date": "2026-04-26",
         "title": "Codex 熟練度系統、戰鬥 UI 響應式優化與地圖座標系同步",

@@ -25,8 +25,8 @@
       "NO_POSSESSIVE"
     ],
     "skillMix": {
-      "newSkillWeight": 0.6,
-      "oldSkillWeight": 0.4
+      "newSkillWeight": 0.7,
+      "oldSkillWeight": 0.3
     },
     "questionCount": 20,
     "boss": null,
