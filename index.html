@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26042602'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26042701'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -58,8 +58,8 @@
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/styles.css?v=26042602">
-    <link rel="stylesheet" href="assets/css/escape.css?v=26042602">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26042701">
+    <link rel="stylesheet" href="assets/css/escape.css?v=26042701">
 
 
 
@@ -69,7 +69,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26042602';
+            const v = window.APP_VERSION || '26042701';
 
 
 
@@ -2481,21 +2481,20 @@
                     @click="nextMentorLine">
 
                     <div
-                        class="absolute bottom-40 left-1/2 -translate-x-1/2 w-full max-w-sm pointer-events-none transition-all duration-700 ease-out flex justify-center">
+                        class="map-mentor-portrait-stage absolute bottom-40 left-1/2 -translate-x-1/2 w-full max-w-sm pointer-events-none transition-all duration-700 ease-out flex justify-center">
 
                         <div class="mentor-portrait-shadow"></div>
 
                         <video v-if="shouldUseMentorVideo" ref="mentorVideoEl" autoplay muted loop playsinline
                             preload="metadata" :poster="mentorVideoPoster" @error="handleMentorVideoError"
-                            class="h-[65vh] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] mentor-portrait-fade mentor-scene-video"
-                            style="transform: translateY(20px);">
+                            class="h-[65vh] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] mentor-portrait-fade mentor-scene-video mentor-scene-portrait">
                             <source v-for="source in mentorVideoSources" :key="source.src" :src="source.src"
                                 :type="source.type">
                         </video>
 
-                        <img v-else src="assets/images/ui/mentor-cover-fullbody.png" alt="Mentor"
-                            class="h-[65vh] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] mentor-portrait-fade"
-                            style="transform: translateY(20px);">
+                        <img v-else :src="currentMentorSceneImage" alt="Mentor"
+                            @error="handleMentorSceneImageError"
+                            class="h-[65vh] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] mentor-portrait-fade mentor-scene-portrait">
 
                     </div>
 
@@ -3665,8 +3664,8 @@
                                     :type="source.type">
                             </video>
 
-                            <img v-else-if="!isMentorPortraitError" src="assets/images/ui/mentor/mentor-neutral.png"
-                                @error="isMentorPortraitError = true" class="mentor-portrait-img rounded-full">
+                            <img v-else-if="!isMentorPortraitError" :src="currentMentorModalImage"
+                                @error="handleMentorModalImageError" class="mentor-portrait-img rounded-full">
 
                             <div v-else class="mentor-portrait-placeholder">
 

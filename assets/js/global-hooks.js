@@ -1,9 +1,39 @@
 // ================= [ GLOBAL HOOKS ] =================
 window.addEventListener('error', (e) => {
 
+    const isExternalSesNullError = isExternalNullErrorNoise(e?.error, e?.message, e?.filename);
+
+    if (isExternalSesNullError) {
+        e.preventDefault();
+        return;
+    }
+
     console.error('全局錯誤:', e.error);
 
 });
+
+window.addEventListener('unhandledrejection', (e) => {
+
+    if (isExternalNullErrorNoise(e?.reason)) {
+        e.preventDefault();
+    }
+
+});
+
+function isExternalNullErrorNoise(error, message = '', source = '') {
+
+    const msg = String(message || '');
+    const src = String(source || '');
+
+    return error == null &&
+        (
+            msg === '' ||
+            msg === 'null' ||
+            msg.includes('SES_UNCAUGHT_EXCEPTION') ||
+            src.includes('lockdown-install.js')
+        );
+
+}
 
 
 

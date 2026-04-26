@@ -1,5 +1,17 @@
 [
     {
+        "version": "26042701",
+        "date": "2026-04-27",
+        "title": "導師立繪 Emotion 系統實裝、立繪比例優化與 Debug 防噪",
+        "changes": [
+            "導師對話：實裝 Selene 導師 Emotion 立繪切換系統 (gentle/explain/encourage/happy/concerned/surprised/proud/blessing)，並建立完善的 fallback 機制。",
+            "視覺優化：調整地圖導師對話覆蓋層的 Selene 立繪比例，手機直式顯示更具視覺衝擊力，並優化立繪與對話框的銜接感。",
+            "資料清理：完成 mentor-dialogues.v1.json 中數百個 item-level 空 audio 欄位清理，並同步優化台詞語氣。",
+            "Debug 工具：修正 Debug Overlay 對外部 SES / lockdown null error 的誤報，過濾無意義的系統雜訊。",
+            "穩定性：保留昨日完成的 iOS Safari 背景音訊生命週期修復、earlyGamePools 題庫純化與引擎死碼清理等優化項目。"
+        ]
+    },
+    {
         "version": "26042602",
         "date": "2026-04-26",
         "title": "音訊系統健壯化、題庫與生成器純化清理",

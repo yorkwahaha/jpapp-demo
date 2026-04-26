@@ -2357,6 +2357,49 @@ body.lock-scroll {
     background: transparent;
 }
 
+.map-mentor-portrait-stage {
+    bottom: clamp(8rem, 21vh, 12.5rem);
+    height: 72vh;
+    max-width: min(92vw, 520px);
+    overflow: visible;
+    align-items: flex-start;
+}
+
+.map-mentor-portrait-stage .mentor-scene-portrait {
+    width: auto !important;
+    height: 124vh !important;
+    max-width: none;
+    max-height: none;
+    object-fit: contain;
+    object-position: top center;
+    transform: translateY(9vh);
+}
+
+@media (min-width: 768px) and (orientation: portrait) {
+    .map-mentor-portrait-stage {
+        height: 76vh;
+        max-width: min(78vw, 620px);
+    }
+
+    .map-mentor-portrait-stage .mentor-scene-portrait {
+        height: 128vh !important;
+        transform: translateY(9vh);
+    }
+}
+
+@media (orientation: landscape) {
+    .map-mentor-portrait-stage {
+        bottom: clamp(7rem, 19vh, 10rem);
+        height: 64vh;
+        max-width: min(58vw, 520px);
+    }
+
+    .map-mentor-portrait-stage .mentor-scene-portrait {
+        height: 104vh !important;
+        transform: translateY(6vh);
+    }
+}
+
 .mentor-text {
     font-size: 1.35rem;
     line-height: 1.85;

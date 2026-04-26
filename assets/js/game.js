@@ -1334,6 +1334,8 @@ const _jpApp = Vue.createApp({
 
         const mentorPages = ref([]); // 平鋪後的文字分頁
 
+        const mentorPageEmotions = ref([]);
+
         const mentorDialogueIndex = ref(0); // 指向目前的 Page
 
         const displayedMentorText = ref("");
@@ -1348,6 +1350,8 @@ const _jpApp = Vue.createApp({
 
         const isMentorVideoError = ref(false);
 
+        const failedMentorImagePaths = ref({});
+
         const isMentorSkipPressing = ref(false);
 
         const mentorSkipPressTimer = ref(null);
@@ -1361,10 +1365,12 @@ const _jpApp = Vue.createApp({
         // 分頁輔助：將多行對話切碎
 
         const fragmentMentorDialogue = (dialogues) => {
+            mentorPageEmotions.value = [];
             if (!Array.isArray(dialogues)) return [];
             const pages = [];
             dialogues.forEach(item => {
                 const text = item.text || "";
+                const emotion = item.emotion || 'gentle';
 
                 // 以標點符號初步斷句
 
@@ -1384,7 +1390,10 @@ const _jpApp = Vue.createApp({
 
                     if (sentenceCount >= 3 || (currentPage.length + s.length > 85)) {
 
-                        if (currentPage) pages.push(currentPage.trim());
+                        if (currentPage) {
+                            pages.push(currentPage.trim());
+                            mentorPageEmotions.value.push(emotion);
+                        }
 
                         currentPage = s;
 
@@ -1400,7 +1409,10 @@ const _jpApp = Vue.createApp({
 
                 });
 
-                if (currentPage) pages.push(currentPage.trim());
+                if (currentPage) {
+                    pages.push(currentPage.trim());
+                    mentorPageEmotions.value.push(emotion);
+                }
 
             });
 
@@ -1417,6 +1429,55 @@ const _jpApp = Vue.createApp({
             return mentorPages.value[mentorDialogueIndex.value];
 
         });
+
+        const MENTOR_FALLBACK_SCENE_IMAGE = 'assets/images/ui/mentor-cover-fullbody.png';
+        const MENTOR_FALLBACK_MODAL_IMAGE = 'assets/images/ui/mentor/mentor-neutral.png';
+        const MENTOR_EMOTION_IMAGE_PATHS = Object.freeze({
+            gentle: 'assets/images/mentor/selene_gentle.webp',
+            explain: 'assets/images/mentor/selene_explain.webp',
+            encourage: 'assets/images/mentor/selene_encourage.webp',
+            happy: 'assets/images/mentor/selene_happy.webp',
+            concerned: 'assets/images/mentor/selene_concerned.webp',
+            surprised: 'assets/images/mentor/selene_surprised.webp',
+            proud: 'assets/images/mentor/selene_proud.webp',
+            blessing: 'assets/images/mentor/selene_blessing.webp'
+        });
+
+        const currentMentorDialogueItem = computed(() => ({
+            text: currentMentorLine.value || '',
+            emotion: mentorPageEmotions.value[mentorDialogueIndex.value] || 'gentle'
+        }));
+
+        const getMentorEmotionImage = (emotion) => {
+            const key = emotion || 'gentle';
+            const path = MENTOR_EMOTION_IMAGE_PATHS[key] || MENTOR_EMOTION_IMAGE_PATHS.gentle;
+            if (!failedMentorImagePaths.value[path]) return path;
+            if (path !== MENTOR_EMOTION_IMAGE_PATHS.gentle && !failedMentorImagePaths.value[MENTOR_EMOTION_IMAGE_PATHS.gentle]) {
+                return MENTOR_EMOTION_IMAGE_PATHS.gentle;
+            }
+            return null;
+        };
+
+        const currentMentorSceneImage = computed(() => getMentorEmotionImage(currentMentorDialogueItem.value.emotion) || MENTOR_FALLBACK_SCENE_IMAGE);
+        const currentMentorModalImage = computed(() => getMentorEmotionImage(currentMentorDialogueItem.value.emotion) || MENTOR_FALLBACK_MODAL_IMAGE);
+
+        const handleMentorImageError = (event, fallbackPath = MENTOR_FALLBACK_MODAL_IMAGE) => {
+            const failedPath = event?.target?.getAttribute('src') || '';
+            if (failedPath && failedPath !== fallbackPath) {
+                failedMentorImagePaths.value = { ...failedMentorImagePaths.value, [failedPath]: true };
+                if (event?.target) {
+                    const gentlePath = MENTOR_EMOTION_IMAGE_PATHS.gentle;
+                    event.target.src = failedPath !== gentlePath && !failedMentorImagePaths.value[gentlePath]
+                        ? gentlePath
+                        : fallbackPath;
+                }
+                return;
+            }
+            isMentorPortraitError.value = true;
+        };
+
+        const handleMentorSceneImageError = (event) => handleMentorImageError(event, MENTOR_FALLBACK_SCENE_IMAGE);
+        const handleMentorModalImageError = (event) => handleMentorImageError(event, MENTOR_FALLBACK_MODAL_IMAGE);
 
 
 
@@ -8662,6 +8723,7 @@ const _jpApp = Vue.createApp({
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
             isMentorModalOpen, isLevelJumpOpen, isAdvancedSettingsOpen, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
             displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,
+            currentMentorDialogueItem, currentMentorSceneImage, currentMentorModalImage, handleMentorSceneImageError, handleMentorModalImageError,
             mentorVideoEl, mentorVideoSources, shouldUseMentorVideo, mentorVideoPoster, handleMentorVideoError,
             playPrologueOpening, playMainEndingFinale,
             isMentorSkipPressing, startMentorSkipPress, cancelMentorSkipPress,

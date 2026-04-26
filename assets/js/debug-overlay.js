@@ -85,6 +85,8 @@
 
         if (!_enabled) return;
 
+        if (_isExternalNullErrorNoise(level, args)) return;
+
         const msg = args.map(a => {
 
             if (typeof a === 'string') return a;
@@ -124,6 +126,20 @@
     function _escHtml(s) {
 
         return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    }
+
+    function _isExternalNullErrorNoise(level, args) {
+
+        if (level !== 'error') return false;
+
+        const text = args.map(a => a == null ? 'null' : String(a)).join(' ');
+
+        if (text.includes('SES_UNCAUGHT_EXCEPTION') && text.includes('null')) return true;
+
+        if (args.length >= 2 && args[0] === '全局錯誤:' && args[1] == null) return true;
+
+        return false;
 
     }
 
