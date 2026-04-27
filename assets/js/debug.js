@@ -9,7 +9,9 @@ window.__attachDebugTools = function (refs) {
         startLevel, retryLevel, initGame, goHome, generateQuestionBySkill,
         mentorTutorialSeen, saveMentorState, skillsAll, setupMentorDialogue,
         pauseBattle, db, VOCAB, unlockedSkillIds, startBossQueue,
-        playPrologueOpening, playMainEndingFinale
+        playPrologueOpening, playMainEndingFinale,
+        mapChapters, activeChapter, selectedSegmentIdx, getMapNodeStyle,
+        MENTOR_AUDIO_MAP
     } = refs || {};
 
     // --- Audit State ---
@@ -117,6 +119,274 @@ window.__attachDebugTools = function (refs) {
                     throw err;
 
                 }
+
+            }
+
+            function clearMapNodeLabels() {
+
+                document.querySelectorAll('.jp-debug-map-node-label').forEach(el => el.remove());
+
+            }
+
+
+
+            function mapNodeRows(options = {}) {
+
+                const chapters = mapChapters?.value || mapChapters || {};
+
+                const chapterKey = activeChapter?.value || activeChapter || 'chapter1';
+
+                const segmentIdx = Number(selectedSegmentIdx?.value ?? selectedSegmentIdx ?? 0);
+
+                const segment = chapters?.[chapterKey]?.segments?.[segmentIdx];
+
+                if (!segment || !segment.nodes) {
+
+                    console.warn('[jpDebug.mapNodes] no active map segment found', { chapterKey, segmentIdx });
+
+                    return [];
+
+                }
+
+
+
+                const viewport = {
+
+                    width: window.innerWidth,
+
+                    height: window.innerHeight,
+
+                    isMobile: window.innerWidth < 1024
+
+                };
+
+                const container = document.querySelector('.map-nodes-container');
+
+                const image = document.querySelector('.map-base-img');
+
+                const containerRect = container?.getBoundingClientRect();
+
+                const imageRect = image?.getBoundingClientRect();
+
+                const rows = Object.entries(segment.nodes).map(([level, node]) => {
+
+                    const style = typeof getMapNodeStyle === 'function' ? getMapNodeStyle(node) : {};
+
+                    const usedX = node.desktopX !== undefined ? node.desktopX : node.x;
+
+                    const usedY = node.desktopY !== undefined ? node.desktopY : node.y;
+
+                    const marker = document.querySelector(`[data-stage-node="${level}"]`);
+
+                    const markerRect = marker?.getBoundingClientRect();
+
+                    const markerCenterX = markerRect ? markerRect.left + (markerRect.width / 2) : null;
+
+                    const markerCenterY = markerRect ? markerRect.top + (markerRect.height / 2) : null;
+
+                    return {
+
+                        level,
+
+                        title: node.landmark || LEVEL_CONFIG?.[level]?.title || '',
+
+                        desktopX: node.desktopX,
+
+                        desktopY: node.desktopY,
+
+                        mobileX: node.mobileX,
+
+                        mobileY: node.mobileY,
+
+                        actuallyUsedX: usedX,
+
+                        actuallyUsedY: usedY,
+
+                        cssLeft: style.left,
+
+                        cssBottom: style.bottom,
+
+                        viewportWidth: viewport.width,
+
+                        viewportHeight: viewport.height,
+
+                        isMobile: viewport.isMobile,
+
+                        markerCenterX: markerCenterX == null ? null : Math.round(markerCenterX),
+
+                        markerCenterY: markerCenterY == null ? null : Math.round(markerCenterY),
+
+                        markerCenterPctX: markerCenterX == null || !containerRect?.width ? null : Number((((markerCenterX - containerRect.left) / containerRect.width) * 100).toFixed(2)),
+
+                        markerCenterPctYFromTop: markerCenterY == null || !containerRect?.height ? null : Number((((markerCenterY - containerRect.top) / containerRect.height) * 100).toFixed(2))
+
+                    };
+
+                });
+
+
+
+                if (options.labels) {
+
+                    clearMapNodeLabels();
+
+                    rows.forEach(row => {
+
+                        const marker = document.querySelector(`[data-stage-node="${row.level}"]`);
+
+                        const wrap = marker?.closest('.stage-node-wrap');
+
+                        if (!wrap) return;
+
+                        const label = document.createElement('div');
+
+                        label.className = 'jp-debug-map-node-label';
+
+                        label.textContent = `L${row.level} ${row.actuallyUsedX},${row.actuallyUsedY}`;
+
+                        label.style.cssText = [
+
+                            'position:absolute',
+
+                            'left:50%',
+
+                            'top:0',
+
+                            'transform:translate(-50%,-100%)',
+
+                            'z-index:9999',
+
+                            'padding:2px 5px',
+
+                            'border:1px solid rgba(251,191,36,.95)',
+
+                            'border-radius:4px',
+
+                            'background:rgba(15,23,42,.92)',
+
+                            'color:#fde68a',
+
+                            'font:700 11px/1.2 monospace',
+
+                            'white-space:nowrap',
+
+                            'pointer-events:none'
+
+                        ].join(';');
+
+                        wrap.appendChild(label);
+
+                    });
+
+                }
+
+
+
+                console.log('[jpDebug.mapNodes]', {
+
+                    chapterKey,
+
+                    segmentIdx,
+
+                    segmentId: segment.id,
+
+                    title: segment.title,
+
+                    background: segment.background,
+
+                    mapDataSource: window.__JPAPP_MAP_CHAPTERS_SOURCE || null,
+
+                    viewport,
+
+                    containerRect: containerRect ? {
+
+                        width: Math.round(containerRect.width),
+
+                        height: Math.round(containerRect.height),
+
+                        left: Math.round(containerRect.left),
+
+                        top: Math.round(containerRect.top)
+
+                    } : null,
+
+                    imageRect: imageRect ? {
+
+                        width: Math.round(imageRect.width),
+
+                        height: Math.round(imageRect.height),
+
+                        left: Math.round(imageRect.left),
+
+                        top: Math.round(imageRect.top)
+
+                    } : null
+
+                });
+
+                console.table(rows);
+
+                return rows;
+
+            }
+
+
+
+            function mentorKeyInfo(level) {
+
+                const lv = clampLevel(level ?? currentLevel?.value ?? 1);
+
+                const config = LEVEL_CONFIG?.value?.[lv] || LEVEL_CONFIG?.[lv] || null;
+
+                const key = config?.skillId || config?.unlockSkills?.[0] || null;
+
+                const skill = key ? (skillsAll?.value?.[key] || skillsAll?.[key] || null) : null;
+
+                const centralized = key ? (MENTOR_AUDIO_MAP?.value?.[key] || MENTOR_AUDIO_MAP?.[key] || null) : null;
+
+                const tutorialKey = lv === 36 ? 'L36_FIRST_ENTRY' : `STAGE_INTRO_${lv}`;
+
+                const seen = Array.isArray(mentorTutorialSeen?.value)
+
+                    ? mentorTutorialSeen.value.includes(tutorialKey)
+
+                    : false;
+
+                const info = {
+
+                    level: lv,
+
+                    levelId: config?.id || null,
+
+                    title: config?.title || config?.name || null,
+
+                    isBoss: !!(config?.boss || config?.isBoss || lv % 5 === 0),
+
+                    skillId: config?.skillId || null,
+
+                    firstUnlockSkill: config?.unlockSkills?.[0] || null,
+
+                    attemptedKey: key,
+
+                    hasSkill: !!skill,
+
+                    hasCentralizedDialogue: !!centralized?.dialogue?.length,
+
+                    centralizedDialogueLines: centralized?.dialogue?.length || 0,
+
+                    hasCentralizedAudio: !!centralized?.audio?.length,
+
+                    centralizedAudioLines: centralized?.audio?.length || 0,
+
+                    stageIntroSeenKey: tutorialKey,
+
+                    stageIntroSeen: seen
+
+                };
+
+                console.table([info]);
+
+                return info;
 
             }
 
@@ -931,6 +1201,38 @@ window.__attachDebugTools = function (refs) {
 
 
 
+                mapNodes(options = {}) {
+
+                    return mapNodeRows(options);
+
+                },
+
+
+
+                mapPositions(options = {}) {
+
+                    return mapNodeRows(options);
+
+                },
+
+
+
+                clearMapNodeLabels() {
+
+                    clearMapNodeLabels();
+
+                },
+
+
+
+                mentorKey(level) {
+
+                    return mentorKeyInfo(level);
+
+                },
+
+
+
                 home() {
 
                     try {
@@ -983,6 +1285,10 @@ jpDebug commands:
 - jpDebug.skill('MO_ALSO_BASIC')
 - jpDebug.skillLines('NI_TIME', 20)
 - jpDebug.state() / home() / levels()
+- jpDebug.mapNodes() : Console-table current map marker data.
+- jpDebug.mapNodes({ labels: true }) : Add temporary labels above visible markers.
+- jpDebug.clearMapNodeLabels() : Remove temporary map marker labels.
+- jpDebug.mentorKey(25) : Inspect the mentor dialogue key and seen state for a level.
 
 Audit Tools (Question Distribution):
 - jpDebug.auditLevelSkills(6, 100) : Simulate Level 6, sample 100 times.

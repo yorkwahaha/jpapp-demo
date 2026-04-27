@@ -341,9 +341,16 @@ const _jpApp = Vue.createApp({
         onMounted(async () => {
             // Load Map Chapter Data (Ensuring this runs on all environments)
             try {
-                const resp = await fetch('assets/data/map-chapters.json?v=' + (window.APP_VERSION || Date.now()));
+                const mapDataVersion = window.APP_VERSION || Date.now();
+                const mapDataSource = 'assets/data/map-chapters.json?v=' + mapDataVersion;
+                const resp = await fetch(mapDataSource, { cache: 'no-store' });
                 if (resp.ok) {
                     mapChapters.value = await resp.json();
+                    window.__JPAPP_MAP_CHAPTERS_SOURCE = {
+                        url: mapDataSource,
+                        version: String(mapDataVersion),
+                        loadedAt: new Date().toISOString()
+                    };
                     if (window.__DEBUG__) console.log('[MapData] chapters loaded');
                 }
             } catch (e) {
@@ -1164,7 +1171,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26042601";
+        const APP_VERSION = window.APP_VERSION || "26042801";
 
         const appVersion = ref(APP_VERSION);
 
@@ -8709,7 +8716,9 @@ const _jpApp = Vue.createApp({
             startLevel, retryLevel, initGame, generateQuestionBySkill,
             mentorTutorialSeen, saveMentorState, skillsAll, setupMentorDialogue,
             pauseBattle, db, VOCAB, startBossQueue, unlockedSkillIds,
-            playPrologueOpening, playMainEndingFinale
+            playPrologueOpening, playMainEndingFinale,
+            mapChapters, activeChapter, selectedSegmentIdx, getMapNodeStyle,
+            MENTOR_AUDIO_MAP
         });
 
         return {

@@ -1,5 +1,21 @@
 [
     {
+        "version": "26042801",
+        "date": "2026-04-28",
+        "title": "Selene 導師立繪收尾、L25 導師修復與地圖節點穩定化",
+        "changes": [
+            "導師立繪：Selene 導師 Emotion 立繪系統完成接線，mentor-dialogues.v1.json 保留 emotion metadata，game.js / index.html 支援 gentle、explain、encourage、happy、concerned、surprised、proud、blessing 對應立繪，缺圖時 fallback 到 gentle，再 fallback 到舊導師圖。",
+            "導師資料：清理 dialogue item 內空字串 audio 欄位，保留正式集中化音訊資料與台詞 emotion metadata。",
+            "地圖導師覆蓋層：改用全身 / 近全身 Selene emotion 立繪，手機直式放大臉部與上半身，下半身自然延伸到對話框後方或畫面外，平板與橫式維持可用；戰鬥 mentor modal 暫未大改。",
+            "Debug 防噪：針對 lockdown-install.js / SES_UNCAUGHT_EXCEPTION: null 等外部 null noise 加入過濾，避免「全局錯誤: null」干擾 JPAPP debug overlay，同時保留真正 TypeError / ReferenceError / Error 物件的顯示能力。",
+            "Boss 導師修復：L25_BOSS 補上 skillId: BOSS_REVIEW_05，修正 Stage 25 有導師台詞資料但點關卡不顯示導師台詞的問題，並完成 L5 / L10 / L15 / L20 / L25 / L30 / L35 / L36 Boss mentor key 盤點。",
+            "Map 4 節點修正：微調城內外廊 L17 / L20 書本節點位置，最終為 L17 desktopX 33 / desktopY 35、L20 desktopX 68 / desktopY 80；L16 / L18 / L19 保持原始座標，mobileX/mobileY 暫不啟用。",
+            "地圖 debug 與快取：保留 jpDebug.mapNodes() / jpDebug.mapPositions() 以觀測地圖節點，map-chapters.json fetch 加入 cache: no-store，並在 debug metadata 顯示 mapDataSource / loadedAt 以確認 runtime 載入來源。",
+            "同日穩定性摘要：保留 iOS Safari BGM/SFX 背景音訊修復，背景不自動播放 BGM，回前景後需下一次使用者手勢才恢復 BGM/SFX，TTS 維持正常。",
+            "同日清理摘要：完成 earlyGamePools.v1.js legacy cleanup、safeCombos 題庫檔純化、legacy generator dead code 清理，並修復 db placeholder / MONSTERS fallback 回歸問題。"
+        ]
+    },
+    {
         "version": "26042701",
         "date": "2026-04-27",
         "title": "導師立繪 Emotion 系統實裝、立繪比例優化與 Debug 防噪",

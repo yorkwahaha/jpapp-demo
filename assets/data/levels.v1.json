@@ -470,6 +470,7 @@
   {
     "id": "L25_BOSS",
     "name": "魔王關：深淵盡頭",
+    "skillId": "BOSS_REVIEW_05",
     "unlockSkills": [],
     "questionCount": 80,
     "rewardAbilityId": "WAKUWAKU",

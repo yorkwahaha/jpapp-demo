@@ -2,37 +2,32 @@
   "PROLOGUE_OPENING": {
     "dialogue": [
       {
-        "text": "……",
+        "text": "……咦。你，看得見我？",
         "emotion": "surprised"
       },
       {
-        "text": "……咦。 你，看得見我？",
-        "emotion": "surprised"
+        "text": "這座神殿，普通人是看不見的。這樣的話……那些孩子們的聲音，你也聽得到？",
+        "emotion": "concerned"
       },
       {
-        "text": "這座神殿，普通人是看不見的。 這樣的話……那些孩子們的聲音，你也聽得到？ ",
-        "emotion": "wonder"
+        "text": "……聽得到啊。那麼，你不只是個普通的旅人。",
+        "emotion": "gentle"
       },
       {
-        "text": "……聽得到啊。 那麼，你不只是個普通的旅人。",
-        "emotion": "realize"
+        "text": "我有件事想拜託你。現在還沒辦法全說清楚...但可以先聽聽這個孩子的聲音嗎？",
+        "emotion": "gentle"
       },
       {
-        "text": "我有件事想拜託你。 現在還沒辦法全說清楚—— 但可以先聽聽這個孩子的聲音嗎？",
-        "emotion": "solemn"
-      },
-      {
-        "text": "……謝謝你願意相信我。 剩下的，我們邊走邊說吧。",
-        "emotion": "apologetic"
+        "text": "……謝謝你願意相信我。剩下的，我們邊走邊說吧。",
+        "emotion": "blessing"
       }
     ],
     "audio": [
-      "",
-      "assets/audio/mentor/prologue_01.mp3",
-      "assets/audio/mentor/prologue_02.mp3",
-      "assets/audio/mentor/prologue_03.mp3",
-      "assets/audio/mentor/prologue_04.mp3",
-      "assets/audio/mentor/prologue_05.mp3"
+      "assets/audio/mentor/prologue-p01.mp3",
+      "assets/audio/mentor/prologue-p02.mp3",
+      "assets/audio/mentor/prologue-p03.mp3",
+      "assets/audio/mentor/prologue-p04.mp3",
+      "assets/audio/mentor/prologue-p05.mp3"
     ],
     "portraitVideo": {
       "webm": "assets/video/mentor/prologue-opening.webm",
@@ -43,15 +38,19 @@
   "WA_TOPIC_BASIC": {
     "dialogue": [
       {
-        "text": "我是月詠導師，瑟蕾涅。一直在這座言葉神殿裡，守護著小助靈(助詞精靈)們。",
+        "text": "我是月詠導師，瑟蕾涅。一直在這座言葉神殿裡，守護著小助靈們。",
         "emotion": "gentle"
       },
       {
-        "text": "小助靈們，一直靜靜地在語言裡呼吸著。有了祂們，語言才有了意義，心意才能傳遞，世界的形狀，才得以維持。 ",
+        "text": "小助靈們，一直靜靜地在語言裡呼吸著。有了祂們，語言才有了意義，心意才能傳遞，世界的形狀，才得以維持。",
         "emotion": "explain"
       },
       {
-        "text": "先從這個孩子開始——「は」。「は」啊，會在句子裡輕輕往前一站，告訴你「接下來要說的，就是這個人的事喔」。",
+        "text": "先從這個孩子開始...「は」。",
+        "emotion": "gentle"
+      },
+      {
+        "text": "「は」啊，會在句子裡輕輕往前一站，告訴你「接下來要說的，就是這個人的事喔」。",
         "emotion": "explain"
       },
       {
@@ -59,8 +58,8 @@
         "emotion": "explain"
       },
       {
-        "text": "不需要想得太難。這句話在說誰的事呢——只要看見這一點，你就已經聽到這個孩子的聲音了。",
-        "emotion": "happy"
+        "text": "不需要想得太難。這句話在說誰的事呢...只要看見這一點，你就已經聽到這個孩子的聲音了。",
+        "emotion": "encourage"
       }
     ],
     "audio": [
@@ -68,7 +67,8 @@
       "assets/audio/mentor/wa-topic-basic-p02.mp3",
       "assets/audio/mentor/wa-topic-basic-p03.mp3",
       "assets/audio/mentor/wa-topic-basic-p04.mp3",
-      "assets/audio/mentor/wa-topic-basic-p05.mp3"
+      "assets/audio/mentor/wa-topic-basic-p05.mp3",
+      "assets/audio/mentor/wa-topic-basic-p06.mp3"
     ]
   },
   "NO_POSSESSIVE": {
@@ -78,28 +78,28 @@
         "emotion": "gentle"
       },
       {
-        "text": "這座神殿裡，小助靈們已經幾乎不剩了。有的嚇得躲了起來，有的迷失了方向……還有些，甚至被什麼東西吞噬了。",
+        "text": "這座神殿裡，小助靈(助詞精靈)們已經幾乎不剩了。有的嚇得躲了起來，有的迷失了方向...還有些，甚至被什麼東西吞噬了。",
+        "emotion": "concerned"
+      },
+      {
+        "text": "小助靈消失的話，語言就會一點一點地崩解。意思變得模糊，心意無法傳達...最終，連世界本身都會慢慢扭曲。",
+        "emotion": "concerned"
+      },
+      {
+        "text": "下一個是這個孩子...「の」。「の」是個溫柔連結兩樣事物的孩子。",
         "emotion": "explain"
       },
       {
-        "text": "小助靈消失的話，語言就會一點一點地崩解。意思變得模糊，心意無法傳達——最終，連世界本身都會慢慢扭曲。",
-        "emotion": "explain"
-      },
-      {
-        "text": "下一個是這個孩子——「の」。「の」是個溫柔連結兩樣事物的孩子。",
-        "emotion": "encourage"
-      },
-      {
-        "text": "她能告訴你「這是誰的？」「是什麼樣的東西？」",
+        "text": "祂能告訴你「這是誰的？」「是什麼樣的東西？」",
         "emotion": "explain"
       },
       {
         "text": "比如說，「わたしの本（我的書）」。有了「の」，才知道那本書是我的。",
-        "emotion": "happy"
+        "emotion": "explain"
       },
       {
         "text": "試著輕輕想想看，前面的詞是不是在說明後面的詞呢？如果看見了那個連結，那就是「の」的力量。",
-        "emotion": "happy"
+        "emotion": "encourage"
       }
     ],
     "audio": [
@@ -116,22 +116,26 @@
     "dialogue": [
       {
         "text": "……你比我想的還要厲害呢。我對你稍微刮目相看了。",
+        "emotion": "surprised"
+      },
+      {
+        "text": "只靠我一個人，已經跟不上了。能聽見聲音的手，能守護的力量，都有限度。所以...能遇見你，我覺得就像奇跡一樣。",
         "emotion": "gentle"
       },
       {
-        "text": "只靠我一個人，已經跟不上了。能聽見聲音的手，能守護的力量，都有限度。所以……能遇見你，我覺得就像奇跡一樣。",
-        "emotion": "happy"
-      },
-      {
-        "text": "這個孩子的聲音，你也聽得到嗎？——「が」。「が」是用來表示「誰」或「什麼」引發了那件事的孩子。",
+        "text": "這個孩子的聲音，你也聽得到嗎？...「が」。「が」是會帶出「誰」或「什麼」引發了那件事的孩子。",
         "emotion": "explain"
       },
       {
-        "text": "比如說，「ドアが開く（門開了）」。門，自己發生了變化。「が」就把這樣的「動作主體」帶到前面來。",
+        "text": "比如說，「ドアが開く（門開了）」。「門」自己發生了變化。「が」就把這樣的「動作主體」帶到前面來。",
+        "emotion": "explain"
+      },
+      {
+        "text": "是不是有什麼東西自己動了、自己改變了？當你有這種感覺的時候，試著找找「が」的聲音。現在跟「は」搞混了也沒關係。",
         "emotion": "encourage"
       },
       {
-        "text": "是不是有什麼東西自己動了、自己改變了——當你有這種感覺的時候，試著找找「が」的聲音。就算跟「は」搞混了，現在也沒關係。先抓住這個感覺就夠了。",
+        "text": "先抓住這個感覺就好。",
         "emotion": "happy"
       }
     ],
@@ -140,7 +144,8 @@
       "assets/audio/mentor/ga-intransitive-p02.mp3",
       "assets/audio/mentor/ga-intransitive-p03.mp3",
       "assets/audio/mentor/ga-intransitive-p04.mp3",
-      "assets/audio/mentor/ga-intransitive-p05.mp3"
+      "assets/audio/mentor/ga-intransitive-p05.mp3",
+      "assets/audio/mentor/ga-intransitive-p06.mp3"
     ]
   },
   "WO_OBJECT_BASIC": {
@@ -150,24 +155,20 @@
         "emotion": "gentle"
       },
       {
-        "text": "在一座陌生的神殿裡，來聆聽素不相識的孩子們的聲音——這可不是普通人會做的事。",
+        "text": "在一座陌生的神殿裡，來聆聽素不相識的孩子們的聲音……這可不是普通人會做的事。",
         "emotion": "gentle"
       },
       {
-        "text": "……對不起，突然問了個奇怪的問題。別在意。只是……我很高興，就這樣。",
+        "text": "……對不起，突然問了個奇怪的問題。別在意。只是……我很高興。",
         "emotion": "gentle"
       },
       {
-        "text": "「を」的孩子在呼喚了。走吧。「を」是承接動作直接指向的對象的孩子。",
+        "text": "「を」在呼喚我們了，我們快走吧。「を」是承接「動作」與「對象」的孩子。",
         "emotion": "explain"
       },
       {
-        "text": "比如說，「本を読む（讀書）」。「讀」這個動作所指向的對象是「書」。「を」就告訴了你這個連結。",
+        "text": "比如說，「本を読む（讀書）」。「讀」這個動作的對象是「書」。「を」就告訴了你這個連結。",
         "emotion": "explain"
-      },
-      {
-        "text": "這個動作，是在指向什麼呢——當你看見這一點的時候，「を」就會回應你了。",
-        "emotion": "encourage"
       }
     ],
     "audio": [
@@ -175,43 +176,42 @@
       "assets/audio/mentor/wo-object-basic-p02.mp3",
       "assets/audio/mentor/wo-object-basic-p03.mp3",
       "assets/audio/mentor/wo-object-basic-p04.mp3",
-      "assets/audio/mentor/wo-object-basic-p05.mp3",
-      "assets/audio/mentor/wo-object-basic-p06.mp3"
+      "assets/audio/mentor/wo-object-basic-p05.mp3"
     ]
   },
   "BOSS_REVIEW_01": {
     "dialogue": [
       {
-        "text": "這裡，是第一道關卡。",
+        "text": "這裡，是最初的魔王關卡。",
         "emotion": "gentle"
       },
       {
-        "text": "到目前為止你聆聽過的四個孩子——「は」「の」「が」「を」。祂們都好好記得你呢。",
+        "text": "到目前為止你聆聽過的四個孩子...「は」「の」「が」「を」。祂們都有好好記得你呢。",
         "emotion": "happy"
       },
       {
         "text": "前方還有更多的孩子在等待。但現在，重要的是能不能分辨清楚這四個孩子。",
-        "emotion": "happy"
+        "emotion": "gentle"
       },
       {
         "text": "如果迷惑了，就依序想想看。",
         "emotion": "explain"
       },
       {
-        "text": "在說誰的事？→「は」，是誰的、是什麼樣的？→「の」",
+        "text": "在說誰的事→「は」。是誰的、是什麼樣的→「の」。",
         "emotion": "explain"
       },
       {
-        "text": "什麼改變了、什麼動了？→「が」，動作指向什麼？→「を」",
+        "text": "什麼改變了、什麼動了→「が」。動作指向什麼→「を」。",
         "emotion": "explain"
       },
       {
-        "text": "不需要著急。這個孩子現在想傳達什麼——只要看見這一點就好。",
-        "emotion": "explain"
+        "text": "不需要著急。\n這個孩子現在想傳達什麼？\n只要看見這一點就好。",
+        "emotion": "encourage"
       },
       {
         "text": "能走到這裡的你，一定沒問題的。聽清楚那些孩子的聲音，一起越過這道關卡吧。",
-        "emotion": "encourage"
+        "emotion": "blessing"
       }
     ],
     "audio": [
@@ -228,24 +228,24 @@
   "HE_DIRECTION": {
     "dialogue": [
       {
-        "text": "前方的路，你看得見嗎。",
+        "text": "前方的路，你看得見嗎？",
         "emotion": "gentle"
       },
       {
         "text": "「へ」的孩子的聲音，總是從稍遠的地方傳來的。",
-        "emotion": "explain"
+        "emotion": "gentle"
       },
       {
         "text": "「へ」是表示朝某處前進的方向的孩子。不是「已經在那裡了」，而是「正要往那裡去」的感覺。",
         "emotion": "explain"
       },
       {
-        "text": "比如說，「学校へ行く（去學校）」。有一個要前往的地方——那就是「へ」的聲音",
-        "emotion": "encourage"
+        "text": "比如說，「学校へ行く（去學校）」。有一個要前往的地方...那就是「へ」的聲音。",
+        "emotion": "explain"
       },
       {
         "text": "當你覺得「是不是正在往哪裡去呢」的時候，這個孩子就會回應你了。",
-        "emotion": "happy"
+        "emotion": "encourage"
       }
     ],
     "audio": [
@@ -259,12 +259,8 @@
   "MO_ALSO_BASIC": {
     "dialogue": [
       {
-        "text": "欸，你注意到了嗎？跟剛才的孩子，這個孩子有點像吧。",
+        "text": "下一個是「も」的孩子。這個孩子很溫柔，祂的聲音裡總帶著「我也在喔」的感覺。",
         "emotion": "gentle"
-      },
-      {
-        "text": "但「も」稍微不一樣。她是輕輕疊上來說「我也在喔」的孩子。",
-        "emotion": "explain"
       },
       {
         "text": "「も」是表示「也～」的孩子。前面已經有人了，然後「這個孩子也是」這樣接續下來的感覺。",
@@ -272,19 +268,18 @@
       },
       {
         "text": "比如說，「わたしも学生です（我也是學生）」。輕輕承接前面的語境，疊加上去。",
-        "emotion": "encourage"
+        "emotion": "explain"
       },
       {
         "text": "當你感覺到「這個也一樣」的時候，那就是「も」的聲音了。",
-        "emotion": "happy"
+        "emotion": "encourage"
       }
     ],
     "audio": [
       "assets/audio/mentor/mo-also-p01.mp3",
       "assets/audio/mentor/mo-also-p02.mp3",
       "assets/audio/mentor/mo-also-p03.mp3",
-      "assets/audio/mentor/mo-also-p04.mp3",
-      "assets/audio/mentor/mo-also-p05.mp3"
+      "assets/audio/mentor/mo-also-p04.mp3"
     ]
   },
   "NI_TIME": {
@@ -295,7 +290,7 @@
       },
       {
         "text": "這個孩子，會輕輕地在語言裡刻下「什麼時候」。",
-        "emotion": "explain"
+        "emotion": "gentle"
       },
       {
         "text": "表示時間的「に」，是告訴你「那是什麼時候發生的」的孩子。常常跟在表示時間的詞語後面出現。",
@@ -303,11 +298,11 @@
       },
       {
         "text": "比如說，「七時に起きる（七點起床）」。「幾點・星期幾・幾月幾日」後面接了「に」，那就是這個孩子的聲音。",
-        "emotion": "encourage"
+        "emotion": "explain"
       },
       {
-        "text": "當你看見一個明確的時間點的時候——「に」就會回應你了。",
-        "emotion": "happy"
+        "text": "當你看見一個明確的時間點的時候，「に」就會回應你了。",
+        "emotion": "encourage"
       }
     ],
     "audio": [
@@ -325,20 +320,20 @@
         "emotion": "gentle"
       },
       {
-        "text": "但也正因為這樣，要好好聽她說的話喔。",
+        "text": "但也正因為這樣，要好好聽祂說的話喔。",
         "emotion": "explain"
       },
       {
-        "text": "這一關的「と」是「～和～」，把兩樣東西並排在一起的孩子。",
+        "text": "這一關的「と」是中文的「～和～」，把兩樣東西並排在一起的孩子。",
         "emotion": "explain"
       },
       {
         "text": "比如說，「パンと牛乳（麵包和牛奶）」。「と」的前後，兩個名詞並排在一起。",
-        "emotion": "encourage"
+        "emotion": "explain"
       },
       {
         "text": "當你看見兩樣東西並排在一起的時候，這個孩子就會回應你了。",
-        "emotion": "happy"
+        "emotion": "encourage"
       }
     ],
     "audio": [
@@ -353,35 +348,35 @@
     "dialogue": [
       {
         "text": "你已經聆聽了八個孩子的聲音了呢。",
+        "emotion": "proud"
+      },
+      {
+        "text": "...老實說，我沒想到你真的走到了這裡。很高興，只是一點點喔。",
+        "emotion": "proud"
+      },
+      {
+        "text": "好了，這次是這四個孩子。「へ」「も」「に」「と」，能好好分辨出來嗎。",
         "emotion": "gentle"
       },
       {
-        "text": "……老實說，我沒想到你真的走到了這裡。很高興，只是一點點喔。",
-        "emotion": "explain"
-      },
-      {
-        "text": "好了，這次是這四個孩子。「へ」「も」「に」「と」——能好好分辨出來嗎。",
-        "emotion": "explain"
-      },
-      {
         "text": "如果迷惑了，就依序想想看。",
+        "emotion": "explain"
+      },
+      {
+        "text": "正在往某處去→「へ」。　「這個也一樣」→「も」。",
+        "emotion": "explain"
+      },
+      {
+        "text": "有明確的時間點→「に」。　兩樣東西並排→「と」。",
+        "emotion": "explain"
+      },
+      {
+        "text": "因為祂們看起來都有點眼熟，一著急就容易搞混。別焦慮，只要看清楚這個孩子現在在做什麼就好。",
         "emotion": "encourage"
       },
       {
-        "text": "正在往某處去？→「へ」,「這個也一樣」在疊加？→「も」",
-        "emotion": "happy"
-      },
-      {
-        "text": "有明確的時間點？→「に」／兩樣東西並排？→「と」",
-        "emotion": "happy"
-      },
-      {
-        "text": "因為她們看起來都有點眼熟，一著急就容易搞混。別焦慮，只要看清楚這個孩子現在在做什麼就好。",
-        "emotion": "happy"
-      },
-      {
         "text": "能走到這裡的你，一定沒問題的。一起越過去吧。",
-        "emotion": "happy"
+        "emotion": "blessing"
       }
     ],
     "audio": [
@@ -398,11 +393,11 @@
   "DE_ACTION_PLACE": {
     "dialogue": [
       {
-        "text": "下一個是「で」的小助靈。",
+        "text": "下一個是「で」的孩子。",
         "emotion": "gentle"
       },
       {
-        "text": "「で」是表示「動作在哪裡做」的孩子。不是存在於某個地方，而是指「在哪個地方做某件事」——這才是重點。",
+        "text": "「で」是表示「那個動作在哪裡進行」的孩子。不是在某個地方存在，而是在那個地方做某件事...這才是重點。",
         "emotion": "explain"
       },
       {
@@ -424,7 +419,7 @@
   "NI_EXIST_PLACE": {
     "dialogue": [
       {
-        "text": "接下來的孩子也是「に」喔。但這次她的面貌不一樣。不是動作，而是告訴你某樣東西靜靜地在那裡的孩子。",
+        "text": "這個孩子也是「に」喔。但這次祂的面貌不一樣。不是動作，而是告訴你某樣東西靜靜地在那裡的孩子。",
         "emotion": "gentle"
       },
       {
@@ -436,11 +431,16 @@
         "emotion": "explain"
       },
       {
-        "text": "不是「要去哪裡？」，而是「在哪裡呢？」——當你感受到這種感覺的時候，就是這個孩子登場了。",
+        "text": "不是「要去哪裡？」，而是「在哪裡呢？」……當你感受到這種感覺的時候，就是這個孩子登場了。",
         "emotion": "encourage"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/ni-exist-place-p01.mp3",
+      "assets/audio/mentor/ni-exist-place-p02.mp3",
+      "assets/audio/mentor/ni-exist-place-p03.mp3",
+      "assets/audio/mentor/ni-exist-place-p04.mp3"
+    ]
   },
   "GA_EXIST_SUBJECT": {
     "dialogue": [
@@ -457,659 +457,770 @@
         "emotion": "explain"
       },
       {
-        "text": "所以看到題目的時候，你可以先先找到「在哪裡？」，然後再找「有什麼？」。在那裡現身的孩子，可能就是這一關的「が」了。",
+        "text": "先找到「在哪裡？」，然後再找「有什麼？」。在那裡現身的孩子，可能就是這一關的「が」了。",
         "emotion": "encourage"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/ga-exist-subject-p01.mp3",
+      "assets/audio/mentor/ga-exist-subject-p02.mp3",
+      "assets/audio/mentor/ga-exist-subject-p03.mp3",
+      "assets/audio/mentor/ga-exist-subject-p04.mp3"
+    ]
   },
   "TO_WITH": {
     "dialogue": [
       {
-        "text": "又是「と」呢。但放心，和之前遇到的「並排的孩子」，職責稍微不一樣。這次是和某人一起行動的孩子。",
+        "text": "又是「と」呢。　但放心。和之前遇到的「並排的孩子」，職責稍微不一樣。",
         "emotion": "gentle"
       },
       {
-        "text": "這一關的「と」，是「和～一起」這種感覺的孩子。和某人一起做某件事——這種時候，她就會出現了。",
+        "text": "這次是和某人一起行動的孩子。",
         "emotion": "explain"
       },
       {
-        "text": "比如說，「友だちと行く（和朋友一起去）」。和誰一起行動，就是這個孩子在告訴你的。",
+        "text": "這一關的「と」，是「和～一起」這種感覺的孩子。和某人一起做某件事，這種時候，祂就會出現了。",
         "emotion": "explain"
       },
       {
-        "text": "「是和某人一起做的嗎？」——當你這樣感覺的時候，這個孩子就會回應你了。",
+        "text": "比如說，「友だちと行く（和朋友一起去）」。和誰一起行動，就是這個孩子在告訴你。",
+        "emotion": "explain"
+      },
+      {
+        "text": "「是和某人一起做的嗎？」當你這樣感覺的時候，這個孩子就會回應你了。",
         "emotion": "encourage"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/to-with-p01.mp3",
+      "assets/audio/mentor/to-with-p02.mp3",
+      "assets/audio/mentor/to-with-p03.mp3",
+      "assets/audio/mentor/to-with-p04.mp3",
+      "assets/audio/mentor/to-with-p05.mp3"
+    ]
   },
   "BOSS_REVIEW_03": {
     "dialogue": [
       {
         "text": "走到第十五關了呢。……真的，很謝謝你走到這裡。",
+        "emotion": "proud"
+      },
+      {
+        "text": "好了，這次是這四個孩子。「で」「に」「が」「と」，現在能分辨出祂們在句子裡各自在做什麼嗎。",
         "emotion": "gentle"
       },
       {
-        "text": "好了，這次是這四個孩子。「で」「に」「が」「と」——現在能分辨出她們在句子裡各自在做什麼嗎。",
+        "text": "如果迷惑了，就依序想想看。",
+        "emotion": "gentle"
+      },
+      {
+        "text": "動作在哪裡發生→「で」。什麼東西在哪裡・存在→存在的「に」。",
         "emotion": "explain"
       },
       {
-        "text": "如果迷惑了，就依序想想看。動作在哪裡發生？→「で」。什麼東西在哪裡・存在？→存在的「に」。",
+        "text": "在那裡的主角是什麼→存在的「が」。和某人一起行動→「と」。",
         "emotion": "explain"
       },
       {
-        "text": "在那裡的主角是什麼？→存在的「が」。和某人一起行動？→「と」。",
-        "emotion": "happy"
+        "text": "場所、人、動作都容易同時出現在一句話裡，所以很容易混淆。",
+        "emotion": "explain"
       },
       {
-        "text": "場所、人、動作都容易同時出現在一句話裡，所以很容易混淆。不需要只追著名詞跑。看清楚這個孩子現在在句子裡扮演什麼角色就好。",
+        "text": "不需要只追著名詞跑。看清楚這個孩子現在在句子裡扮演什麼角色就好。",
         "emotion": "encourage"
+      },
+      {
+        "text": "能走到這裡的你，一定沒問題的。一起越過去吧。",
+        "emotion": "blessing"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/boss-review-03-p01.mp3",
+      "assets/audio/mentor/boss-review-03-p02.mp3",
+      "assets/audio/mentor/boss-review-03-p03.mp3",
+      "assets/audio/mentor/boss-review-03-p04.mp3",
+      "assets/audio/mentor/boss-review-03-p05.mp3",
+      "assets/audio/mentor/boss-review-03-p06.mp3",
+      "assets/audio/mentor/boss-review-03-p07.mp3",
+      "assets/audio/mentor/boss-review-03-p08.mp3"
+    ]
   },
   "KARA_SOURCE_START": {
     "dialogue": [
       {
-        "text": "接下來，我們來看看「から」的小助靈。\n這孩子要告訴你的，\n不是事情停在哪裡，\n而是從哪裡開始。",
+        "text": "下一個是「から」的孩子。這個孩子，看的是動作從哪裡開始的。",
         "emotion": "gentle"
       },
       {
-        "text": "這一關的「から」，\n你可以先把它想成「從～開始」「從～來」。\n它會在句子裡，\n輕輕替你指出\n動作或流動的起點。",
+        "text": "比如說，「学校から帰る（從學校回來）」。回去這個動作，是從學校開始的吧。",
         "emotion": "explain"
       },
       {
-        "text": "例如：\n「学校から帰る。」\n就是「從學校回來」。\n這句裡的「学校から」，\n就是回來這個動作開始的地方。",
-        "emotion": "explain"
-      },
-      {
-        "text": "所以看到題目的時候，\n你可以先輕輕想一下：\n這句話，是不是在說從哪裡出發、從哪裡開始呢？\n如果像是這樣，那多半就是「から」在回應你了。",
+        "text": "「從哪裡開始的呢」...當你看見這個感覺的時候，這個孩子就會回應你了。",
         "emotion": "encourage"
       },
       {
-        "text": "不用把它想得太難。\n你先抓住一個畫面就好：\n腳步是從哪裡踏出去的。\n只要看見那個起點，\n你就比較不容易選錯了。",
-        "emotion": "happy"
+        "text": "不需要想得太難。只要看清楚腳是從哪裡開始移動的就好。",
+        "emotion": "gentle"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/kara-source-start-p01.mp3",
+      "assets/audio/mentor/kara-source-start-p02.mp3",
+      "assets/audio/mentor/kara-source-start-p03.mp3",
+      "assets/audio/mentor/kara-source-start-p04.mp3"
+    ]
   },
   "MADE_LIMIT_END": {
     "dialogue": [
       {
-        "text": "上一關，我們先看見了起點。\n那這一關，\n就來看看終點。\n路不只要知道從哪裡開始，\n也要知道走到哪裡為止。",
-        "emotion": "gentle"
-      },
-      {
-        "text": "「まで」最基本的感覺，\n就是「到～為止」。\n這孩子會在句子裡，\n輕輕幫你指出\n事情是在哪裡停下來的。",
+        "text": "如果說「から」看的是起點，「まで」就是看著終點的孩子。站在同一條流動的另一端。",
         "emotion": "explain"
       },
       {
-        "text": "例如：\n「三時まで勉強する。」\n就是「讀書讀到三點」。\n重點不是單純提到三點，\n而是讀書這個動作到了三點就停下來。",
+        "text": "比如說，「三時まで勉強する（讀書讀到三點）」。讀書這個動作，在三點的地方被截斷了吧。",
         "emotion": "explain"
       },
       {
-        "text": "所以看到題目的時候，\n你可以先輕輕想一下：\n這句話，是不是在說到哪裡結束、到哪裡為止呢？\n如果像是這樣，那多半就是「まで」在回應你了。",
+        "text": "「在哪裡結束的呢」「一直到哪裡呢」……當你這樣感覺的時候，這個孩子就會回應你了。",
         "emotion": "encourage"
       },
       {
-        "text": "不用急。\n起點和終點，\n本來就很容易一起出現。\n但現在你先把「到這裡為止」的感覺抓住就好。\n只要看見那條線停在哪裡，\n你就已經慢慢聽懂這孩子的聲音了。",
-        "emotion": "happy"
+        "text": "起點和終點，兩個都慢慢看見了的話，就已經足夠了。",
+        "emotion": "gentle"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/made-limit-end-p01.mp3",
+      "assets/audio/mentor/made-limit-end-p02.mp3",
+      "assets/audio/mentor/made-limit-end-p03.mp3",
+      "assets/audio/mentor/made-limit-end-p04.mp3"
+    ]
   },
   "NI_DESTINATION": {
     "dialogue": [
       {
-        "text": "這次的「に」小助靈，\n不是表示時間的孩子，\n也不是守著存在位置的孩子。\n它更在意的是：\n動作做完之後，最後落到哪裡。",
+        "text": "又是「に」呢。但這個孩子不是時間也不是地方。看的是動作最後落定的地方的孩子。",
         "emotion": "gentle"
       },
       {
-        "text": "這一關的「に」，\n你可以先把它記成「落點、歸著點」。\n也就是說，\n動作做完之後，\n人或東西最後停到哪裡、落到哪裡。",
+        "text": "比如說，「いすに座る（坐到椅子上）」。「坐」這個動作，最後落定在椅子上吧。",
         "emotion": "explain"
       },
       {
-        "text": "例如：\n「いすに座る。」\n就是「坐到椅子上」。\n這裡的重點是，\n「坐」這個動作做完之後，\n最後人是落到椅子那個位置上。",
+        "text": "「へ」看的是「前往」途中，但這個孩子看的是「抵達」的那個地方。能看見這個差別，就已經沒問題了。",
         "emotion": "explain"
-      },
-      {
-        "text": "所以看到題目的時候，\n你可以先輕輕想一下：\n這個動作做完後，最後會落到哪裡呢？\n如果不是只是朝那邊去，\n而是真的停到那個位置上，\n那多半就是這一關的「に」在回應你了。",
-        "emotion": "encourage"
-      },
-      {
-        "text": "不用急。\n「へ」比較像是在看往哪裡去，\n而這個孩子，看的則是最後停在哪裡。\n只要你先抓住\n「最後落到那裡」的感覺，\n就已經慢慢能分辨它的聲音了。",
-        "emotion": "happy"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/ni-destination-p01.mp3",
+      "assets/audio/mentor/ni-destination-p02.mp3",
+      "assets/audio/mentor/ni-destination-p03.mp3"
+    ]
   },
   "DE_TOOL_MEANS": {
     "dialogue": [
       {
-        "text": "好，這次又是「で」家族的小助靈。\n不過這孩子，\n不是守著地方的那一位。\n它更在意的是：\n你是靠什麼，完成這個動作的。",
+        "text": "又是「で」呢。已經習慣了嗎。這次這個孩子不是地方也不是工具，而是告訴你用什麼做到的孩子。",
         "emotion": "gentle"
       },
       {
-        "text": "這一關的「で」，\n你可以先把它記成工具、方法、手段。\n也就是說，\n當你在做某件事的時候，\n手上拿了什麼，或用了什麼方式，\n這孩子都會輕輕告訴你。",
+        "text": "比如說，「ペンで書く（用筆寫）」。「筆」是拿在手上使用的東西吧。那就是「で」的聲音。",
         "emotion": "explain"
       },
       {
-        "text": "例如：\n「ペンで書く。」\n就是「用筆寫」。\n這裡的「ペン」，\n不是在說在哪裡寫，\n而是在說寫的時候用了什麼工具。",
-        "emotion": "explain"
-      },
-      {
-        "text": "所以看到題目的時候，\n你可以先輕輕分一下：\n這個名詞是在說地方，\n還是在說拿來做事的工具或方法呢？\n如果比較像後者，那多半就是這一關的「で」在回應你了。",
+        "text": "是地方呢，還是使用什麼的手段呢...輕輕地試著分辨看看。能抓住這個感覺，就已經沒問題了。",
         "emotion": "encourage"
-      },
-      {
-        "text": "不用怕同一個助詞會有不同的樣子。\n同一家族的孩子，本來就可能負責不一樣的事。\n現在你先抓住這一關最重要的感覺：\n是用什麼做到的。\n只要聽懂這一點，就很夠了。",
-        "emotion": "happy"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/de-tool-means-p01.mp3",
+      "assets/audio/mentor/de-tool-means-p02.mp3",
+      "assets/audio/mentor/de-tool-means-p03.mp3"
+    ]
   },
   "BOSS_REVIEW_04": {
     "dialogue": [
       {
-        "text": "來，先把呼吸慢慢穩下來吧。\n這一戰，並不是要你再記新的東西。\n而是要把剛才一路看到的那些線索，\n再重新好好整理一次。",
-        "emotion": "gentle"
+        "text": "第二十關了。……你，真的走到這裡了呢。",
+        "emotion": "proud"
       },
       {
-        "text": "先把它們想起來吧。\n「から」是指出從哪裡開始的孩子。\n「まで」是看著到哪裡為止的孩子。\n這一關的「に」，則是在看最後落到哪裡。\n而「で」，會告訴你是用什麼做到的。",
+        "text": "想想今天的四個孩子。「から」是起點，「まで」是終點。",
         "emotion": "explain"
       },
       {
-        "text": "如果一時有些亂掉，也沒關係。\n你就慢慢順著看：\n這是從哪裡開始的呢？\n又是到哪裡為止呢？\n最後落到哪裡呢？\n還是，它是在說用什麼做到呢？",
+        "text": "「に」是落定的地方，「で」是使用的手段。就像一條路一樣，對吧。",
         "emotion": "explain"
       },
       {
-        "text": "這幾關的孩子，\n很像是在一起畫出一句話的路線。\n起點、終點、落點，\n再加上完成事情的方法。\n所以別只看表面。\n你要慢慢去看清楚，\n這個詞現在在句子裡，究竟指向哪個位置。",
+        "text": "迷惑的時候，就看看那個詞現在在句子裡指向哪裡。不是看字，是看職責。",
         "emotion": "encourage"
       },
       {
-        "text": "能走到這裡，你已經很厲害了。\n現在的你，已經不只是看單字而已。\n你開始能看見句子的走向了。\n只要把這幾個位置抓穩，\n這道關卡，我們一定能一起拿下來。",
-        "emotion": "happy"
+        "text": "……欸。走到第二十關的你，讓我說一句話。謝謝你，走來了。",
+        "emotion": "blessing"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/boss-review-04-p01.mp3",
+      "assets/audio/mentor/boss-review-04-p02.mp3",
+      "assets/audio/mentor/boss-review-04-p03.mp3",
+      "assets/audio/mentor/boss-review-04-p04.mp3",
+      "assets/audio/mentor/boss-review-04-p05.mp3"
+    ]
   },
   "NI_TARGET": {
     "dialogue": [
       {
-        "text": "好，這次又是「に」家族的小助靈。\n不過別怕，\n不是你學錯了。\n只是同一家族的孩子，\n本來就會分別守著不一樣的位置。",
+        "text": "又是「に」呢。已經習慣了嗎。",
         "emotion": "gentle"
       },
       {
-        "text": "這一關的「に」，\n你可以先把它想成「對誰、向誰、給誰」。\n它會告訴你，\n這個動作正朝著哪個對象去，\n又是落到誰身上。",
+        "text": "這個孩子這次看的是動作所指向的「對象」。不是地方也不是時間，而是告訴你動作「傳遞給誰」。",
         "emotion": "explain"
       },
       {
-        "text": "例如：\n「先生に聞く。」\n就是「問老師」。\n這句裡，\n「聞く」這個動作，\n就是朝著老師那邊去的。",
+        "text": "比如說，「先生に聞く（問老師）」。問這個動作，傳遞到了老師那裡。那就是「に」的聲音。",
         "emotion": "explain"
       },
       {
-        "text": "所以看到題目的時候，\n你可以先輕輕想一下：\n這個動作，是對著誰做的呢？\n又是朝著誰過去的呢？\n如果像是這樣，那多半就是這一關的「に」在回應你了。",
+        "text": "「動作是朝向哪個對象呢」...能理解這個感覺，就已經足夠了。",
         "emotion": "encourage"
-      },
-      {
-        "text": "不用急。\n時間的「に」、地點的「に」、\n落點的「に」，\n和這一關對象的「に」都不一樣。\n你現在只要先抓住一件事就好：\n這個動作，是朝著誰去的。\n慢慢分清楚就可以了。",
-        "emotion": "happy"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/ni-target-p01.mp3",
+      "assets/audio/mentor/ni-target-p02.mp3",
+      "assets/audio/mentor/ni-target-p03.mp3",
+      "assets/audio/mentor/ni-target-p04.mp3"
+    ]
   },
   "GA_BUT": {
     "dialogue": [
       {
-        "text": "這次的「が」家族小助靈，\n和你之前見過的那幾位不太一樣。\n這孩子不是把是誰發生了什麼帶到前面，\n而是在兩句話中間，\n讓語氣輕輕轉一個彎。",
+        "text": "這次的「が」啊，長著一張有點出乎意料的臉。",
+        "emotion": "surprised"
+      },
+      {
+        "text": "不是把誰帶到前面的孩子，而是輕輕把語氣轉成「但是」「不過」的孩子。",
+        "emotion": "explain"
+      },
+      {
+        "text": "比如說，「安いが、おいしくない（雖然便宜，但不好吃）」。前面這樣說，後面卻轉向別的方向...那個轉角，就是這個孩子站的地方。",
+        "emotion": "explain"
+      },
+      {
+        "text": "前面和後面，語氣有沒有稍微轉向...當你這樣感覺的時候，試著找找這個孩子的聲音。",
         "emotion": "gentle"
       },
       {
-        "text": "這一關的「が」，\n你可以先把它想成「但是、可是」。\n前面先說一件事，\n後面再接上\n有點不一樣、甚至相反的另一件事，\n這孩子就會站到中間，把它們接起來。",
-        "emotion": "explain"
-      },
-      {
-        "text": "例如：\n「安いが、おいしくない。」\n就是「雖然便宜，但不好吃」。\n這裡的「が」，\n就是把前後兩句接起來，\n讓句子的方向稍微轉了一下。",
-        "emotion": "explain"
-      },
-      {
-        "text": "所以看到題目的時候，\n你可以先輕輕想一下：\n這句話，是不是在說「前面是這樣，可是後面又不太一樣」呢？\n如果像是這樣，那多半就是這一關的「が」在回應你了。",
+        "text": "就算同樣是「が」，職責也有很多種。不用著急的。",
         "emotion": "encourage"
-      },
-      {
-        "text": "不用急。\n同樣是「が」家族，\n有的孩子負責把主角帶出來，\n也有像這孩子一樣，\n是負責幫句子轉個彎的。\n現在你只要先抓住一件事就好：\n這一關的「が」，是在做轉折。",
-        "emotion": "happy"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/ga-but-p01.mp3",
+      "assets/audio/mentor/ga-but-p02.mp3",
+      "assets/audio/mentor/ga-but-p03.mp3",
+      "assets/audio/mentor/ga-but-p04.mp3",
+      "assets/audio/mentor/ga-but-p05.mp3"
+    ]
   },
   "MO_COMPLETE_NEGATION": {
     "dialogue": [
       {
-        "text": "還記得前面那位「も」家族的小助靈嗎？\n那時候的它，\n是在輕輕告訴你「這個也一樣」。\n不過這次的孩子，\n做的事情就不太一樣了。",
+        "text": "之前遇到的「も」，是個溫柔把人帶進來的孩子呢。",
         "emotion": "gentle"
       },
       {
-        "text": "這一關的「も」，\n你可以先把它想成「全都不……」「一個也不……」。\n像是誰都不、什麼都不、一個也不。\n它會先把範圍整個抱起來，\n再一起交給後面的否定。",
+        "text": "但這次的孩子稍微不一樣。不是溫柔地包進來，而是把所有東西一起用「沒有」蓋住的孩子。",
         "emotion": "explain"
       },
       {
-        "text": "例如：\n「何もない。」\n就是「什麼都沒有」。\n這裡的「も」，\n不是在說「也」，\n而是在把整個範圍都包起來，\n一起變成「沒有」。",
+        "text": "比如說，「何もない（什麼都沒有）」。「這個也、那個也、通通」...把這樣的範圍整個否定掉。",
         "emotion": "explain"
       },
       {
-        "text": "所以看到題目的時候，\n你可以先輕輕看一下：\n後面是不是接了否定呢？\n如果句子給你的感覺是\n「連一個例外都沒有」，\n那多半就是這一關的「も」在回應你了。",
-        "emotion": "encourage"
-      },
-      {
-        "text": "不用急。\n同樣是「も」家族，\n前面那位是把人加進來，\n而這一位，則是把範圍整個包起來否定掉。\n現在你只要先抓住一件事就好：\n這一關的「も」，是不留例外的。",
-        "emotion": "happy"
+        "text": "後面有否定的詞，而且感覺「一個例外都沒有」的話...就是這個孩子登場了。",
+        "emotion": "gentle"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/mo-complete-negation-p01.mp3",
+      "assets/audio/mentor/mo-complete-negation-p02.mp3",
+      "assets/audio/mentor/mo-complete-negation-p03.mp3",
+      "assets/audio/mentor/mo-complete-negation-p04.mp3"
+    ]
   },
   "TO_CONDITIONAL": {
     "dialogue": [
       {
-        "text": "這次的「と」家族小助靈，\n又和前面見過的那些孩子不太一樣。\n它不是把東西並排列出來，\n也不是陪誰一起行動。\n這孩子更像是在說：\n前面的事一發生，後面的結果就會跟著來。",
+        "text": "最後一個「と」了。你和這個孩子，這已經是第幾次見面了呢。",
+        "emotion": "happy"
+      },
+      {
+        "text": "這次既不是並排的孩子，也不是一起前行的孩子。「前面的事發生了，後面就自然跟著來」...是連結這種流動的孩子。",
+        "emotion": "explain"
+      },
+      {
+        "text": "比如說，「春になると、暖かくなる（一到春天，就會變暖）」。前面的事推開了一扇門，後面的景色就自然出現了...就是這種感覺。",
+        "emotion": "explain"
+      },
+      {
+        "text": "「前面發生了，後面就跟著來」...當你看見這道流動的時候，這個孩子就會回應你了。",
         "emotion": "gentle"
       },
       {
-        "text": "這一關的「と」，\n你可以先把它想成「一～就～」。\n前面的事一成立，\n後面的事就會\n很自然地接著出現。",
-        "emotion": "explain"
-      },
-      {
-        "text": "例如：\n「春になると、暖かくなる。」\n就是「一到春天，就會變暖」。\n這裡的「と」，\n是在把前面的條件或契機，\n和後面的自然結果連在一起。",
-        "emotion": "explain"
-      },
-      {
-        "text": "所以看到題目的時候，\n你可以先輕輕想一下：\n是不是前面的事一發生，後面的事就自然跟著來了呢？\n如果像是這樣，那多半就是這一關的「と」在回應你了。",
-        "emotion": "encourage"
-      },
-      {
-        "text": "不用急。\n同樣是「と」家族，\n有的孩子負責並列，\n有的孩子負責一起行動，\n而這一位，則是在連起前因後果。\n你現在只要先抓住一件事就好：\n前面一成立，後面就會跟著出現。",
-        "emotion": "happy"
+        "text": "擁有同樣名字的孩子們，卻有著這麼不一樣的職責...你也稍微驚訝了吧。",
+        "emotion": "surprised"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/to-conditional-p01.mp3",
+      "assets/audio/mentor/to-conditional-p02.mp3",
+      "assets/audio/mentor/to-conditional-p03.mp3",
+      "assets/audio/mentor/to-conditional-p04.mp3",
+      "assets/audio/mentor/to-conditional-p05.mp3"
+    ]
   },
   "BOSS_REVIEW_05": {
     "dialogue": [
       {
-        "text": "來，先冷靜下來。\n這一戰，\n不是要你硬把更多規則塞進腦袋裡。\n而是要把一路走來遇見的那些孩子，\n那些有點不一樣的模樣，\n再重新好好分清楚一次。",
+        "text": "第二十五關了。……你真的走了好遠。",
+        "emotion": "proud"
+      },
+      {
+        "text": "前方還有很多孩子在等著。但現在，先想想在這裡遇到的這四個孩子吧。",
         "emotion": "gentle"
       },
       {
-        "text": "先把它們想起來吧。\n這一關的「に」，是指向動作對象的孩子。\n這一關的「が」，是讓句子輕輕轉彎、接出「但是」的孩子。\n這一關的「も」，是把範圍整個包起來一起否定的孩子。\n而這一關的「と」，則是在連起\n「前面一發生，後面就自然跟著來」的孩子。",
+        "text": "「に」是動作抵達的對象。「が」是轉折語氣的孩子。「も」是把所有東西包覆起來否定的孩子。「と」是前面發生了、後面自然跟著來的那道流動。",
         "emotion": "explain"
       },
       {
-        "text": "如果一時有些亂掉，也沒關係。\n你就慢慢順著看：\n這個動作是朝著誰去的呢？\n前後的語氣有沒有轉彎呢？\n是不是把整個範圍一起否定掉了呢？\n還是前面一發生，後面就自然跟著來了呢？",
-        "emotion": "explain"
-      },
-      {
-        "text": "這幾關最容易讓人混亂的地方，\n就是你會看見熟悉的助詞，\n卻發現回應你的，是同一家族裡不同的孩子。\n所以別只看字。\n你要慢慢去看清楚，\n這個孩子現在在這句話裡，\n到底負責的是什麼工作。",
+        "text": "迷惑的時候，不要看字，要看職責。這個孩子現在，在句子裡做著什麼呢...就這樣想。",
         "emotion": "encourage"
       },
       {
-        "text": "能走到這裡，你已經很厲害了。\n如果你開始能分清楚，\n同一個助詞家族裡不同孩子的聲音，\n就表示你真的開始看懂句子的骨架了。\n來，這道關卡，我會陪你一起拿下。",
-        "emotion": "happy"
+        "text": "和你一起走到這裡，我也覺得自己稍微變了一點...這樣說，不太像我呢。好了，走吧。",
+        "emotion": "gentle"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/boss-review-05-p01.mp3",
+      "assets/audio/mentor/boss-review-05-p02.mp3",
+      "assets/audio/mentor/boss-review-05-p03.mp3",
+      "assets/audio/mentor/boss-review-05-p04.mp3",
+      "assets/audio/mentor/boss-review-05-p05.mp3"
+    ]
   },
   "YA_AND_OTHERS": {
     "dialogue": [
       {
-        "text": "來，先別怕。\n這次要見的孩子，\n不是把東西一個一個排得很整齊的那種。\n它更像是，\n從裡面輕輕挑出幾樣給你看。",
+        "text": "「や」的孩子和「と」長得很像，但稍微不一樣。",
         "emotion": "gentle"
       },
       {
-        "text": "這一關的「や」，\n你可以先把它想成「像是這些、還有別的」。\n它不是要把全部都說完，\n而是先挑幾個代表，\n輕輕放到你面前。",
+        "text": "「と」是把所有東西整齊排列的孩子。「や」是把幾個代表拿出來，輕輕暗示「還有其他的喔」的孩子。",
         "emotion": "explain"
       },
       {
-        "text": "例如：\n「パンやケーキを買う。」\n就是「買麵包、蛋糕之類的」。\n這裡的「や」，\n不是在說只有麵包和蛋糕，\n而是在說這些只是其中幾個例子。",
+        "text": "比如說，「パンやケーキを買う（買麵包、蛋糕之類的）」。不只是麵包和蛋糕，也許還有別的...那樣的餘地留下來了吧。",
         "emotion": "explain"
       },
       {
-        "text": "所以看到題目的時候，\n你可以先輕輕想一下：\n這句話是在把東西全部列完，\n還是只先舉幾個代表呢？\n如果比較像後者，那多半就是這一關的「や」在回應你了。",
-        "emotion": "explain"
+        "text": "是把所有東西都說完了，還是只是舉了幾個例子...就看那裡。",
+        "emotion": "gentle"
       },
       {
-        "text": "不用急。\n「と」比較像是整整齊齊地列出來，\n「や」則比較像是先舉幾個例子給你看。\n現在你只要先抓住一件事就好：\n它不是全部，只是代表。\n慢慢分清楚就可以了。",
+        "text": "你現在應該已經能聽出這個孩子的聲音了。",
         "emotion": "encourage"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/ya-and-others-p01.mp3",
+      "assets/audio/mentor/ya-and-others-p02.mp3",
+      "assets/audio/mentor/ya-and-others-p03.mp3",
+      "assets/audio/mentor/ya-and-others-p04.mp3",
+      "assets/audio/mentor/ya-and-others-p05.mp3"
+    ]
   },
   "DE_SCOPE": {
     "dialogue": [
       {
-        "text": "這次的「で」家族小助靈，\n不是拿著工具的那一位，\n也不是守著動作發生地點的那一位。\n這孩子更在意的是：\n在一個小小的範圍裡，\n誰站到了最前面。",
+        "text": "又是「で」呢。但這個孩子，不是工具也不是地方。",
         "emotion": "gentle"
       },
       {
-        "text": "這一關的「で」，\n你可以先把它想成「在這個範圍內」。\n像是在班上、家裡、村子裡，\n先把一個範圍圈起來，\n再在裡面比較誰最突出。",
+        "text": "這個孩子是輕輕圈出比較範圍的孩子。在班上、在家裡、在世界上...先確定好範圍，然後在裡面決定第一名的時候出現。",
         "emotion": "explain"
       },
       {
-        "text": "例如：\n「クラスで一番背が高い。」\n就是「在班上最高」。\n這裡的「で」，\n不是在說工具，\n而是在替你圈出比較的範圍。",
+        "text": "比如說，「クラスで一番背が高い（在班上最高）」。這個「で」，是在建立一個用來比較的世界。",
         "emotion": "explain"
       },
       {
-        "text": "所以看到題目的時候，\n你可以先輕輕看一下：\n這句話裡有沒有「最……」那種在比較高下的感覺？\n如果有，再去找前面是不是放了一個範圍。\n如果像是這樣，那多半就是這一關的「で」在回應你了。",
-        "emotion": "explain"
-      },
-      {
-        "text": "不用急。\n同樣是「で」家族，\n有的孩子守著地點，\n有的孩子拿著工具，\n而這一位，則是在圈出比較的世界。\n你現在只要先抓住一件事就好：\n它是在說「在這個範圍裡」。",
-        "emotion": "encourage"
+        "text": "有「最～」這樣的詞，而且前面有範圍的話...就是這個孩子登場了。",
+        "emotion": "gentle"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/de-scope-p01.mp3",
+      "assets/audio/mentor/de-scope-p02.mp3",
+      "assets/audio/mentor/de-scope-p03.mp3",
+      "assets/audio/mentor/de-scope-p04.mp3"
+    ]
   },
   "NI_PURPOSE": {
     "dialogue": [
       {
-        "text": "這次的「に」家族小助靈，\n不是表示時間的孩子，\n不是守著地點的孩子，\n也不是指向對象的孩子。\n它悄悄抱著的，\n是「你去那裡，是為了做什麼」這個目的。",
-        "emotion": "gentle"
+        "text": "「に」的臉，這已經是第幾次了呢。但你，已經不驚訝了吧。",
+        "emotion": "happy"
       },
       {
-        "text": "這一關的「に」，\n你可以先把它想成「去做～」「為了做～而去」。\n它更在意的，\n不是要去哪裡，\n而是去那裡的理由和目的。",
+        "text": "這次這個孩子抱著的，是目的。「為了什麼而去那裡」，輕輕地帶到前面來。",
         "emotion": "explain"
       },
       {
-        "text": "例如：\n「本を買いに行く。」\n就是「去買書」。\n這裡真正重要的，\n不是單純說「去」，\n而是帶著「買書」這個目的前往。",
+        "text": "比如說，「本を買いに行く（去買書）」。重要的不是「去」這件事，而是帶著「買」這個目的前往那裡。",
         "emotion": "explain"
       },
       {
-        "text": "所以看到題目的時候，\n你可以先輕輕想一下：\n這句話想說的，\n是不是不是「去哪裡」，\n而是「去做什麼」呢？\n如果像是這樣，那多半就是這一關的「に」在回應你了。",
-        "emotion": "explain"
-      },
-      {
-        "text": "不用急。\n同樣是「に」家族，\n有的孩子看時間，\n有的孩子守地方，\n也有像這一位一樣，負責把目的帶到前面。\n你現在只要先抓住一件事就好：\n去之前，心裡已經先有要做的事了。",
+        "text": "在出發之前，想做的事已經先看見了...能抓住這個感覺，就已經沒問題了。",
         "emotion": "encourage"
+      },
+      {
+        "text": "你這樣仔細地把同族的孩子們一個個分辨清楚，我有一點點以你為傲。",
+        "emotion": "proud"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/ni-purpose-p01.mp3",
+      "assets/audio/mentor/ni-purpose-p02.mp3",
+      "assets/audio/mentor/ni-purpose-p03.mp3",
+      "assets/audio/mentor/ni-purpose-p04.mp3",
+      "assets/audio/mentor/ni-purpose-p05.mp3"
+    ]
   },
   "TO_QUOTE": {
     "dialogue": [
       {
-        "text": "來，這一關的「と」家族小助靈，\n是專門幫你抱著話語走的孩子。\n有人說了什麼、想了什麼、聽見了什麼，\n都可以由它輕輕接起來。",
+        "text": "最後一個「と」了。這個孩子，是捧著語言本身來傳遞的孩子。",
         "emotion": "gentle"
       },
       {
-        "text": "這一關的「と」，\n你可以先把它想成：\n把前面那整塊話，整個抱起來。\n再接到後面的「說」「想」這些動作上。",
+        "text": "某人說過的話，心裡想過的事...把那一整個捧起來，原封不動地交給後面的「說」「想」。",
         "emotion": "explain"
       },
       {
-        "text": "例如：\n「『ありがとう』と言う。」\n就是「說謝謝」。\n這裡的「と」，\n就是把前面的「ありがとう」這句話，\n直接交給後面的「言う」。",
+        "text": "比如說，「『ありがとう』と言う（說謝謝）」。把「謝謝」這個詞，原封不動地交給了「說」。",
         "emotion": "explain"
       },
       {
-        "text": "所以看到題目的時候，\n你可以先輕輕看一下：\n前面是不是有一整塊話語？\n後面是不是接了「說」「想」這類的動詞？\n如果像是這樣，那多半就是這一關的「と」在回應你了。",
-        "emotion": "explain"
+        "text": "前面有一整段話，後面接著「說」「想」的話...那就是這個孩子的聲音了。",
+        "emotion": "gentle"
       },
       {
-        "text": "不用急。\n同樣是「と」家族，\n有的孩子負責並列，\n有的孩子負責一起行動，\n有的孩子負責連起前因後果，\n而這一位，則是在運送話語本身。\n你現在只要先抓住一件事就好：\n前面那整句，就是後面要說、要想的內容。",
-        "emotion": "encourage"
+        "text": "「と」啊，真的有很多張不同的臉。但你，把每一張臉都好好看過了。",
+        "emotion": "proud"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/to-quote-p01.mp3",
+      "assets/audio/mentor/to-quote-p02.mp3",
+      "assets/audio/mentor/to-quote-p03.mp3",
+      "assets/audio/mentor/to-quote-p04.mp3",
+      "assets/audio/mentor/to-quote-p05.mp3"
+    ]
   },
   "BOSS_REVIEW_06": {
     "dialogue": [
       {
-        "text": "來，先稍微冷靜一下吧。\n這一戰，\n不是要你再去認識新的孩子。\n而是要把剛才遇見的那些孩子，\n各自負責的工作，\n再重新穩穩握好一次。",
+        "text": "第三十關了。……你真的來了呢。",
+        "emotion": "proud"
+      },
+      {
+        "text": "「や」是拿出幾個代表的孩子。這個「で」是圈出比較範圍的孩子。這個「に」是帶著目的來的孩子。這個「と」是捧著語言傳遞的孩子。",
+        "emotion": "explain"
+      },
+      {
+        "text": "迷惑的時候，不要看字，要看職責。這個孩子現在，在句子裡做著什麼呢...就這樣想。",
+        "emotion": "encourage"
+      },
+      {
+        "text": "第一次遇見你的時候，我沒想到你會走到這麼遠的地方來。",
         "emotion": "gentle"
       },
       {
-        "text": "先把它們想起來吧。\n「や」是拿出幾樣代表給你看的孩子。\n這一關的「で」，是在某個範圍裡比較高下的孩子。\n這一關的「に」，是把「去做什麼」這個目的帶出來的孩子。\n而這一關的「と」，\n則是把前面那整塊話語，原原本本交給後面的孩子。",
-        "emotion": "explain"
-      },
-      {
-        "text": "如果一時有些分不清，也沒關係。\n你就慢慢順著看：\n這句話是在舉幾個例子嗎？\n是在圈出一個範圍來比較嗎？\n是在說去那裡是為了做什麼嗎？\n還是在把前面那整句話抱起來呢？",
-        "emotion": "explain"
-      },
-      {
-        "text": "這幾關最容易讓人混亂的地方，\n就是你會看見熟悉的助詞，\n卻發現回應你的，又是同一家族裡不一樣的孩子。\n所以別只看字。\n你要慢慢去看清楚，\n這個孩子現在在句子裡，\n到底負責的是什麼工作。",
-        "emotion": "explain"
-      },
-      {
-        "text": "能走到這裡，你已經很厲害了。\n列舉、範圍、目的、話語的內容——\n只要你開始看見它們之間的差別，就已經足夠了。\n來，這道關卡，我會陪你一起穩穩跨過去。",
+        "text": "但現在，我相信你了。好了，走吧。",
         "emotion": "encourage"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/boss-review-06-p01.mp3",
+      "assets/audio/mentor/boss-review-06-p02.mp3",
+      "assets/audio/mentor/boss-review-06-p03.mp3",
+      "assets/audio/mentor/boss-review-06-p04.mp3",
+      "assets/audio/mentor/boss-review-06-p05.mp3"
+    ]
   },
   "KARA_REASON": {
     "dialogue": [
       {
-        "text": "這次的「から」家族小助靈，\n和前面那位表示起點的孩子不太一樣。\n它不是在說從哪裡來，\n而是在輕輕告訴你：\n事情為什麼會變成這樣。",
+        "text": "又是「から」呢。但這次，不是出發點。",
         "emotion": "gentle"
       },
       {
-        "text": "這一關的「から」，\n你可以先把它想成「因為～，所以～」。\n前面那一塊，\n會先把理由交給你，\n再讓後面的結果接著出現。",
+        "text": "這個孩子帶來的是理由。把「為什麼會這樣」，輕輕地交給後面的孩子。",
         "emotion": "explain"
       },
       {
-        "text": "例如：\n「雨だから、行かない。」\n就是「因為下雨，所以不去」。\n這裡的「から」，\n就是把前面的「下雨」\n直接當成後面不去的理由。",
+        "text": "比如說，「雨だから、行かない（因為下雨，所以不去）」。「下雨了」成為理由，支撐著「不去」。",
         "emotion": "explain"
       },
       {
-        "text": "所以看到題目的時候，\n你可以先輕輕看一下：\n前面那一段，像不像是在說理由呢？\n如果前面像原因，後面像結果，\n那多半就是這一關的「から」在回應你了。",
-        "emotion": "explain"
+        "text": "前面是不是「為什麼會這樣」的答案呢...當你這樣看見的時候，就是這個孩子的聲音了。",
+        "emotion": "gentle"
       },
       {
-        "text": "不用急。\n同樣是「から」家族，\n有的孩子負責指出起點，\n也有像這一位一樣，負責把理由送過來。\n你現在只要先抓住一件事就好：\n這一關的「から」，是在交代理由。",
-        "emotion": "encourage"
+        "text": "就算同樣的名字，職責也確實不同。你現在已經知道這件事了。",
+        "emotion": "proud"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/kara-reason-p01.mp3",
+      "assets/audio/mentor/kara-reason-p02.mp3",
+      "assets/audio/mentor/kara-reason-p03.mp3",
+      "assets/audio/mentor/kara-reason-p04.mp3",
+      "assets/audio/mentor/kara-reason-p05.mp3"
+    ]
   },
   "YORI_COMPARE": {
     "dialogue": [
       {
-        "text": "這次的孩子，\n像是在天平上輕輕放上兩樣東西。\n一邊是拿來比較的基準，\n另一邊，才是你真正想說的那個。",
+        "text": "「より」是把兩樣東西放上天秤的孩子。",
         "emotion": "gentle"
       },
       {
-        "text": "「より」最基本的感覺，\n就是「和～比起來」。\n它不是主角，\n而是靜靜把\n拿來比較的對象放到你面前。",
+        "text": "這個孩子本身不是主角。擅長輕輕端出比較的基準，來襯托出真正想讓你看見的那一方。",
         "emotion": "explain"
       },
       {
-        "text": "例如：\n「犬は猫より大きい。」\n就是「狗比貓大」。\n這裡的「猫より」，\n就是拿來比較的基準。",
+        "text": "比如說，「犬は猫より大きい（狗比貓大）」。「猫より」是基準，真正想說的是「狗」。",
         "emotion": "explain"
       },
       {
-        "text": "所以看到題目的時候，\n你可以先輕輕看一下：\n「より」後面的那個，\n是不是拿來比較的對象呢？\n如果像是這樣，那多半就是這一關的「より」在回應你了。",
-        "emotion": "explain"
-      },
-      {
-        "text": "不用急。\n這一關最重要的，\n不是急著分誰比較厲害。\n而是先看清楚，\n你現在是拿誰當基準在比較。\n只要抓住這一點，就很夠了。",
+        "text": "「より」後面的，是不是為了比較而出來的基準呢...只看那裡就夠了。",
         "emotion": "encourage"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/yori-compare-p01.mp3",
+      "assets/audio/mentor/yori-compare-p02.mp3",
+      "assets/audio/mentor/yori-compare-p03.mp3",
+      "assets/audio/mentor/yori-compare-p04.mp3"
+    ]
   },
   "NI_FREQUENCY": {
     "dialogue": [
       {
-        "text": "這次的「に」家族小助靈，\n不是守著地點的孩子，\n也不是指出某一個時間點的孩子。\n它更在意的是：\n在一段時間裡，\n事情總共發生了幾次。",
+        "text": "又又是「に」呢。已經想笑了嗎。",
+        "emotion": "happy"
+      },
+      {
+        "text": "這次這個孩子啊，看的不是某一個時刻，而是在一段時間的跨度裡發生幾次。",
+        "emotion": "explain"
+      },
+      {
+        "text": "比如說，「一週間に二回運動する（一週運動兩次）」。在一週這個跨度裡，有兩次...就是這樣表示的。",
+        "emotion": "explain"
+      },
+      {
+        "text": "是某一個時刻，還是某段時間裡的次數...看清楚那裡，這個孩子的聲音就會傳來了。",
         "emotion": "gentle"
-      },
-      {
-        "text": "這一關的「に」，\n你可以先把它想成「在這段時間裡有幾次」。\n像是一天一次、一週兩次，\n這孩子會幫你看的是，\n某段時間範圍裡，\n事情發生了多少回。",
-        "emotion": "explain"
-      },
-      {
-        "text": "例如：\n「一週間に二回運動する。」\n就是「一週運動兩次」。\n這裡的「に」，\n不是在指某一個時間點，\n而是在說一整個星期裡，\n總共有兩次。",
-        "emotion": "explain"
-      },
-      {
-        "text": "所以看到題目的時候，\n你可以先輕輕看一下：\n這個「に」是在指一個時刻，\n還是在說一段時間裡有幾次呢？\n如果比較像後者，那多半就是這一關的「に」在回應你了。",
-        "emotion": "explain"
-      },
-      {
-        "text": "不用急。\n同樣是「に」家族，\n有的孩子看時間點，\n也有像這一位一樣，\n是在看一段時間裡重複了幾次。\n你現在只要先抓住一件事就好：\n它是在說「這段時間裡有幾次」。",
-        "emotion": "encourage"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/ni-frequency-p01.mp3",
+      "assets/audio/mentor/ni-frequency-p02.mp3",
+      "assets/audio/mentor/ni-frequency-p03.mp3",
+      "assets/audio/mentor/ni-frequency-p04.mp3"
+    ]
   },
   "DE_MATERIAL": {
     "dialogue": [
       {
-        "text": "來，這次的「で」家族小助靈，\n像是在工匠手裡守著材料的孩子。\n它要告訴你的，\n不是拿什麼去做事，\n而是東西本身是用什麼做成的。",
+        "text": "最後一個「で」了。不是工具，不是地方，也不是範圍。",
         "emotion": "gentle"
       },
       {
-        "text": "這一關的「で」，\n你可以先把它想成「用～當材料」。\n重點不是做事的方法，\n而是在做出那個東西的時候，\n是拿什麼當作它的材料。",
+        "text": "這個孩子看的是材料...告訴你它是用什麼做成的孩子。",
         "emotion": "explain"
       },
       {
-        "text": "例如：\n「木で机を作る。」\n就是「用木頭做桌子」。\n這裡的「木」，\n不是拿在手上使用的工具，\n而是桌子本身的材料。",
+        "text": "比如說，「木で机を作る（用木頭做桌子）」。「木頭」不是拿在手上的工具，而是構成桌子本身的材料。",
         "emotion": "explain"
       },
       {
-        "text": "所以看到題目的時候，\n你可以先輕輕分一下：\n這個詞是在說拿來使用的工具，\n還是在說拿來做成它的材料呢？\n如果比較像後者，那多半就是這一關的「で」在回應你了。",
-        "emotion": "explain"
+        "text": "是拿在手上使用的，還是構成形體的來源...輕輕地試著分辨看看。",
+        "emotion": "gentle"
       },
       {
-        "text": "不用急。\n同樣是「で」家族，\n有的孩子負責工具，\n也有像這一位一樣，\n是在看東西是由什麼做成的。\n你現在只要先抓住一件事就好：\n它是在說「做成它的材料」。",
-        "emotion": "encourage"
+        "text": "「で」的一族，到這裡終於見完全員了呢。我覺得你分辨得很好。",
+        "emotion": "proud"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/de-material-p01.mp3",
+      "assets/audio/mentor/de-material-p02.mp3",
+      "assets/audio/mentor/de-material-p03.mp3",
+      "assets/audio/mentor/de-material-p04.mp3",
+      "assets/audio/mentor/de-material-p05.mp3"
+    ]
   },
   "FINAL_BOSS_35": {
     "dialogue": [
       {
-        "text": "……終於走到這裡了。\n你不是靠運氣才撐到現在的。\n而是真的一路遇見、一路分辨，\n把那些孩子的聲音，\n一點一點記進心裡了。",
+        "text": "……終於，走到這裡了呢。",
         "emotion": "gentle"
       },
       {
-        "text": "也正因為這是最後一戰，\n你不用一下子把所有東西都抱在懷裡。\n看到句子的時候，\n先輕輕問自己一句：\n這個孩子現在在這句話裡，\n到底負責的是什麼工作？",
-        "emotion": "explain"
+        "text": "最初的你，有點不安，有點迷惘。而現在，已經能好好接住那些失落的聲音了。這樣的變化，我一直在你身邊看著。",
+        "emotion": "proud"
       },
       {
-        "text": "如果是在舉幾個例子，就想「や」。\n如果是在某個範圍裡比較，就想「で」。\n如果是在帶出「去做什麼」的目的，就想「に」。\n如果是在抱著整塊話語，就想「と」。\n理由、比較、頻率、材料，也都是一樣。\n先看清楚它負責的工作，就夠了。",
-        "emotion": "explain"
-      },
-      {
-        "text": "所以別急，也別慌。\n就算一眼還拆不開整句，也沒關係。\n不是每一次都要先把全部看懂，\n你只要先抓住最核心的用途就好。\n而你，已經走到做得到這一步的位置了。",
-        "emotion": "explain"
-      },
-      {
-        "text": "來吧。\n這就是最後一戰了。\n我會一直站在你身邊，\n看著你把每一個正確答案，都化成光。\n抬起頭，往前走吧。",
+        "text": "看到句子的時候，先問問自己。這個孩子現在，擔任著什麼職責呢...就這樣就夠了。",
         "emotion": "encourage"
+      },
+      {
+        "text": "好了，最後一關了。抬起頭，往前走。我會在你身邊，好好見證的。",
+        "emotion": "blessing"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/final-boss-35-p01.mp3",
+      "assets/audio/mentor/final-boss-35-p02.mp3",
+      "assets/audio/mentor/final-boss-35-p03.mp3",
+      "assets/audio/mentor/final-boss-35-p04.mp3"
+    ]
   },
   "L36_FIRST_ENTRY": {
     "dialogue": [
       {
-        "text": "……你終於走到這裡了。\n這個地方，\n是你把三十五道試煉一一跨過，\n而且一次都沒有放掉，\n才終於抵達的地方。",
-        "emotion": "explain"
+        "text": "……終於，走到這裡了呢。三十五道試煉，一個都沒有落下。",
+        "emotion": "proud"
       },
       {
-        "text": "前方那片深淵裡，\n沉著你一路走來聽見的所有聲音，\n也沉著你一路累積下來的力量。\n從這裡開始，\n已經不是誰替你交答案的戰鬥了。\n而是你要親手闖開的，最後一戰。",
-        "emotion": "explain"
+        "text": "前方等待著的，是你至今遇見過的所有聲音交匯的地方。不是從誰那裡得到答案。是用你自己的力量，開闢最後道路的戰鬥。",
+        "emotion": "gentle"
       },
       {
-        "text": "……不過，別誤會了。\n我不是要離開你。\n只是現在的你，\n已經走到就算不依靠我，\n也能自己站穩的位置了。",
-        "emotion": "explain"
+        "text": "……別誤會。我不是要消失。只是，你已經走到了不需要依靠我也能站穩的地方。就只是這樣而已。",
+        "emotion": "gentle"
       },
       {
-        "text": "所以，抬起頭走過去吧。\n你一路學會的話語，\n一路親手選下的答案，\n現在全都已經變成你的力量了。",
-        "emotion": "explain"
-      },
-      {
-        "text": "去吧，喚語者。\n跨過最後的深淵，\n用你自己的光，\n為這段旅程刻下終點。",
-        "emotion": "explain"
+        "text": "去吧，呼喚者。用你自己的光，在這個故事裡刻下終結。",
+        "emotion": "blessing"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/l36-first-entry-p01.mp3",
+      "assets/audio/mentor/l36-first-entry-p02.mp3",
+      "assets/audio/mentor/l36-first-entry-p03.mp3",
+      "assets/audio/mentor/l36-first-entry-p04.mp3"
+    ]
   },
   "HIDDEN_BOSS_36": {
     "dialogue": [
       {
-        "text": "……居然連這道封印都走到了啊。\n能站到這裡的人，\n就已經不只是普通的旅人了。\n從這裡開始，\n就是觸碰最後深淵之前，\n真正的試煉。",
+        "text": "……能走到這裡，老實說，我很驚訝。",
+        "emotion": "surprised"
+      },
+      {
+        "text": "能站在這道封印前的人，已經不只是個普通的旅人了。這才是，真正最後的試煉。",
         "emotion": "gentle"
       },
       {
-        "text": "隱藏的王，\n不會像之前那樣乖乖把路攤在你面前。\n它最擅長的，\n就是把好幾條線索揉在一起，\n故意讓邊界變得模糊。\n所以越是走到這裡，你越要冷靜。",
-        "emotion": "explain"
+        "text": "隱藏的王啊，不會老實地把路指給你看。把好幾條線索纏繞在一起，故意讓界線變得模糊...就是這樣的孩子。",
+        "emotion": "concerned"
       },
       {
-        "text": "別急著把規則一條條搬出來。\n你先輕輕問自己一句：\n這句話現在，到底是在做什麼？\n是在列舉？在比較？在交代理由？\n在帶出目的？還是在抱著整塊話語？\n只要功能抓對了，路就會慢慢亮起來。",
-        "emotion": "explain"
-      },
-      {
-        "text": "就算一下子還拆不開整句，也沒關係。\n如果它看起來太大塊，\n那就一小塊、一小塊慢慢分開來看。\n現在的你，已經不是當初那個什麼都還聽不懂的你了。\n你一路選下來的答案，\n早就已經變成你的力量了。",
-        "emotion": "explain"
-      },
-      {
-        "text": "來吧。\n最後的深淵，已經就在前面了。\n現在的我，不只是來教你的。\n我還要親眼看著你，\n用自己的力量，把這一切跨過去。\n抬起頭，往前走吧。",
+        "text": "不用著急。先問問自己。這個句子現在，在做什麼呢...就這樣。看見職責，路就會跟著出現。",
         "emotion": "encourage"
+      },
+      {
+        "text": "不需要一次就全部解開也沒關係。你已經不是什麼都不懂的那時候的你了。",
+        "emotion": "gentle"
+      },
+      {
+        "text": "好了。最後的深淵，就在眼前了。我在這裡，是為了親眼見證你用自己的力量越過去的那一刻。抬起頭，往前走。",
+        "emotion": "blessing"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/hidden-boss-36-p01.mp3",
+      "assets/audio/mentor/hidden-boss-36-p02.mp3",
+      "assets/audio/mentor/hidden-boss-36-p03.mp3",
+      "assets/audio/mentor/hidden-boss-36-p04.mp3",
+      "assets/audio/mentor/hidden-boss-36-p05.mp3",
+      "assets/audio/mentor/hidden-boss-36-p06.mp3"
+    ]
   },
   "MAIN_ENDING_FINALE": {
     "dialogue": [
       {
-        "text": "……你終於走到這裡了。\n辛苦了，喚語者。\n這一路上，你真的做得很好。",
+        "text": "……你來到這裡了呢。辛苦了，呼喚者。真的非常努力了。",
         "emotion": "gentle"
       },
       {
-        "text": "從最初那個還會不安、猶豫的你，\n到現在能一次次接住那些失落聲音的你——\n這一路的成長，我全都看在眼裡。",
-        "emotion": "warm"
-      },
-      {
-        "text": "你找回來的，不只是小助靈們，\n也找回了支撐這個世界的重要法則——語言之理。",
-        "emotion": "explain"
-      },
-      {
-        "text": "所以現在，我最想先對你說一聲謝謝。\n謝謝你沒有放開那些向你求救的聲音。\n也謝謝你，願意陪那些孩子走到最後。",
-        "emotion": "grateful"
-      },
-      {
-        "text": "而那些被你救回來的小助靈，\n也早已把一部分的力量，永久地留給了你。",
-        "emotion": "soft"
-      },
-      {
-        "text": "這已經不是借給你的力量。\n而是今後也會一直屬於你、留在你話語裡的力量。\n只要你願意，它們就會繼續陪著你。",
-        "emotion": "warm"
-      },
-      {
-        "text": "所以未來，\n就算你再遇見更難的句子、更複雜的表達，\n甚至遇見新的日文敵人，也無須害怕。",
-        "emotion": "encourage"
-      },
-      {
-        "text": "因為你已不再是當初那個手足無措的生手了。\n你已經學會怎麼去看、去聽、去理解，\n再把失散的意思重新連起來。",
+        "text": "最初的你，有點不安，有點迷惘。而現在，已經能好好接住那些失落的聲音了。這樣的變化，我一直在你身邊看著。",
         "emotion": "proud"
       },
       {
-        "text": "如果哪一天，你又被某句話攔住了腳步，\n就想想這一路陪你走來的小助靈，\n以及它們早已留在你心裡的力量吧。",
-        "emotion": "comfort"
+        "text": "你找回來的，不只是小助靈們。支撐著語言的道理本身，是你把它找回來的。",
+        "emotion": "gentle"
       },
       {
-        "text": "這並非結束。\n而是你真正帶著話語之力，\n走向更廣闊世界的開始。",
-        "emotion": "hopeful"
+        "text": "所以首先，我想說謝謝。那些孩子們的聲音，你到最後都沒有放手。真的，謝謝你。",
+        "emotion": "blessing"
       },
       {
-        "text": "如果未來你覺得助詞之力變弱了，\n語言神殿的門，永遠都會為你開著。\n我和那些孩子，也一直都會在這裡。",
-        "emotion": "tender"
+        "text": "還有...被你救回來的小助靈們，已經把祂們力量的一部分，永遠地託付給你了。不是借來的，是會一直留在你的語言裡的，你自己的力量。",
+        "emotion": "gentle"
       },
       {
-        "text": "……保重，喚語者。\n願你今後也能帶著這份溫柔而堅定的力量，\n去面對所有還沒到來的明天。",
+        "text": "所以從今以後，就算遇見更難的語言，也不用害怕了。你現在，已經成為了一個能好好看見、聽見，把失散的意思重新連結起來的人。",
+        "emotion": "proud"
+      },
+      {
+        "text": "如果有一天，又被某個語言絆住了腳，就想起來。一起走到這裡的那些孩子們。還有，留在你心裡的那股力量。",
+        "emotion": "encourage"
+      },
+      {
+        "text": "這不是終點。這是你帶著語言的力量，走向更廣闊的世界的...起點。",
+        "emotion": "happy"
+      },
+      {
+        "text": "如果哪天感覺助詞的聲音變得有點遙遠，隨時回到言葉神殿來吧。我和那些孩子們，都會一直在這裡等著。",
+        "emotion": "gentle"
+      },
+      {
+        "text": "……保重啊，呼喚者。往後的日子，也帶著那份溫柔而堅韌的力量...願你能越過所有還未見到的明天。",
         "emotion": "blessing"
       }
     ],
-    "audio": []
+    "audio": [
+      "assets/audio/mentor/final-ending-p01.mp3",
+      "assets/audio/mentor/final-ending-p02.mp3",
+      "assets/audio/mentor/final-ending-p03.mp3",
+      "assets/audio/mentor/final-ending-p04.mp3",
+      "assets/audio/mentor/final-ending-p05.mp3",
+      "assets/audio/mentor/final-ending-p06.mp3",
+      "assets/audio/mentor/final-ending-p07.mp3",
+      "assets/audio/mentor/final-ending-p08.mp3",
+      "assets/audio/mentor/final-ending-p09.mp3",
+      "assets/audio/mentor/final-ending-p10.mp3"
+    ]
   }
 }
