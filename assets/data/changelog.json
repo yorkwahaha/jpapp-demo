@@ -1,5 +1,16 @@
 [
     {
+        "version": "26042802",
+        "date": "2026-04-28",
+        "title": "導師語音快速切頁 Race Condition 修復",
+        "changes": [
+            "修正導師語音快速切頁 race condition，快速連點「下一句」時舊頁面的 mp3 / TTS fallback 不會晚到後誤觸發。",
+            "正式日文 mp3 播放加入 token guard，驗證 skillId 與 pageIndex，避免舊頁 callback / fallback 晚到後播放錯誤語音。",
+            "audio path 已登錄但 mp3 尚未放檔或 404 時，恢復中文 Google TTS fallback；完全沒有 audio path 的頁面也維持中文 TTS fallback。",
+            "HEAD OK 後若 audio play / decode 失敗，僅 warning 後靜默，不貿然 fallback，並保留 BGM / SFX / 戰鬥 TTS 既有行為。"
+        ]
+    },
+    {
         "version": "26042801",
         "date": "2026-04-28",
         "title": "Selene 導師立繪收尾、L25 導師修復與地圖節點穩定化",

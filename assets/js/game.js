@@ -1171,7 +1171,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26042801";
+        const APP_VERSION = window.APP_VERSION || "26042802";
 
         const appVersion = ref(APP_VERSION);
 
@@ -1366,6 +1366,8 @@ const _jpApp = Vue.createApp({
         let typingTimerMentor = null;
 
         let currentMentorAudio = null;
+
+        let mentorAudioPlayToken = 0;
 
 
 
@@ -1728,12 +1730,16 @@ const _jpApp = Vue.createApp({
 
 
         const stopMentorAudio = () => {
+            mentorAudioPlayToken++;
+
             // Also stop TTS background audios
             if (typeof stopTtsAudio === 'function') stopTtsAudio();
             if (typeof stopWebSpeech === 'function') stopWebSpeech();
 
             if (currentMentorAudio) {
                 try {
+                    currentMentorAudio.onended = null;
+                    currentMentorAudio.onerror = null;
                     currentMentorAudio.pause();
                     currentMentorAudio.currentTime = 0;
                 } catch (e) { }
@@ -1750,29 +1756,61 @@ const _jpApp = Vue.createApp({
 
             if (!currentMentorSkill.value) return;
 
+            const token = ++mentorAudioPlayToken;
+            const expectedSkillId = currentMentorSkill.value.id;
+            const expectedPageIndex = mentorDialogueIndex.value;
             const text = currentMentorLine.value || "";
-            const path = getMentorAudioPath(currentMentorSkill.value.id, mentorDialogueIndex.value);
+            const path = getMentorAudioPath(expectedSkillId, expectedPageIndex);
 
-            // Inner helper for TTS fallback
-            const playTtsFallback = () => {
-                if (typeof speakCloudTts === 'function' && text) {
-                    // 導師說明頁固定使用中文 TTS，避免因內文包含日文例句而被誤判為全頁日文語音。
-                    // 未來若需處理中日混讀，可再於 TTS Worker 層面處理。
-                    speakCloudTts(text, 'zh-TW-Neural2-B');
+            const isCurrentMentorAudioRequest = () => (
+                token === mentorAudioPlayToken &&
+                currentMentorSkill.value?.id === expectedSkillId &&
+                mentorDialogueIndex.value === expectedPageIndex
+            );
+
+            const warnIfStale = (stage) => {
+                if (!isCurrentMentorAudioRequest()) {
+                    console.warn('[mentor-audio] stale playback ignored', {
+                        stage,
+                        skillId: expectedSkillId,
+                        pageIndex: expectedPageIndex
+                    });
                 }
             };
 
+            // Inner helper for TTS fallback
+            const playTtsFallback = async (reason = 'missing-official-audio') => {
+                if (!isCurrentMentorAudioRequest()) {
+                    warnIfStale(`tts-fallback:${reason}`);
+                    return false;
+                }
+                if (typeof speakCloudTts === 'function' && text) {
+                    // 導師說明頁固定使用中文 TTS，避免因內文包含日文例句而被誤判為全頁日文語音。
+                    // 未來若需處理中日混讀，可再於 TTS Worker 層面處理。
+                    const played = await speakCloudTts(text, 'zh-TW-Neural2-B');
+                    if (!isCurrentMentorAudioRequest()) {
+                        warnIfStale(`tts-fallback-complete:${reason}`);
+                        return false;
+                    }
+                    return played;
+                }
+                return false;
+            };
+
             if (!path) {
-                playTtsFallback();
-                return;
+                return playTtsFallback('missing-official-audio-path');
             }
 
             // Check if local file exists before playing (to avoid 404 console spam)
             try {
-                const res = await fetch(path, { method: 'HEAD' });
-                if (!res.ok) {
-                    playTtsFallback();
+                const res = await fetch(path, { method: 'HEAD', cache: 'no-store' });
+                if (!isCurrentMentorAudioRequest()) {
+                    warnIfStale('head');
                     return;
+                }
+                if (!res.ok) {
+                    console.warn('[mentor-audio] official mp3 unavailable, using TTS fallback', res.status, path);
+                    return playTtsFallback('official-audio-unavailable');
                 }
 
                 const audio = new Audio(path);
@@ -1780,19 +1818,43 @@ const _jpApp = Vue.createApp({
                 audio.volume = masterVolume.value * 0.95;
                 currentMentorAudio = audio;
 
-                audio.addEventListener('ended', () => {
+                audio.onended = () => {
+                    if (!isCurrentMentorAudioRequest()) {
+                        warnIfStale('ended');
+                        return;
+                    }
                     if (typeof restoreMapBgmAfterVoice === 'function') restoreMapBgmAfterVoice();
-                });
+                };
+
+                audio.onerror = () => {
+                    if (!isCurrentMentorAudioRequest()) {
+                        warnIfStale('error');
+                        return;
+                    }
+                    console.warn('[mentor-audio] mp3 failed, fallback skipped because official audio exists', path);
+                };
 
                 audio.play().then(() => {
+                    if (!isCurrentMentorAudioRequest()) {
+                        warnIfStale('play');
+                        return;
+                    }
                     if (typeof duckMapBgmForVoice === 'function') duckMapBgmForVoice();
                 }).catch(err => {
-                    console.warn("[MentorAudio] Play failed (possibly blocked):", path);
-                    playTtsFallback();
+                    if (!isCurrentMentorAudioRequest()) {
+                        warnIfStale('play-catch');
+                        return;
+                    }
+                    console.warn('[mentor-audio] mp3 failed, fallback skipped because official audio exists', path, err);
                 });
             } catch (e) {
                 // Fetch failed or other error
-                playTtsFallback();
+                if (!isCurrentMentorAudioRequest()) {
+                    warnIfStale('catch');
+                    return;
+                }
+                console.warn('[mentor-audio] official mp3 check failed, using TTS fallback', path, e);
+                return playTtsFallback('official-audio-check-failed');
             }
         };
 
