@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26042902'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26042903'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -58,8 +58,8 @@
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/styles.css?v=26042902">
-    <link rel="stylesheet" href="assets/css/escape.css?v=26042902">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26042903">
+    <link rel="stylesheet" href="assets/css/escape.css?v=26042903">
 
 
 
@@ -69,7 +69,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26042902';
+            const v = window.APP_VERSION || '26042903';
 
 
 
@@ -3854,32 +3854,47 @@
             <transition name="fade">
                 <div v-if="isKnowledgeCardShowing" class="knowledge-card-overlay"
                     :class="{ 'is-absorbing': isKnowledgeCardAbsorbing }" @click="closeKnowledgeCard">
-                    <div class="knowledge-card-container">
+                    <div class="knowledge-card-container"
+                        :class="{ 'spirit-unlock-container': getSpiritForKnowledgeCard(activeKnowledgeCard) }">
                         <div class="card-magic-glow"></div>
-                        <div class="knowledge-card">
+                        <div v-if="getSpiritForKnowledgeCard(activeKnowledgeCard)" class="spirit-unlock-stage">
+                            <div class="spirit-unlock-aura"></div>
+                            <div class="spirit-unlock-stars">
+                                <span v-for="n in 10" :key="'spirit-star-'+n" class="spirit-unlock-star"></span>
+                            </div>
+                            <p class="spirit-unlock-kicker">新的小助靈回應了你</p>
+                            <div class="spirit-unlock-hero">
+                                <img class="spirit-unlock-img"
+                                    :src="getSpiritImageSrc(getSpiritForKnowledgeCard(activeKnowledgeCard))"
+                                    :alt="getSpiritForKnowledgeCard(activeKnowledgeCard).nameJa || getSpiritForKnowledgeCard(activeKnowledgeCard).nameZh"
+                                    @error="handleSpiritImageError($event, getSpiritForKnowledgeCard(activeKnowledgeCard))">
+                            </div>
+                            <div class="spirit-unlock-copy">
+                                <h3 class="spirit-unlock-name">{{ getSpiritForKnowledgeCard(activeKnowledgeCard).nameJa
+                                    || getSpiritForKnowledgeCard(activeKnowledgeCard).nameZh }}</h3>
+                                <p class="spirit-unlock-text">{{
+                                    getSpiritForKnowledgeCard(activeKnowledgeCard).unlockText?.replaceAll('牠', '祂')
+                                    }}</p>
+                            </div>
+                            <button type="button" class="spirit-unlock-btn" @click.stop="closeKnowledgeCard">
+                                接受祂
+                            </button>
+                        </div>
+
+                        <div v-else class="knowledge-card">
                             <!-- Premium Sparkles -->
                             <div class="card-sparkles">
                                 <div v-for="n in 8" :key="'s'+n" class="card-sparkle"></div>
                             </div>
 
                             <div class="card-header">
-                                <div v-if="getSpiritForKnowledgeCard(activeKnowledgeCard)"
-                                    class="spirit-reward-portrait-wrap">
-                                    <img class="spirit-reward-portrait"
-                                        :src="getSpiritImageSrc(getSpiritForKnowledgeCard(activeKnowledgeCard))"
-                                        :alt="getSpiritForKnowledgeCard(activeKnowledgeCard).nameJa || getSpiritForKnowledgeCard(activeKnowledgeCard).nameZh"
-                                        @error="handleSpiritImageError($event, getSpiritForKnowledgeCard(activeKnowledgeCard))">
-                                </div>
-                                <div v-else class="particle-glamour">{{ activeKnowledgeCard?.particle }}</div>
+                                <div class="particle-glamour">{{ activeKnowledgeCard?.particle }}</div>
                             </div>
 
                             <div class="card-body">
-                                <div class="card-topic-tag">{{ getSpiritForKnowledgeCard(activeKnowledgeCard)?.nameJa ||
-                                    activeKnowledgeCard?.name.split('：')[1] ||
+                                <div class="card-topic-tag">{{ activeKnowledgeCard?.name.split('：')[1] ||
                                     activeKnowledgeCard?.name }}</div>
-                                <p class="card-meaning spirit-reward-text">{{
-                                    getSpiritForKnowledgeCard(activeKnowledgeCard)?.unlockText ||
-                                    activeKnowledgeCard?.meaning }}</p>
+                                <p class="card-meaning">{{ activeKnowledgeCard?.meaning }}</p>
                             </div>
 
                             <div class="card-footer">

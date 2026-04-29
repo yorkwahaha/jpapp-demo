@@ -1,5 +1,18 @@
 [
     {
+        "version": "26042903",
+        "date": "2026-04-29",
+        "title": "小助靈獲得演出 v1",
+        "changes": [
+            "有 spirit mapping 的技能解鎖時，改顯示「小助靈獲得」畫面，不再套用原本助詞卡式 Knowledge Card 外觀。",
+            "小助靈獲得畫面顯示大尺寸小助靈圖、名稱、unlockText 與「接受祂」按鈕。",
+            "保留無 spirit mapping 技能的 Knowledge Card fallback，多解鎖項目仍沿用既有逐項顯示流程。",
+            "沿用 display 圖片 WebP 優先、PNG fallback、placeholder fallback 的既有載入規則。",
+            "優化獲得畫面的柔和光暈、星光與標題膠囊儀式感，維持 JPAPP 2.0 玻璃 / 星空風格。",
+            "中文文案調整為「祂／接受祂」，讓小助靈獲得演出更符合目前世界觀。"
+        ]
+    },
+    {
         "version": "26042902",
         "date": "2026-04-29",
         "title": "小助靈 28 隻第一版接入",
