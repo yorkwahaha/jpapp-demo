@@ -1,5 +1,17 @@
 [
     {
+        "version": "26042902",
+        "date": "2026-04-29",
+        "title": "小助靈 28 隻第一版接入",
+        "changes": [
+            "spirits.v1.json 補齊正式 Codex 28 筆小助靈 mapping，讓圖鑑與解鎖展示都能讀到完整小助靈資料。",
+            "28 張 display 圖像已接入 assets/images/spirits/display/，小助靈圖鑑可顯示全員第一版圖像。",
+            "保留既有 WebP 優先、PNG fallback、placeholder fallback 載入流程，缺少單一格式時不影響遊戲流程。",
+            "本輪不調整 game.js 展示邏輯，不接戰鬥 icon，不處理商城、背包或裝備系統。",
+            "本輪僅更新版本、changelog、spirit mapping 與 display assets，不執行 push。"
+        ]
+    },
+    {
         "version": "26042901",
         "date": "2026-04-29",
         "title": "小助靈圖鑑 v1",
