@@ -385,6 +385,10 @@ const _jpApp = Vue.createApp({
 
         const SKILLS = ref([]);
 
+        const SPIRITS = ref([]);
+
+        const spiritsBySkillId = ref({});
+
         const ENEMIES = ref([]);
 
         const MENTOR_AUDIO_MAP = ref({});
@@ -435,6 +439,38 @@ const _jpApp = Vue.createApp({
         const activeKnowledgeCard = ref(null);
         const isKnowledgeCardShowing = ref(false);
         const isKnowledgeCardAbsorbing = ref(false);
+
+        const SPIRIT_IMAGE_PLACEHOLDER = 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><radialGradient id="g" cx="50%" cy="38%" r="58%"><stop offset="0%" stop-color="#fef3c7" stop-opacity=".9"/><stop offset="50%" stop-color="#fbbf24" stop-opacity=".38"/><stop offset="100%" stop-color="#1e1b4b" stop-opacity=".05"/></radialGradient></defs><rect width="512" height="512" rx="96" fill="#161225"/><circle cx="256" cy="246" r="162" fill="url(#g)"/><path d="M256 116c58 0 105 49 105 110 0 76-63 130-105 170-42-40-105-94-105-170 0-61 47-110 105-110Z" fill="#fbbf24" opacity=".36"/><circle cx="256" cy="224" r="46" fill="#fff7ed" opacity=".48"/><path d="M170 391c45 28 127 28 172 0" fill="none" stroke="#fde68a" stroke-width="18" stroke-linecap="round" opacity=".48"/></svg>`);
+
+        const getSpiritForSkillId = (skillId) => {
+            if (!skillId || typeof skillId !== 'string') return null;
+            return spiritsBySkillId.value[skillId] || null;
+        };
+
+        const getSpiritForSkill = (skill) => getSpiritForSkillId(skill?.id);
+
+        const getSpiritForKnowledgeCard = (card) => card?.spirit || getSpiritForSkill(card);
+
+        const decorateSkillWithSpirit = (skill) => {
+            if (!skill) return null;
+            const spirit = getSpiritForSkillId(skill.id);
+            return spirit ? { ...skill, spirit } : skill;
+        };
+
+        const getSpiritImageSrc = (spirit) => {
+            if (!spirit?.implemented || !spirit.imageBase) return SPIRIT_IMAGE_PLACEHOLDER;
+            return `${spirit.imageBase}.webp`;
+        };
+
+        const handleSpiritImageError = (event, spirit) => {
+            const img = event?.target;
+            if (!img) return;
+            if (spirit?.implemented && spirit.imageBase && img.src.includes('.webp')) {
+                img.src = `${spirit.imageBase}.png`;
+                return;
+            }
+            img.src = SPIRIT_IMAGE_PLACEHOLDER;
+        };
 
         // --- オノマトペ Skills (unlocked on boss clear) ---
         const unlockedOnomatopeIds = ref([]);
@@ -1171,7 +1207,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26042802";
+        const APP_VERSION = window.APP_VERSION || "26042901";
 
         const appVersion = ref(APP_VERSION);
 
@@ -2126,6 +2162,31 @@ const _jpApp = Vue.createApp({
                 }
 
             } catch (e) { }
+
+
+
+            try {
+
+                const res = await fetch(`assets/data/spirits.v1.json?v=${appVersion.value}`);
+
+                if (res.ok) {
+
+                    SPIRITS.value = await res.json();
+
+                    const spiritMap = {};
+
+                    SPIRITS.value.forEach(spirit => {
+                        if (spirit?.skillId) spiritMap[spirit.skillId] = spirit;
+                    });
+
+                    spiritsBySkillId.value = spiritMap;
+
+                }
+
+            } catch (e) {
+                SPIRITS.value = [];
+                spiritsBySkillId.value = {};
+            }
 
 
 
@@ -6753,7 +6814,7 @@ const _jpApp = Vue.createApp({
                     }
 
                     // [Knowledge Card 1.0] Stage these for post-battle reward (複習類對戰卡不顯示)
-                    pendingKnowledgeCards.value.push(...newUnlocks.map(id => skillsAll.value[id]).filter(s => s && s.particle !== '複習'));
+                    pendingKnowledgeCards.value.push(...newUnlocks.map(id => decorateSkillWithSpirit(skillsAll.value[id])).filter(s => s && s.particle !== '複習'));
 
                 }
 
@@ -8813,6 +8874,7 @@ const _jpApp = Vue.createApp({
             isMapMentorOpen,
 
             pendingKnowledgeCards, activeKnowledgeCard, isKnowledgeCardShowing, isKnowledgeCardAbsorbing, triggerNextKnowledgeCard, closeKnowledgeCard,
+            getSpiritForSkill, getSpiritForKnowledgeCard, getSpiritImageSrc, handleSpiritImageError,
             isSpecialSceneActive, specialSceneBg,
             playCardFlip: () => playSfx('cardFlip'),
 

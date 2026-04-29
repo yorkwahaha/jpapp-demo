@@ -1,0 +1,50 @@
+[
+  {
+    "skillId": "NI_TIME",
+    "particle": "に",
+    "spiritId": "spirit-ni-time",
+    "nameZh": "時間之子",
+    "nameJa": "に・時間之子",
+    "flavorText": "總是在時間的水流中漂浮，會替喚語者指出「什麼時候」該行動。",
+    "unlockText": "你聽見了「に・時間之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "imageBase": "assets/images/spirits/display/spirit-ni-time",
+    "implemented": true,
+    "fallbackType": "particle-card"
+  },
+  {
+    "skillId": "DE_TOOL_MEANS",
+    "particle": "で",
+    "spiritId": "spirit-de-means",
+    "nameZh": "手段之子",
+    "nameJa": "で・手段之子",
+    "flavorText": "喜歡把想法變成行動的小助靈，會幫助喚語者理解「用什麼方法」完成事情。",
+    "unlockText": "你聽見了「で・手段之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "imageBase": "assets/images/spirits/display/spirit-de-means",
+    "implemented": true,
+    "fallbackType": "particle-card"
+  },
+  {
+    "skillId": "TO_WITH",
+    "particle": "と",
+    "spiritId": "spirit-to-together",
+    "nameZh": "共同之子",
+    "nameJa": "と・共同之子",
+    "flavorText": "總喜歡靠近同伴，最擅長提醒喚語者「和誰一起」展開行動。",
+    "unlockText": "你聽見了「と・共同之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "imageBase": "assets/images/spirits/display/spirit-to-together",
+    "implemented": true,
+    "fallbackType": "particle-card"
+  },
+  {
+    "skillId": "GA_EXIST_SUBJECT",
+    "particle": "が",
+    "spiritId": "spirit-ga-subject",
+    "nameZh": "主體之子",
+    "nameJa": "が・主體之子",
+    "flavorText": "會在語意的中心發出光芒，幫助喚語者辨認「是誰」成為句子的主角。",
+    "unlockText": "你聽見了「が・主體之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "imageBase": "assets/images/spirits/display/spirit-ga-subject",
+    "implemented": true,
+    "fallbackType": "particle-card"
+  }
+]

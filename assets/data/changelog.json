@@ -1,5 +1,18 @@
 [
     {
+        "version": "26042901",
+        "date": "2026-04-29",
+        "title": "小助靈圖鑑 v1",
+        "changes": [
+            "新增小助靈 spirits mapping，先接入 NI_TIME、DE_TOOL_MEANS、TO_WITH、GA_EXIST_SUBJECT 4 隻試作小助靈。",
+            "Knowledge Card / 過關解鎖流程支援小助靈展示，可顯示小助靈圖、名稱與 unlock text。",
+            "Codex 從秘笈本卡片方向轉為小助靈圖鑑 / 收集本方向，頁首改為「小助靈圖鑑 / SPIRIT INDEX」。",
+            "有 spirit mapping 的項目會顯示小助靈大圖、名稱、親密度、flavorText、句型與例句，下方說明區保留教學資訊。",
+            "小助靈圖片載入支援 WebP 優先、PNG fallback，缺圖時再回退到 placeholder / 既有顯示。",
+            "未完成小助靈與沒有 spirit mapping 的 skill 維持原本卡片 fallback，不影響既有 Codex 與 skill 解鎖流程。"
+        ]
+    },
+    {
         "version": "26042802",
         "date": "2026-04-28",
         "title": "導師語音快速切頁 Race Condition 修復",
