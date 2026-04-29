@@ -2485,7 +2485,7 @@
 
                         <div class="mentor-portrait-shadow"></div>
 
-                        <video v-if="shouldUseMentorVideo" ref="mentorVideoEl" autoplay muted loop playsinline
+                        <video v-if="shouldUseMentorVideo" ref="mentorVideoEl" :autoplay="shouldMuteMentorVideo" :muted="shouldMuteMentorVideo" loop playsinline
                             preload="metadata" :poster="mentorVideoPoster" @error="handleMentorVideoError"
                             class="h-[65vh] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] mentor-portrait-fade mentor-scene-video mentor-scene-portrait">
                             <source v-for="source in mentorVideoSources" :key="source.src" :src="source.src"
@@ -3779,7 +3779,7 @@
 
                         <div class="mentor-portrait-container">
 
-                            <video v-if="shouldUseMentorVideo" ref="mentorVideoEl" autoplay muted loop playsinline
+                            <video v-if="shouldUseMentorVideo" ref="mentorVideoEl" :autoplay="shouldMuteMentorVideo" :muted="shouldMuteMentorVideo" loop playsinline
                                 preload="metadata" :poster="mentorVideoPoster" @error="handleMentorVideoError"
                                 class="mentor-portrait-video rounded-full">
                                 <source v-for="source in mentorVideoSources" :key="source.src" :src="source.src"

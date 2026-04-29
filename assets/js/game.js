@@ -1562,6 +1562,8 @@ const _jpApp = Vue.createApp({
 
         const mentorVideoPoster = computed(() => mentorPortraitVideo.value?.poster || 'assets/images/ui/mentor-cover-fullbody.png');
 
+        const shouldMuteMentorVideo = computed(() => currentMentorSkill.value?.id !== 'PROLOGUE_OPENING');
+
         const getMentorVideoElement = () => {
             const videoRef = mentorVideoEl.value;
             if (Array.isArray(videoRef)) {
@@ -1598,11 +1600,18 @@ const _jpApp = Vue.createApp({
 
             try {
 
-                video.muted = true;
+                const shouldMute = shouldMuteMentorVideo.value;
 
-                video.defaultMuted = true;
+                video.muted = shouldMute;
+
+                video.defaultMuted = shouldMute;
 
                 video.playsInline = true;
+
+                if (!shouldMute) {
+                    stopAllAudio();
+                    video.volume = Math.min(1, Math.max(0, masterVolume.value));
+                }
 
                 const playPromise = video.play();
 
@@ -1797,6 +1806,7 @@ const _jpApp = Vue.createApp({
             const expectedPageIndex = mentorDialogueIndex.value;
             const text = currentMentorLine.value || "";
             const path = getMentorAudioPath(expectedSkillId, expectedPageIndex);
+            let mentorAudioFallbackStarted = false;
 
             const isCurrentMentorAudioRequest = () => (
                 token === mentorAudioPlayToken &&
@@ -1816,6 +1826,8 @@ const _jpApp = Vue.createApp({
 
             // Inner helper for TTS fallback
             const playTtsFallback = async (reason = 'missing-official-audio') => {
+                if (mentorAudioFallbackStarted) return false;
+                mentorAudioFallbackStarted = true;
                 if (!isCurrentMentorAudioRequest()) {
                     warnIfStale(`tts-fallback:${reason}`);
                     return false;
@@ -1867,7 +1879,8 @@ const _jpApp = Vue.createApp({
                         warnIfStale('error');
                         return;
                     }
-                    console.warn('[mentor-audio] mp3 failed, fallback skipped because official audio exists', path);
+                    console.warn('[mentor-audio] mp3 playback failed, using TTS fallback', path);
+                    playTtsFallback('official-audio-playback-error');
                 };
 
                 audio.play().then(() => {
@@ -1881,7 +1894,8 @@ const _jpApp = Vue.createApp({
                         warnIfStale('play-catch');
                         return;
                     }
-                    console.warn('[mentor-audio] mp3 failed, fallback skipped because official audio exists', path, err);
+                    console.warn('[mentor-audio] mp3 play blocked, using TTS fallback', path, err);
+                    return playTtsFallback('official-audio-play-blocked');
                 });
             } catch (e) {
                 // Fetch failed or other error
@@ -8980,7 +8994,7 @@ const _jpApp = Vue.createApp({
             isMentorModalOpen, isLevelJumpOpen, isAdvancedSettingsOpen, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
             displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,
             currentMentorDialogueItem, currentMentorSceneImage, currentMentorModalImage, handleMentorSceneImageError, handleMentorModalImageError,
-            mentorVideoEl, mentorVideoSources, shouldUseMentorVideo, mentorVideoPoster, handleMentorVideoError,
+            mentorVideoEl, mentorVideoSources, shouldUseMentorVideo, shouldMuteMentorVideo, mentorVideoPoster, handleMentorVideoError,
             playPrologueOpening, playMainEndingFinale,
             isMentorSkipPressing, startMentorSkipPress, cancelMentorSkipPress,
             isMonsterImageError, handleMonsterImageError, handleMapImageError, currentMonsterSprite, monsterPositionStyle, monsterIsEntering, monsterIsDying, monsterTrulyDead, monsterResultShown, bossDeathVfxActive, bossDeathStage, monsterAttackLunge,

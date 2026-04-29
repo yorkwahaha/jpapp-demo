@@ -23,11 +23,11 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/prologue-p01.mp3",
-      "assets/audio/mentor/prologue-p02.mp3",
-      "assets/audio/mentor/prologue-p03.mp3",
-      "assets/audio/mentor/prologue-p04.mp3",
-      "assets/audio/mentor/prologue-p05.mp3"
+      "assets/audio/mentor/prologue_01.mp3",
+      "assets/audio/mentor/prologue_02.mp3",
+      "assets/audio/mentor/prologue_03.mp3",
+      "assets/audio/mentor/prologue_04.mp3",
+      "assets/audio/mentor/prologue_05.mp3"
     ],
     "portraitVideo": {
       "webm": "assets/video/mentor/prologue-opening.webm",
