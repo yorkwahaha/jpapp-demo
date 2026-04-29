@@ -3935,43 +3935,6 @@ const _jpApp = Vue.createApp({
 
 
 
-        const handleVisibilityChange = () => {
-
-            if (document.hidden) {
-                // Page going to background — immediately pause BGM and flag for deferred resume
-                if (bgmAudio.value && !bgmAudio.value.paused) {
-                    bgmAudio.value.pause();
-                }
-                needsUserGestureToResumeBgm.value = true;
-                return;
-            }
-
-            // Page became visible again — do NOT auto-play; wait for next user gesture
-            needsUserGestureToResumeBgm.value = true;
-            // Only clear isBgmSuppressed if it was set solely by visibility (not by defeat).
-            // (isBgmSuppressed is managed by game logic, not touched here.)
-
-        };
-
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-
-        const markAudioNeedsGestureResume = () => {
-            if (isPageAudioAllowed() && (audioInited.value || bgmAudio.value)) {
-                needsUserGestureToResumeBgm.value = true;
-            }
-        };
-
-        window.addEventListener('pageshow', markAudioNeedsGestureResume);
-        window.addEventListener('focus', markAudioNeedsGestureResume);
-        window.addEventListener('pagehide', () => {
-            if (bgmAudio.value && !bgmAudio.value.paused) {
-                bgmAudio.value.pause();
-            }
-            needsUserGestureToResumeBgm.value = true;
-        });
-
-
-
         watch(() => player.value.hp, (newHp) => {
             const el = document.getElementById('heroAvatar');
             const ratio = newHp / player.value.maxHp;
@@ -3996,20 +3959,91 @@ const _jpApp = Vue.createApp({
 
 
 
-        const ensureBgmPlaying = async (reason) => {
+        const isUnlockOrResultOverlayActive = () => {
+            return isKnowledgeCardShowing.value ||
+                !!window._afterKnowledgeCards ||
+                isAbilityUnlockModalOpen.value;
+        };
+
+        const isBattleResolutionActive = () => {
+            return isUnlockOrResultOverlayActive() ||
+                monsterIsDying.value ||
+                monsterTrulyDead.value ||
+                monsterResultShown.value ||
+                bossDeathVfxActive.value ||
+                isNextBtnVisible.value ||
+                (monster.value?.hp ?? 1) <= 0;
+        };
+
+        const getExpectedLoopBgmForCurrentState = () => {
+            if (isMuted.value || bgmVolume.value <= 0 || isBgmSuppressed.value) return null;
+
+            if (showMap.value && !showLevelSelect.value) {
+                if (isUnlockOrResultOverlayActive()) return null;
+                return currentMapBgm.value;
+            }
+
+            if (isBattleResolutionActive()) return null;
+
+            const isBattleActive = !showLevelSelect.value &&
+                !showMap.value &&
+                !isFinished.value &&
+                currentLevel.value > 0 &&
+                !playerDead.value;
+
+            if (!isBattleActive) return null;
+
+            return currentBattleBgmPick.value || (BGM_BASE + 'BGM_1.mp3');
+        };
+
+        const shouldResumeBgmForCurrentView = () => {
+            return !!getExpectedLoopBgmForCurrentState();
+        };
+
+        let lastLoopBgmResumeDiagnosticAt = 0;
+
+        const warnLoopBgmResumeDiagnostic = (reason, extra = {}) => {
+            const now = Date.now();
+            if (now - lastLoopBgmResumeDiagnosticAt < 2000) return;
+            lastLoopBgmResumeDiagnosticAt = now;
+
+            warnAudioResumeState('loop-bgm-resume-diagnostic', {
+                reason,
+                expectedBgm: extra.expectedBgm ?? getExpectedLoopBgmForCurrentState(),
+                currentBgmKey: bgmAudio.value?.src || '',
+                bgmEnded: bgmAudio.value?.ended,
+                bgmReadyState: bgmAudio.value?.readyState,
+                unlockOrResultOverlayActive: isUnlockOrResultOverlayActive(),
+                battleResolutionActive: isBattleResolutionActive(),
+                pendingKnowledgeCards: pendingKnowledgeCards.value.length,
+                showingKnowledgeCard: isKnowledgeCardShowing.value,
+                afterKnowledgeCards: !!window._afterKnowledgeCards,
+                monsterIsDying: monsterIsDying.value,
+                monsterResultShown: monsterResultShown.value,
+                isNextBtnVisible: isNextBtnVisible.value,
+                showMap: showMap.value,
+                showLevelSelect: showLevelSelect.value,
+                isFinished: isFinished.value,
+                currentLevel: currentLevel.value,
+                monsterHp: monster.value?.hp,
+                ...extra
+            });
+        };
+
+        const ensureBgmPlaying = async (reason, options = {}) => {
 
             if (!isPageAudioAllowed()) {
                 needsUserGestureToResumeBgm.value = true;
-                return;
+                return false;
             }
 
             if (!audioInited.value) await initAudio();
 
-            if (isMuted.value || bgmVolume.value <= 0 || isBgmSuppressed.value) return;
+            const expectedUrl = options.expectedUrl || getExpectedLoopBgmForCurrentState();
 
-            if (bgmAudio.value && bgmAudio.value.paused) {
+            if (!expectedUrl) return false;
 
-                const expectedUrl = (showMap.value && !showLevelSelect.value) ? currentMapBgm.value : (currentBattleBgmPick.value || (BGM_BASE + 'BGM_1.mp3'));
+            if (bgmAudio.value && (bgmAudio.value.paused || options.force)) {
 
                 const expectedAbs = new URL(expectedUrl, window.location.href).href;
 
@@ -4023,17 +4057,128 @@ const _jpApp = Vue.createApp({
 
                 }
 
-                bgmAudio.value.play().catch((e) => {
+                if (options.force && !bgmAudio.value.paused) {
+                    bgmAudio.value.pause();
+                }
 
-                    warnAudioResumeState('ensure-bgm-play-blocked', { reason, error: e?.name || e?.message || e });
+                updateGainVolumes();
+
+                try {
+
+                    await bgmAudio.value.play();
+
+                    needsUserGestureToResumeBgm.value = false;
+
+                    return true;
+
+                } catch (e) {
+
+                    if (options.warnOnBlock !== false) {
+                        warnAudioResumeState('ensure-bgm-play-blocked', {
+                            reason,
+                            expectedBgm: expectedUrl,
+                            currentBgmKey: bgmAudio.value?.src || '',
+                            bgmEnded: bgmAudio.value?.ended,
+                            bgmReadyState: bgmAudio.value?.readyState,
+                            error: e?.name || e?.message || e
+                        });
+                    }
 
                     needsUserGestureToResumeBgm.value = true;
 
-                });
+                    return false;
+
+                }
 
             }
 
+            needsUserGestureToResumeBgm.value = false;
+
+            return true;
+
         };
+
+        let pageAudioResumeTimer = null;
+
+        const pausePageLoopAudio = () => {
+            if (pageAudioResumeTimer) {
+                clearTimeout(pageAudioResumeTimer);
+                pageAudioResumeTimer = null;
+            }
+
+            if (bgmAudio.value && !bgmAudio.value.paused) {
+                bgmAudio.value.pause();
+            }
+
+            needsUserGestureToResumeBgm.value = true;
+        };
+
+        const tryResumePageLoopAudio = async (reason, options = {}) => {
+            if (!isPageAudioAllowed()) return false;
+
+            try {
+                await initAudioCtx();
+
+                if (audioCtx.value && (audioCtx.value.state === 'suspended' || audioCtx.value.state === 'interrupted')) {
+                    await audioCtx.value.resume();
+                }
+
+                updateGainVolumes();
+            } catch (e) {
+                if (options.warnOnContextBlock !== false) {
+                    warnAudioResumeState(`${reason}:ctx-resume-failed`, { error: e?.name || e?.message || e });
+                }
+            }
+
+            const expectedBgm = getExpectedLoopBgmForCurrentState();
+
+            if (!expectedBgm) {
+                if (options.warnOnSkip) {
+                    warnLoopBgmResumeDiagnostic(`${reason}:no-expected-bgm`, { expectedBgm });
+                }
+                return false;
+            }
+
+            return ensureBgmPlaying(`${reason}:bgm`, {
+                force: options.force === true,
+                warnOnBlock: options.warnOnBlock !== false,
+                expectedUrl: expectedBgm
+            });
+        };
+
+        const schedulePageLoopAudioResume = (reason) => {
+            if (!isPageAudioAllowed()) return;
+
+            if (pageAudioResumeTimer) clearTimeout(pageAudioResumeTimer);
+
+            pageAudioResumeTimer = setTimeout(() => {
+                pageAudioResumeTimer = null;
+                tryResumePageLoopAudio(reason, {
+                    force: true,
+                    warnOnBlock: false,
+                    warnOnContextBlock: false
+                }).then((resumed) => {
+                    if (!resumed && shouldResumeBgmForCurrentView()) {
+                        needsUserGestureToResumeBgm.value = true;
+                    }
+                });
+            }, 80);
+        };
+
+        const handlePageAudioVisibilityChange = () => {
+            if (document.hidden) {
+                pausePageLoopAudio();
+                return;
+            }
+
+            schedulePageLoopAudioResume('visibilitychange');
+        };
+
+        document.addEventListener("visibilitychange", handlePageAudioVisibilityChange);
+        window.addEventListener('pagehide', pausePageLoopAudio);
+        window.addEventListener('blur', pausePageLoopAudio);
+        window.addEventListener('pageshow', () => schedulePageLoopAudioResume('pageshow'));
+        window.addEventListener('focus', () => schedulePageLoopAudioResume('focus'));
 
 
 
@@ -5752,33 +5897,12 @@ const _jpApp = Vue.createApp({
             // Never auto-play if page is still in background
             if (!isPageAudioAllowed()) return;
 
-            try {
-
-                await initAudioCtx();
-
-                // Re-resume AudioContext if iOS Safari suspended it during background
-                if (audioCtx.value && (audioCtx.value.state === 'suspended' || audioCtx.value.state === 'interrupted')) {
-
-                    await audioCtx.value.resume();
-
-                }
-
-                updateGainVolumes();
-
-            } catch (e) {
-
-                warnAudioResumeState(`${reason}:ctx-resume-failed`, { error: e?.name || e?.message || e });
-
-            }
-
-            // Restore BGM if a deferred resume was flagged (e.g. after returning from background)
-            if (needsUserGestureToResumeBgm.value) {
-
-                needsUserGestureToResumeBgm.value = false;
-
-                await ensureBgmPlaying(`${reason}:bgm`);
-
-            }
+            await tryResumePageLoopAudio(reason, {
+                force: needsUserGestureToResumeBgm.value,
+                warnOnBlock: true,
+                warnOnContextBlock: true,
+                warnOnSkip: true
+            });
 
         };
 
