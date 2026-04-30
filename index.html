@@ -977,34 +977,81 @@
 
         .mentor-dialogue-box {
 
-            background:
-                linear-gradient(180deg,
-                    rgba(255, 255, 255, 0.13) 0%,
-                    rgba(255, 255, 255, 0.055) 18%,
-                    rgba(6, 10, 26, 0.92) 48%,
-                    rgba(3, 7, 20, 0.96) 100%),
-                radial-gradient(105% 92% at 8% 0%, rgba(125, 211, 252, 0.12), transparent 58%),
-                rgba(8, 12, 28, 0.94) !important;
+            background: rgba(15, 23, 42, 0.75) !important;
 
-            backdrop-filter: none;
+            backdrop-filter: blur(32px) saturate(180%);
 
-            -webkit-backdrop-filter: none;
+            -webkit-backdrop-filter: blur(32px) saturate(180%);
 
-            border-color: rgba(255, 255, 255, 0.17) !important;
+            border: 2px solid rgba(255, 255, 255, 0.18) !important;
+
+            border-radius: 2.4rem !important;
+
+            overflow: hidden !important;
+
+            isolation: isolate;
 
             box-shadow:
 
-                0 22px 58px -18px rgba(0, 0, 0, 0.86),
+                0 24px 48px rgba(0, 0, 0, 0.8),
 
-                inset 0 2px 0 rgba(255, 255, 255, 0.18),
+                inset 0 2px 0 rgba(255, 255, 255, 0.25),
 
-                inset 0 -4px 10px rgba(0, 0, 0, 0.42),
+                inset 0 -3px 6px rgba(0, 0, 0, 0.35),
 
-                inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+                inset 0 0 0 8px rgba(255, 255, 255, 0.02);
 
             transform: none !important;
 
             transition: none !important;
+
+        }
+
+        .mentor-dialogue-box::before,
+
+        .mentor-dialogue-box::after {
+
+            content: '';
+
+            position: absolute;
+
+            inset: 0;
+
+            border-radius: inherit;
+
+            pointer-events: none;
+
+            z-index: 0;
+
+        }
+
+        .mentor-dialogue-box::before {
+
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.08) 14%, rgba(255, 255, 255, 0.04) 28%, transparent 48%);
+
+            mix-blend-mode: screen;
+
+        }
+
+        .mentor-dialogue-box::after {
+
+            background:
+
+                radial-gradient(80% 60% at 0% 0%, rgba(236, 253, 255, 0.12) 0%, transparent 60%),
+
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.04) 22%, transparent 36%),
+
+                linear-gradient(to top, rgba(0, 0, 0, 0.18), transparent 35%);
+
+            mix-blend-mode: screen;
+
+        }
+
+        .mentor-dialogue-box > * {
+
+            position: relative;
+
+            z-index: 1;
 
         }
 
@@ -2419,7 +2466,8 @@
             <transition name="fade">
 
                 <div v-if="isBattleConfirmOpen"
-                    class="fixed inset-0 z-[100] flex items-center justify-center px-8 bg-slate-950/[0.05] backdrop-blur-[2px]"
+                    class="fixed inset-0 z-[100] flex items-center justify-center px-8 bg-slate-950/[0.05] backdrop-blur-[2px] transition-all duration-300"
+                    :class="{ 'opacity-0 pointer-events-none': isMapMentorOpen || isMentorModalOpen }"
                     @click="isBattleConfirmOpen = false; playSfx('click');">
 
                     <div class="w-full max-w-xs confirm-modal-glass stage-confirm-modal rounded-[2rem] overflow-hidden" @click.stop
@@ -2510,7 +2558,7 @@
             <transition name="fade">
 
                 <div v-if="isMapMentorOpen"
-                    class="fixed inset-0 z-[110] flex flex-col justify-end bg-slate-950/40 backdrop-blur-md px-6 pb-10"
+                    class="map-mentor-overlay fixed inset-0 z-[110] flex flex-col justify-end bg-slate-950/[0.05] backdrop-blur-[2px] px-6 pb-10"
                     :class="{ 'is-prologue-mentor': currentMentorSkill?.id === 'PROLOGUE_OPENING' }"
                     @click="nextMentorLine">
 
@@ -2544,7 +2592,7 @@
 
                                 <div class="w-1.5 h-5 bg-amber-500 rounded-full"></div>
 
-                                <span class="text-amber-500/80 font-black text-xs tracking-widest uppercase">導師說明</span>
+                                <span class="mentor-speaker-label text-amber-400 font-black text-lg leading-none tracking-widest uppercase">セレネ</span>
 
                             </div>
 
@@ -4501,6 +4549,18 @@
 
                             </button>
 
+                            <button
+                                @click="isStageRecordsOpen = true; isMenuOpen = false; isLevelJumpOpen = false; isMistakesOpen = false; playSfx('click');"
+                                class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-300/20 text-cyan-50 text-sm font-bold shadow transition-all">
+
+                                <span>🏆</span>
+                                <span class="flex flex-col items-start leading-tight">
+                                    <span>全關卡成績</span>
+                                    <span class="text-[10px] font-bold tracking-[0.16em] text-cyan-100/55 uppercase">通關時間 / Rank 一覽</span>
+                                </span>
+
+                            </button>
+
                         </div>
 
 
@@ -4549,6 +4609,62 @@
                         </button>
 
                     </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Stage Records -->
+
+            <div v-if="isStageRecordsOpen"
+                class="modal-overlay fixed inset-0 z-[5000] flex items-center justify-center p-3 sm:p-4"
+                @click.self="isStageRecordsOpen = false; resumeBattle(); playSfx('click');">
+
+                <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
+
+                <div
+                    class="stage-records-modal relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-5 sm:p-6 w-full max-w-[520px] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden">
+
+                    <div class="modal-header-row flex-shrink-0">
+
+                        <div>
+                            <h2 class="stage-records-title">全關卡成績</h2>
+                            <p class="stage-records-subtitle">通關時間 / Rank 一覽</p>
+                        </div>
+
+                        <button @click="isStageRecordsOpen = false; resumeBattle(); playSfx('click');"
+                            class="modal-close-btn">✕</button>
+
+                    </div>
+
+                    <div class="stage-records-summary">
+                        <span>已通關 {{ clearedLevels.length }} / {{ maxLevel }}</span>
+                        <span>S Rank {{ sRankCount }} 關</span>
+                    </div>
+
+                    <div class="stage-records-list custom-scrollbar">
+                        <div v-for="row in stageRecordRows" :key="row.stageNumber" class="stage-record-row"
+                            :class="{ 'is-uncleared': !row.isCleared }">
+                            <div class="stage-record-main">
+                                <div class="stage-record-no">STAGE {{ String(row.stageNumber).padStart(2, '0') }}</div>
+                                <div class="stage-record-name">
+                                    <span class="stage-record-particle">{{ row.focusParticle }}</span>
+                                    <span class="stage-record-title">{{ row.title }}</span>
+                                </div>
+                                <div class="stage-record-focus">{{ row.focusLabel || '—' }}</div>
+                            </div>
+                            <div class="stage-record-score">
+                                <span class="stage-record-rank" :class="getGradeColor(row.rank)">{{ row.rank }}</span>
+                                <span class="stage-record-time">{{ row.bestTimeText }}</span>
+                                <span class="stage-record-status">{{ row.statusText }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button @click="isStageRecordsOpen = false; resumeBattle(); playSfx('click');"
+                        class="stage-records-close">關閉</button>
 
                 </div>
 
@@ -4616,23 +4732,24 @@
 
                             <div>
 
-                                <span class="settings-section-label">回饋風格</span>
+                                <span class="settings-section-label">預設攻擊模式</span>
+                                <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">進入戰鬥時預設使用的攻擊操作方式</p>
 
                                 <div class="grid grid-cols-2 gap-2">
 
-                                    <button @click="settings.feedbackStyle = 'oneesan'"
+                                    <button @click="settings.defaultAttackMode = 'tap'"
                                         class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
-                                        :class="settings.feedbackStyle === 'oneesan' ? 'bg-indigo-500/20 border-indigo-500 text-indigo-100 shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+                                        :class="settings.defaultAttackMode === 'tap' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
 
-                                        播報姊姊
+                                        TAP
 
                                     </button>
 
-                                    <button @click="settings.feedbackStyle = 'combat'"
+                                    <button @click="settings.defaultAttackMode = 'flick'"
                                         class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
-                                        :class="settings.feedbackStyle === 'combat' ? 'bg-indigo-500/20 border-indigo-500 text-indigo-100 shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+                                        :class="settings.defaultAttackMode === 'flick' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
 
-                                        爽快戰鬥
+                                        Flick
 
                                     </button>
 

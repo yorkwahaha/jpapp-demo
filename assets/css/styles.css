@@ -2561,8 +2561,8 @@ body.lock-scroll {
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
             background:
-                radial-gradient(90% 48% at 50% 100%, rgba(15, 23, 42, 0.42), transparent 62%),
-                rgba(8, 12, 28, 0.58) !important;
+                radial-gradient(90% 48% at 50% 100%, rgba(15, 23, 42, 0.18), transparent 62%),
+                rgba(8, 12, 28, 0.08) !important;
         }
 
         .is-prologue-mentor .mentor-dialogue-box {
@@ -2573,15 +2573,8 @@ body.lock-scroll {
             contain: paint;
         }
 
-        .is-prologue-mentor .mentor-dialogue-box::before,
-        .is-prologue-mentor .mentor-dialogue-box::after {
-            content: none !important;
-        }
-
         .is-prologue-mentor .mentor-dialogue-text,
         .is-prologue-mentor-dialogue .mentor-dialogue-text {
-            color: rgba(248, 250, 252, 0.98) !important;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.78), 0 0 2px rgba(0, 0, 0, 0.7) !important;
             -webkit-font-smoothing: antialiased;
             transform: none !important;
         }
@@ -2620,6 +2613,16 @@ body.lock-scroll {
     object-fit: contain;
     object-position: top center;
     transform: translateY(9vh);
+}
+
+@media (hover: none) and (pointer: coarse) and (max-width: 767px) and (orientation: portrait) {
+    .map-mentor-portrait-stage {
+        --mentor-mobile-offset-x: clamp(45px, 15vw, 75px);
+    }
+
+    .map-mentor-portrait-stage .mentor-scene-portrait {
+        transform: translateX(var(--mentor-mobile-offset-x)) translateY(9vh);
+    }
 }
 
 @media (min-width: 768px) and (orientation: portrait) {
