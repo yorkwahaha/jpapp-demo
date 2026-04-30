@@ -1,163 +1,146 @@
 [
     {
+        "version": "26050101",
+        "date": "2026-05-01",
+        "title": "設定頁與系統內頁整理",
+        "changes": [
+            "移除進階設定中已廢案的答對 / 答錯自動前進 UI，保留底層相容性。",
+            "新增全關卡成績入口與一覽頁，可查看各關 Rank、Best Time 與通關狀態。",
+            "將回饋風格整理為預設攻擊模式，可設定進入戰鬥時預設 TAP / Flick。",
+            "將戰鬥模式區塊整理為戰鬥節奏，明確標示 ATB 制可用、回合制準備中。",
+            "強化 enemyAttackMode 讀取 fallback，避免未完成模式造成異常。"
+        ]
+    },
+    {
         "version": "26043001",
         "date": "2026-04-30",
-        "title": "音訊救援、關卡流程與導師視覺整備",
+        "title": "音訊穩定與介面整理",
         "changes": [
-            "iOS / iPadOS 音訊救援：Safari 回前景後 WebAudio 失聲時可切換 HTMLAudio fallback v1，SFX 直出修正戰鬥音效失聲，並保留 Fallback AudioContext v2 作為 Debug 實驗模式。",
-            "BGM fallback：手機 / 平板 HTMLAudio v1 優先使用 *_mobile_low.mp3 低音量版，缺檔或播放失敗時自動回退原 BGM。",
-            "Audio Debug Overlay：補強音訊狀態、測試按鈕、fallback 模式資訊與可拖曳位置，方便 iPhone / iPad Safari 實機診斷。",
-            "關卡出發確認 modal：改成精簡資訊面板，助詞大字、STAGE 左上角、星星 / BEST time 去框，姐姐引導改成立繪入口，並修正玻璃圓角殘影。",
-            "結算畫面：獎盃改成本關小助靈圖像，星星與通關時間去框，評價資訊改成浮動列式資訊，外層統一厚玻璃質感，通關時間改為小數秒顯示與保存。",
-            "出題本：改為日文、完整假名、中文翻譯順序顯示並放大字級，移除喇叭與清空按鈕，點擊整張卡片發音，卡片改成透明玻璃感並將提示移到右上角。",
-            "導師對話框：初遇導師與後續地圖導師統一為深色厚玻璃風格，保留動畫降級以降低 iOS Safari 逐字顯示 repaint / 格子閃爍風險。",
-            "地圖評級：修正 D 等級底色圈突兀問題，改為較低階感的低彩度文字樣式。"
+            "改善 iPhone / iPad Safari 回到遊戲後可能無聲的問題。",
+            "手機版背景音樂改用較低音量版本，讓音效與導師語音更清楚。",
+            "整理關卡出發、結算畫面、出題本與導師對話框的顯示效果。",
+            "優化音訊除錯工具，方便後續實機檢查。"
         ]
     },
     {
         "version": "26042903",
         "date": "2026-04-29",
-        "title": "小助靈獲得演出 v1",
+        "title": "小助靈獲得演出",
         "changes": [
-            "有 spirit mapping 的技能解鎖時，改顯示「小助靈獲得」畫面，不再套用原本助詞卡式 Knowledge Card 外觀。",
-            "小助靈獲得畫面顯示大尺寸小助靈圖、名稱、unlockText 與「接受祂」按鈕。",
-            "保留無 spirit mapping 技能的 Knowledge Card fallback，多解鎖項目仍沿用既有逐項顯示流程。",
-            "沿用 display 圖片 WebP 優先、PNG fallback、placeholder fallback 的既有載入規則。",
-            "優化獲得畫面的柔和光暈、星光與標題膠囊儀式感，維持 JPAPP 2.0 玻璃 / 星空風格。",
-            "中文文案調整為「祂／接受祂」，讓小助靈獲得演出更符合目前世界觀。"
+            "技能解鎖時新增小助靈獲得畫面。",
+            "獲得畫面會顯示小助靈圖像、名稱與介紹文字。",
+            "保留原本知識卡流程，避免影響尚未接入小助靈的內容。"
         ]
     },
     {
         "version": "26042902",
         "date": "2026-04-29",
-        "title": "小助靈 28 隻第一版接入",
+        "title": "小助靈圖像接入",
         "changes": [
-            "spirits.v1.json 補齊正式 Codex 28 筆小助靈 mapping，讓圖鑑與解鎖展示都能讀到完整小助靈資料。",
-            "28 張 display 圖像已接入 assets/images/spirits/display/，小助靈圖鑑可顯示全員第一版圖像。",
-            "保留既有 WebP 優先、PNG fallback、placeholder fallback 載入流程，缺少單一格式時不影響遊戲流程。",
-            "本輪不調整 game.js 展示邏輯，不接戰鬥 icon，不處理商城、背包或裝備系統。",
-            "本輪僅更新版本、changelog、spirit mapping 與 display assets，不執行 push。"
+            "補齊 28 隻小助靈資料與第一版圖像。",
+            "小助靈圖鑑可顯示目前已接入的角色。",
+            "優化圖片載入規則，缺圖時仍可正常顯示。"
         ]
     },
     {
         "version": "26042901",
         "date": "2026-04-29",
-        "title": "小助靈圖鑑 v1",
+        "title": "小助靈圖鑑試作",
         "changes": [
-            "新增小助靈 spirits mapping，先接入 NI_TIME、DE_TOOL_MEANS、TO_WITH、GA_EXIST_SUBJECT 4 隻試作小助靈。",
-            "Knowledge Card / 過關解鎖流程支援小助靈展示，可顯示小助靈圖、名稱與 unlock text。",
-            "Codex 從秘笈本卡片方向轉為小助靈圖鑑 / 收集本方向，頁首改為「小助靈圖鑑 / SPIRIT INDEX」。",
-            "有 spirit mapping 的項目會顯示小助靈大圖、名稱、親密度、flavorText、句型與例句，下方說明區保留教學資訊。",
-            "小助靈圖片載入支援 WebP 優先、PNG fallback，缺圖時再回退到 placeholder / 既有顯示。",
-            "未完成小助靈與沒有 spirit mapping 的 skill 維持原本卡片 fallback，不影響既有 Codex 與 skill 解鎖流程。"
+            "新增小助靈圖鑑的第一版架構。",
+            "技能解鎖時可顯示對應小助靈與介紹文字。",
+            "未完成的小助靈會維持原本顯示方式。"
         ]
     },
     {
         "version": "26042802",
         "date": "2026-04-28",
-        "title": "導師語音快速切頁 Race Condition 修復",
+        "title": "導師語音播放修正",
         "changes": [
-            "修正導師語音快速切頁 race condition，快速連點「下一句」時舊頁面的 mp3 / TTS fallback 不會晚到後誤觸發。",
-            "正式日文 mp3 播放加入 token guard，驗證 skillId 與 pageIndex，避免舊頁 callback / fallback 晚到後播放錯誤語音。",
-            "audio path 已登錄但 mp3 尚未放檔或 404 時，恢復中文 Google TTS fallback；完全沒有 audio path 的頁面也維持中文 TTS fallback。",
-            "HEAD OK 後若 audio play / decode 失敗，僅 warning 後靜默，不貿然 fallback，並保留 BGM / SFX / 戰鬥 TTS 既有行為。"
+            "修正快速切換導師台詞時，舊語音可能晚到並播放錯誤的問題。",
+            "導師語音播放更穩定，缺少音檔時仍會使用備用語音。"
         ]
     },
     {
         "version": "26042801",
         "date": "2026-04-28",
-        "title": "Selene 導師立繪收尾、L25 導師修復與地圖節點穩定化",
+        "title": "導師立繪與地圖穩定性整理",
         "changes": [
-            "導師立繪：Selene 導師 Emotion 立繪系統完成接線，mentor-dialogues.v1.json 保留 emotion metadata，game.js / index.html 支援 gentle、explain、encourage、happy、concerned、surprised、proud、blessing 對應立繪，缺圖時 fallback 到 gentle，再 fallback 到舊導師圖。",
-            "導師資料：清理 dialogue item 內空字串 audio 欄位，保留正式集中化音訊資料與台詞 emotion metadata。",
-            "地圖導師覆蓋層：改用全身 / 近全身 Selene emotion 立繪，手機直式放大臉部與上半身，下半身自然延伸到對話框後方或畫面外，平板與橫式維持可用；戰鬥 mentor modal 暫未大改。",
-            "Debug 防噪：針對 lockdown-install.js / SES_UNCAUGHT_EXCEPTION: null 等外部 null noise 加入過濾，避免「全局錯誤: null」干擾 JPAPP debug overlay，同時保留真正 TypeError / ReferenceError / Error 物件的顯示能力。",
-            "Boss 導師修復：L25_BOSS 補上 skillId: BOSS_REVIEW_05，修正 Stage 25 有導師台詞資料但點關卡不顯示導師台詞的問題，並完成 L5 / L10 / L15 / L20 / L25 / L30 / L35 / L36 Boss mentor key 盤點。",
-            "Map 4 節點修正：微調城內外廊 L17 / L20 書本節點位置，最終為 L17 desktopX 33 / desktopY 35、L20 desktopX 68 / desktopY 80；L16 / L18 / L19 保持原始座標，mobileX/mobileY 暫不啟用。",
-            "地圖 debug 與快取：保留 jpDebug.mapNodes() / jpDebug.mapPositions() 以觀測地圖節點，map-chapters.json fetch 加入 cache: no-store，並在 debug metadata 顯示 mapDataSource / loadedAt 以確認 runtime 載入來源。",
-            "同日穩定性摘要：保留 iOS Safari BGM/SFX 背景音訊修復，背景不自動播放 BGM，回前景後需下一次使用者手勢才恢復 BGM/SFX，TTS 維持正常。",
-            "同日清理摘要：完成 earlyGamePools.v1.js legacy cleanup、safeCombos 題庫檔純化、legacy generator dead code 清理，並修復 db placeholder / MONSTERS fallback 回歸問題。"
+            "導師立繪支援不同情緒表情，並加入缺圖備援。",
+            "修正部分 Boss 關卡導師引導沒有出現的問題。",
+            "調整部分地圖節點位置與載入穩定性。",
+            "整理近期題庫、地圖與音訊相關的穩定性修正。"
         ]
     },
     {
         "version": "26042701",
         "date": "2026-04-27",
-        "title": "導師立繪 Emotion 系統實裝、立繪比例優化與 Debug 防噪",
+        "title": "導師表情系統與畫面優化",
         "changes": [
-            "導師對話：實裝 Selene 導師 Emotion 立繪切換系統 (gentle/explain/encourage/happy/concerned/surprised/proud/blessing)，並建立完善的 fallback 機制。",
-            "視覺優化：調整地圖導師對話覆蓋層的 Selene 立繪比例，手機直式顯示更具視覺衝擊力，並優化立繪與對話框的銜接感。",
-            "資料清理：完成 mentor-dialogues.v1.json 中數百個 item-level 空 audio 欄位清理，並同步優化台詞語氣。",
-            "Debug 工具：修正 Debug Overlay 對外部 SES / lockdown null error 的誤報，過濾無意義的系統雜訊。",
-            "穩定性：保留昨日完成的 iOS Safari 背景音訊生命週期修復、earlyGamePools 題庫純化與引擎死碼清理等優化項目。"
+            "導師對話支援不同表情立繪。",
+            "優化手機版導師顯示比例與對話框銜接。",
+            "整理導師台詞資料與除錯顯示。"
         ]
     },
     {
         "version": "26042602",
         "date": "2026-04-26",
-        "title": "音訊系統健壯化、題庫與生成器純化清理",
+        "title": "音訊與題庫資料整理",
         "changes": [
-            "音訊系統：修正 iOS Safari 背景/鎖屏後 BGM 自動恢復播放的問題，改為回到頁面後不立即播音，待下一次使用者手勢才恢復 BGM/SFX，並修復 AudioContext resume 路徑。",
-            "題庫純化：earlyGamePools.v1.js 移除 legacyDb、舊 config.MONSTERS、fallbackLevels 等結構，純化為純題庫資料檔。",
-            "引擎清理：移除 generateQuestionBySkill 內已無人呼叫的舊版動態組裝 Helper 與 dead types field，提升程式碼可讀性。",
-            "穩定性修復：補回 db placeholder 以相容 debug 工具，並修正移除舊怪物資料後的防禦性 fallback ReferenceError。"
+            "改善 iOS Safari 背景切換後的音訊恢復流程。",
+            "清理早期題庫與舊版生成邏輯。",
+            "提升程式穩定性與可維護性。"
         ]
     },
     {
         "version": "26042601",
         "date": "2026-04-26",
-        "title": "Codex 熟練度系統、戰鬥 UI 響應式優化與地圖座標系同步",
+        "title": "熟練度、戰鬥與地圖優化",
         "changes": [
-            "Codex / 秘笈本：新增獨立的熟練度系統 v1，將 UI 移至卡片外部銘牌，並根據 skillId 獨立計算。",
-            "怪物與戰鬥：實裝 36 隻怪物完整資料化 (HP/攻速/傷害/迴避)，優化 Combo 傷害上限與 Boss 死亡演出細節。",
-            "響應式優化：針對平板橫式 (Tablet Landscape) 進行戰鬥 UI 縮放收斂，壓縮題目框並修正中文提示字級可讀性。",
-            "地圖與響應式：重整地圖 Responsive 邏輯，修正 HUD 定位與地圖節點/背景圖座標系不同步導致的偏移問題。",
-            "首頁視覺：收斂首頁橫式標題與開始按鈕尺寸，降低平板/寬螢幕下的視覺壓迫感。",
-            "穩定性：新增熟練度存檔 NaN 防呆與舊存檔相容，優化導師影片載入安全性，並同步全域 APP_VERSION 版本號。"
+            "新增秘笈本熟練度顯示。",
+            "怪物資料、戰鬥數值與 Boss 演出進一步整理。",
+            "優化平板與手機上的戰鬥 UI 與地圖顯示。",
+            "提升首頁、地圖與導師影片載入的穩定性。"
         ]
     },
     {
         "version": "26041901",
         "date": "2026-04-19",
-        "title": "L36 背景、Boss 死亡演出與 Flick 手感調整",
+        "title": "隱藏王演出與操作手感調整",
         "changes": [
-            "L36 隱藏王背景加入動態碎石與裂隙微動態，並持續調整碎石稜角感與位置分布",
-            "正式建立約 10 秒的 Boss 專屬死亡流程，結果畫面延後到演出完整播完後才進入，整體方向調整為本體崩解、核心失控、終結爆開與灰飛湮滅",
-            "Boss 死亡演出音效完成分流，預留 Boss death cry、保留 boss explosion，並拆分小怪與 Boss 的死亡哀號音效",
-            "修正 Flick 模式手感，攻擊方向改為跟隨玩家實際滑動方向，不再要求幾乎正上方才出手，射歪會正常 miss"
+            "強化 L36 隱藏王背景與 Boss 死亡演出。",
+            "調整 Boss 死亡音效與結果畫面節奏。",
+            "改善 Flick 模式攻擊方向與操作手感。"
         ]
     },
     {
         "version": "26040903",
         "date": "2026-04-09",
-        "title": "Cleanup 系列正式收尾與部署",
+        "title": "系統清理與穩定化",
         "changes": [
-            "完成 JPAPP 本階段深度清理系列工作",
-            "移除所有已確認的 dead code、dead state 與冗餘 return tokens",
-            "確認 slotFeedbacks 與計時器等核心狀態保持活躍且穩定",
-            "優化 HTML 模板結構並完成全域語法健康檢查"
+            "完成本階段程式碼清理。",
+            "移除不再使用的舊邏輯與多餘狀態。",
+            "完成語法檢查與部署前整理。"
         ]
     },
     {
         "version": "26040902",
         "date": "2026-04-09",
-        "title": "Cleanup 成果收尾與效能穩定化",
+        "title": "系統清理與效能整理",
         "changes": [
-            "完成多輪 dead code (monsterShake, totalScore 等) 整包清理",
-            "收斂 Vue return 物件，減少不必要的 Data 響應追蹤",
-            "移除 index.html 中 L2/L4 層級的孤立佔位符與 hidden 標籤",
-            "完成 game.js 語法健康檢查與版本號同步"
+            "清理不再使用的程式碼與狀態。",
+            "整理頁面結構與顯示邏輯。",
+            "完成版本號與語法檢查。"
         ]
     },
     {
         "version": "26040901",
         "date": "2026-04-09",
-        "title": "程式碼精簡清理與正式部署整理",
+        "title": "程式碼整理",
         "changes": [
-            "移除速度藥水與背包相關廢案殘留",
-            "清理多個 dead state / dead export / dead function",
-            "精簡 game.js return 物件",
-            "移除 legacy cleanup 與懸空 comment",
-            "將 Vue 切換為 production build（vue.global.prod.js）"
+            "移除廢棄功能與舊版邏輯。",
+            "精簡程式結構。",
+            "切換為正式版 Vue 載入。"
         ]
     },
     {
@@ -175,27 +158,21 @@
     {
         "version": "26040302",
         "date": "2026-04-03",
-        "title": "魔王特效重製、戰鬥演出強化與全域資料化里程碑",
+        "title": "戰鬥演出與怪物資料整理",
         "changes": [
-            "題庫 content audit 收官：完成 earlyGamePools.v1.js 全量 pool 審核，確保內容穩定且語法自然。",
-            "敵人物件資料化擴充：新增攻速 (attackIntervalMs)、傷害區間 (min/max) 與倒數圈縮放 (attackRingScale) 的個體調教支援。",
-            "英雄戰鬥視覺全域資料化：HERO_VISUAL_CONFIG 支援 Margin、及各平台 Offset/大小調整，為未來全身圖預留空間。",
-            "Buff overlay 對齊修正：清理舊有硬編碼預設值，確保 Buff 圖示與 Aura 特效完美對齊 HeroAvatar 座標，避免首幀閃位。",
-            "怪物攻擊演出強化：新增攻擊瞬間下壓動畫，並將命中判定延後 100ms 以同步打擊回饋與音效。",
-            "Boss 攻擊 Bug 修正：修復 Level 30 魔王錯用舊版爪擊與音效的問題，還原專屬星辰坍縮特效。",
-            "Boss Aura 視覺重做：全面更換為前景纏身式邪霧與高亮靈火粒子流，頻率與密度大幅強化且不遮擋戰鬥 UI。",
-            "敵人圖庫補全：完成全線 36 關怪物圖補完與 Normal/Hit 雙態對齊，建立標準化素材製作基線。"
+            "完成題庫內容審核與怪物資料擴充。",
+            "強化怪物攻擊、Boss 特效與受擊演出。",
+            "補齊 36 關怪物圖像與基本表現。"
         ]
     },
     {
         "version": "26040301",
         "date": "2026-04-03",
-        "title": "資料池內容質量審核、自然度盤點與收斂整理",
+        "title": "題庫內容審核",
         "changes": [
-            "進行 earlyGamePools.v1.js 多個核心技能資料池 (NO_POSSESSIVE, WO_OBJECT_BASIC, GA_INTRANSITIVE, NI_TIME, NI_DESTINATION, HE_DIRECTION, DE_TOOL_MEANS, YA_AND_OTHERS, NI_PURPOSE) 的內容品質審核。",
-            "盤點前中期主線常用 pools 的句型自然度、重複感、語義歧義與中文 Gloss 對齊一致性。",
-            "收斂出 3 筆資料替換暫定 Proposal（涉及 WO_OBJECT_BASIC 與 NI_DESTINATION），優化教學多樣性並排除語法異物 (ベッドで寝る)。",
-            "今日工作聚焦於 Audit 盤點與收斂整理，維持資料檔基線穩定，暫未正式套用修改。"
+            "檢查早期關卡題庫的自然度與教學焦點。",
+            "整理需要替換或調整的句子。",
+            "本輪以盤點為主，未大幅改動遊戲功能。"
         ]
     },
     {

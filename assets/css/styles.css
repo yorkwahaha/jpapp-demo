@@ -11166,3 +11166,223 @@ body.lock-scroll {
         margin-top: 2px !important;
     }
 }
+
+/* ── 更新日誌 (Changelog) 視覺優化 ── */
+/* 1. 主標題稍微放大 (更新日誌) */
+.text-2xl.font-black.text-indigo-300 {
+    font-size: 1.75rem !important; /* 24px -> 28px */
+}
+
+/* 全關卡成績一覽 */
+.stage-records-modal {
+    max-height: min(86vh, 760px);
+}
+
+.stage-records-title {
+    margin: 0;
+    color: #fbbf24;
+    font-size: clamp(1.35rem, 5vw, 1.75rem);
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+}
+
+.stage-records-subtitle {
+    margin-top: 0.15rem;
+    color: rgba(165, 243, 252, 0.78);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.stage-records-summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin: 1rem 0 0.75rem;
+    color: rgba(226, 232, 240, 0.78);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+}
+
+.stage-records-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    min-height: 0;
+    max-height: min(58vh, 520px);
+    overflow-y: auto;
+    padding-right: 0.2rem;
+}
+
+.stage-record-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.8rem 0.85rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+        rgba(15, 23, 42, 0.32);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.11),
+        0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.stage-record-row.is-uncleared {
+    opacity: 0.72;
+    background: rgba(15, 23, 42, 0.2);
+}
+
+.stage-record-main {
+    min-width: 0;
+}
+
+.stage-record-no {
+    color: rgba(251, 191, 36, 0.82);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+}
+
+.stage-record-name {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    min-width: 0;
+    margin-top: 0.12rem;
+}
+
+.stage-record-particle {
+    flex: 0 0 auto;
+    color: #fef3c7;
+    font-size: 1.28rem;
+    font-weight: 900;
+    line-height: 1;
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.36), 0 2px 8px rgba(0, 0, 0, 0.56);
+}
+
+.stage-record-title {
+    min-width: 0;
+    overflow: hidden;
+    color: rgba(248, 250, 252, 0.94);
+    font-size: 0.95rem;
+    font-weight: 900;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.stage-record-focus {
+    margin-top: 0.14rem;
+    color: rgba(203, 213, 225, 0.68);
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.stage-record-score {
+    display: grid;
+    justify-items: end;
+    gap: 0.08rem;
+    min-width: 4.8rem;
+}
+
+.stage-record-rank {
+    font-size: 1.45rem;
+    font-weight: 1000;
+    line-height: 1;
+}
+
+.stage-record-time {
+    color: #67e8f9;
+    font-family: "Courier New", monospace;
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+}
+
+.stage-record-status {
+    color: rgba(226, 232, 240, 0.55);
+    font-size: 0.64rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.stage-records-close {
+    margin-top: 1rem;
+    width: 100%;
+    border-radius: 1rem;
+    background: linear-gradient(180deg, #fbbf24, #f59e0b);
+    padding: 0.85rem 1rem;
+    color: #111827;
+    font-size: 1rem;
+    font-weight: 1000;
+    box-shadow: 0 10px 24px rgba(245, 158, 11, 0.28);
+}
+
+@media (max-width: 420px) {
+    .stage-records-modal {
+        padding: 1rem !important;
+    }
+
+    .stage-records-summary {
+        font-size: 0.7rem;
+    }
+
+    .stage-record-row {
+        grid-template-columns: minmax(0, 1fr) minmax(4.2rem, auto);
+        gap: 0.55rem;
+        padding: 0.72rem;
+    }
+
+    .stage-record-title {
+        font-size: 0.84rem;
+    }
+
+    .stage-record-rank {
+        font-size: 1.32rem;
+    }
+
+    .stage-record-time {
+        font-size: 0.7rem;
+    }
+}
+
+/* 2. 版本號與日期放大 (v1.x.x / Date) */
+.text-indigo-300.font-black.text-xl {
+    font-size: 1.35rem !important; /* 20px -> 21.6px */
+}
+
+.text-\[10px\].font-bold.text-slate-500 {
+    font-size: 0.75rem !important; /* 10px -> 12px */
+    padding: 2px 8px !important;
+}
+
+/* 3. 更新內容放大與行距增加 (Changes) */
+.text-slate-300.text-xs.leading-relaxed {
+    font-size: 0.95rem !important; /* 12px -> 15.2px */
+    line-height: 1.6 !important; /* 增加行距 */
+}
+
+/* 4. 增加條目間的微小間距與點點偏移校正 */
+.space-y-2 > li.text-slate-300.text-xs.leading-relaxed {
+    margin-bottom: 0.5rem !important;
+}
+
+.space-y-2 > li.text-slate-300.text-xs.leading-relaxed span:first-child {
+    margin-top: 0.55rem !important; /* 隨著字放大學點點也要下移一點 */
+}
+
+/* 5. 手機版容器微調，確保卡片不爆版且內容呼吸空間充足 */
+@media (max-width: 480px) {
+    .modal-panel .p-5 {
+        padding: 1.25rem 1.1rem !important;
+    }
+    .text-2xl.font-black.text-indigo-300 {
+        font-size: 1.5rem !important; /* 手機上標題不宜過大以免折行 */
+    }
+}

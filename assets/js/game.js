@@ -432,6 +432,7 @@ const _jpApp = Vue.createApp({
         const selectedStageToConfirm = ref(null);
 
         const isBattleConfirmOpen = ref(false);
+        const stageConfirmSuspendedForMentor = ref(false);
         const isSpecialSceneActive = ref(false);
         const specialSceneBg = ref('');
 
@@ -1106,12 +1107,18 @@ const _jpApp = Vue.createApp({
             const lvNum = Number(n);
             if (!isLevelUnlocked(lvNum)) return;
             const config = LEVEL_CONFIG.value[lvNum];
+            const openStageMentor = (skill) => {
+                if (!skill) return;
+                stageConfirmSuspendedForMentor.value = true;
+                setupMentorDialogue(skill);
+            };
+
             if (config && config.skillId) {
                 const skill = skillsAll.value[config.skillId];
-                if (skill) setupMentorDialogue(skill);
+                openStageMentor(skill);
             } else if (config && config.unlockSkills && config.unlockSkills.length > 0) {
                 const skill = skillsAll.value[config.unlockSkills[0]];
-                if (skill) setupMentorDialogue(skill);
+                openStageMentor(skill);
             }
         };
 
@@ -1289,7 +1296,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26043001";
+        const APP_VERSION = window.APP_VERSION || "26050101";
 
         const appVersion = ref(APP_VERSION);
 
@@ -1313,6 +1320,8 @@ const _jpApp = Vue.createApp({
 
             feedbackStyle: 'oneesan',
 
+            defaultAttackMode: 'tap',
+
             ttsVoice: 'ja-JP-Neural2-B'
 
         });
@@ -1321,7 +1330,7 @@ const _jpApp = Vue.createApp({
 
         const DEFAULT_TTS_VOICE = 'ja-JP-Neural2-B';
 
-        const _settingsDefaults = { autoReadOnWrong: true, correctAdvanceDelayMs: null, wrongAdvanceDelayMs: null, enemyAttackMode: 'atb', feedbackStyle: 'oneesan', ttsVoice: DEFAULT_TTS_VOICE };
+        const _settingsDefaults = { autoReadOnWrong: true, correctAdvanceDelayMs: null, wrongAdvanceDelayMs: null, enemyAttackMode: 'atb', feedbackStyle: 'oneesan', defaultAttackMode: 'tap', ttsVoice: DEFAULT_TTS_VOICE };
 
         const loadSettings = () => {
 
@@ -1347,6 +1356,14 @@ const _jpApp = Vue.createApp({
 
                 }
 
+                if (!['tap', 'flick'].includes(settings.defaultAttackMode)) {
+                    settings.defaultAttackMode = 'tap';
+                }
+
+                if (settings.enemyAttackMode !== 'atb') {
+                    settings.enemyAttackMode = 'atb';
+                }
+
             } catch (e) { console.warn('[Settings] load error', e); }
 
         };
@@ -1368,6 +1385,8 @@ const _jpApp = Vue.createApp({
         const isChangelogOpen = ref(false);
 
         const answerMode = ref('tap');
+
+        const getDefaultAttackMode = () => settings.defaultAttackMode === 'flick' ? 'flick' : 'tap';
 
         const flickState = reactive({
 
@@ -2086,6 +2105,10 @@ const _jpApp = Vue.createApp({
 
             isMapMentorOpen.value = false;
 
+            if (stageConfirmSuspendedForMentor.value) {
+                stageConfirmSuspendedForMentor.value = false;
+            }
+
 
 
             // 立即刷新音量 (因 isMentorModalOpen 已設為 false)
@@ -2774,6 +2797,8 @@ const _jpApp = Vue.createApp({
         const isMenuOpen = ref(false);
 
         const isAdvancedSettingsOpen = ref(false);
+
+        const isStageRecordsOpen = ref(false);
 
         const isMapDropdownOpen = ref(false);
 
@@ -7994,6 +8019,16 @@ const _jpApp = Vue.createApp({
 
             let triggeredMentor = false;
 
+            answerMode.value = getDefaultAttackMode();
+            flickState.isArmed = false;
+            flickState.activeOpt = null;
+            flickState.successOpt = null;
+            flickState.pendingDirectionalMiss = false;
+            if (flickState.capturedEl) {
+                try { flickState.capturedEl.releasePointerCapture?.(1); } catch (e) { }
+                flickState.capturedEl = null;
+            }
+
             const ratio = player.value.hp / player.value.maxHp;
 
             let startState = 'neutral';
@@ -10057,6 +10092,30 @@ const _jpApp = Vue.createApp({
             return record ? formatStageClearTime(record.bestTimeSeconds) : '--.-- 秒';
         };
 
+        const stageRecordRows = computed(() => {
+            const total = Math.max(0, Number(maxLevel.value) || 0);
+
+            return Array.from({ length: total }, (_, index) => {
+                const stageNumber = index + 1;
+                const config = LEVEL_CONFIG.value?.[stageNumber] || {};
+                const record = getStageBestRecord(stageNumber);
+                const isCleared = clearedLevels.value.includes(stageNumber) || !!record;
+                const rank = isCleared ? (bestGrades.value?.[stageNumber] || '—') : '—';
+                const bestTimeText = record ? formatStageClearTime(record.bestTimeSeconds) : '—';
+
+                return {
+                    stageNumber,
+                    title: config.title || config.name || `Stage ${String(stageNumber).padStart(2, '0')}`,
+                    focusParticle: getStageFocusParticle(stageNumber),
+                    focusLabel: getStageFocusLabel(stageNumber),
+                    rank,
+                    bestTimeText,
+                    isCleared,
+                    statusText: isCleared ? '已通關' : '未通關'
+                };
+            });
+        });
+
 
 
         const getGradeColor = (grade) => {
@@ -10327,7 +10386,7 @@ const _jpApp = Vue.createApp({
             skillList, castAbility, spState, settings, shouldShowNextButton, praiseToast, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG,
             particleMastery, particleCorrectCounts, skillMastery, skillCorrectCounts, getParticleMastery, getParticleMasteryStyle, getSkillMastery, getSkillMasteryStyle,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
-            isMentorModalOpen, isLevelJumpOpen, isAdvancedSettingsOpen, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
+            isMentorModalOpen, isLevelJumpOpen, isAdvancedSettingsOpen, isStageRecordsOpen, stageRecordRows, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
             displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,
             currentMentorDialogueItem, currentMentorSceneImage, currentMentorModalImage, handleMentorSceneImageError, handleMentorModalImageError,
             mentorVideoEl, mentorVideoSources, shouldUseMentorVideo, shouldMuteMentorVideo, mentorVideoPoster, handleMentorVideoError,
@@ -10343,7 +10402,7 @@ const _jpApp = Vue.createApp({
 
             mapChapters, activeChapter, getMapNodeStyle, selectedSegmentIdx, isSegmentUnlocked, handleMapTabClick, jumpToMapSegment, isMapDropdownOpen,
 
-            isBattleConfirmOpen, selectedStageToConfirm, confirmAndStartBattle,
+            isBattleConfirmOpen, selectedStageToConfirm, stageConfirmSuspendedForMentor, confirmAndStartBattle,
 
             isMapMentorOpen,
 
