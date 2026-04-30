@@ -415,6 +415,7 @@ const _jpApp = Vue.createApp({
         const newUnlockLv = ref(null);
 
         const bestGrades = ref({}); // { stageNumber: 'S' }
+        const stageBestRecords = ref({}); // { stageNumber: { bestStars, bestTimeMs, bestTimeSeconds, bestCorrectRate, bestMaxCombo, updatedAt } }
 
         const clearedLevels = ref([]);
 
@@ -439,6 +440,7 @@ const _jpApp = Vue.createApp({
         const activeKnowledgeCard = ref(null);
         const isKnowledgeCardShowing = ref(false);
         const isKnowledgeCardAbsorbing = ref(false);
+        const resultSpirit = ref(null);
 
         const SPIRIT_IMAGE_PLACEHOLDER = 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><radialGradient id="g" cx="50%" cy="38%" r="58%"><stop offset="0%" stop-color="#fef3c7" stop-opacity=".9"/><stop offset="50%" stop-color="#fbbf24" stop-opacity=".38"/><stop offset="100%" stop-color="#1e1b4b" stop-opacity=".05"/></radialGradient></defs><rect width="512" height="512" rx="96" fill="#161225"/><circle cx="256" cy="246" r="162" fill="url(#g)"/><path d="M256 116c58 0 105 49 105 110 0 76-63 130-105 170-42-40-105-94-105-170 0-61 47-110 105-110Z" fill="#fbbf24" opacity=".36"/><circle cx="256" cy="224" r="46" fill="#fff7ed" opacity=".48"/><path d="M170 391c45 28 127 28 172 0" fill="none" stroke="#fde68a" stroke-width="18" stroke-linecap="round" opacity=".48"/></svg>`);
 
@@ -470,6 +472,27 @@ const _jpApp = Vue.createApp({
                 return;
             }
             img.src = SPIRIT_IMAGE_PLACEHOLDER;
+        };
+
+        const getResultSpiritForLevel = (levelId) => {
+            const pendingSpirit = pendingKnowledgeCards.value
+                .map(card => getSpiritForKnowledgeCard(card))
+                .find(Boolean);
+            if (pendingSpirit) return pendingSpirit;
+
+            const config = LEVEL_CONFIG.value?.[Number(levelId)];
+            const stageSkillIds = [
+                ...(Array.isArray(config?.unlockSkills) ? config.unlockSkills : []),
+                config?.skillId,
+                currentQuestion.value?.skillId
+            ].filter(Boolean);
+
+            for (const skillId of stageSkillIds) {
+                const spirit = getSpiritForSkillId(skillId);
+                if (spirit) return spirit;
+            }
+
+            return null;
         };
 
         // --- オノマトペ Skills (unlocked on boss clear) ---
@@ -619,6 +642,39 @@ const _jpApp = Vue.createApp({
 
         let _pendingAbilityIds = null;
 
+        const normalizeStageBestRecord = (record) => {
+            if (!record || typeof record !== 'object') return null;
+
+            const bestStars = Math.max(1, Math.min(3, Math.floor(Number(record.bestStars) || 0)));
+            if (!bestStars) return null;
+
+            const rawTimeMs = Number(record.bestTimeMs);
+            const rawTimeSeconds = Number(record.bestTimeSeconds);
+            const bestTimeMs = Number.isFinite(rawTimeMs)
+                ? Math.max(0, Math.round(rawTimeMs))
+                : (Number.isFinite(rawTimeSeconds) ? Math.max(0, Math.round(rawTimeSeconds * 1000)) : 0);
+            const bestTimeSeconds = bestTimeMs / 1000;
+            const bestCorrectRate = Math.max(0, Math.min(100, Math.round(Number(record.bestCorrectRate) || 0)));
+            const bestMaxCombo = Math.max(0, Math.floor(Number(record.bestMaxCombo) || 0));
+
+            return {
+                bestStars,
+                bestTimeMs,
+                bestTimeSeconds,
+                bestCorrectRate,
+                bestMaxCombo,
+                updatedAt: record.updatedAt || record.clearedAt || new Date().toISOString()
+            };
+        };
+
+        const normalizeStageBestRecords = (source = {}) => {
+            return Object.entries(source || {}).reduce((acc, [stageId, record]) => {
+                const normalized = normalizeStageBestRecord(record);
+                if (normalized) acc[stageId] = normalized;
+                return acc;
+            }, {});
+        };
+
         const saveProgression = () => {
 
             try {
@@ -630,6 +686,8 @@ const _jpApp = Vue.createApp({
                     clearedLevels: clearedLevels.value,
 
                     bestGrades: bestGrades.value,
+
+                    stageBestRecords: stageBestRecords.value,
 
                     unlockedAbilityIds: unlockedAbilityIds.value,
 
@@ -675,6 +733,8 @@ const _jpApp = Vue.createApp({
                     if (parsed.clearedLevels) clearedLevels.value = parsed.clearedLevels;
 
                     if (parsed.bestGrades) bestGrades.value = parsed.bestGrades;
+
+                    if (parsed.stageBestRecords) stageBestRecords.value = normalizeStageBestRecords(parsed.stageBestRecords);
 
                     if (parsed.unlockedAbilityIds) _pendingAbilityIds = parsed.unlockedAbilityIds;
 
@@ -932,6 +992,27 @@ const _jpApp = Vue.createApp({
             return conf ? conf.title : `Level ${n}`;
         };
 
+        const getStageFocusParticle = (n) => {
+            const conf = LEVEL_CONFIG.value[Number(n)];
+            if (!conf) return '?';
+            if (conf.focusParticle) return conf.focusParticle === 'Boss' ? '魔' : conf.focusParticle;
+
+            const skillId = conf.skillId || (conf.unlockSkills && conf.unlockSkills[0]);
+            const skill = skillsAll.value[skillId];
+            return skill?.particle || '?';
+        };
+
+        const getStageFocusLabel = (n) => {
+            const conf = LEVEL_CONFIG.value[Number(n)];
+            if (!conf) return '';
+            if (conf.boss || conf.focusParticle === 'Boss') return '共鳴試煉';
+            if (conf.focusLabel) return conf.focusLabel;
+
+            const skillId = conf.skillId || (conf.unlockSkills && conf.unlockSkills[0]);
+            const skill = skillsAll.value[skillId];
+            return skill?.meaning || skill?.name || '';
+        };
+
         const hasMentor = (n) => {
             const conf = LEVEL_CONFIG.value[Number(n)];
             if (!conf) return false;
@@ -1132,6 +1213,7 @@ const _jpApp = Vue.createApp({
 
         const returnToMap = () => {
             resetBattleOutcomePresentation();
+            resetStageClearMetrics();
             isFinished.value = true;
             showLevelSelect.value = false;
 
@@ -1207,7 +1289,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26042903";
+        const APP_VERSION = window.APP_VERSION || "26043001";
 
         const appVersion = ref(APP_VERSION);
 
@@ -1658,7 +1740,7 @@ const _jpApp = Vue.createApp({
             // 優先讀取集中化 JSON 內的對話資料，保留原有 skill 內的作為 fallback
             const centralizedData = MENTOR_AUDIO_MAP.value?.[skill.id];
             const dialogueSource = centralizedData?.dialogue || skill.mentorDialogue || [];
-            mentorPortraitVideo.value = centralizedData?.portraitVideo || skill.portraitVideo || null;
+            mentorPortraitVideo.value = skill.id === 'PROLOGUE_OPENING' ? null : (centralizedData?.portraitVideo || skill.portraitVideo || null);
 
             mentorPages.value = fragmentMentorDialogue(dialogueSource);
 
@@ -2770,6 +2852,38 @@ const _jpApp = Vue.createApp({
 
         const animatedExp = ref(0);
 
+        const battleStartedAtMs = ref(null);
+
+        const stageClearElapsedSeconds = ref(null);
+
+        const stageResultIsNewBest = ref(false);
+
+        const STAR_TIME_LIMIT_SECONDS = 90;
+
+        const resetStageClearMetrics = () => {
+            battleStartedAtMs.value = null;
+            stageClearElapsedSeconds.value = null;
+            stageResultIsNewBest.value = false;
+        };
+
+        const startStageClearTimer = () => {
+            battleStartedAtMs.value = Date.now();
+            stageClearElapsedSeconds.value = null;
+            stageResultIsNewBest.value = false;
+        };
+
+        const finishStageClearTimer = () => {
+            if (!battleStartedAtMs.value) {
+                stageClearElapsedSeconds.value = null;
+                return null;
+            }
+
+            const elapsedMs = Math.max(0, Date.now() - battleStartedAtMs.value);
+            const elapsed = elapsedMs / 1000;
+            stageClearElapsedSeconds.value = Number.isFinite(elapsed) ? elapsed : null;
+            return stageClearElapsedSeconds.value;
+        };
+
 
         const monsterHit = ref(false);
         const monsterDodge = ref(false);
@@ -3037,6 +3151,171 @@ const _jpApp = Vue.createApp({
 
         const needsUserGestureToResumeBgm = ref(false);
         const isBgmSuppressed = ref(false);
+        const HTML_BGM_FALLBACK_SCALE = 0.85;
+        const MOBILE_HTML_BGM_FALLBACK_SCALE = 0.4;
+        const HTML_BGM_FALLBACK_CURVE = 1.6;
+        const HTML_SFX_FALLBACK_BOOST = 1.35;
+        const HTML_SFX_FALLBACK_CURVE = 1.2;
+
+        const isAudioDebugEnabled = ref(false);
+        try {
+            const params = new URLSearchParams(window.location.search);
+            isAudioDebugEnabled.value = params.get('audioDebug') === '1' || localStorage.getItem('jpapp_audio_debug') === '1';
+        } catch (_) { }
+        const isAudioDebugOpen = ref(isAudioDebugEnabled.value);
+        const AUDIO_DEBUG_POS_KEY = 'jpapp_audio_debug_pos';
+        const loadAudioDebugPosition = () => {
+            try {
+                const raw = localStorage.getItem(AUDIO_DEBUG_POS_KEY);
+                if (!raw) return null;
+                const parsed = JSON.parse(raw);
+                const left = Number(parsed?.left);
+                const top = Number(parsed?.top);
+                if (!Number.isFinite(left) || !Number.isFinite(top)) return null;
+                return { left, top };
+            } catch (_) {
+                return null;
+            }
+        };
+        const audioDebugPosition = ref(loadAudioDebugPosition());
+        const isAudioDebugDragging = ref(false);
+        const audioDebugOverlayStyle = computed(() => {
+            if (!audioDebugPosition.value) return {};
+            return {
+                left: `${audioDebugPosition.value.left}px`,
+                top: `${audioDebugPosition.value.top}px`,
+                right: 'auto',
+                bottom: 'auto'
+            };
+        });
+        let audioDebugDragState = null;
+        const audioDebugTick = ref(0);
+        const lastAudioLifecycleEvent = ref('none');
+        const lastAudioGestureEvent = ref('none');
+        const lastAudioContextResumeResult = ref('not run');
+        const lastAudioContextResumeError = ref('');
+        const lastBgmPlayResult = ref('not run');
+        const lastBgmPlayError = ref('');
+        const lastSfxTestResult = ref('not run');
+        const lastRawAudioResult = ref('not run');
+        const useHtmlAudioBgmFallback = ref(false);
+        const useHtmlAudioSfxFallback = ref(false);
+        const autoFallbackEnabled = ref(false);
+        const autoFallbackReason = ref('none');
+        const autoFallbackTime = ref('');
+        const iosReturnedFromBackground = ref(false);
+        const htmlBgmAudio = ref(null);
+        const htmlSfxFallbackActive = new Set();
+        const fallbackAudioCtx = ref(null);
+        const fallbackGainNode = ref(null);
+        const fallbackMediaSource = ref(null);
+        const fallbackMediaSourceAudio = ref(null);
+        const useFallbackGain = ref(false);
+        const fallbackCtxNeedsGestureResume = ref(false);
+        const lastHtmlBgmFallbackResult = ref('not run');
+        const lastHtmlBgmFallbackError = ref('');
+        const lastHtmlSfxFallbackResult = ref('not run');
+        const lastHtmlSfxFallbackError = ref('');
+        const lastFallbackGainResult = ref('not run');
+        const lastFallbackGainError = ref('');
+        const lastFallbackCtxLifecycleEvent = ref('none');
+        const lastFallbackCtxResumeResult = ref('not run');
+        const lastFallbackCtxResumeError = ref('');
+        const lastOriginalHtmlBgmUrl = ref('none');
+        const lastResolvedHtmlBgmUrl = ref('none');
+        const lastMobileLowBgmResult = ref('not used');
+        const mobileLowBgmApplied = ref(false);
+        const mobileLowBgmFallbackToOriginal = ref(false);
+        const audioOutputFallbackMode = computed(() => (
+            useFallbackGain.value ? 'fallback-audioctx-v2' :
+                (useHtmlAudioBgmFallback.value || useHtmlAudioSfxFallback.value ? 'html-audio' : 'none')
+        ));
+
+        const markAudioDebugEvent = (targetRef, label) => {
+            if (!isAudioDebugEnabled.value) return;
+            targetRef.value = `${label} @ ${new Date().toLocaleTimeString()}`;
+            audioDebugTick.value += 1;
+        };
+
+        const refreshAudioDebugState = () => {
+            audioDebugTick.value += 1;
+        };
+
+        const getAudioDebugOverlayElement = () => document.querySelector('.audio-debug-overlay');
+
+        const clampAudioDebugPosition = (position = audioDebugPosition.value) => {
+            if (!position) return null;
+            const overlay = getAudioDebugOverlayElement();
+            const rect = overlay?.getBoundingClientRect();
+            const width = Math.max(120, rect?.width || (isAudioDebugOpen.value ? 520 : 290));
+            const height = Math.max(52, rect?.height || 74);
+            const margin = 8;
+            const maxLeft = Math.max(margin, window.innerWidth - width - margin);
+            const maxTop = Math.max(margin, window.innerHeight - height - margin);
+            return {
+                left: Math.min(Math.max(margin, Number(position.left) || margin), maxLeft),
+                top: Math.min(Math.max(margin, Number(position.top) || margin), maxTop)
+            };
+        };
+
+        const saveAudioDebugPosition = () => {
+            if (!audioDebugPosition.value) return;
+            try {
+                localStorage.setItem(AUDIO_DEBUG_POS_KEY, JSON.stringify(audioDebugPosition.value));
+            } catch (_) { }
+        };
+
+        const setAudioDebugPosition = (position, shouldSave = false) => {
+            const clamped = clampAudioDebugPosition(position);
+            if (!clamped) return;
+            audioDebugPosition.value = clamped;
+            if (shouldSave) saveAudioDebugPosition();
+        };
+
+        const handleAudioDebugDragMove = (event) => {
+            if (!audioDebugDragState) return;
+            event.preventDefault();
+            setAudioDebugPosition({
+                left: audioDebugDragState.startLeft + event.clientX - audioDebugDragState.pointerX,
+                top: audioDebugDragState.startTop + event.clientY - audioDebugDragState.pointerY
+            });
+        };
+
+        const stopAudioDebugDrag = () => {
+            if (!audioDebugDragState) return;
+            isAudioDebugDragging.value = false;
+            audioDebugDragState = null;
+            saveAudioDebugPosition();
+            window.removeEventListener('pointermove', handleAudioDebugDragMove);
+            window.removeEventListener('pointerup', stopAudioDebugDrag);
+            window.removeEventListener('pointercancel', stopAudioDebugDrag);
+        };
+
+        const startAudioDebugDrag = (event) => {
+            if (event?.target?.closest?.('button')) return;
+            const overlay = event.currentTarget?.closest?.('.audio-debug-overlay') || getAudioDebugOverlayElement();
+            if (!overlay) return;
+            const rect = overlay.getBoundingClientRect();
+            const currentPosition = clampAudioDebugPosition(audioDebugPosition.value || { left: rect.left, top: rect.top }) || { left: rect.left, top: rect.top };
+            audioDebugPosition.value = currentPosition;
+            audioDebugDragState = {
+                pointerX: event.clientX,
+                pointerY: event.clientY,
+                startLeft: currentPosition.left,
+                startTop: currentPosition.top
+            };
+            isAudioDebugDragging.value = true;
+            event.preventDefault();
+            try { event.currentTarget.setPointerCapture?.(event.pointerId); } catch (_) { }
+            window.addEventListener('pointermove', handleAudioDebugDragMove, { passive: false });
+            window.addEventListener('pointerup', stopAudioDebugDrag);
+            window.addEventListener('pointercancel', stopAudioDebugDrag);
+        };
+
+        const restoreAudioDebugPositionIntoViewport = () => {
+            if (!audioDebugPosition.value) return;
+            nextTick(() => setAudioDebugPosition(audioDebugPosition.value, true));
+        };
 
         const audioSettingsKey = 'jpRpgAudioV1';
 
@@ -3193,6 +3472,8 @@ const _jpApp = Vue.createApp({
                 }));
 
             } catch (_) { }
+
+            updateGainVolumes();
 
         };
 
@@ -3531,7 +3812,431 @@ const _jpApp = Vue.createApp({
 
 
 
+        const clampAudioVolume = (value) => Math.max(0, Math.min(1, Number(value) || 0));
+
+        const normalizeVolumeValue = (value) => {
+            const numeric = Number(value);
+            if (!Number.isFinite(numeric)) return 0;
+            return clampAudioVolume(numeric > 1 ? numeric / 100 : numeric);
+        };
+
+        const curveVolumeValue = (value, exponent) => {
+            const normalized = normalizeVolumeValue(value);
+            return clampAudioVolume(Math.pow(normalized, exponent));
+        };
+
+        const getNormalizedMasterVolume = () => normalizeVolumeValue(masterVolume.value);
+
+        const getNormalizedBgmVolume = () => normalizeVolumeValue(bgmVolume.value);
+
+        const getNormalizedSfxVolume = () => normalizeVolumeValue(sfxVolume.value);
+
+        const getBgmUiDuckScale = () => {
+            let scale = (isMenuOpen.value || isCodexOpen.value || isMentorModalOpen.value || isMistakesOpen.value) ? 0.35 : 1.0;
+
+            if (isMentorVoicePlaying.value) {
+                scale = (scale === 1.0) ? 0.25 : 0.15;
+            }
+
+            return scale;
+        };
+
+        const isMobileOrTabletAudioDevice = () => {
+            return /iPad|iPhone|iPod|Android/i.test(navigator.userAgent) ||
+                (navigator.maxTouchPoints && navigator.maxTouchPoints > 1);
+        };
+
+        const shouldUseMobileHtmlBgmFallbackScale = () => {
+            return useHtmlAudioBgmFallback.value &&
+                !useFallbackGain.value &&
+                isMobileOrTabletAudioDevice();
+        };
+
+        const getHtmlBgmFallbackScale = () => {
+            return HTML_BGM_FALLBACK_SCALE *
+                (shouldUseMobileHtmlBgmFallbackScale() ? MOBILE_HTML_BGM_FALLBACK_SCALE : 1);
+        };
+
+        const getMobileLowBgmUrl = (url) => {
+            if (!url || !/\.mp3(?:$|[?#])/i.test(url)) return url;
+            return url.replace(/\.mp3(?=($|[?#]))/i, '_mobile_low.mp3');
+        };
+
+        const shouldUseMobileLowBgmFile = () => {
+            return useHtmlAudioBgmFallback.value &&
+                !useFallbackGain.value &&
+                isMobileOrTabletAudioDevice();
+        };
+
+        const resolveHtmlFallbackBgmUrl = (url) => {
+            const originalUrl = url || '';
+            const resolvedUrl = shouldUseMobileLowBgmFile() ? getMobileLowBgmUrl(originalUrl) : originalUrl;
+
+            lastOriginalHtmlBgmUrl.value = originalUrl || 'none';
+            lastResolvedHtmlBgmUrl.value = resolvedUrl || 'none';
+            mobileLowBgmApplied.value = resolvedUrl !== originalUrl;
+            if (mobileLowBgmApplied.value) {
+                mobileLowBgmFallbackToOriginal.value = false;
+                lastMobileLowBgmResult.value = `using mobile low @ ${new Date().toLocaleTimeString()}`;
+            } else {
+                lastMobileLowBgmResult.value = 'not used';
+            }
+
+            return { originalUrl, resolvedUrl };
+        };
+
+        const getOrCreateHtmlBgmAudio = () => {
+            if (htmlBgmAudio.value) return htmlBgmAudio.value;
+
+            const audio = new Audio();
+            audio.preload = 'auto';
+            audio.loop = true;
+            audio.crossOrigin = 'anonymous';
+            if ('playsInline' in audio) audio.playsInline = true;
+            htmlBgmAudio.value = audio;
+            applyHtmlBgmFallbackVolume(audio);
+            return audio;
+        };
+
+        const getHtmlBgmFallbackVolume = () => {
+            return clampAudioVolume(
+                getNormalizedMasterVolume() *
+                curveVolumeValue(bgmVolume.value, HTML_BGM_FALLBACK_CURVE) *
+                getBgmUiDuckScale() *
+                getHtmlBgmFallbackScale()
+            );
+        };
+
+        const getHtmlSfxFallbackVolume = (name) => {
+            return clampAudioVolume(
+                getNormalizedMasterVolume() *
+                curveVolumeValue(sfxVolume.value, HTML_SFX_FALLBACK_CURVE) *
+                (SFX_SCALES[name] ?? 1.0) *
+                HTML_SFX_FALLBACK_BOOST
+            );
+        };
+
+        const applyFallbackGainVolume = () => {
+            const gain = fallbackGainNode.value;
+            const bgmFallbackVolume = isMuted.value ? 0 : getHtmlBgmFallbackVolume();
+            if (gain?.gain) {
+                gain.gain.value = bgmFallbackVolume;
+            }
+            return bgmFallbackVolume;
+        };
+
+        const applyHtmlBgmFallbackVolume = (audio = htmlBgmAudio.value) => {
+            if (!audio) return 0;
+
+            const bgmFallbackVolume = getHtmlBgmFallbackVolume();
+            if (useFallbackGain.value && fallbackGainNode.value) {
+                applyFallbackGainVolume();
+                audio.volume = 1;
+                audio.muted = false;
+            } else {
+                audio.volume = bgmFallbackVolume;
+                audio.muted = isMuted.value || bgmFallbackVolume <= 0;
+            }
+            audio.loop = true;
+            return bgmFallbackVolume;
+        };
+
+        const syncHtmlAudioFallbackVolumes = () => {
+            const bgm = htmlBgmAudio.value;
+            if (bgm) {
+                applyHtmlBgmFallbackVolume(bgm);
+            }
+
+            if (useFallbackGain.value) {
+                applyFallbackGainVolume();
+            }
+
+            htmlSfxFallbackActive.forEach((audio) => {
+                try {
+                    const sfxName = audio.dataset?.sfxName || '';
+                    audio.volume = isMuted.value ? 0 : getHtmlSfxFallbackVolume(sfxName);
+                    audio.muted = isMuted.value || audio.volume <= 0;
+                } catch (_) { }
+            });
+        };
+
+        const syncHtmlBgmFallbackVolume = () => {
+            syncHtmlAudioFallbackVolumes();
+        };
+
+        const markFallbackCtxNeedsGestureResume = (reason = 'background') => {
+            if (!useFallbackGain.value) return;
+
+            fallbackCtxNeedsGestureResume.value = true;
+            lastFallbackCtxLifecycleEvent.value = `${reason}:needs gesture resume @ ${new Date().toLocaleTimeString()}`;
+            lastFallbackGainResult.value = 'needs-resume-after-background';
+            refreshAudioDebugState();
+        };
+
+        const getFallbackAudioContextConstructor = () => window.AudioContext || window.webkitAudioContext;
+
+        const tryConnectFallbackGain = async (audio = getOrCreateHtmlBgmAudio()) => {
+            if (!audio) return false;
+
+            try {
+                const AudioContextCtor = getFallbackAudioContextConstructor();
+                if (!AudioContextCtor) throw new Error('AudioContext is not available');
+
+                if (fallbackMediaSource.value && fallbackMediaSourceAudio.value !== audio) {
+                    throw new Error('fallback MediaElementSource is already bound to another audio element');
+                }
+
+                const ctx = fallbackAudioCtx.value || new AudioContextCtor();
+                fallbackAudioCtx.value = ctx;
+
+                const gain = fallbackGainNode.value || ctx.createGain();
+                fallbackGainNode.value = gain;
+
+                if (!fallbackGainNode.value._jpappConnected) {
+                    gain.connect(ctx.destination);
+                    gain._jpappConnected = true;
+                }
+
+                if (!fallbackMediaSource.value) {
+                    const source = ctx.createMediaElementSource(audio);
+                    source.connect(gain);
+                    fallbackMediaSource.value = source;
+                    fallbackMediaSourceAudio.value = audio;
+                }
+
+                useFallbackGain.value = true;
+                fallbackCtxNeedsGestureResume.value = false;
+                applyFallbackGainVolume();
+
+                if (ctx.state === 'suspended' || ctx.state === 'interrupted') {
+                    await ctx.resume();
+                }
+
+                lastFallbackGainResult.value = `enabled: ${ctx.state} @ ${new Date().toLocaleTimeString()}`;
+                lastFallbackGainError.value = '';
+                return true;
+            } catch (e) {
+                const failureMessage = e?.name || e?.message || String(e);
+                useFallbackGain.value = false;
+                lastFallbackGainResult.value = `failed @ ${new Date().toLocaleTimeString()}`;
+                lastFallbackGainError.value = failureMessage;
+                if (fallbackAudioCtx.value || fallbackGainNode.value || fallbackMediaSource.value) {
+                    disableFallbackGainMode(true);
+                    lastFallbackGainResult.value = `failed, returned to v1 @ ${new Date().toLocaleTimeString()}`;
+                    lastFallbackGainError.value = failureMessage;
+                }
+                applyHtmlBgmFallbackVolume(htmlBgmAudio.value || audio);
+                return false;
+            } finally {
+                refreshAudioDebugState();
+            }
+        };
+
+        const disableFallbackGainMode = (shouldRecreateHtmlAudio = true) => {
+            const oldAudio = htmlBgmAudio.value;
+            const oldSrc = oldAudio?.src || '';
+            const oldWasPlaying = !!oldAudio && !oldAudio.paused;
+
+            useFallbackGain.value = false;
+            fallbackCtxNeedsGestureResume.value = false;
+
+            try { fallbackMediaSource.value?.disconnect?.(); } catch (_) { }
+            try { fallbackGainNode.value?.disconnect?.(); } catch (_) { }
+            try { fallbackAudioCtx.value?.close?.(); } catch (_) { }
+
+            fallbackMediaSource.value = null;
+            fallbackMediaSourceAudio.value = null;
+            fallbackGainNode.value = null;
+            fallbackAudioCtx.value = null;
+
+            if (shouldRecreateHtmlAudio && oldAudio) {
+                try { oldAudio.pause(); } catch (_) { }
+                htmlBgmAudio.value = null;
+
+                if (oldSrc) {
+                    const freshAudio = getOrCreateHtmlBgmAudio();
+                    freshAudio.src = oldSrc;
+                    freshAudio.loop = true;
+                    applyHtmlBgmFallbackVolume(freshAudio);
+                    if (oldWasPlaying && useHtmlAudioBgmFallback.value && isPageAudioAllowed()) {
+                        freshAudio.play().catch(e => {
+                            lastHtmlBgmFallbackError.value = e?.name || e?.message || String(e);
+                        });
+                    }
+                }
+            } else {
+                applyHtmlBgmFallbackVolume(oldAudio);
+            }
+
+            lastFallbackGainResult.value = `disabled @ ${new Date().toLocaleTimeString()}`;
+            lastFallbackGainError.value = '';
+            refreshAudioDebugState();
+        };
+
+        const pauseHtmlBgmFallback = () => {
+            try {
+                if (htmlBgmAudio.value && !htmlBgmAudio.value.paused) {
+                    htmlBgmAudio.value.pause();
+                }
+            } catch (_) { }
+        };
+
+        const playHtmlBgmFallback = async (expectedUrl, reason = 'html-bgm-fallback') => {
+            if (!expectedUrl || isMuted.value || bgmVolume.value <= 0 || !isPageAudioAllowed()) {
+                needsUserGestureToResumeBgm.value = !isPageAudioAllowed();
+                return false;
+            }
+
+            const audio = getOrCreateHtmlBgmAudio();
+            const { originalUrl, resolvedUrl } = resolveHtmlFallbackBgmUrl(expectedUrl);
+            const expectedAbs = new URL(resolvedUrl, window.location.href).href;
+            const originalAbs = new URL(originalUrl, window.location.href).href;
+
+            try {
+                if (bgmAudio.value && !bgmAudio.value.paused) {
+                    bgmAudio.value.pause();
+                }
+
+                if (audio.src !== expectedAbs) {
+                    audio.pause();
+                    audio.src = expectedAbs;
+                    audio.load();
+                }
+
+                applyHtmlBgmFallbackVolume(audio);
+                await audio.play();
+                applyHtmlBgmFallbackVolume(audio);
+                lastHtmlBgmFallbackResult.value = `resolved ${reason} @ ${new Date().toLocaleTimeString()}`;
+                lastHtmlBgmFallbackError.value = '';
+                if (mobileLowBgmApplied.value) {
+                    lastMobileLowBgmResult.value = `resolved mobile low @ ${new Date().toLocaleTimeString()}`;
+                }
+                needsUserGestureToResumeBgm.value = false;
+                pageLoopAudioWasInterrupted = false;
+                refreshAudioDebugState();
+                return true;
+            } catch (e) {
+                if (mobileLowBgmApplied.value && audio.src !== originalAbs) {
+                    try {
+                        mobileLowBgmFallbackToOriginal.value = true;
+                        lastMobileLowBgmResult.value = `mobile low failed, fallback original @ ${new Date().toLocaleTimeString()}`;
+                        lastResolvedHtmlBgmUrl.value = originalUrl || 'none';
+                        audio.pause();
+                        audio.src = originalAbs;
+                        audio.load();
+                        applyHtmlBgmFallbackVolume(audio);
+                        await audio.play();
+                        applyHtmlBgmFallbackVolume(audio);
+                        lastHtmlBgmFallbackResult.value = `resolved ${reason}: original fallback @ ${new Date().toLocaleTimeString()}`;
+                        lastHtmlBgmFallbackError.value = '';
+                        needsUserGestureToResumeBgm.value = false;
+                        pageLoopAudioWasInterrupted = false;
+                        refreshAudioDebugState();
+                        return true;
+                    } catch (fallbackError) {
+                        lastMobileLowBgmResult.value = `original fallback failed @ ${new Date().toLocaleTimeString()}`;
+                        lastHtmlBgmFallbackError.value = fallbackError?.name || fallbackError?.message || String(fallbackError);
+                    }
+                }
+                lastHtmlBgmFallbackResult.value = `rejected ${reason} @ ${new Date().toLocaleTimeString()}`;
+                lastHtmlBgmFallbackError.value = lastHtmlBgmFallbackError.value || e?.name || e?.message || String(e);
+                needsUserGestureToResumeBgm.value = true;
+                refreshAudioDebugState();
+                return false;
+            }
+        };
+
+        const syncHtmlBgmFallbackToExpected = async (reason = 'sync-html-bgm-fallback') => {
+            if (!useHtmlAudioBgmFallback.value) return false;
+
+            if (!isPageAudioAllowed()) {
+                needsUserGestureToResumeBgm.value = true;
+                return false;
+            }
+
+            const expectedUrl = getExpectedLoopBgmForCurrentState();
+            if (!expectedUrl) {
+                pauseHtmlBgmFallback();
+                lastHtmlBgmFallbackResult.value = `paused ${reason}: no expected BGM @ ${new Date().toLocaleTimeString()}`;
+                lastHtmlBgmFallbackError.value = '';
+                refreshAudioDebugState();
+                return false;
+            }
+
+            return playHtmlBgmFallback(expectedUrl, reason);
+        };
+
+
+        const resumeFallbackCtxOnGesture = async (reason = 'fallback-v2-gesture-resume') => {
+            if (!useFallbackGain.value || !fallbackCtxNeedsGestureResume.value) return false;
+
+            try {
+                const ctx = fallbackAudioCtx.value;
+                if (!ctx) throw new Error('fallbackAudioCtx is not available');
+
+                if (ctx.state === 'suspended' || ctx.state === 'interrupted') {
+                    await ctx.resume();
+                }
+
+                applyFallbackGainVolume();
+                fallbackCtxNeedsGestureResume.value = false;
+                lastFallbackCtxResumeResult.value = `resumed-after-background: ${ctx.state} @ ${new Date().toLocaleTimeString()}`;
+                lastFallbackCtxResumeError.value = '';
+                lastFallbackGainResult.value = lastFallbackCtxResumeResult.value;
+                lastFallbackGainError.value = '';
+
+                await syncHtmlBgmFallbackToExpected(reason);
+                refreshAudioDebugState();
+                return true;
+            } catch (e) {
+                const errorMessage = e?.name || e?.message || String(e);
+                fallbackCtxNeedsGestureResume.value = false;
+                lastFallbackCtxResumeResult.value = `resume failed @ ${new Date().toLocaleTimeString()}`;
+                lastFallbackCtxResumeError.value = errorMessage;
+
+                useHtmlAudioBgmFallback.value = true;
+                useHtmlAudioSfxFallback.value = true;
+                disableFallbackGainMode(true);
+                lastFallbackGainResult.value = `v2 resume failed, returned to v1 @ ${new Date().toLocaleTimeString()}`;
+                lastFallbackGainError.value = errorMessage;
+                await syncHtmlBgmFallbackToExpected('fallback-v2-resume-failed-return-v1');
+                refreshAudioDebugState();
+                return false;
+            }
+        };
+
+
+        const enableHtmlAudioFallback = async (reason = 'enable-html-fallback', options = {}) => {
+            useHtmlAudioBgmFallback.value = true;
+            useHtmlAudioSfxFallback.value = true;
+            try { bgmAudio.value?.pause(); } catch (_) { }
+
+            const v1Started = await syncHtmlBgmFallbackToExpected(`${reason}:html-v1`);
+
+            if (!options.preferFallbackGain) {
+                refreshAudioDebugState();
+                return v1Started;
+            }
+
+            const connected = await tryConnectFallbackGain(getOrCreateHtmlBgmAudio());
+            if (!connected) {
+                useHtmlAudioBgmFallback.value = true;
+                useHtmlAudioSfxFallback.value = true;
+                await syncHtmlBgmFallbackToExpected(`${reason}:gain-v2-failed-html-v1`);
+                refreshAudioDebugState();
+                return v1Started;
+            }
+
+            await syncHtmlBgmFallbackToExpected(`${reason}:gain-v2`);
+            refreshAudioDebugState();
+            return true;
+        };
+
+
+
         const updateGainVolumes = () => {
+
+            syncHtmlBgmFallbackVolume();
 
             if (!masterGain.value || !audioCtx.value) return;
 
@@ -3549,14 +4254,7 @@ const _jpApp = Vue.createApp({
 
             const b = bgmVolume.value;
 
-            let bScale = (isMenuOpen.value || isCodexOpen.value || isMentorModalOpen.value || isMistakesOpen.value) ? 0.35 : 1.0;
-
-
-
-            if (isMentorVoicePlaying.value) {
-                // 加強對對話期間 BGM 的減壓力度，使語音更清晰 (從原先的 0.5 改為 0.25)
-                bScale = (bScale === 1.0) ? 0.25 : 0.15;
-            }
+            let bScale = getBgmUiDuckScale();
 
 
 
@@ -3641,6 +4339,22 @@ const _jpApp = Vue.createApp({
 
                 }
 
+                if (htmlBgmAudio.value) {
+
+                    htmlBgmAudio.value.pause();
+
+                    try { htmlBgmAudio.value.currentTime = 0; } catch (_) { }
+
+                }
+
+                htmlSfxFallbackActive.forEach((audio) => {
+
+                    try { audio.pause(); audio.src = ''; } catch (_) { }
+
+                });
+
+                htmlSfxFallbackActive.clear();
+
                 audioPool.forEach((a, url) => {
 
                     if (typeof url === 'string' && url.indexOf(BGM_BASE) === 0) {
@@ -3680,6 +4394,7 @@ const _jpApp = Vue.createApp({
             resetSP();
             setHeroAvatar('neutral');
             clearSpeedStatus();
+            resetStageClearMetrics();
             stopAllAudio();
             isDefeated.value = false;
             showLevelSelect.value = true;
@@ -3784,6 +4499,11 @@ const _jpApp = Vue.createApp({
 
 
         // ── iOS Safari Background Audio Guard ──
+        const isIosDevice = () => {
+            return /iPad|iPhone|iPod/i.test(navigator.userAgent) ||
+                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        };
+
         // Returns true only when the page is visible and audio is allowed to play.
         // All BGM play/resume entry points must call this before playing.
         const isPageAudioAllowed = () => {
@@ -3812,16 +4532,6 @@ const _jpApp = Vue.createApp({
                 return;
             }
 
-            await initAudioCtx();
-
-            if (!audioInited.value) await initAudio();
-
-            if (audioCtx.value && (audioCtx.value.state === 'suspended' || audioCtx.value.state === 'interrupted')) await audioCtx.value.resume();
-
-            updateGainVolumes();
-
-
-
             let expectedUrl = "";
 
             if (showMap.value && !showLevelSelect.value) {
@@ -3834,7 +4544,19 @@ const _jpApp = Vue.createApp({
 
             }
 
+            if (useHtmlAudioBgmFallback.value) {
+                try { if (bgmAudio.value && !bgmAudio.value.paused) bgmAudio.value.pause(); } catch (_) { }
+                await syncHtmlBgmFallbackToExpected('playBgm');
+                return;
+            }
 
+            await initAudioCtx();
+
+            if (!audioInited.value) await initAudio();
+
+            if (audioCtx.value && (audioCtx.value.state === 'suspended' || audioCtx.value.state === 'interrupted')) await audioCtx.value.resume();
+
+            updateGainVolumes();
 
             const expectedAbs = new URL(expectedUrl, window.location.href).href;
 
@@ -3887,13 +4609,18 @@ const _jpApp = Vue.createApp({
 
             if (isMuted.value || bgmVolume.value <= 0) return;
 
-            if (!bgmAudio.value) return;
-
             // Never resume in background (iOS Safari fix)
             if (!isPageAudioAllowed()) {
                 needsUserGestureToResumeBgm.value = true;
                 return;
             }
+
+            if (useHtmlAudioBgmFallback.value) {
+                syncHtmlBgmFallbackToExpected('resumeBattleBgm');
+                return;
+            }
+
+            if (!bgmAudio.value) return;
 
             bgmAudio.value.pause();
 
@@ -4044,6 +4771,8 @@ const _jpApp = Vue.createApp({
             });
         };
 
+        let lastBgmPlayRejectWarningAt = 0;
+
         const ensureBgmPlaying = async (reason, options = {}) => {
 
             if (!isPageAudioAllowed()) {
@@ -4051,11 +4780,15 @@ const _jpApp = Vue.createApp({
                 return false;
             }
 
-            if (!audioInited.value) await initAudio();
-
             const expectedUrl = options.expectedUrl || getExpectedLoopBgmForCurrentState();
 
             if (!expectedUrl) return false;
+
+            if (useHtmlAudioBgmFallback.value) {
+                return syncHtmlBgmFallbackToExpected(reason);
+            }
+
+            if (!audioInited.value) await initAudio();
 
             if (bgmAudio.value && (bgmAudio.value.paused || options.force)) {
 
@@ -4064,6 +4797,13 @@ const _jpApp = Vue.createApp({
                 const curSrc = bgmAudio.value.src || '';
 
                 if (curSrc !== expectedAbs) {
+
+                    if (options.allowSourceSwitch === false) {
+                        needsUserGestureToResumeBgm.value = true;
+                        return false;
+                    }
+
+                    bgmAudio.value.pause();
 
                     bgmAudio.value.src = expectedAbs;
 
@@ -4087,7 +4827,9 @@ const _jpApp = Vue.createApp({
 
                 } catch (e) {
 
-                    if (options.warnOnBlock !== false) {
+                    const now = Date.now();
+                    if (options.warnOnBlock !== false && now - lastBgmPlayRejectWarningAt > 5000) {
+                        lastBgmPlayRejectWarningAt = now;
                         warnAudioResumeState('ensure-bgm-play-blocked', {
                             reason,
                             expectedBgm: expectedUrl,
@@ -4113,8 +4855,12 @@ const _jpApp = Vue.createApp({
         };
 
         let pageAudioResumeTimer = null;
+        let pageLoopAudioWasInterrupted = false;
+        let pageLoopAudioResumeGeneration = 0;
 
         const pausePageLoopAudio = () => {
+            pageLoopAudioResumeGeneration += 1;
+
             if (pageAudioResumeTimer) {
                 clearTimeout(pageAudioResumeTimer);
                 pageAudioResumeTimer = null;
@@ -4124,6 +4870,10 @@ const _jpApp = Vue.createApp({
                 bgmAudio.value.pause();
             }
 
+            pauseHtmlBgmFallback();
+            markFallbackCtxNeedsGestureResume('background');
+
+            pageLoopAudioWasInterrupted = true;
             needsUserGestureToResumeBgm.value = true;
         };
 
@@ -4147,7 +4897,7 @@ const _jpApp = Vue.createApp({
             const expectedBgm = getExpectedLoopBgmForCurrentState();
 
             if (!expectedBgm) {
-                if (options.warnOnSkip) {
+                if (options.warnOnSkip && needsUserGestureToResumeBgm.value) {
                     warnLoopBgmResumeDiagnostic(`${reason}:no-expected-bgm`, { expectedBgm });
                 }
                 return false;
@@ -4156,30 +4906,34 @@ const _jpApp = Vue.createApp({
             return ensureBgmPlaying(`${reason}:bgm`, {
                 force: options.force === true,
                 warnOnBlock: options.warnOnBlock !== false,
+                allowSourceSwitch: options.allowSourceSwitch !== false,
                 expectedUrl: expectedBgm
             });
         };
 
         const schedulePageLoopAudioResume = (reason) => {
-            if (!isPageAudioAllowed()) return;
-
             if (pageAudioResumeTimer) clearTimeout(pageAudioResumeTimer);
+            pageAudioResumeTimer = null;
+            pageLoopAudioResumeGeneration += 1;
+            markAudioDebugEvent(lastAudioLifecycleEvent, `${reason}:foreground`);
 
-            pageAudioResumeTimer = setTimeout(() => {
-                pageAudioResumeTimer = null;
-                tryResumePageLoopAudio(reason, {
-                    force: true,
-                    warnOnBlock: false,
-                    warnOnContextBlock: false
-                }).then((resumed) => {
-                    if (!resumed && shouldResumeBgmForCurrentView()) {
-                        needsUserGestureToResumeBgm.value = true;
-                    }
-                });
-            }, 80);
+            if (isIosDevice()) {
+                iosReturnedFromBackground.value = true;
+            }
+
+            if (useFallbackGain.value && fallbackCtxNeedsGestureResume.value) {
+                lastFallbackCtxLifecycleEvent.value = `${reason}:foreground waiting for gesture @ ${new Date().toLocaleTimeString()}`;
+                refreshAudioDebugState();
+            }
+
+            if (isPageAudioAllowed() && shouldResumeBgmForCurrentView()) {
+                pageLoopAudioWasInterrupted = true;
+                needsUserGestureToResumeBgm.value = true;
+            }
         };
 
         const handlePageAudioVisibilityChange = () => {
+            markAudioDebugEvent(lastAudioLifecycleEvent, `visibilitychange:${document.visibilityState}`);
             if (document.hidden) {
                 pausePageLoopAudio();
                 return;
@@ -4189,8 +4943,14 @@ const _jpApp = Vue.createApp({
         };
 
         document.addEventListener("visibilitychange", handlePageAudioVisibilityChange);
-        window.addEventListener('pagehide', pausePageLoopAudio);
-        window.addEventListener('blur', pausePageLoopAudio);
+        window.addEventListener('pagehide', () => {
+            markAudioDebugEvent(lastAudioLifecycleEvent, 'pagehide');
+            pausePageLoopAudio();
+        });
+        window.addEventListener('blur', () => {
+            markAudioDebugEvent(lastAudioLifecycleEvent, 'blur');
+            pausePageLoopAudio();
+        });
         window.addEventListener('pageshow', () => schedulePageLoopAudioResume('pageshow'));
         window.addEventListener('focus', () => schedulePageLoopAudioResume('focus'));
 
@@ -4273,6 +5033,13 @@ const _jpApp = Vue.createApp({
 
             if (_voiceLockUntil > Date.now() && (name === 'damage' || name === 'miss')) return;
 
+            if (useHtmlAudioSfxFallback.value) {
+                const src = _uiSfxSrcMap[name];
+                if (!src) return;
+                playHtmlSfxFallback(name, src);
+                return;
+            }
+
             const entry = _getOrCreatePoly(name);
 
             if (!entry) return;
@@ -4284,6 +5051,8 @@ const _jpApp = Vue.createApp({
             a.pause();
 
             a.currentTime = 0;
+
+            a.volume = clampAudioVolume(masterVolume.value * sfxVolume.value * (SFX_SCALES[name] ?? 1.0));
 
             a.play().catch(e => {
                 warnAudioResumeState('ui-sfx-play-blocked', { sfx: name, error: e?.name || e?.message || e });
@@ -4317,9 +5086,56 @@ const _jpApp = Vue.createApp({
             damage: 0.95
         };
 
+        const playHtmlSfxFallback = (name, src) => {
+            if (!src || !isPageAudioAllowed() || isMuted.value) return;
+
+            try {
+                const audio = new Audio(src);
+                audio.preload = 'auto';
+                audio.crossOrigin = 'anonymous';
+                if ('playsInline' in audio) audio.playsInline = true;
+                audio.dataset.sfxName = name;
+                audio.volume = getHtmlSfxFallbackVolume(name);
+                audio.muted = isMuted.value || audio.volume <= 0;
+                htmlSfxFallbackActive.add(audio);
+                try {
+                    audio.pause();
+                    audio.currentTime = 0;
+                } catch (_) { }
+                audio.play().then(() => {
+                    lastHtmlSfxFallbackResult.value = `resolved ${name} @ ${new Date().toLocaleTimeString()}`;
+                    lastHtmlSfxFallbackError.value = '';
+                    refreshAudioDebugState();
+                }).catch(e => {
+                    lastHtmlSfxFallbackResult.value = `rejected ${name} @ ${new Date().toLocaleTimeString()}`;
+                    lastHtmlSfxFallbackError.value = e?.name || e?.message || String(e);
+                    htmlSfxFallbackActive.delete(audio);
+                    refreshAudioDebugState();
+                });
+                audio.onended = () => {
+                    htmlSfxFallbackActive.delete(audio);
+                    audio.src = '';
+                };
+            } catch (e) {
+                lastHtmlSfxFallbackResult.value = `failed ${name} @ ${new Date().toLocaleTimeString()}`;
+                lastHtmlSfxFallbackError.value = e?.name || e?.message || String(e);
+                refreshAudioDebugState();
+            }
+        };
+
         const playSfx = (name) => {
             if (!isPageAudioAllowed()) {
                 needsUserGestureToResumeBgm.value = true;
+                return;
+            }
+
+            if (_voiceLockUntil > Date.now() && (name === 'damage' || name === 'miss')) return;
+
+            const src = _uiSfxSrcMap[name];
+            if (!src) return;
+
+            if (useHtmlAudioSfxFallback.value) {
+                playHtmlSfxFallback(name, src);
                 return;
             }
 
@@ -4327,10 +5143,6 @@ const _jpApp = Vue.createApp({
                 initAudioCtx().then(() => { initAudio().then(() => playSfx(name)); });
                 return;
             }
-            if (_voiceLockUntil > Date.now() && (name === 'damage' || name === 'miss')) return;
-
-            const src = _uiSfxSrcMap[name];
-            if (!src) return;
 
             // BGM Ducking logic
             if (bgmGain.value && !isMuted.value && name !== 'click' && name !== 'uiPop' && name !== 'battlePop') {
@@ -4359,7 +5171,7 @@ const _jpApp = Vue.createApp({
                             bsn.buffer = decoded;
 
                             // Normalization / Scaling
-                            const scale = SFX_SCALES[name] || 1.0;
+                            const scale = SFX_SCALES[name] ?? 1.0;
                             if (scale !== 1.0) {
                                 const tempGain = audioCtx.value.createGain();
                                 tempGain.gain.value = scale;
@@ -4433,10 +5245,10 @@ const _jpApp = Vue.createApp({
                         const source = audioCtx.value.createMediaElementSource(a);
                         source.connect(sfxGain.value);
                     } catch (_) {
-                        a.volume = sfxVolume.value * (SFX_SCALES[name] || 1.0);
+                        a.volume = sfxVolume.value * (SFX_SCALES[name] ?? 1.0);
                     }
                 } else {
-                    a.volume = sfxVolume.value * (SFX_SCALES[name] || 1.0);
+                    a.volume = sfxVolume.value * (SFX_SCALES[name] ?? 1.0);
                 }
 
                 a.currentTime = 0;
@@ -4700,6 +5512,10 @@ const _jpApp = Vue.createApp({
             if (isFinished.value) return;
 
             timeLeft.value = (monster.value?.attackIntervalMs || 10000) / 1000;
+
+            if (!battleStartedAtMs.value && !monsterResultShown.value && !playerDead.value) {
+                startStageClearTimer();
+            }
 
             questionStartTime = Date.now();
 
@@ -5454,19 +6270,15 @@ const _jpApp = Vue.createApp({
 
 
 
-        const addMistake = () => {
-
-            const q = currentQuestion.value;
+        const buildQuestionLogText = (q) => {
 
             let displayJp = '';
 
             let sentenceTextBuilder = '';
 
+            let kanaTextBuilder = '';
 
-
-            // 1. 重組句子，並把答案的位置加上 HTML 高亮底線
-
-            (q.segments || []).forEach(s => {
+            (q?.segments || []).forEach(s => {
 
                 if (s.isBlank) {
 
@@ -5478,23 +6290,36 @@ const _jpApp = Vue.createApp({
 
                     sentenceTextBuilder += ans;
 
+                    kanaTextBuilder += ans;
+
                 } else {
 
                     displayJp += s.text;
 
                     sentenceTextBuilder += s.text;
 
+                    kanaTextBuilder += s.ruby || s.text;
+
                 }
 
             });
 
+            const cleanSentenceText = sentenceTextBuilder.replace(/[_ ]/g, '').replace(/（[^）]*）|\([^)]*\)/g, '');
+            const cleanKanaText = kanaTextBuilder.replace(/[_ ]/g, '').replace(/（[^）]*）|\([^)]*\)/g, '');
 
+            return {
+                displayJp,
+                sentenceText: cleanSentenceText,
+                kanaText: cleanKanaText || cleanSentenceText
+            };
 
+        };
 
+        const addMistake = () => {
 
-            // 2. 清理要給語音朗讀用的純文字
+            const q = currentQuestion.value;
 
-            let cleanSentenceText = sentenceTextBuilder.replace(/[_ ]/g, '').replace(/（[^）]*）|\([^)]*\)/g, '');
+            const questionText = buildQuestionLogText(q);
 
 
 
@@ -5502,9 +6327,11 @@ const _jpApp = Vue.createApp({
 
             const entry = {
 
-                displayJp: displayJp,
+                displayJp: questionText.displayJp,
 
-                sentenceText: cleanSentenceText,
+                sentenceText: questionText.sentenceText,
+
+                kanaText: questionText.kanaText,
 
                 prompt: q.chinese || "",
 
@@ -5534,47 +6361,17 @@ const _jpApp = Vue.createApp({
 
             if (!q) return;
 
-            let displayJp = '';
-
-            let sentenceTextBuilder = '';
-
-
-
-            (q.segments || []).forEach(s => {
-
-                if (s.isBlank) {
-
-                    let ans = q.answers[s.blankIndex];
-
-                    if (Array.isArray(ans)) ans = ans[0];
-
-                    displayJp += `<span class="text-amber-400 font-bold underline">${ans}</span>`;
-
-                    sentenceTextBuilder += ans;
-
-                } else {
-
-                    displayJp += s.text;
-
-                    sentenceTextBuilder += s.text;
-
-                }
-
-            });
-
-
-
-
-
-            const cleanSentenceText = sentenceTextBuilder.replace(/[_ ]/g, '').replace(/（[^）]*）|\([^)]*\)/g, '');
+            const questionText = buildQuestionLogText(q);
 
 
 
             const entry = {
 
-                displayJp: displayJp,
+                displayJp: questionText.displayJp,
 
-                sentenceText: cleanSentenceText,
+                sentenceText: questionText.sentenceText,
+
+                kanaText: questionText.kanaText,
 
                 prompt: q.chinese || "",
 
@@ -5903,20 +6700,415 @@ const _jpApp = Vue.createApp({
 
         };
 
-        // ── Per-gesture AudioContext + BGM/SFX resume (runs on EVERY gesture after returning from background) ──
-        // Fixes iOS Safari regression: after page returns to foreground, AudioContext is suspended
-        // and BGM/SFX stay silent until this explicitly resumes them.
+        const formatAudioDebugValue = (value) => {
+            if (value === null || value === undefined) return 'null';
+            if (typeof value === 'number') return Number.isFinite(value) ? value.toFixed(3).replace(/\.?0+$/, '') : String(value);
+            if (typeof value === 'boolean') return value ? 'true' : 'false';
+            return String(value);
+        };
+
+        const getAudioDebugState = () => {
+            audioDebugTick.value;
+            const ctx = audioCtx.value;
+            const bgm = bgmAudio.value;
+            const htmlBgm = htmlBgmAudio.value;
+            const fallbackCtx = fallbackAudioCtx.value;
+            const fallbackGain = fallbackGainNode.value;
+            const expectedBgm = getExpectedLoopBgmForCurrentState();
+            const isBattleActive = !showLevelSelect.value &&
+                !showMap.value &&
+                !isFinished.value &&
+                currentLevel.value > 0 &&
+                !playerDead.value &&
+                !isBattleResolutionActive();
+
+            return {
+                page: {
+                    hidden: document.hidden,
+                    visibilityState: document.visibilityState,
+                    hasFocus: typeof document.hasFocus === 'function' ? document.hasFocus() : 'n/a',
+                    lastLifecycle: lastAudioLifecycleEvent.value,
+                    lastGesture: lastAudioGestureEvent.value,
+                    needsUserGestureToResumeBgm: needsUserGestureToResumeBgm.value,
+                    pageLoopAudioWasInterrupted,
+                    expectedLoopBgm: expectedBgm || 'none'
+                },
+                context: {
+                    exists: !!ctx,
+                    state: ctx?.state || 'none',
+                    sampleRate: ctx?.sampleRate ?? 'n/a',
+                    currentTime: ctx?.currentTime ?? 'n/a',
+                    baseLatency: ctx?.baseLatency ?? 'n/a',
+                    outputLatency: ctx?.outputLatency ?? 'n/a',
+                    lastResumeResult: lastAudioContextResumeResult.value,
+                    lastResumeError: lastAudioContextResumeError.value || 'none'
+                },
+                bgm: {
+                    exists: !!bgm,
+                    src: bgm?.src || 'none',
+                    currentSrc: bgm?.currentSrc || 'none',
+                    paused: bgm?.paused ?? 'n/a',
+                    ended: bgm?.ended ?? 'n/a',
+                    readyState: bgm?.readyState ?? 'n/a',
+                    networkState: bgm?.networkState ?? 'n/a',
+                    currentTime: bgm?.currentTime ?? 'n/a',
+                    duration: bgm?.duration ?? 'n/a',
+                    playbackRate: bgm?.playbackRate ?? 'n/a',
+                    muted: bgm?.muted ?? 'n/a',
+                    volume: bgm?.volume ?? 'n/a',
+                    loop: bgm?.loop ?? 'n/a',
+                    errorCode: bgm?.error?.code || 'none',
+                    currentBgmKey: bgm?.src || 'none',
+                    currentMapBgm: currentMapBgm.value || 'none',
+                    currentBattleBgmPick: currentBattleBgmPick.value || 'none',
+                    expectedBgm: expectedBgm || 'none',
+                    lastPlayResult: lastBgmPlayResult.value,
+                    lastPlayError: lastBgmPlayError.value || 'none'
+                },
+                graph: {
+                    masterGain: masterGain.value?.gain?.value ?? 'n/a',
+                    bgmGain: bgmGain.value?.gain?.value ?? 'n/a',
+                    sfxGain: sfxGain.value?.gain?.value ?? 'n/a',
+                    bgmMediaElementSourceConnected: !!bgm?._connected,
+                    bgmElementHasConnectedFlag: Object.prototype.hasOwnProperty.call(bgm || {}, '_connected'),
+                    duplicateSourceGuard: bgm?._connected ? 'guarded by _connected' : 'not connected / unknown'
+                },
+                fallback: {
+                    autoFallbackEnabled: autoFallbackEnabled.value,
+                    autoFallbackReason: autoFallbackReason.value,
+                    autoFallbackTime: autoFallbackTime.value,
+                    currentFallbackMode: useFallbackGain.value ? 'gain-v2' : ((useHtmlAudioBgmFallback.value || useHtmlAudioSfxFallback.value) ? 'html-v1' : 'none'),
+                    audioOutputFallbackMode: audioOutputFallbackMode.value,
+                    useHtmlAudioBgmFallback: useHtmlAudioBgmFallback.value,
+                    useHtmlAudioSfxFallback: useHtmlAudioSfxFallback.value,
+                    useFallbackGain: useFallbackGain.value,
+                    fallbackV2Active: useFallbackGain.value,
+                    fallbackV2Available: !!getFallbackAudioContextConstructor(),
+                    fallbackV2FailedReason: lastFallbackGainError.value || 'none',
+                    fallbackCtxNeedsGestureResume: fallbackCtxNeedsGestureResume.value,
+                    fallbackAudioCtxExists: !!fallbackCtx,
+                    fallbackAudioCtxState: fallbackCtx?.state || 'none',
+                    fallbackAudioCtxSampleRate: fallbackCtx?.sampleRate ?? 'n/a',
+                    fallbackAudioCtxCurrentTime: fallbackCtx?.currentTime ?? 'n/a',
+                    fallbackGainValue: fallbackGain?.gain?.value ?? 'n/a',
+                    fallbackMediaSourceExists: !!fallbackMediaSource.value,
+                    fallbackMediaSourceBoundToHtmlBgm: fallbackMediaSourceAudio.value === htmlBgm,
+                    lastFallbackCtxLifecycleEvent: lastFallbackCtxLifecycleEvent.value,
+                    lastFallbackCtxResumeResult: lastFallbackCtxResumeResult.value,
+                    lastFallbackCtxResumeError: lastFallbackCtxResumeError.value || 'none',
+                    lastFallbackGainResult: lastFallbackGainResult.value,
+                    lastFallbackGainError: lastFallbackGainError.value || 'none',
+                    rawMasterVolume: masterVolume.value,
+                    rawBgmVolume: bgmVolume.value,
+                    rawSfxVolume: sfxVolume.value,
+                    normalizedMasterVolume: getNormalizedMasterVolume(),
+                    normalizedBgmVolume: getNormalizedBgmVolume(),
+                    normalizedSfxVolume: getNormalizedSfxVolume(),
+                    effectiveHtmlBgmSliderVolume: curveVolumeValue(bgmVolume.value, HTML_BGM_FALLBACK_CURVE),
+                    effectiveHtmlSfxSliderVolume: curveVolumeValue(sfxVolume.value, HTML_SFX_FALLBACK_CURVE),
+                    computedHtmlBgmVolume: getHtmlBgmFallbackVolume(),
+                    computedHtmlHitSfxVolume: getHtmlSfxFallbackVolume('hit'),
+                    finalHtmlBgmAudioVolume: htmlBgm?.volume ?? 'n/a',
+                    htmlBgmScale: HTML_BGM_FALLBACK_SCALE,
+                    mobileHtmlBgmFallbackScaleApplied: shouldUseMobileHtmlBgmFallbackScale(),
+                    mobileFallbackBgmScale: MOBILE_HTML_BGM_FALLBACK_SCALE,
+                    effectiveHtmlBgmScale: getHtmlBgmFallbackScale(),
+                    mobileLowBgmApplied: mobileLowBgmApplied.value,
+                    originalHtmlBgmUrl: lastOriginalHtmlBgmUrl.value,
+                    resolvedHtmlBgmUrl: lastResolvedHtmlBgmUrl.value,
+                    mobileLowBgmFallbackToOriginal: mobileLowBgmFallbackToOriginal.value,
+                    mobileLowBgmLoadFailed: mobileLowBgmFallbackToOriginal.value,
+                    mobileLowBgmResult: lastMobileLowBgmResult.value,
+                    htmlBgmCurve: HTML_BGM_FALLBACK_CURVE,
+                    htmlSfxBoost: HTML_SFX_FALLBACK_BOOST,
+                    htmlSfxCurve: HTML_SFX_FALLBACK_CURVE,
+                    htmlBgmExists: !!htmlBgm,
+                    htmlBgmSrc: htmlBgm?.src || 'none',
+                    htmlBgmCurrentSrc: htmlBgm?.currentSrc || 'none',
+                    htmlBgmPaused: htmlBgm?.paused ?? 'n/a',
+                    htmlBgmReadyState: htmlBgm?.readyState ?? 'n/a',
+                    htmlBgmNetworkState: htmlBgm?.networkState ?? 'n/a',
+                    htmlBgmCurrentTime: htmlBgm?.currentTime ?? 'n/a',
+                    htmlBgmDuration: htmlBgm?.duration ?? 'n/a',
+                    htmlBgmMuted: htmlBgm?.muted ?? 'n/a',
+                    htmlBgmVolume: htmlBgm?.volume ?? 'n/a',
+                    htmlBgmLoop: htmlBgm?.loop ?? 'n/a',
+                    htmlBgmErrorCode: htmlBgm?.error?.code || 'none',
+                    lastHtmlBgmResult: lastHtmlBgmFallbackResult.value,
+                    lastHtmlBgmError: lastHtmlBgmFallbackError.value || 'none',
+                    lastHtmlSfxResult: lastHtmlSfxFallbackResult.value,
+                    lastHtmlSfxError: lastHtmlSfxFallbackError.value || 'none'
+                },
+                game: {
+                    view: showLevelSelect.value ? 'home' : (showMap.value ? 'map' : (monsterResultShown.value ? 'result' : 'battle')),
+                    inBattle: isBattleActive,
+                    map: showMap.value && !showLevelSelect.value,
+                    result: monsterResultShown.value,
+                    unlockOrResultOverlay: isUnlockOrResultOverlayActive(),
+                    knowledgeCard: isKnowledgeCardShowing.value,
+                    abilityUnlock: isAbilityUnlockModalOpen.value,
+                    battleResolution: isBattleResolutionActive(),
+                    currentLevel: currentLevel.value,
+                    enemyHp: monster.value?.hp ?? 'n/a',
+                    enemyAlive: (monster.value?.hp ?? 0) > 0,
+                    playerDead: playerDead.value,
+                    muted: isMuted.value,
+                    bgmVolume: bgmVolume.value,
+                    sfxVolume: sfxVolume.value,
+                    expectedLoopBgm: expectedBgm || 'none'
+                },
+                tests: {
+                    testSfx: lastSfxTestResult.value,
+                    testRawAudio: lastRawAudioResult.value,
+                    fallbackBgm: lastHtmlBgmFallbackResult.value,
+                    fallbackSfx: lastHtmlSfxFallbackResult.value
+                }
+            };
+        };
+
+        const audioDebugSections = computed(() => {
+            const state = getAudioDebugState();
+            return Object.entries(state).map(([title, values]) => ({
+                title,
+                rows: Object.entries(values).map(([key, value]) => ({
+                    key,
+                    value: formatAudioDebugValue(value)
+                }))
+            }));
+        });
+
+        const debugResumeAudioContext = async () => {
+            try {
+                await initAudioCtx();
+                if (audioCtx.value && (audioCtx.value.state === 'suspended' || audioCtx.value.state === 'interrupted')) {
+                    await audioCtx.value.resume();
+                }
+                lastAudioContextResumeResult.value = `ok: ${audioCtx.value?.state || 'none'} @ ${new Date().toLocaleTimeString()}`;
+                lastAudioContextResumeError.value = '';
+            } catch (e) {
+                lastAudioContextResumeResult.value = 'failed';
+                lastAudioContextResumeError.value = e?.name || e?.message || String(e);
+            }
+            refreshAudioDebugState();
+        };
+
+        const debugTestSfx = () => {
+            try {
+                playSfx('click');
+                lastSfxTestResult.value = `triggered click @ ${new Date().toLocaleTimeString()}`;
+            } catch (e) {
+                lastSfxTestResult.value = `failed: ${e?.name || e?.message || e}`;
+            }
+            refreshAudioDebugState();
+        };
+
+        const debugTestBgmPlay = async () => {
+            const bgm = bgmAudio.value;
+            if (!bgm) {
+                lastBgmPlayResult.value = 'failed: no bgmAudio';
+                refreshAudioDebugState();
+                return;
+            }
+
+            try {
+                updateGainVolumes();
+                await bgm.play();
+                lastBgmPlayResult.value = `resolved @ ${new Date().toLocaleTimeString()}`;
+                lastBgmPlayError.value = '';
+                needsUserGestureToResumeBgm.value = false;
+                pageLoopAudioWasInterrupted = false;
+            } catch (e) {
+                lastBgmPlayResult.value = 'rejected';
+                lastBgmPlayError.value = e?.name || e?.message || String(e);
+            }
+            refreshAudioDebugState();
+        };
+
+        const debugPauseBgm = () => {
+            try {
+                bgmAudio.value?.pause();
+                pauseHtmlBgmFallback();
+                lastBgmPlayResult.value = `paused @ ${new Date().toLocaleTimeString()}`;
+                lastHtmlBgmFallbackResult.value = `paused @ ${new Date().toLocaleTimeString()}`;
+            } catch (e) {
+                lastBgmPlayResult.value = `pause failed: ${e?.name || e?.message || e}`;
+            }
+            refreshAudioDebugState();
+        };
+
+        const debugTestRawAudio = async () => {
+            try {
+                const raw = new Audio('assets/audio/sfx_click.mp3');
+                raw.volume = Math.max(0, Math.min(1, sfxVolume.value * masterVolume.value));
+                await raw.play();
+                lastRawAudioResult.value = `resolved @ ${new Date().toLocaleTimeString()}`;
+            } catch (e) {
+                lastRawAudioResult.value = `rejected: ${e?.name || e?.message || e}`;
+            }
+            refreshAudioDebugState();
+        };
+
+        const debugEnableHtmlAudioFallback = async () => {
+            await enableHtmlAudioFallback('debug-enable-html-fallback');
+        };
+
+        const debugDisableHtmlAudioFallback = () => {
+            useHtmlAudioBgmFallback.value = false;
+            useHtmlAudioSfxFallback.value = false;
+            if (useFallbackGain.value || fallbackAudioCtx.value || fallbackMediaSource.value) {
+                disableFallbackGainMode(true);
+            }
+            pauseHtmlBgmFallback();
+            lastHtmlBgmFallbackResult.value = `disabled @ ${new Date().toLocaleTimeString()}`;
+            lastHtmlSfxFallbackResult.value = `disabled @ ${new Date().toLocaleTimeString()}`;
+            refreshAudioDebugState();
+        };
+
+        const debugEnableFallbackAudioContextV2 = async () => {
+            await enableHtmlAudioFallback('debug-enable-fallback-audioctx-v2', { preferFallbackGain: true });
+        };
+
+        const debugDisableFallbackAudioContextV2 = () => {
+            disableFallbackGainMode(true);
+            refreshAudioDebugState();
+        };
+
+        const debugResumeFallbackAudioContext = async () => {
+            try {
+                if (!fallbackAudioCtx.value) {
+                    await tryConnectFallbackGain(getOrCreateHtmlBgmAudio());
+                }
+
+                if (fallbackAudioCtx.value && (fallbackAudioCtx.value.state === 'suspended' || fallbackAudioCtx.value.state === 'interrupted')) {
+                    await fallbackAudioCtx.value.resume();
+                }
+
+                applyFallbackGainVolume();
+                fallbackCtxNeedsGestureResume.value = false;
+                lastFallbackCtxResumeResult.value = `manual resume: ${fallbackAudioCtx.value?.state || 'none'} @ ${new Date().toLocaleTimeString()}`;
+                lastFallbackCtxResumeError.value = '';
+                lastFallbackGainResult.value = `resume: ${fallbackAudioCtx.value?.state || 'none'} @ ${new Date().toLocaleTimeString()}`;
+                lastFallbackGainError.value = '';
+            } catch (e) {
+                lastFallbackGainResult.value = `resume failed @ ${new Date().toLocaleTimeString()}`;
+                lastFallbackGainError.value = e?.name || e?.message || String(e);
+            }
+            refreshAudioDebugState();
+        };
+
+        const debugTestFallbackContextBgm = async () => {
+            useHtmlAudioBgmFallback.value = true;
+            const audio = getOrCreateHtmlBgmAudio();
+            const connected = await tryConnectFallbackGain(audio);
+            const expectedBgm = getExpectedLoopBgmForCurrentState() ||
+                currentBattleBgmPick.value ||
+                currentMapBgm.value ||
+                (BGM_BASE + 'BGM_1.mp3');
+
+            if (connected) {
+                await playHtmlBgmFallback(expectedBgm, 'debug-test-fallback-audioctx-v2-bgm');
+            } else {
+                await playHtmlBgmFallback(expectedBgm, 'debug-test-fallback-audioctx-v2-v1-fallback');
+            }
+            refreshAudioDebugState();
+        };
+
+        const debugTestFallbackBgm = async () => {
+            const expectedBgm = getExpectedLoopBgmForCurrentState() ||
+                currentBattleBgmPick.value ||
+                currentMapBgm.value ||
+                (BGM_BASE + 'BGM_1.mp3');
+            await playHtmlBgmFallback(expectedBgm, 'debug-test-fallback-bgm');
+            refreshAudioDebugState();
+        };
+
+        const debugTestFallbackSfx = () => {
+            playHtmlSfxFallback('click', _uiSfxSrcMap.click);
+            refreshAudioDebugState();
+        };
+
+        const debugShowAudioState = () => {
+            refreshAudioDebugState();
+            if (isAudioDebugEnabled.value) {
+                console.log('[audio debug state]', getAudioDebugState());
+            }
+        };
+
+        if (isAudioDebugEnabled.value) {
+            setInterval(() => {
+                if (isAudioDebugOpen.value) refreshAudioDebugState();
+            }, 1000);
+            onMounted(() => {
+                restoreAudioDebugPositionIntoViewport();
+                window.addEventListener('resize', restoreAudioDebugPositionIntoViewport);
+                window.addEventListener('orientationchange', restoreAudioDebugPositionIntoViewport);
+            });
+        }
+
+        watch(isAudioDebugOpen, () => {
+            restoreAudioDebugPositionIntoViewport();
+        });
+
+        // ── Per-gesture AudioContext resume + conservative BGM play ──
+        // iOS Safari can corrupt the media pipeline if page resume reloads BGM.
+        // This path only resumes AudioContext and attempts a plain play on the existing BGM element.
         const resumePageAudioOnGesture = async (reason = 'gesture') => {
 
             // Never auto-play if page is still in background
             if (!isPageAudioAllowed()) return;
 
-            await tryResumePageLoopAudio(reason, {
-                force: needsUserGestureToResumeBgm.value,
+            if (useFallbackGain.value && fallbackCtxNeedsGestureResume.value) {
+                await resumeFallbackCtxOnGesture(`${reason}:fallback-v2-gesture-resume`);
+                return;
+            }
+
+            if (iosReturnedFromBackground.value && !autoFallbackEnabled.value) {
+                autoFallbackEnabled.value = true;
+                autoFallbackReason.value = `ios-returned-from-background-${reason}`;
+                autoFallbackTime.value = new Date().toLocaleTimeString();
+                await enableHtmlAudioFallback('auto-fallback-gesture');
+                refreshAudioDebugState();
+            }
+            iosReturnedFromBackground.value = false;
+
+            if (useHtmlAudioBgmFallback.value) {
+                await syncHtmlBgmFallbackToExpected(`${reason}:fallback-sync`);
+                return;
+            }
+
+            try {
+                await initAudioCtx();
+
+                if (audioCtx.value && (audioCtx.value.state === 'suspended' || audioCtx.value.state === 'interrupted')) {
+                    await audioCtx.value.resume();
+                }
+
+                updateGainVolumes();
+            } catch (e) {
+                warnAudioResumeState(`${reason}:ctx-resume-failed`, { error: e?.name || e?.message || e });
+            }
+
+            const shouldTryBgmPlay = needsUserGestureToResumeBgm.value || pageLoopAudioWasInterrupted;
+
+            if (!shouldTryBgmPlay) return;
+
+            if (pageAudioResumeTimer) {
+                clearTimeout(pageAudioResumeTimer);
+                pageAudioResumeTimer = null;
+                pageLoopAudioResumeGeneration += 1;
+            }
+
+            const resumed = await tryResumePageLoopAudio(reason, {
+                force: false,
+                allowSourceSwitch: false,
                 warnOnBlock: true,
                 warnOnContextBlock: true,
-                warnOnSkip: true
+                warnOnSkip: false
             });
+
+            if (resumed) {
+                pageLoopAudioWasInterrupted = false;
+            }
 
         };
 
@@ -5924,6 +7116,7 @@ const _jpApp = Vue.createApp({
 
             if (!isPageAudioAllowed()) return;
 
+            markAudioDebugEvent(lastAudioGestureEvent, event.type);
             resumePageAudioOnGesture(`global-${event.type}`);
 
         };
@@ -6067,8 +7260,6 @@ const _jpApp = Vue.createApp({
 
             ensureBgmElementSync();
 
-            playBgm();
-
             preloadAllAudio();
 
 
@@ -6088,6 +7279,8 @@ const _jpApp = Vue.createApp({
             // withMentor = false means user clicked the "Stage Card" -> skipMentor = true
 
             initGame(lv, !withMentor, withMentor);
+
+            playBgm();
 
         };
 
@@ -6866,6 +8059,7 @@ const _jpApp = Vue.createApp({
             if (pauseTimerId) { clearInterval(pauseTimerId); pauseTimerId = null; }
 
             resetBattleOutcomePresentation();
+            resetStageClearMetrics();
 
 
 
@@ -8208,9 +9402,12 @@ const _jpApp = Vue.createApp({
         const grantRewards = () => {
             if (monsterIsDying.value || monsterTrulyDead.value || monsterResultShown.value) return;
 
+            finishStageClearTimer();
+
             resetBattleOutcomePresentation();
 
             const lv = currentLevel.value;
+            resultSpirit.value = getResultSpiritForLevel(lv);
 
             const baseExp = 50 + (lv * 20);
 
@@ -8276,6 +9473,8 @@ const _jpApp = Vue.createApp({
                     bestGrades.value[currentLevel.value] = currentG;
 
                 }
+
+                updateStageBestRecord();
 
 
 
@@ -8641,6 +9840,7 @@ const _jpApp = Vue.createApp({
         const retryLevel = () => {
             needsUserGestureToResumeBgm.value = false;
             isBgmSuppressed.value = false; // Explicitly unlock on retry
+            resetStageClearMetrics();
             stopAllAudio();
             initGame(currentLevel.value);
         };
@@ -8653,6 +9853,7 @@ const _jpApp = Vue.createApp({
 
             isDefeated.value = false;
             isBgmSuppressed.value = false; // Unlock on revive
+            resetStageClearMetrics();
             const _sc = document.getElementById('battleScene');
             if (_sc) _sc.classList.remove('grayscale-filter');
             const _ov = document.getElementById('defeatOverlay');
@@ -8721,6 +9922,140 @@ const _jpApp = Vue.createApp({
             return 'E';
 
         });
+
+        const formatStageClearTime = (seconds) => {
+            const safeSeconds = Number(seconds);
+            if (!Number.isFinite(safeSeconds) || safeSeconds < 0) return '--.-- 秒';
+
+            return `${safeSeconds.toFixed(2)} 秒`;
+        };
+
+        const stageClearTimeText = computed(() => {
+            if (stageClearElapsedSeconds.value === null) return '--.-- 秒';
+            return formatStageClearTime(stageClearElapsedSeconds.value);
+        });
+
+        const isBossStageForStarRules = (levelId = currentLevel.value) => {
+            const config = LEVEL_CONFIG.value?.[Number(levelId)];
+            // Boss-specific grading can be tuned here later without changing result storage.
+            return !!config?.boss || Number(levelId) % 5 === 0 || Number(levelId) === 36;
+        };
+
+        const calculateStageStars = ({ total, correct, elapsedSeconds, levelId } = {}) => {
+            const totalCount = Math.max(0, Number(total) || 0);
+            if (totalCount <= 0) return 1;
+
+            const correctCount = Math.max(0, Number(correct) || 0);
+            const wrong = Math.max(0, totalCount - correctCount);
+            const elapsed = Number(elapsedSeconds);
+            const limit = Number(LEVEL_CONFIG.value?.[Number(levelId)]?.starTimeLimitSeconds) || STAR_TIME_LIMIT_SECONDS;
+            const isBossStage = isBossStageForStarRules(levelId);
+            if (isBossStage) {
+                // TODO: Tune boss-specific star rules after boss stage pacing is finalized.
+            }
+
+            if (wrong === 0 && Number.isFinite(elapsed) && elapsed <= limit) return 3;
+            if (wrong <= 2 || Math.round((correctCount / totalCount) * 100) >= 80) return 2;
+            return 1;
+        };
+
+        const stageStarRating = computed(() => {
+            if (!monsterDead.value || playerDead.value) return 0;
+
+            return calculateStageStars({
+                total: totalQuestionsAnswered.value,
+                correct: correctAnswersAmount.value,
+                elapsedSeconds: stageClearElapsedSeconds.value,
+                levelId: currentLevel.value
+            });
+        });
+
+        const stageStarDisplay = computed(() => {
+            const rating = Math.max(0, Math.min(3, stageStarRating.value || 0));
+            return '★'.repeat(rating) + '☆'.repeat(3 - rating);
+        });
+
+        const getStageStarsDisplay = (stars) => {
+            const rating = Math.max(0, Math.min(3, Math.floor(Number(stars) || 0)));
+            return '★'.repeat(rating) + '☆'.repeat(3 - rating);
+        };
+
+        const buildCurrentStageRecord = () => {
+            const total = Math.max(0, Number(totalQuestionsAnswered.value) || 0);
+            const correct = Math.max(0, Number(correctAnswersAmount.value) || 0);
+            const elapsed = Number(stageClearElapsedSeconds.value);
+            const elapsedMs = Number.isFinite(elapsed) ? Math.max(0, Math.round(elapsed * 1000)) : 0;
+
+            return {
+                bestStars: stageStarRating.value || calculateStageStars({
+                    total,
+                    correct,
+                    elapsedSeconds: elapsed,
+                    levelId: currentLevel.value
+                }),
+                bestTimeMs: elapsedMs,
+                bestTimeSeconds: elapsedMs / 1000,
+                bestCorrectRate: total > 0 ? Math.round((correct / total) * 100) : 0,
+                bestMaxCombo: Math.max(0, Number(maxComboCount.value) || 0),
+                updatedAt: new Date().toISOString()
+            };
+        };
+
+        const getStageRecordTimeMs = (record) => {
+            const rawTimeMs = Number(record?.bestTimeMs);
+            if (Number.isFinite(rawTimeMs)) return Math.max(0, rawTimeMs);
+
+            const rawTimeSeconds = Number(record?.bestTimeSeconds);
+            return Number.isFinite(rawTimeSeconds) ? Math.max(0, rawTimeSeconds * 1000) : Infinity;
+        };
+
+        const isStageRecordBetter = (nextRecord, currentRecord) => {
+            if (!currentRecord) return true;
+            if ((nextRecord.bestStars || 0) > (currentRecord.bestStars || 0)) return true;
+            if ((nextRecord.bestStars || 0) < (currentRecord.bestStars || 0)) return false;
+
+            const nextTime = getStageRecordTimeMs(nextRecord);
+            const currentTime = getStageRecordTimeMs(currentRecord);
+            return nextTime < currentTime;
+        };
+
+        const updateStageBestRecord = () => {
+            if (!monsterDead.value || playerDead.value) {
+                stageResultIsNewBest.value = false;
+                return false;
+            }
+
+            const stageId = String(currentLevel.value);
+            const nextRecord = buildCurrentStageRecord();
+            const currentRecord = normalizeStageBestRecord(stageBestRecords.value[stageId]);
+
+            if (!isStageRecordBetter(nextRecord, currentRecord)) {
+                stageResultIsNewBest.value = false;
+                return false;
+            }
+
+            stageBestRecords.value = {
+                ...stageBestRecords.value,
+                [stageId]: nextRecord
+            };
+            stageResultIsNewBest.value = true;
+            return true;
+        };
+
+        const getStageBestRecord = (levelId) => {
+            const record = normalizeStageBestRecord(stageBestRecords.value[String(levelId)]);
+            return record || null;
+        };
+
+        const getStageBestStarsDisplay = (levelId) => {
+            const record = getStageBestRecord(levelId);
+            return record ? getStageStarsDisplay(record.bestStars) : '☆☆☆';
+        };
+
+        const getStageBestTimeText = (levelId) => {
+            const record = getStageBestRecord(levelId);
+            return record ? formatStageClearTime(record.bestTimeSeconds) : '--.-- 秒';
+        };
 
 
 
@@ -8985,7 +10320,8 @@ const _jpApp = Vue.createApp({
         return {
             isNextBtnVisible,
             animatedExp,
-            answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, skillsAll, unlockedSkillIds, isCodexOpen, expandedSkillId, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
+            isAudioDebugEnabled, isAudioDebugOpen, isAudioDebugDragging, audioDebugOverlayStyle, audioDebugSections, refreshAudioDebugState, startAudioDebugDrag, debugResumeAudioContext, debugTestSfx, debugTestBgmPlay, debugPauseBgm, debugTestRawAudio, debugEnableHtmlAudioFallback, debugDisableHtmlAudioFallback, debugEnableFallbackAudioContextV2, debugDisableFallbackAudioContextV2, debugResumeFallbackAudioContext, debugTestFallbackContextBgm, debugTestFallbackBgm, debugTestFallbackSfx, debugShowAudioState,
+            answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, expandedSkillId, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             handleEscapeToMap, escapeOverlayVisible, escapeOverlayOpacity, isEscaping,
             heroBuffs,
             skillList, castAbility, spState, settings, shouldShowNextButton, praiseToast, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG,
@@ -8999,11 +10335,11 @@ const _jpApp = Vue.createApp({
             isMentorSkipPressing, startMentorSkipPress, cancelMentorSkipPress,
             isMonsterImageError, handleMonsterImageError, handleMapImageError, currentMonsterSprite, monsterPositionStyle, monsterIsEntering, monsterIsDying, monsterTrulyDead, monsterResultShown, bossDeathVfxActive, bossDeathStage, monsterAttackLunge,
             showMap, unlockedLevels, clearedLevels,
-            openMap, isLevelUnlocked, isLevelCleared, getStageNodeClass, getLevelTitle, hasMentor,
+            openMap, isLevelUnlocked, isLevelCleared, getStageNodeClass, getLevelTitle, getStageFocusParticle, getStageFocusLabel, hasMentor,
 
             selectStageFromMap, startStageWithExplanation, returnToMap,
 
-            newUnlockLv, bestGrades, getGradeColor, sRankCount,
+            newUnlockLv, bestGrades, stageBestRecords, getGradeColor, sRankCount,
 
             mapChapters, activeChapter, getMapNodeStyle, selectedSegmentIdx, isSegmentUnlocked, handleMapTabClick, jumpToMapSegment, isMapDropdownOpen,
 

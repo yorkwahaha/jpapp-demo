@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26042903'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26043001'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -58,8 +58,8 @@
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/styles.css?v=26042903">
-    <link rel="stylesheet" href="assets/css/escape.css?v=26042903">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26043001">
+    <link rel="stylesheet" href="assets/css/escape.css?v=26043001">
 
 
 
@@ -69,7 +69,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26042903';
+            const v = window.APP_VERSION || '26043001';
 
 
 
@@ -977,19 +977,34 @@
 
         .mentor-dialogue-box {
 
-            background: rgba(8, 12, 28, 0.40) !important;
+            background:
+                linear-gradient(180deg,
+                    rgba(255, 255, 255, 0.13) 0%,
+                    rgba(255, 255, 255, 0.055) 18%,
+                    rgba(6, 10, 26, 0.92) 48%,
+                    rgba(3, 7, 20, 0.96) 100%),
+                radial-gradient(105% 92% at 8% 0%, rgba(125, 211, 252, 0.12), transparent 58%),
+                rgba(8, 12, 28, 0.94) !important;
 
-            backdrop-filter: blur(36px) saturate(160%);
+            backdrop-filter: none;
 
-            -webkit-backdrop-filter: blur(36px) saturate(160%);
+            -webkit-backdrop-filter: none;
 
-            border-color: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.17) !important;
 
             box-shadow:
 
-                0 24px 72px -16px rgba(0, 0, 0, 0.65),
+                0 22px 58px -18px rgba(0, 0, 0, 0.86),
 
-                inset 0 1px 1px rgba(255, 255, 255, 0.07);
+                inset 0 2px 0 rgba(255, 255, 255, 0.18),
+
+                inset 0 -4px 10px rgba(0, 0, 0, 0.42),
+
+                inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+
+            transform: none !important;
+
+            transition: none !important;
 
         }
 
@@ -1005,7 +1020,17 @@
 
             padding: 0;
 
-            text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55), 0 0 2px rgba(0, 0, 0, 0.5);
+            color: rgba(248, 250, 252, 0.98) !important;
+
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.78), 0 0 2px rgba(0, 0, 0, 0.7);
+
+        }
+
+        .mentor-dialogue-box .animate-pulse,
+
+        .mentor-dialogue-box .animate-bounce {
+
+            animation: none !important;
 
         }
 
@@ -2397,21 +2422,13 @@
                     class="fixed inset-0 z-[100] flex items-center justify-center px-8 bg-slate-950/[0.05] backdrop-blur-[2px]"
                     @click="isBattleConfirmOpen = false; playSfx('click');">
 
-                    <div class="w-full max-w-xs confirm-modal-glass rounded-[2rem] overflow-hidden" @click.stop
+                    <div class="w-full max-w-xs confirm-modal-glass stage-confirm-modal rounded-[2rem] overflow-hidden" @click.stop
                         v-if="selectedStageToConfirm">
 
-                        <div class="p-7 text-center bg-gradient-to-b from-white/5 to-transparent">
-
-                            <div class="mb-5 flex items-center justify-center">
-
-                                <span class="text-3xl animate-pulse opacity-80">⚔️</span>
-
-                            </div>
-
-                            <h3 class="text-white text-lg font-black mb-1.5 tracking-tighter">準備好挑戰了嗎？</h3>
+                        <div class="stage-confirm-header p-7 text-center bg-gradient-to-b from-white/5 to-transparent">
 
                             <div
-                                class="inline-block px-2.5 py-0.5 bg-amber-500/10 rounded-lg border border-amber-500/20 mb-1">
+                                class="stage-confirm-stage-label inline-block px-2.5 py-0.5 bg-amber-500/10 rounded-lg border border-amber-500/20 mb-1">
 
                                 <p class="text-amber-400 text-[10px] font-black uppercase tracking-[0.2em]">STAGE {{
 
@@ -2419,30 +2436,46 @@
 
                             </div>
 
-                            <p class="text-white/80 font-bold mt-1 text-sm tracking-wide">{{
+                            <div class="mb-4 flex items-center justify-center">
 
-                                getLevelTitle(selectedStageToConfirm) }}</p>
+                                <span class="stage-confirm-particle-badge">{{
+                                    getStageFocusParticle(selectedStageToConfirm) }}</span>
+
+                            </div>
+
+                            <p class="stage-confirm-focus-label">{{ getStageFocusLabel(selectedStageToConfirm) }}</p>
+
+                            <div class="stage-confirm-record"
+                                :class="{ 'is-empty': !getStageBestRecord(selectedStageToConfirm) }">
+                                <template v-if="getStageBestRecord(selectedStageToConfirm)">
+                                    <div class="stage-confirm-stars">{{
+                                        getStageBestStarsDisplay(selectedStageToConfirm) }}</div>
+                                    <div class="stage-confirm-best">BEST {{
+                                        getStageBestTimeText(selectedStageToConfirm) }}</div>
+                                </template>
+                                <template v-else>
+                                    <div class="stage-confirm-stars is-empty-stars">☆☆☆</div>
+                                    <div class="stage-confirm-empty">未通關</div>
+                                </template>
+                            </div>
 
                         </div>
 
-                        <div class="pl-6 pr-5 pt-3" v-if="hasMentor(selectedStageToConfirm)">
+                        <div class="stage-confirm-mentor-wrap px-5 pt-1" v-if="hasMentor(selectedStageToConfirm)">
 
                             <button @click="startStageWithExplanation(selectedStageToConfirm)"
-                                class="w-full py-3 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 text-white/90 text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-4">
+                                class="stage-confirm-mentor-btn w-full transition-all active:scale-95">
 
-                                <span
-                                    class="relative inline-flex items-center justify-center w-14 h-14 rounded-full overflow-visible border border-white/30 shadow-md">
+                                <span class="stage-confirm-mentor-portrait">
 
-                                    <img src="assets/images/ui/mentor/mentor-neutral.png" alt="Mentor"
-                                        class="w-full h-full object-cover rounded-full">
-
-                                    <span
-                                        class="absolute -top-2 -right-2 -mr-0.5 -mt-0.5 px-2 py-[2px] rounded-full bg-white/95 border border-white/70 shadow-[0_2px_6px_rgba(0,0,0,0.25)] flex items-center justify-center z-20 pointer-events-none"><span
-                                            class="text-[10px] font-black leading-none text-slate-700 tracking-wider">...</span></span>
+                                    <img src="assets/images/mentor/selene_stage_guide.webp" alt="Mentor"
+                                        onerror="this.onerror=null; this.src='assets/images/mentor/selene_encourage.webp';">
 
                                 </span>
 
-                                <span class="text-white font-black tracking-wide text-sm">姐姐引導</span>
+                                <span class="stage-confirm-mentor-copy">
+                                    <span class="stage-confirm-mentor-title">姐姐引導</span>
+                                </span>
 
                             </button>
 
@@ -2478,6 +2511,7 @@
 
                 <div v-if="isMapMentorOpen"
                     class="fixed inset-0 z-[110] flex flex-col justify-end bg-slate-950/40 backdrop-blur-md px-6 pb-10"
+                    :class="{ 'is-prologue-mentor': currentMentorSkill?.id === 'PROLOGUE_OPENING' }"
                     @click="nextMentorLine">
 
                     <div
@@ -2501,6 +2535,7 @@
 
 
                     <div class="mentor-dialogue-box w-full md:max-w-4xl md:mx-auto px-8 py-7 rounded-[2rem] relative isolate overflow-hidden shadow-[0_24px_64px_-16px_rgba(0,0,0,0.8)] border border-white/5 active:scale-[0.99] transition-transform"
+                        :class="{ 'is-prologue-mentor-dialogue': currentMentorSkill?.id === 'PROLOGUE_OPENING' }"
                         @click.stop="nextMentorLine">
 
                         <div class="flex justify-between items-center mb-6">
@@ -3651,35 +3686,49 @@
                 class="absolute inset-0 z-[100] flex items-center justify-center result-screen-backdrop pointer-events-auto px-4">
 
                 <div
-                    class="glass-panel p-8 rounded-3xl border border-white/20 shadow-[0_10px_50px_rgba(0,0,0,0.8)] flex flex-col items-center text-center w-full max-w-sm">
+                    class="glass-panel result-modal-glass p-8 rounded-3xl border border-white/20 shadow-[0_10px_50px_rgba(0,0,0,0.8)] flex flex-col items-center text-center w-full max-w-sm">
 
                     <div v-if="monsterDead" class="w-full">
 
-                        <div class="text-6xl mb-4 drop-shadow-lg animate-bounce">🏆</div>
+                        <div class="result-spirit-hero" aria-hidden="true">
+                            <img v-if="resultSpirit" :src="getSpiritImageSrc(resultSpirit)"
+                                @error="handleSpiritImageError($event, resultSpirit)" alt="">
+                            <span v-else class="result-spirit-trophy">🏆</span>
+                        </div>
 
-                        <h2 class="text-2xl font-black text-amber-400 mb-6 tracking-widest">{{ currentLevel >= maxLevel
+                        <h2 class="text-2xl font-black text-amber-400 mb-4 tracking-widest">{{ currentLevel >= maxLevel
 
                             ? '全章節破關！' : '戰鬥突破！' }}</h2>
 
-                        <div class="w-full bg-black/40 rounded-xl p-4 mb-6 border border-white/5 space-y-2">
+                        <div class="result-star-summary" aria-label="通關星等與時間">
+                            <div v-if="stageResultIsNewBest" class="result-new-best">NEW BEST</div>
+                            <div class="result-star-row" :class="'stars-' + stageStarRating">{{ stageStarDisplay }}
+                            </div>
+                            <div class="result-time-row">
+                                <span>通關時間</span>
+                                <strong>{{ stageClearTimeText }}</strong>
+                            </div>
+                        </div>
 
-                            <div class="flex justify-between items-center"><span
-                                    class="text-slate-400 font-bold text-sm">評價</span><span class="text-3xl font-black"
+                        <div class="result-stat-panel w-full bg-black/40 rounded-xl p-4 mb-6 border border-white/5 space-y-2">
+
+                            <div class="result-stat-row flex justify-between items-center"><span
+                                    class="result-stat-label text-slate-400 font-bold text-sm">評價</span><span class="result-grade-value text-3xl font-black"
                                     :class="getGradeColor(calculatedGrade)">{{ calculatedGrade }}</span></div>
 
-                            <div class="flex justify-between items-center"><span
-                                    class="text-slate-400 text-xs">正確率</span><span
-                                    class="text-emerald-400 font-mono font-bold">{{ accuracyPct }}%</span></div>
+                            <div class="result-stat-row flex justify-between items-center"><span
+                                    class="result-stat-label text-slate-400 text-xs">正確率</span><span
+                                    class="result-stat-value text-emerald-400 font-mono font-bold">{{ accuracyPct }}%</span></div>
 
-                            <div class="flex justify-between items-center"><span class="text-slate-400 text-xs">最大
+                            <div class="result-stat-row flex justify-between items-center"><span class="result-stat-label text-slate-400 text-xs">最大
 
-                                    Combo</span><span class="text-rose-400 font-mono font-bold">{{ maxComboCount
+                                    Combo</span><span class="result-stat-value text-rose-400 font-mono font-bold">{{ maxComboCount
 
                                     }}</span></div>
 
-                            <div class="flex justify-between items-center">
-                                <span class="text-slate-400 text-xs">獲得經驗值</span>
-                                <span class="text-blue-400 font-mono font-bold">+{{ animatedExp }}</span>
+                            <div class="result-stat-row flex justify-between items-center">
+                                <span class="result-stat-label text-slate-400 text-xs">獲得經驗值</span>
+                                <span class="result-stat-value text-blue-400 font-mono font-bold">+{{ animatedExp }}</span>
                             </div>
 
                         </div>
@@ -4795,16 +4844,22 @@
                 style="z-index: 5000; background: rgba(15, 23, 42, 0.1);">
 
                 <div
-                    class="modal-panel w-[500px] max-w-[95vw] !bg-slate-900/30 backdrop-blur-2xl border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
+                    class="modal-panel mistakes-modal-panel w-[500px] max-w-[95vw] !bg-slate-900/30 backdrop-blur-2xl border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
 
-                    <h2 class="text-2xl font-black text-blue-400 mb-4 tracking-tighter">📒 出題本</h2>
+                    <div class="mistakes-header">
+                        <h2 class="text-2xl font-black text-blue-400 tracking-tighter">📒 出題本</h2>
+                        <span class="mistakes-voice-hint">點擊卡片聽發音</span>
+                    </div>
 
                     <div v-if="stageLog.length === 0" class="text-slate-400 text-center py-6">本關尚無出題紀錄</div>
 
-                    <div v-else class="space-y-3 mb-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
+                    <div v-else class="stage-log-list space-y-3 mb-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
 
                         <div v-for="(m, i) in stageLog" :key="i"
-                            class="p-4 rounded-2xl border border-white/10 shadow-lg transition-all backdrop-blur-md"
+                            class="stage-log-card p-4 rounded-2xl border border-white/10 shadow-lg transition-all backdrop-blur-md"
+                            role="button" tabindex="0" @click="playMistakeVoice(m)"
+                            @keydown.enter.prevent="playMistakeVoice(m)"
+                            @keydown.space.prevent="playMistakeVoice(m)"
                             :class="[
 
                                 m.isCorrect 
@@ -4815,36 +4870,30 @@
 
                             ]">
 
-                            <div class="flex items-start justify-between mb-1.5">
+                            <div class="mb-1.5">
 
                                 <div class="flex flex-col gap-1">
 
                                     <div class="flex items-center gap-2 mb-0.5">
-
-                                        <span
-                                            class="text-[10px] font-mono text-slate-400 bg-white/5 px-2 py-0.5 rounded-full border border-white/5">#{{
-
-                                            m.order }}</span>
 
                                         <span v-if="!m.isCorrect"
                                             class="text-[10px] font-black text-white bg-rose-600 px-2 py-0.5 rounded shadow-sm tracking-widest scale-90 origin-left">MISS</span>
 
                                     </div>
 
-                                    <div class="text-slate-100 font-bold text-lg leading-relaxed tracking-wide"
+                                    <div class="stage-log-jp text-slate-100 font-bold text-lg leading-relaxed tracking-wide"
                                         v-html="m.displayJp || m.sentenceText"></div>
+
+                                    <div class="stage-log-kana">{{ m.kanaText || m.sentenceText }}</div>
 
                                 </div>
 
-                                <button @click="playMistakeVoice(m)"
-                                    class="ml-3 bg-blue-600/80 hover:bg-blue-500 text-white rounded-xl px-3 py-2 shadow-lg flex-shrink-0 text-sm transition-all active:scale-95 backdrop-blur-md border border-white/10">🔊</button>
-
                             </div>
 
-                            <div class="text-slate-400 text-sm mb-2 font-medium brightness-125">{{ m.prompt }}</div>
+                            <div class="stage-log-prompt text-slate-400 text-sm mb-2 font-medium brightness-125">{{ m.prompt }}</div>
 
                             <div v-if="m.grammarTip"
-                                class="text-slate-400 text-xs mt-2 bg-slate-900/40 p-3 rounded-xl leading-relaxed border border-white/5">
+                                class="stage-log-tip text-slate-400 text-xs mt-2 bg-slate-900/40 p-3 rounded-xl leading-relaxed border border-white/5">
 
                                 <span class="text-amber-400/80 font-bold mr-1">💡</span> {{ m.grammarTip }}
 
@@ -4854,17 +4903,10 @@
 
                     </div>
 
-                    <div class="flex gap-3">
-
-                        <button @click="clearMistakes"
-                            class="flex-1 px-3 py-3 rounded-xl bg-red-600/80 hover:bg-red-500 text-white text-sm font-bold flex items-center justify-center gap-2 shadow-lg transition-transform active:scale-95">
-
-                            🗑 清空
-
-                        </button>
+                    <div class="flex justify-center">
 
                         <button @click="isMistakesOpen = false; playSfx('click');"
-                            class="flex-1 px-3 py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold shadow-lg transition-transform active:scale-95">關閉</button>
+                            class="w-full max-w-xs px-3 py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold shadow-lg transition-transform active:scale-95">關閉</button>
 
                     </div>
 
@@ -4985,6 +5027,50 @@
 
             </div>
 
+        </div>
+
+        <div v-if="isAudioDebugEnabled" class="audio-debug-overlay"
+            :class="{ 'is-collapsed': !isAudioDebugOpen, 'is-dragging': isAudioDebugDragging }"
+            :style="audioDebugOverlayStyle">
+            <div class="audio-debug-header" @pointerdown="startAudioDebugDrag">
+                <div>
+                    <div class="audio-debug-title">Audio Debug</div>
+                    <div class="audio-debug-subtitle">?audioDebug=1</div>
+                </div>
+                <div class="audio-debug-header-actions">
+                    <button type="button" @click="debugShowAudioState">Show State</button>
+                    <button type="button" @click="isAudioDebugOpen = !isAudioDebugOpen">{{ isAudioDebugOpen ? 'Hide' :
+                        'Open' }}</button>
+                </div>
+            </div>
+
+            <div v-if="isAudioDebugOpen" class="audio-debug-body">
+                <div class="audio-debug-actions">
+                    <button type="button" @click="debugResumeAudioContext">Resume Context</button>
+                    <button type="button" @click="debugTestSfx">Test SFX</button>
+                    <button type="button" @click="debugTestBgmPlay">Test BGM Play</button>
+                    <button type="button" @click="debugPauseBgm">Pause BGM</button>
+                    <button type="button" @click="debugTestRawAudio">Test Raw Audio</button>
+                    <button type="button" @click="debugEnableHtmlAudioFallback">Enable HTML Fallback</button>
+                    <button type="button" @click="debugDisableHtmlAudioFallback">Disable HTML Fallback</button>
+                    <button type="button" @click="debugEnableFallbackAudioContextV2">Enable Fallback AudioContext v2</button>
+                    <button type="button" @click="debugDisableFallbackAudioContextV2">Disable FallbackCtx v2</button>
+                    <button type="button" @click="debugResumeFallbackAudioContext">Resume FallbackCtx</button>
+                    <button type="button" @click="debugTestFallbackContextBgm">Test FallbackCtx BGM</button>
+                    <button type="button" @click="debugTestFallbackBgm">Test Fallback BGM</button>
+                    <button type="button" @click="debugTestFallbackSfx">Test Fallback SFX</button>
+                </div>
+
+                <div class="audio-debug-sections">
+                    <section v-for="section in audioDebugSections" :key="section.title" class="audio-debug-section">
+                        <h3>{{ section.title }}</h3>
+                        <div v-for="row in section.rows" :key="section.title + ':' + row.key" class="audio-debug-row">
+                            <span>{{ row.key }}</span>
+                            <code>{{ row.value }}</code>
+                        </div>
+                    </section>
+                </div>
+            </div>
         </div>
 
         <!-- [ESCAPE] Black Transition Overlay -->
