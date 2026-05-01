@@ -11591,8 +11591,14 @@ body.lock-scroll {
 }
 
 /* Flick specific overrides */
+#flickLayer {
+ touch-action: none;
+ user-select: none;
+}
+
 #flickLayer .resonance-slot {
  padding-top: 12px;
+ touch-action: none;
 }
 #flickLayer .resonance-slot.is-active .resonance-spirit-rune {
  border-color: rgba(251, 191, 36, 0.8);

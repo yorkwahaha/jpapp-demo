@@ -847,6 +847,7 @@ const _jpApp = Vue.createApp({
 
         const openMap = () => {
             resetBattleOutcomePresentation();
+            clearDefeatBgmSuppression();
             // Check for first-time prologue BEFORE entering normal map
             if (checkPrologueTrigger()) return;
 
@@ -1424,6 +1425,12 @@ const _jpApp = Vue.createApp({
             currentX: 0,
 
             currentY: 0,
+
+            lastValidX: 0,
+
+            lastValidY: 0,
+
+            hasValidMove: false,
 
             isArmed: false,
 
@@ -4384,6 +4391,62 @@ const _jpApp = Vue.createApp({
 
         };
 
+        const stopLoopBgmAudio = () => {
+
+            try {
+
+                if (bgmGain.value && audioCtx.value) {
+
+                    bgmGain.value.gain.cancelScheduledValues(audioCtx.value.currentTime);
+
+                    bgmGain.value.gain.setValueAtTime(0, audioCtx.value.currentTime);
+
+                }
+
+                if (bgmAudio.value) {
+
+                    bgmAudio.value.pause();
+
+                    try { bgmAudio.value.currentTime = 0; } catch (_) { }
+
+                }
+
+                pauseHtmlBgmFallback();
+
+                if (htmlBgmAudio.value) {
+
+                    try { htmlBgmAudio.value.currentTime = 0; } catch (_) { }
+
+                }
+
+                audioPool.forEach((a, url) => {
+
+                    if (typeof url === 'string' && url.indexOf(BGM_BASE) === 0) {
+
+                        try { a.pause(); a.currentTime = 0; } catch (_) { }
+
+                    }
+
+                });
+
+            } catch (_) { }
+
+        };
+
+        const clearDefeatBgmSuppression = () => {
+
+            if (!isDefeated.value && !isBgmSuppressed.value) return;
+
+            isDefeated.value = false;
+
+            isBgmSuppressed.value = false;
+
+            needsUserGestureToResumeBgm.value = false;
+
+            updateGainVolumes();
+
+        };
+
 
 
         const defeatReturn = () => {
@@ -4397,13 +4460,14 @@ const _jpApp = Vue.createApp({
             clearSpeedStatus();
             resetStageClearMetrics();
             stopAllAudio();
-            isDefeated.value = false;
+            clearDefeatBgmSuppression();
             showLevelSelect.value = true;
         };
 
         const handleGameOver = () => {
             isDefeated.value = true;
             isBgmSuppressed.value = true; // Lock BGM after death
+            needsUserGestureToResumeBgm.value = false;
             setHeroAvatar('lose');
 
             // 🌚 Apply grayscale filter to battle scene
@@ -4414,7 +4478,7 @@ const _jpApp = Vue.createApp({
             const overlay = document.getElementById('defeatOverlay');
             if (overlay) overlay.classList.remove('hidden');
 
-            try { if (bgmAudio.value) { bgmAudio.value.pause(); try { bgmAudio.value.currentTime = 0; } catch (_) { } } } catch (_) { }
+            stopLoopBgmAudio();
             clearTimer();
             if (pauseTimerId) { clearInterval(pauseTimerId); pauseTimerId = null; }
             playSfx('gameover');
@@ -4527,6 +4591,11 @@ const _jpApp = Vue.createApp({
 
         const playBgm = async () => {
 
+            if (isBgmSuppressed.value || isDefeated.value) {
+                stopLoopBgmAudio();
+                return;
+            }
+
             // Never play BGM when page is in background (iOS Safari fix)
             if (!isPageAudioAllowed()) {
                 needsUserGestureToResumeBgm.value = true;
@@ -4607,6 +4676,11 @@ const _jpApp = Vue.createApp({
 
 
         const resumeBattleBgm = (resumeAbs) => {
+
+            if (isBgmSuppressed.value || isDefeated.value) {
+                stopLoopBgmAudio();
+                return;
+            }
 
             if (isMuted.value || bgmVolume.value <= 0) return;
 
@@ -5389,6 +5463,70 @@ const _jpApp = Vue.createApp({
         const FLICK_MIN_UPWARD_RATIO = 0.18;
         const FLICK_PROJECTILE_TRAVEL = 440;
 
+        const getFlickClientPoint = (e) => {
+            const touch = e?.changedTouches?.[0] || e?.touches?.[0];
+            const x = Number.isFinite(e?.clientX) ? e.clientX : touch?.clientX;
+            const y = Number.isFinite(e?.clientY) ? e.clientY : touch?.clientY;
+            if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
+            if (x === 0 && y === 0 && Math.hypot(flickState.startX, flickState.startY) > FLICK_MIN_DISTANCE) return false;
+            return { x, y };
+        };
+
+        const updateFlickCurrentPoint = (e, isMove = false) => {
+            const point = getFlickClientPoint(e);
+            if (!point) return false;
+            flickState.currentX = point.x;
+            flickState.currentY = point.y;
+            flickState.lastValidX = point.x;
+            flickState.lastValidY = point.y;
+            if (isMove) flickState.hasValidMove = true;
+            return true;
+        };
+
+        const getFlickVisualImpactRect = (rect) => {
+            const insetX = rect.width * 0.12;
+            const insetY = rect.height * 0.08;
+            return {
+                left: rect.left + insetX,
+                right: rect.right - insetX,
+                top: rect.top + insetY,
+                bottom: rect.bottom - insetY,
+                width: Math.max(1, rect.width - (insetX * 2)),
+                height: Math.max(1, rect.height - (insetY * 2))
+            };
+        };
+
+        const getFlickRayRectImpact = (startPoint, dirX, dirY, rect) => {
+            const expanded = {
+                left: rect.left,
+                right: rect.right,
+                top: rect.top,
+                bottom: rect.bottom
+            };
+
+            let tMin = -Infinity;
+            let tMax = Infinity;
+
+            const clipAxis = (start, dir, min, max) => {
+                if (Math.abs(dir) < 0.0001) return start >= min && start <= max;
+                const t1 = (min - start) / dir;
+                const t2 = (max - start) / dir;
+                tMin = Math.max(tMin, Math.min(t1, t2));
+                tMax = Math.min(tMax, Math.max(t1, t2));
+                return tMin <= tMax;
+            };
+
+            if (!clipAxis(startPoint.x, dirX, expanded.left, expanded.right)) return null;
+            if (!clipAxis(startPoint.y, dirY, expanded.top, expanded.bottom)) return null;
+            if (tMax < 0) return null;
+
+            const impactT = Math.max(tMin, 0);
+            return {
+                x: startPoint.x + (dirX * impactT),
+                y: startPoint.y + (dirY * impactT)
+            };
+        };
+
         const getFlickMonsterTarget = () => {
             const monsterEl = document.querySelector('.monster-img-boss')
                 || document.querySelector('.monster-img-normal')
@@ -5410,31 +5548,32 @@ const _jpApp = Vue.createApp({
             const dirY = dy / distance;
             if (dirY > -FLICK_MIN_UPWARD_RATIO) return null;
 
-            let targetX = startPoint.x + (dirX * Math.max(distance * 3.2, FLICK_PROJECTILE_TRAVEL));
-            let targetY = startPoint.y + (dirY * Math.max(distance * 3.2, FLICK_PROJECTILE_TRAVEL));
-            targetX = Math.min(window.innerWidth - 24, Math.max(24, targetX));
-            targetY = Math.min(window.innerHeight - 24, Math.max(24, targetY));
+            const travel = Math.max(distance * 3.2, FLICK_PROJECTILE_TRAVEL);
+            const missTargetX = Math.min(window.innerWidth - 24, Math.max(24, startPoint.x + (dirX * travel)));
+            const missTargetY = Math.min(window.innerHeight - 24, Math.max(24, startPoint.y + (dirY * travel)));
 
             const monsterTarget = getFlickMonsterTarget();
-            if (!monsterTarget?.center) return { targetX, targetY, hitsMonster: false };
+            if (!monsterTarget?.center) return { targetX: missTargetX, targetY: missTargetY, hitsMonster: false };
 
             const toMonsterX = monsterTarget.center.x - startPoint.x;
             const toMonsterY = monsterTarget.center.y - startPoint.y;
             const projection = (toMonsterX * dirX) + (toMonsterY * dirY);
-            if (projection <= 0) return { targetX, targetY, hitsMonster: false };
+            if (projection <= 0) return { targetX: missTargetX, targetY: missTargetY, hitsMonster: false };
 
             const closestX = startPoint.x + (dirX * projection);
             const closestY = startPoint.y + (dirY * projection);
             const closestDistance = Math.hypot(monsterTarget.center.x - closestX, monsterTarget.center.y - closestY);
             const hitRadius = (Math.max(monsterTarget.rect.width, monsterTarget.rect.height) * 0.42) + 18;
             const hitsMonster = closestDistance <= hitRadius;
+            if (!hitsMonster) return { targetX: missTargetX, targetY: missTargetY, hitsMonster: false };
 
-            if (hitsMonster) {
-                targetX = closestX;
-                targetY = closestY;
-            }
+            const impactRect = getFlickVisualImpactRect(monsterTarget.rect);
+            const impactPoint = getFlickRayRectImpact(startPoint, dirX, dirY, impactRect) || {
+                x: Math.min(impactRect.right, Math.max(impactRect.left, closestX)),
+                y: Math.min(impactRect.bottom, Math.max(impactRect.top, closestY))
+            };
 
-            return { targetX, targetY, hitsMonster };
+            return { targetX: impactPoint.x, targetY: impactPoint.y, hitsMonster: true };
         };
 
 
@@ -5451,6 +5590,9 @@ const _jpApp = Vue.createApp({
 
 
 
+            const startPoint = getFlickClientPoint(e);
+            if (!startPoint) return;
+
 
             const el = e.currentTarget;
 
@@ -5460,13 +5602,19 @@ const _jpApp = Vue.createApp({
 
             flickState.activeOpt = opt;
 
-            flickState.startX = e.clientX;
+            flickState.startX = startPoint.x;
 
-            flickState.startY = e.clientY;
+            flickState.startY = startPoint.y;
 
-            flickState.currentX = e.clientX;
+            flickState.currentX = startPoint.x;
 
-            flickState.currentY = e.clientY;
+            flickState.currentY = startPoint.y;
+
+            flickState.lastValidX = startPoint.x;
+
+            flickState.lastValidY = startPoint.y;
+
+            flickState.hasValidMove = false;
 
             flickState.isArmed = true;
 
@@ -5480,9 +5628,7 @@ const _jpApp = Vue.createApp({
 
             if (!flickState.isArmed) return;
 
-            flickState.currentX = e.clientX;
-
-            flickState.currentY = e.clientY;
+            updateFlickCurrentPoint(e, true);
 
         };
 
@@ -5496,25 +5642,37 @@ const _jpApp = Vue.createApp({
 
 
 
-            const dx = e.clientX - flickState.startX;
+            let shot = null;
 
-            const dy = e.clientY - flickState.startY;
+            if (e.type !== 'pointercancel' && e.type !== 'pointerleave') {
 
-            const opt = flickState.activeOpt;
+                const usedEventPoint = updateFlickCurrentPoint(e);
+                if (!usedEventPoint) {
+                    flickState.currentX = flickState.lastValidX;
+                    flickState.currentY = flickState.lastValidY;
+                }
 
-            const originEl = flickState.capturedEl;
+                const dx = flickState.currentX - flickState.startX;
 
-            const startPoint = getCenterOrFallback(originEl, flickState.startX, flickState.startY);
-            const shot = resolveFlickShot(startPoint, dx, dy);
+                const dy = flickState.currentY - flickState.startY;
 
-            if (shot) {
+                const opt = flickState.activeOpt;
 
-                if (e.cancelable) e.preventDefault();
+                const originEl = flickState.capturedEl;
 
-                flickState.pendingDirectionalMiss = !shot.hitsMonster;
-                spawnProjectile(startPoint.x, startPoint.y, shot.targetX, shot.targetY, opt);
+                const startPoint = getCenterOrFallback(originEl, flickState.startX, flickState.startY);
+                shot = resolveFlickShot(startPoint, dx, dy);
 
-                handleRuneClick(opt, true);
+                if (shot) {
+
+                    if (e.cancelable) e.preventDefault();
+
+                    flickState.pendingDirectionalMiss = !shot.hitsMonster;
+                    spawnProjectile(startPoint.x, startPoint.y, shot.targetX, shot.targetY, opt);
+
+                    handleRuneClick(opt, true);
+
+                }
 
             }
 
