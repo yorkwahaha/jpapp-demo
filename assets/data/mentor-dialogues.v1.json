@@ -15,7 +15,7 @@
       },
       {
         "text": "我有件事想拜託你。現在還沒辦法全說清楚...但可以先聽聽這個孩子的聲音嗎？",
-        "emotion": "gentle"
+        "emotion": "concerned"
       },
       {
         "text": "……謝謝你願意相信我。剩下的，我們邊走邊說吧。",
@@ -795,7 +795,11 @@
         "emotion": "gentle"
       },
       {
-        "text": "「に」是動作抵達的對象。「が」是轉折語氣的孩子。「も」是把所有東西包覆起來否定的孩子。「と」是前面發生了、後面自然跟著來的那道流動。",
+        "text": "「に」是動作抵達的對象。「が」是轉折語氣的孩子。",
+        "emotion": "explain"
+      },
+      {
+        "text": "「も」是把所有東西包覆起來否定的孩子。「と」是前面發生了、後面自然跟著來的那道流動。",
         "emotion": "explain"
       },
       {
@@ -812,7 +816,8 @@
       "assets/audio/mentor/boss-review-05-p02.mp3",
       "assets/audio/mentor/boss-review-05-p03.mp3",
       "assets/audio/mentor/boss-review-05-p04.mp3",
-      "assets/audio/mentor/boss-review-05-p05.mp3"
+      "assets/audio/mentor/boss-review-05-p05.mp3",
+      "assets/audio/mentor/boss-review-05-p06.mp3"
     ]
   },
   "YA_AND_OTHERS": {
