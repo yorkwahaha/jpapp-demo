@@ -1,5 +1,16 @@
 [
     {
+        "version": "26050102",
+        "date": "2026-05-01",
+        "title": "共鳴位圖示與常數整理",
+        "changes": [
+            "共鳴位預留小助靈圖示路徑 assets/images/spirits/icons/{key}.webp，缺圖時自動回退原本符文顯示。",
+            "TAP / Flick 共鳴位皆支援 icon fallback，圖片不攔截點擊或滑動操作。",
+            "新增 game-constants.js，外移助詞 icon、導師表情、SFX 路徑與音量倍率等純 mapping。",
+            "確認 game-constants.js 會在 game.js 前載入，並完成地圖、戰鬥、TAP / Flick、導師圖片與 SFX route 基本驗收。"
+        ]
+    },
+    {
         "version": "26050101",
         "date": "2026-05-01",
         "title": "設定頁與系統內頁整理",

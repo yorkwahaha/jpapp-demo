@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26050101'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26050102'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -58,8 +58,8 @@
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/styles.css?v=26050101">
-    <link rel="stylesheet" href="assets/css/escape.css?v=26050101">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26050102">
+    <link rel="stylesheet" href="assets/css/escape.css?v=26050102">
 
 
 
@@ -69,7 +69,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26050101';
+            const v = window.APP_VERSION || '26050102';
 
 
 
@@ -215,6 +215,16 @@
             s10c.async = false;
 
             document.head.appendChild(s10c);
+
+
+
+            const s10d = document.createElement('script');
+
+            s10d.src = 'assets/js/game-constants.js?v=' + v;
+
+            s10d.async = false;
+
+            document.head.appendChild(s10d);
 
 
 
@@ -3645,56 +3655,55 @@
 
 
 
-                        <!-- Row 1: Answers (Compact height) -->
-
-                        <div class="w-full px-2 py-0 flex-none" style="height: 48px;">
-
-                            <div class="h-full relative overflow-visible">
+                        <!-- Row 1: Answers (Resonance Wheel) -->
+                        <div class="resonance-wheel-shell w-full px-2 py-0 flex-none">
+                            <div class="resonance-wheel-stage h-full relative overflow-visible">
 
                                 <div v-if="answerMode === 'tap' && !hasSubmitted"
-                                    class="tap-mode-controls w-full h-full flex items-center justify-center gap-1 sm:gap-2 pt-1">
+                                    class="resonance-wheel tap-mode pt-1">
 
-                                    <div class="flex w-full justify-center"
-                                        :class="currentQuestion?.choices?.length > 3 ? 'gap-1' : 'gap-2'">
+                                    <button v-for="(opt, i) in currentQuestion.choices"
+                                        :key="'tap_' + opt + '_' + i" @click="selectChoice(opt)"
+                                        class="resonance-slot group" :class="getChoiceBtnClass(opt)">
 
-                                        <button v-for="(opt, i) in currentQuestion.choices"
-                                            :key="'tap_' + opt + '_' + i" @click="selectChoice(opt)"
-                                            class="flex-1 h-[34px] rounded-xl border border-amber-400/50 bg-slate-800/60 outline-none hover:bg-amber-400/30 active:bg-amber-500/60 active:scale-95 transition-all shadow-lg relative overflow-hidden group"
-                                            :class="getChoiceBtnClass(opt)">
+                                        <div class="resonance-icon-wrap">
+                                            <div class="resonance-spirit-aura"></div>
+                                            <img v-if="shouldShowSpiritIcon(opt)"
+                                                :src="getSpiritIconPath(opt)"
+                                                @error="handleSpiritIconError(opt)"
+                                                class="resonance-spirit-icon" alt="">
+                                            <div v-else
+                                                class="resonance-spirit-rune">{{ String(opt || '').slice(0, 1) }}</div>
+                                        </div>
 
-                                            <div
-                                                class="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent opacity-30 group-hover:opacity-50 transition-opacity">
+                                        <span class="resonance-label">{{ opt }}</span>
 
-                                            </div>
-
-                                            <span
-                                                class="relative z-10 text-[20px] md:text-[22px] font-black text-amber-50 shadow-sm leading-none">{{
-
-                                                opt }}</span>
-
-                                        </button>
-
-                                    </div>
+                                    </button>
 
                                 </div>
 
 
 
                                 <div v-if="answerMode === 'flick' && !hasSubmitted" id="flickLayer"
-                                    class="w-full h-full flex justify-center items-center select-none touch-none"
-                                    :class="currentQuestion?.choices?.length > 3 ? 'gap-1' : 'gap-2'"
-                                    @pointermove="moveFlick" @pointerup="endFlick" @pointercancel="endFlick"
-                                    @pointerleave="endFlick">
+                                    class="resonance-wheel flick-mode pt-1" @pointermove="moveFlick"
+                                    @pointerup="endFlick" @pointercancel="endFlick" @pointerleave="endFlick">
 
                                     <button v-for="(opt, i) in currentQuestion.choices" :key="'flick_' + opt + '_' + i"
-                                        class="flex-1 h-[36px] rounded-2xl border bg-slate-800/35 transition-all shadow-inner relative flex justify-center items-center"
-                                        :class="flickState.successOpt === opt ? 'border-emerald-400 bg-emerald-500/30 text-emerald-100' : (flickState.activeOpt === opt ? 'border-amber-400 bg-amber-500/30 text-amber-50 scale-105 shadow-[0_0_15px_rgba(251,191,36,0.4)]' : 'border-amber-400/30 text-amber-50 border-white/10')"
+                                        class="resonance-slot"
+                                        :class="{ 'is-active': flickState.activeOpt === opt, 'is-correct': flickState.successOpt === opt }"
                                         @pointerdown="startFlick($event, opt)">
 
-                                        <span
-                                            class="text-[19px] md:text-[20px] font-bold text-amber-100 drop-shadow-lg pointer-events-none leading-none">{{
+                                        <div class="resonance-icon-wrap">
+                                            <div class="resonance-spirit-aura"></div>
+                                            <img v-if="shouldShowSpiritIcon(opt)"
+                                                :src="getSpiritIconPath(opt)"
+                                                @error="handleSpiritIconError(opt)"
+                                                class="resonance-spirit-icon" alt="">
+                                            <div v-else
+                                                class="resonance-spirit-rune">{{ String(opt || '').slice(0, 1) }}</div>
+                                        </div>
 
-                                            opt }}</span>
+                                        <span class="resonance-label">{{ opt }}</span>
 
                                     </button>
 
@@ -3726,7 +3735,7 @@
                                     <button v-if="shouldShowNextButton" @click="nextQuestion"
                                         class="px-6 py-2 rounded-full bg-amber-500 text-slate-950 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all border border-amber-300 tracking-widest pointer-events-auto">
 
-                                        次へ
+                                        NEXT ➔
 
                                     </button>
 
