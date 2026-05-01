@@ -3003,6 +3003,62 @@
                         </div>
 
 
+                        <div class="modal-section-card space-y-4">
+
+                            <div>
+
+                                <span class="settings-section-label">預設攻擊模式</span>
+                                <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">進入戰鬥時預設使用的攻擊操作方式</p>
+
+                                <div class="grid grid-cols-2 gap-2">
+
+                                    <button @click="settings.defaultAttackMode = 'tap'"
+                                        class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
+                                        :class="settings.defaultAttackMode === 'tap' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+
+                                        TAP
+
+                                    </button>
+
+                                    <button @click="settings.defaultAttackMode = 'flick'"
+                                        class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
+                                        :class="settings.defaultAttackMode === 'flick' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+
+                                        Flick
+
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                            <div>
+
+                                <span class="settings-section-label">戰鬥節奏</span>
+                                <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">選擇戰鬥時敵我行動的節奏。回合制仍在準備中。</p>
+
+                                <div class="grid grid-cols-2 gap-2">
+
+                                    <button @click="settings.enemyAttackMode = 'atb'"
+                                        class="flex flex-col items-center py-2.5 px-1 rounded-xl border transition-all"
+                                        :class="settings.enemyAttackMode === 'atb' ? 'bg-rose-500/20 border-rose-500 text-rose-100 shadow-[0_0_15px_rgba(244,63,94,0.2)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+                                        <span class="text-sm font-black">ATB 制</span>
+                                        <span class="text-[9px] opacity-60 font-medium mt-1">即時行動，適合連擊</span>
+                                    </button>
+
+                                    <button disabled
+                                        class="flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/5 bg-black/10 text-slate-600 cursor-not-allowed italic">
+                                        <span class="text-sm font-black">回合制</span>
+                                        <span class="text-[9px] opacity-60 font-medium mt-1">輪流行動，準備中</span>
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
                     </div>
 
                     <div class="flex justify-end mt-5 pt-4 border-t border-white/10">
@@ -3085,6 +3141,18 @@
 
                         </button>
 
+                        <button
+                            @click="isStageRecordsOpen = true; isMenuOpen = false; playSfx('click');"
+                            class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-300/20 text-cyan-50 text-sm font-bold shadow transition-all">
+
+                            <span>🏆</span>
+                            <span class="flex flex-col items-start leading-tight">
+                                <span>全關卡成績</span>
+                                <span class="text-[10px] font-bold tracking-[0.16em] text-cyan-100/55 uppercase">通關時間 / Rank 一覽</span>
+                            </span>
+
+                        </button>
+
                         <button @click="openChangelog(); isMenuOpen = false; playSfx('uiPop');"
                             class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-400/20 text-indigo-100 text-sm font-bold transition-all">
 
@@ -3107,6 +3175,62 @@
                         </button>
 
                     </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Stage Records（地圖頁可用） -->
+
+            <div v-if="isStageRecordsOpen"
+                class="modal-overlay fixed inset-0 z-[5000] flex items-center justify-center p-3 sm:p-4"
+                @click.self="isStageRecordsOpen = false; playSfx('click');">
+
+                <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
+
+                <div
+                    class="stage-records-modal relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-5 sm:p-6 w-full max-w-[520px] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden">
+
+                    <div class="modal-header-row flex-shrink-0">
+
+                        <div>
+                            <h2 class="stage-records-title">全關卡成績</h2>
+                            <p class="stage-records-subtitle">通關時間 / Rank 一覽</p>
+                        </div>
+
+                        <button @click="isStageRecordsOpen = false; playSfx('click');"
+                            class="modal-close-btn">✕</button>
+
+                    </div>
+
+                    <div class="stage-records-summary">
+                        <span>已通關 {{ clearedLevels.length }} / {{ maxLevel }}</span>
+                        <span>S Rank {{ sRankCount }} 關</span>
+                    </div>
+
+                    <div class="stage-records-list custom-scrollbar">
+                        <div v-for="row in stageRecordRows" :key="row.stageNumber" class="stage-record-row"
+                            :class="{ 'is-uncleared': !row.isCleared }">
+                            <div class="stage-record-main">
+                                <div class="stage-record-no">STAGE {{ String(row.stageNumber).padStart(2, '0') }}</div>
+                                <div v-if="row.isCleared" class="stage-record-name">
+                                    <div class="stage-record-particle">{{ row.focusParticle }}</div>
+                                    <div class="stage-record-title">{{ row.focusLabel || '—' }}</div>
+                                </div>
+                            </div>
+                            <div class="stage-record-score">
+                                <template v-if="row.isCleared">
+                                    <span class="stage-record-rank" :class="getGradeColor(row.rank)">{{ row.rank }}</span>
+                                    <span class="stage-record-time">{{ row.bestTimeText }}</span>
+                                </template>
+                                <span v-else class="stage-record-status">{{ row.statusText }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button @click="isStageRecordsOpen = false; playSfx('click');"
+                        class="stage-records-close">關閉</button>
 
                 </div>
 
@@ -4549,18 +4673,6 @@
 
                             </button>
 
-                            <button
-                                @click="isStageRecordsOpen = true; isMenuOpen = false; isLevelJumpOpen = false; isMistakesOpen = false; playSfx('click');"
-                                class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-300/20 text-cyan-50 text-sm font-bold shadow transition-all">
-
-                                <span>🏆</span>
-                                <span class="flex flex-col items-start leading-tight">
-                                    <span>全關卡成績</span>
-                                    <span class="text-[10px] font-bold tracking-[0.16em] text-cyan-100/55 uppercase">通關時間 / Rank 一覽</span>
-                                </span>
-
-                            </button>
-
                         </div>
 
 
@@ -4649,16 +4761,17 @@
                             :class="{ 'is-uncleared': !row.isCleared }">
                             <div class="stage-record-main">
                                 <div class="stage-record-no">STAGE {{ String(row.stageNumber).padStart(2, '0') }}</div>
-                                <div class="stage-record-name">
-                                    <span class="stage-record-particle">{{ row.focusParticle }}</span>
-                                    <span class="stage-record-title">{{ row.title }}</span>
+                                <div v-if="row.isCleared" class="stage-record-name">
+                                    <div class="stage-record-particle">{{ row.focusParticle }}</div>
+                                    <div class="stage-record-title">{{ row.focusLabel || '—' }}</div>
                                 </div>
-                                <div class="stage-record-focus">{{ row.focusLabel || '—' }}</div>
                             </div>
                             <div class="stage-record-score">
-                                <span class="stage-record-rank" :class="getGradeColor(row.rank)">{{ row.rank }}</span>
-                                <span class="stage-record-time">{{ row.bestTimeText }}</span>
-                                <span class="stage-record-status">{{ row.statusText }}</span>
+                                <template v-if="row.isCleared">
+                                    <span class="stage-record-rank" :class="getGradeColor(row.rank)">{{ row.rank }}</span>
+                                    <span class="stage-record-time">{{ row.bestTimeText }}</span>
+                                </template>
+                                <span v-else class="stage-record-status">{{ row.statusText }}</span>
                             </div>
                         </div>
                     </div>
@@ -4721,67 +4834,6 @@
 
                         </div>
 
-
-
-
-
-
-                        <!-- Visual/Feedback -->
-
-                        <div class="modal-section-card space-y-4">
-
-                            <div>
-
-                                <span class="settings-section-label">預設攻擊模式</span>
-                                <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">進入戰鬥時預設使用的攻擊操作方式</p>
-
-                                <div class="grid grid-cols-2 gap-2">
-
-                                    <button @click="settings.defaultAttackMode = 'tap'"
-                                        class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
-                                        :class="settings.defaultAttackMode === 'tap' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
-
-                                        TAP
-
-                                    </button>
-
-                                    <button @click="settings.defaultAttackMode = 'flick'"
-                                        class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
-                                        :class="settings.defaultAttackMode === 'flick' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
-
-                                        Flick
-
-                                    </button>
-
-                                </div>
-
-                            </div>
-
-                            <div>
-
-                                <span class="settings-section-label">戰鬥節奏</span>
-                                <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">選擇戰鬥時敵我行動的節奏。回合制仍在準備中。</p>
-
-                                <div class="grid grid-cols-2 gap-2">
-
-                                    <button @click="settings.enemyAttackMode = 'atb'"
-                                        class="flex flex-col items-center py-2.5 px-1 rounded-xl border transition-all"
-                                        :class="settings.enemyAttackMode === 'atb' ? 'bg-rose-500/20 border-rose-500 text-rose-100 shadow-[0_0_15px_rgba(244,63,94,0.2)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
-                                        <span class="text-sm font-black">ATB 制</span>
-                                        <span class="text-[9px] opacity-60 font-medium mt-1">即時行動，適合連擊</span>
-                                    </button>
-
-                                    <button disabled
-                                        class="flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/5 bg-black/10 text-slate-600 cursor-not-allowed italic">
-                                        <span class="text-sm font-black">回合制</span>
-                                        <span class="text-[9px] opacity-60 font-medium mt-1">輪流行動，準備中</span>
-                                    </button>
-
-                                </div>
-
-                            </div>
-
-                        </div>
 
                     </div>
 
