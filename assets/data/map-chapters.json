@@ -12,21 +12,21 @@
         "nodes": {
           "1": {
             "desktopX": 46,
-            "desktopY": 28,
+            "desktopY": 25,
             "mobileX": 38,
             "mobileY": 24,
             "landmark": "新手村"
           },
           "2": {
-            "desktopX": 35,
-            "desktopY": 50,
+            "desktopX": 62,
+            "desktopY": 45,
             "mobileX": 25,
             "mobileY": 52,
             "landmark": "村莊外圍"
           },
           "3": {
-            "desktopX": 53,
-            "desktopY": 60,
+            "desktopX": 50,
+            "desktopY": 58,
             "mobileX": 60,
             "mobileY": 58,
             "landmark": "岔路口"
@@ -62,7 +62,7 @@
             "landmark": "高地入口"
           },
           "7": {
-            "desktopX": 70,
+            "desktopX": 68,
             "desktopY": 42,
             "mobileX": 87,
             "mobileY": 42,
@@ -164,8 +164,8 @@
             "landmark": "石橋"
           },
           "19": {
-            "desktopX": 58,
-            "desktopY": 73,
+            "desktopX": 54,
+            "desktopY": 72,
             "mobileX": 58,
             "mobileY": 73,
             "landmark": "城內外苑"
@@ -201,7 +201,7 @@
             "landmark": "骨骸路"
           },
           "23": {
-            "desktopX": 70,
+            "desktopX": 68,
             "desktopY": 52,
             "mobileX": 85,
             "mobileY": 52,
@@ -231,8 +231,8 @@
         "themeKey": "sacred_glow",
         "nodes": {
           "26": {
-            "desktopX": 38,
-            "desktopY": 24,
+            "desktopX": 40,
+            "desktopY": 20,
             "mobileX": 35,
             "mobileY": 24,
             "landmark": "幻影長廊"
@@ -275,14 +275,14 @@
         "themeKey": "final_sanctum",
         "nodes": {
           "31": {
-            "desktopX": 31,
+            "desktopX": 33,
             "desktopY": 22,
             "mobileX": 18,
             "mobileY": 22,
             "landmark": "起源石碑"
           },
           "32": {
-            "desktopX": 72,
+            "desktopX": 68,
             "desktopY": 36,
             "mobileX": 88,
             "mobileY": 38,
