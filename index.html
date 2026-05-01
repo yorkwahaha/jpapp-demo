@@ -2971,7 +2971,7 @@
 
                     <div class="modal-header-row">
 
-                        <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">設定 <span
+                        <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">進階設定 <span
                                 class="modal-caption">SETTINGS</span></h2>
 
                         <button @click="isAdvancedSettingsOpen = false" class="modal-close-btn">✕</button>
@@ -3016,7 +3016,7 @@
                                         class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
                                         :class="settings.defaultAttackMode === 'tap' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
 
-                                        TAP
+                                        Tap
 
                                     </button>
 
@@ -4695,31 +4695,6 @@
 
                         </div>
 
-
-
-                        <button @click="openChangelog();"
-                            class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-400/20 text-indigo-100 text-sm font-bold transition-all">
-
-                            📋 更新日誌
-
-                        </button>
-
-
-
-                        <button @pointerdown="startRunAwayPress" @pointerup="cancelRunAwayPress"
-                            @pointerleave="cancelRunAwayPress" @pointercancel="cancelRunAwayPress" @contextmenu.prevent
-                            class="relative w-full px-4 py-3.5 rounded-xl bg-rose-950/30 border border-rose-500/30 hover:bg-rose-900/40 text-rose-100 text-xs font-black shadow-lg transition-all overflow-hidden select-none active:scale-95 mt-2"
-                            :class="{ 'border-rose-400/50 shadow-rose-500/10': isRunAwayPressing }">
-
-                            <div class="absolute left-0 top-0 bottom-0 bg-rose-500/30 pointer-events-none"
-                                :style="{ width: isRunAwayPressing ? '100%' : '0%', transition: isRunAwayPressing ? 'width 3s linear' : 'width 0.2s ease-out' }">
-
-                            </div>
-
-                            <span class="relative z-10 tracking-widest uppercase">🏃 長按 3 秒重新整理最新版</span>
-
-                        </button>
-
                     </div>
 
                 </div>
@@ -4798,7 +4773,7 @@
 
                     <div class="modal-header-row">
 
-                        <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">設定 <span
+                        <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">進階設定 <span
                                 class="modal-caption">SETTINGS</span></h2>
 
                         <button @click="isAdvancedSettingsOpen = false; resumeBattle(); playSfx('click');"
