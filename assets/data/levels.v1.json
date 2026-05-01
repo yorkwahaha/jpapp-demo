@@ -102,8 +102,8 @@
       "HE_DIRECTION"
     ],
     "skillMix": {
-      "newSkillWeight": 0.35,
-      "oldSkillWeight": 0.65
+      "newSkillWeight": 0.3,
+      "oldSkillWeight": 0.7
     },
     "questionCount": 30,
     "boss": null,
@@ -122,8 +122,8 @@
       "MO_ALSO_BASIC"
     ],
     "skillMix": {
-      "newSkillWeight": 0.35,
-      "oldSkillWeight": 0.65
+      "newSkillWeight": 0.3,
+      "oldSkillWeight": 0.7
     },
     "questionCount": 30,
     "boss": null,
@@ -142,8 +142,8 @@
       "NI_TIME"
     ],
     "skillMix": {
-      "newSkillWeight": 0.35,
-      "oldSkillWeight": 0.65
+      "newSkillWeight": 0.3,
+      "oldSkillWeight": 0.7
     },
     "questionCount": 30,
     "boss": null,
@@ -162,8 +162,8 @@
       "TO_AND"
     ],
     "skillMix": {
-      "newSkillWeight": 0.35,
-      "oldSkillWeight": 0.65
+      "newSkillWeight": 0.3,
+      "oldSkillWeight": 0.7
     },
     "questionCount": 30,
     "boss": null,

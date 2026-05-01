@@ -4390,10 +4390,10 @@ window.EARLY_GAME_POOLS = {
                     "j": "どこにもない",
                     "r": "どこにもない",
                     "zh": "哪裡都沒有",
-                    "left": "どこ",
-                    "leftRuby": "どこ",
-                    "right": "にもない",
-                    "rightRuby": "にもない"
+                    "left": "どこに",
+                    "leftRuby": "どこに",
+                    "right": "ない",
+                    "rightRuby": "ない"
                 }
             ]
         },
