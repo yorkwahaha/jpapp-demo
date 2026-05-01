@@ -5290,23 +5290,7 @@ const _jpApp = Vue.createApp({
                 return;
             }
 
-            // BGM Ducking logic
-            if (bgmGain.value && !isMuted.value && name !== 'click' && name !== 'uiPop' && name !== 'battlePop') {
-                const b = bgmVolume.value;
-                const bScale = (isMenuOpen.value || isCodexOpen.value || isMentorModalOpen.value || isMistakesOpen.value) ? 0.35 : 1.0;
-                clearTimeout(window._bgmDuckTimer);
-                window._bgmDuckTimer = setTimeout(() => {
-                    if (bgmGain.value && !isMuted.value) {
-                        bgmGain.value.gain.setTargetAtTime(b * bScale * 0.3, audioCtx.value.currentTime, 0.15);
-                        setTimeout(() => {
-                            if (bgmGain.value && !isMuted.value) {
-                                const vs = (isMenuOpen.value || isCodexOpen.value || isMentorModalOpen.value || isMistakesOpen.value) ? 0.35 : 1.0;
-                                bgmGain.value.gain.setTargetAtTime(b * vs, audioCtx.value.currentTime, 0.4);
-                            }
-                        }, 1200);
-                    }
-                }, 80);
-            }
+            // General SFX should not duck BGM. Voice/TTS paths handle BGM ducking separately.
 
             const rawBuf = bufferPool.get(src);
             if (rawBuf && audioCtx.value) {
