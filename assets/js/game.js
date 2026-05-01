@@ -3223,6 +3223,9 @@ const _jpApp = Vue.createApp({
         const lastBgmPlayError = ref('');
         const lastSfxTestResult = ref('not run');
         const lastRawAudioResult = ref('not run');
+        const lastSfxRoute = ref('none');
+        const lastSfxResult = ref('not run');
+        const lastSfxError = ref('');
         const useHtmlAudioBgmFallback = ref(false);
         const useHtmlAudioSfxFallback = ref(false);
         const autoFallbackEnabled = ref(false);
@@ -4220,7 +4223,7 @@ const _jpApp = Vue.createApp({
                 lastFallbackCtxResumeError.value = errorMessage;
 
                 useHtmlAudioBgmFallback.value = true;
-                useHtmlAudioSfxFallback.value = true;
+                useHtmlAudioSfxFallback.value = false;
                 disableFallbackGainMode(true);
                 lastFallbackGainResult.value = `v2 resume failed, returned to v1 @ ${new Date().toLocaleTimeString()}`;
                 lastFallbackGainError.value = errorMessage;
@@ -4233,7 +4236,7 @@ const _jpApp = Vue.createApp({
 
         const enableHtmlAudioFallback = async (reason = 'enable-html-fallback', options = {}) => {
             useHtmlAudioBgmFallback.value = true;
-            useHtmlAudioSfxFallback.value = true;
+            useHtmlAudioSfxFallback.value = options.enableSfxFallback === true;
             try { bgmAudio.value?.pause(); } catch (_) { }
 
             const v1Started = await syncHtmlBgmFallbackToExpected(`${reason}:html-v1`);
@@ -4246,7 +4249,7 @@ const _jpApp = Vue.createApp({
             const connected = await tryConnectFallbackGain(getOrCreateHtmlBgmAudio());
             if (!connected) {
                 useHtmlAudioBgmFallback.value = true;
-                useHtmlAudioSfxFallback.value = true;
+                useHtmlAudioSfxFallback.value = options.enableSfxFallback === true;
                 await syncHtmlBgmFallbackToExpected(`${reason}:gain-v2-failed-html-v1`);
                 refreshAudioDebugState();
                 return v1Started;
@@ -5019,32 +5022,74 @@ const _jpApp = Vue.createApp({
 
         const _polyPool = new Map();
 
+        const _sfxWarnLastAt = new Map();
+
+        const warnSfxPlayback = (tag, payload = {}, intervalMs = 5000) => {
+            const key = `${tag}:${payload.sfx || payload.src || 'global'}`;
+            const now = Date.now();
+            if ((now - (_sfxWarnLastAt.get(key) || 0)) < intervalMs) return;
+            _sfxWarnLastAt.set(key, now);
+            console.warn(`[${tag}]`, payload);
+        };
+
+        const markSfxPlaybackState = (route, result, error = '') => {
+            lastSfxRoute.value = route;
+            lastSfxResult.value = `${result} @ ${new Date().toLocaleTimeString()}`;
+            lastSfxError.value = error || '';
+            refreshAudioDebugState();
+        };
+
+        const createSfxAudioElement = (src, name) => {
+            const a = new Audio(src);
+            a.preload = 'auto';
+            if ('playsInline' in a) a.playsInline = true;
+            a.dataset.sfxName = name || '';
+            a.addEventListener('error', () => {
+                warnSfxPlayback('sfx-audio-error', {
+                    sfx: name,
+                    src,
+                    errorCode: a.error?.code || 'unknown',
+                    readyState: a.readyState,
+                    networkState: a.networkState
+                });
+            });
+            return a;
+        };
+
         const _getOrCreatePoly = (name) => {
 
             if (_polyPool.has(name)) return _polyPool.get(name);
 
             const src = _uiSfxSrcMap[name];
 
-            if (!src) return null;
+            if (!src) {
+                warnSfxPlayback('sfx-play-failed', { sfx: name, reason: 'missing-src' });
+                return null;
+            }
 
             const els = Array.from({ length: POLY }, () => {
 
-                const a = new Audio(src);
-
-                a.preload = 'auto';
-
-                if ('playsInline' in a) a.playsInline = true;
-
-                return a;
+                return createSfxAudioElement(src, name);
 
             });
 
-            const entry = { els, idx: 0 };
+            const entry = { els, idx: 0, src };
 
             _polyPool.set(name, entry);
 
             return entry;
 
+        };
+
+        const replacePolyChannel = (entry, index, name) => {
+            if (!entry?.src || !Array.isArray(entry.els)) return null;
+            const next = createSfxAudioElement(entry.src, name);
+            entry.els[index] = next;
+            return next;
+        };
+
+        const canAttemptWebAudioSfx = (src) => {
+            return !!src && !!audioCtx.value && !!bufferPool.get(src);
         };
 
         const playUiSfx = (name) => {
@@ -5058,29 +5103,88 @@ const _jpApp = Vue.createApp({
 
             if (_voiceLockUntil > Date.now() && (name === 'damage' || name === 'miss')) return;
 
+            const src = _uiSfxSrcMap[name];
+
+            if (canAttemptWebAudioSfx(src)) {
+                playSfx(name);
+                return;
+            }
+
             if (useHtmlAudioSfxFallback.value) {
-                const src = _uiSfxSrcMap[name];
-                if (!src) return;
+                if (!src) {
+                    warnSfxPlayback('sfx-play-failed', { sfx: name, reason: 'missing-src' });
+                    return;
+                }
                 playHtmlSfxFallback(name, src);
                 return;
             }
 
             const entry = _getOrCreatePoly(name);
 
-            if (!entry) return;
+            if (!entry || !entry.els?.length) {
+                warnSfxPlayback('sfx-play-failed', { sfx: name, reason: 'no-available-channel' });
+                return;
+            }
 
-            const a = entry.els[entry.idx % POLY];
+            let channelIndex = entry.els.findIndex(el => el && !el.error && (el.paused || el.ended || el.currentTime === 0));
+            let useClone = false;
+
+            if (channelIndex < 0) {
+                channelIndex = entry.idx % POLY;
+                useClone = true;
+                warnSfxPlayback('sfx-channel-reused', { sfx: name, channels: entry.els.length }, 2000);
+            }
+
+            let a = entry.els[channelIndex];
+
+            if (!a || a.error) {
+                a = replacePolyChannel(entry, channelIndex, name);
+            }
+
+            if (!a) {
+                warnSfxPlayback('sfx-play-failed', { sfx: name, reason: 'channel-create-failed' });
+                return;
+            }
 
             entry.idx++;
 
-            a.pause();
+            if (useClone) {
+                a = a.cloneNode(true);
+                a.dataset.sfxName = name;
+                a.addEventListener('ended', () => {
+                    a.src = '';
+                    a.remove();
+                }, { once: true });
+                a.addEventListener('error', () => {
+                    warnSfxPlayback('sfx-audio-error', {
+                        sfx: name,
+                        src: entry.src,
+                        errorCode: a.error?.code || 'unknown',
+                        readyState: a.readyState,
+                        networkState: a.networkState
+                    });
+                    a.src = '';
+                    a.remove();
+                }, { once: true });
+            } else {
+                a.pause();
+            }
 
             a.currentTime = 0;
 
             a.volume = clampAudioVolume(masterVolume.value * sfxVolume.value * (SFX_SCALES[name] ?? 1.0));
 
+            if (isMuted.value || a.volume <= 0) {
+                warnSfxPlayback('sfx-play-failed', { sfx: name, reason: isMuted.value ? 'muted' : 'zero-volume' });
+                return;
+            }
+
             a.play().catch(e => {
-                warnAudioResumeState('ui-sfx-play-blocked', { sfx: name, error: e?.name || e?.message || e });
+                const errorMessage = e?.name || e?.message || String(e);
+                warnSfxPlayback('sfx-play-failed', { sfx: name, src: entry.src, error: errorMessage });
+                markSfxPlaybackState('html-poly', `rejected ${name}`, errorMessage);
+                if (!useClone) replacePolyChannel(entry, channelIndex, name);
+                playHtmlSfxFallback(name, entry.src);
             });
 
         };
@@ -5112,16 +5216,25 @@ const _jpApp = Vue.createApp({
         };
 
         const playHtmlSfxFallback = (name, src) => {
-            if (!src || !isPageAudioAllowed() || isMuted.value) return;
+            if (!src) {
+                warnSfxPlayback('sfx-play-failed', { sfx: name, reason: 'missing-src' });
+                return;
+            }
+            if (!isPageAudioAllowed()) return;
+            if (isMuted.value) {
+                warnSfxPlayback('sfx-play-failed', { sfx: name, reason: 'muted' });
+                return;
+            }
 
             try {
-                const audio = new Audio(src);
-                audio.preload = 'auto';
+                const audio = createSfxAudioElement(src, name);
                 audio.crossOrigin = 'anonymous';
-                if ('playsInline' in audio) audio.playsInline = true;
-                audio.dataset.sfxName = name;
                 audio.volume = getHtmlSfxFallbackVolume(name);
                 audio.muted = isMuted.value || audio.volume <= 0;
+                if (audio.muted || audio.volume <= 0) {
+                    warnSfxPlayback('sfx-play-failed', { sfx: name, reason: 'zero-volume' });
+                    return;
+                }
                 htmlSfxFallbackActive.add(audio);
                 try {
                     audio.pause();
@@ -5130,10 +5243,13 @@ const _jpApp = Vue.createApp({
                 audio.play().then(() => {
                     lastHtmlSfxFallbackResult.value = `resolved ${name} @ ${new Date().toLocaleTimeString()}`;
                     lastHtmlSfxFallbackError.value = '';
+                    markSfxPlaybackState('html-fallback', `resolved ${name}`);
                     refreshAudioDebugState();
                 }).catch(e => {
                     lastHtmlSfxFallbackResult.value = `rejected ${name} @ ${new Date().toLocaleTimeString()}`;
                     lastHtmlSfxFallbackError.value = e?.name || e?.message || String(e);
+                    warnSfxPlayback('sfx-play-failed', { sfx: name, src, error: lastHtmlSfxFallbackError.value });
+                    markSfxPlaybackState('html-fallback', `rejected ${name}`, lastHtmlSfxFallbackError.value);
                     htmlSfxFallbackActive.delete(audio);
                     refreshAudioDebugState();
                 });
@@ -5144,6 +5260,8 @@ const _jpApp = Vue.createApp({
             } catch (e) {
                 lastHtmlSfxFallbackResult.value = `failed ${name} @ ${new Date().toLocaleTimeString()}`;
                 lastHtmlSfxFallbackError.value = e?.name || e?.message || String(e);
+                warnSfxPlayback('sfx-play-failed', { sfx: name, src, error: lastHtmlSfxFallbackError.value });
+                markSfxPlaybackState('html-fallback', `failed ${name}`, lastHtmlSfxFallbackError.value);
                 refreshAudioDebugState();
             }
         };
@@ -5157,10 +5275,13 @@ const _jpApp = Vue.createApp({
             if (_voiceLockUntil > Date.now() && (name === 'damage' || name === 'miss')) return;
 
             const src = _uiSfxSrcMap[name];
-            if (!src) return;
+            if (!src) {
+                warnSfxPlayback('sfx-play-failed', { sfx: name, reason: 'missing-src' });
+                return;
+            }
 
-            if (useHtmlAudioSfxFallback.value) {
-                playHtmlSfxFallback(name, src);
+            if (isMuted.value || masterVolume.value <= 0 || sfxVolume.value <= 0) {
+                warnSfxPlayback('sfx-play-failed', { sfx: name, reason: isMuted.value ? 'muted' : 'zero-volume' });
                 return;
             }
 
@@ -5207,7 +5328,13 @@ const _jpApp = Vue.createApp({
                             }
 
                             bsn.start(0);
-                        } catch (e) { }
+                            markSfxPlaybackState('webaudio', `started ${name}`);
+                        } catch (e) {
+                            const errorMessage = e?.name || e?.message || String(e);
+                            warnSfxPlayback('sfx-play-failed', { sfx: name, src, error: errorMessage });
+                            markSfxPlaybackState('webaudio', `failed ${name}`, errorMessage);
+                            playHtmlSfxFallback(name, src);
+                        }
                     };
 
                     if (rawBuf instanceof AudioBuffer) {
@@ -5223,9 +5350,10 @@ const _jpApp = Vue.createApp({
                             playDecoded(decoded);
 
                         }).catch(e => {
-                            if (name === 'bossDeathCry' || name === 'bossExplosion') {
-                                console.warn('[SFX] Boss death decode failed:', name, e?.name || e);
-                            }
+                            const errorMessage = e?.name || e?.message || String(e);
+                            warnSfxPlayback('sfx-play-failed', { sfx: name, src, reason: 'decode-failed', error: errorMessage });
+                            markSfxPlaybackState('webaudio', `decode failed ${name}`, errorMessage);
+                            playHtmlSfxFallback(name, src);
                         });
 
                     }
@@ -5237,8 +5365,10 @@ const _jpApp = Vue.createApp({
                 if (audioCtx.value.state !== 'running') {
 
                     audioCtx.value.resume().then(doPlay).catch((e) => {
-                        warnAudioResumeState('sfx-ctx-resume-failed', { sfx: name, error: e?.name || e?.message || e });
-                        doPlay();
+                        const errorMessage = e?.name || e?.message || String(e);
+                        warnSfxPlayback('sfx-context-not-running', { sfx: name, state: audioCtx.value?.state || 'none', error: errorMessage });
+                        markSfxPlaybackState('webaudio', `ctx resume failed ${name}`, errorMessage);
+                        playHtmlSfxFallback(name, src);
                     });
 
                 } else {
@@ -5251,13 +5381,19 @@ const _jpApp = Vue.createApp({
 
             }
 
+            if (useHtmlAudioSfxFallback.value) {
+                playHtmlSfxFallback(name, src);
+                return;
+            }
+
 
 
             try {
                 const isFrequent = ['hit', 'hit2', 'click', 'damage', 'uiPop', 'battlePop'].includes(name);
                 let a = audioPool.get(src);
-                if (!a) {
-                    a = new Audio(src);
+                if (!a || a.error) {
+                    if (a?.error) warnSfxPlayback('sfx-audio-error', { sfx: name, src, errorCode: a.error.code });
+                    a = createSfxAudioElement(src, name);
                     a.crossOrigin = "anonymous";
                     audioPool.set(src, a);
                 } else if (isFrequent) {
@@ -5265,22 +5401,28 @@ const _jpApp = Vue.createApp({
                     a = a.cloneNode(true);
                 }
 
+                if (audioCtx.value && audioCtx.value.state !== 'running') {
+                    audioCtx.value.resume().catch(e => {
+                        warnSfxPlayback('sfx-context-not-running', { sfx: name, state: audioCtx.value?.state || 'none', error: e?.name || e?.message || e });
+                    });
+                }
+
                 if (audioCtx.value) {
                     try {
                         const source = audioCtx.value.createMediaElementSource(a);
                         source.connect(sfxGain.value);
                     } catch (_) {
-                        a.volume = sfxVolume.value * (SFX_SCALES[name] ?? 1.0);
+                        a.volume = clampAudioVolume(masterVolume.value * sfxVolume.value * (SFX_SCALES[name] ?? 1.0));
                     }
                 } else {
-                    a.volume = sfxVolume.value * (SFX_SCALES[name] ?? 1.0);
+                    a.volume = clampAudioVolume(masterVolume.value * sfxVolume.value * (SFX_SCALES[name] ?? 1.0));
                 }
 
                 a.currentTime = 0;
                 a.play().catch(e => {
-                    if (name === 'bossDeathCry' || name === 'bossExplosion') {
-                        console.warn('[SFX] Boss death playback failed:', name, e?.name || e);
-                    }
+                    warnSfxPlayback('sfx-play-failed', { sfx: name, src, error: e?.name || e?.message || e });
+                    audioPool.delete(src);
+                    playHtmlSfxFallback(name, src);
                 });
 
                 // 如果是 Clone，結束後釋放資源
@@ -6847,6 +6989,10 @@ const _jpApp = Vue.createApp({
                     htmlBgmCurve: HTML_BGM_FALLBACK_CURVE,
                     htmlSfxBoost: HTML_SFX_FALLBACK_BOOST,
                     htmlSfxCurve: HTML_SFX_FALLBACK_CURVE,
+                    currentSfxRoute: useHtmlAudioSfxFallback.value ? 'html-fallback-enabled' : 'webaudio-preferred',
+                    lastSfxRoute: lastSfxRoute.value,
+                    lastSfxResult: lastSfxResult.value,
+                    lastSfxError: lastSfxError.value || 'none',
                     htmlBgmExists: !!htmlBgm,
                     htmlBgmSrc: htmlBgm?.src || 'none',
                     htmlBgmCurrentSrc: htmlBgm?.currentSrc || 'none',
