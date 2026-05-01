@@ -6008,7 +6008,10 @@ body.lock-scroll {
 
 .result-modal-glass {
     position: relative;
-    overflow: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    max-height: 94dvh;
     isolation: isolate;
     border: 2px solid rgba(255, 255, 255, 0.18) !important;
     border-radius: 2rem !important;
@@ -11167,6 +11170,43 @@ body.lock-scroll {
         font-size: 16px !important; /* restored from 13px for readability */
         line-height: 1.25 !important;
         margin-top: 2px !important;
+    }
+
+    /* ── Result Screen Compression for Landscape Tablets ── */
+    .result-modal-glass {
+        padding: 1.25rem 1.75rem !important;
+        max-width: 420px !important;
+    }
+    .result-spirit-hero {
+        width: 7.5rem !important;
+        height: 7.5rem !important;
+        margin-top: -0.5rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+    .result-modal-glass h2 {
+        font-size: 1.5rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    .result-star-row {
+        font-size: 2.25rem !important;
+    }
+    .result-time-row {
+        margin-top: 0.35rem !important;
+    }
+    .result-stat-panel {
+        margin-bottom: 0.75rem !important;
+        padding: 0.1rem 1rem !important;
+    }
+    .result-stat-row {
+        min-height: 2rem !important;
+    }
+    .result-grade-value {
+        font-size: 1.85rem !important;
+    }
+    .result-modal-glass .w-full.py-4 {
+        padding-top: 0.75rem !important;
+        padding-bottom: 0.75rem !important;
+        font-size: 1.05rem !important;
     }
 }
 
