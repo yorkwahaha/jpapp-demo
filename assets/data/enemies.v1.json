@@ -5,6 +5,7 @@
     "image": "assets/images/monsters/glow-slime.webp",
     "imageHit": "assets/images/monsters/glow-slime2.webp",
     "trait": "体からほのかに青い光を放ち，近づくとポコポコという音が聞こえる",
+    "description": "常在清晨露水裡發光，膽子很小，卻會偷偷跟著迷路的旅人照亮小路。",
     "spawnLevels": [
       1
     ],
@@ -33,6 +34,7 @@
     "image": "assets/images/monsters/rune-moth.webp",
     "imageHit": "assets/images/monsters/rune-moth2.webp",
     "trait": "翅面浮著像文字碎片般的紋路，飛行時會灑下淡金粉末",
+    "description": "喜歡停在舊書頁旁休息，翅上的符紋會模仿剛聽見的單字，偶爾灑下閃閃粉末。",
     "spawnLevels": [
       2
     ],
@@ -60,6 +62,7 @@
     "image": "assets/images/monsters/mist-bat.webp",
     "imageHit": "assets/images/monsters/mist-bat2.webp",
     "trait": "總在薄霧裡忽隱忽現，翅膀一振就像夜風掠過耳邊",
+    "description": "喜歡躲在薄霧裡練習飛行，遇到腳步聲會先繞一圈觀察，再像夜風一樣滑走。",
     "spawnLevels": [
       3
     ],
@@ -87,6 +90,7 @@
     "image": "assets/images/monsters/moss-boar.webp",
     "imageHit": "assets/images/monsters/moss-boar2.webp",
     "trait": "背中には湿った苔や落ち葉がびっしりと付着しており，突進する前には低く鼻を鳴らす",
+    "description": "背上的苔蘚常被小鳥當成花圃。牠不太喜歡被打擾，生氣前會先低低哼鼻子提醒。",
     "spawnLevels": [
       4
     ],
@@ -115,6 +119,7 @@
     "image": "assets/images/monsters/man-eater-bloom.webp",
     "imageHit": "assets/images/monsters/man-eater-bloom2.webp",
     "trait": "巨大的花瓣一張一合，甜膩香氣裡藏著會把獵物慢慢吞下去的耐心",
+    "description": "看起來兇巴巴，其實很會照顧森林裡的小花苞，只是不太會分辨客人和點心。",
     "spawnLevels": [
       5
     ],
@@ -139,6 +144,7 @@
     "image": "assets/images/monsters/ash-goblin.webp",
     "imageHit": "assets/images/monsters/ash-goblin2.webp",
     "trait": "披著破布與枯枝、眼神鬼祟，最愛躲在陰影裡偷襲",
+    "description": "會把撿來的樹枝當寶物收藏，常躲在灰燼堆旁偷看旅人，膽小卻很愛逞強。",
     "spawnLevels": [
       6
     ],
@@ -167,6 +173,7 @@
     "image": "assets/images/monsters/shell-sprout.webp",
     "imageHit": "assets/images/monsters/shell-sprout2.webp",
     "trait": "背甲像剛長出的樹芽、移動慢，但意外地很耐打",
+    "description": "背甲裡藏著小樹芽，走路慢吞吞卻很有耐心。下雨天會停下來讓芽葉喝水。",
     "spawnLevels": [
       7
     ],
@@ -194,6 +201,7 @@
     "image": "assets/images/monsters/forest-cat.webp",
     "imageHit": "assets/images/monsters/forest-cat2.webp",
     "trait": "步伐輕得像沒踩到地面，尾巴一甩就不見蹤影",
+    "description": "會沿著樹影練習無聲步伐，最喜歡追逐會發光的葉片，被發現時只留下尾巴殘影。",
     "spawnLevels": [
       8
     ],
@@ -221,6 +229,7 @@
     "image": "assets/images/monsters/stone-mimic.webp",
     "imageHit": "assets/images/monsters/stone-mimic2.webp",
     "trait": "蜷起身子時像一塊不起眼的石頭，張眼後才知道被盯上了",
+    "description": "平常偽裝成路邊石頭曬太陽，若有人坐上去，牠會慢慢睜眼，用沉默表示不滿。",
     "spawnLevels": [
       9
     ],
@@ -248,6 +257,7 @@
     "image": "assets/images/monsters/orc-warlord.webp",
     "imageHit": "assets/images/monsters/orc-warlord2.webp",
     "trait": "披著沉重戰甲，目光像鐵鎚一樣砸下來，光站在那裡就有王者般的壓迫感",
+    "description": "很重視戰士禮儀，戰前會整理披風和角盔。部下說牠只是嗓門大，其實很怕冷。",
     "spawnLevels": [
       10
     ],
@@ -275,6 +285,7 @@
     "image": "assets/images/monsters/ember-imp.webp",
     "imageHit": "assets/images/monsters/ember-imp2.webp",
     "trait": "耳尖與尾端閃著火星、脾氣暴躁，笑聲比火還惱人",
+    "description": "喜歡把小火星彈到空中當煙火看，笑聲尖尖的。若被稱讚火焰漂亮，會得意很久。",
     "spawnLevels": [
       11
     ],
@@ -298,6 +309,7 @@
     "image": "assets/images/monsters/shore-wisp.webp",
     "imageHit": "assets/images/monsters/shore-wisp2.webp",
     "trait": "像漂在岸邊的微弱燈火，忽遠忽近，讓人很難抓準距離",
+    "description": "夜裡會沿著潮線漂浮，替迷路的小魚照路。牠的光忽近忽遠，像在玩溫柔的捉迷藏。",
     "spawnLevels": [
       12
     ],
@@ -321,6 +333,7 @@
     "image": "assets/images/monsters/thorn-wolf.webp",
     "imageHit": "assets/images/monsters/thorn-wolf2.webp",
     "trait": "毛皮間夾著細刺，奔跑時像一團貼地掠過的灰影",
+    "description": "會用身上的細刺梳理荒原草叢，跑起來像灰影。遇到同伴時會用鼻尖輕碰打招呼。",
     "spawnLevels": [
       13
     ],
@@ -344,6 +357,7 @@
     "image": "assets/images/monsters/moon-jelly.webp",
     "imageHit": "assets/images/monsters/moon-jelly2.webp",
     "trait": "半透明的身體像月光融進水裡，安靜時反而更讓人發毛",
+    "description": "會在月夜收集泡沫，慢慢編成發亮的水環。安靜漂浮時，看起來像一盞小小月燈。",
     "spawnLevels": [
       14
     ],
@@ -367,6 +381,7 @@
     "image": "assets/images/monsters/frost-roc.webp",
     "imageHit": "assets/images/monsters/frost-roc2.webp",
     "trait": "展翼時像暴風雪壓過天空，羽尖會抖落寒霜，連呼吸都像被凍住",
+    "description": "守著冰原上最亮的風口，會把掉落的羽毛排成巢標。牠不愛吵鬧，只用雪風說話。",
     "spawnLevels": [
       15
     ],
@@ -392,6 +407,7 @@
     "image": "assets/images/monsters/shadow_hound.webp",
     "imageHit": "assets/images/monsters/shadow_hound2.webp",
     "trait": "潛伏在影子裡的獵食者，腳步聲極輕",
+    "description": "喜歡踩著影子的邊緣巡邏，腳步幾乎沒有聲音。月光太亮時，牠會躲進自己的尾影裡。",
     "spawnLevels": [
       16
     ],
@@ -420,6 +436,7 @@
     "image": "assets/images/monsters/void_spirit.webp",
     "imageHit": "assets/images/monsters/void_spirit2.webp",
     "trait": "沒有實體的靈魂，散發著令人不安的寒氣",
+    "description": "常在古塔走廊裡飄來飄去，像是在尋找忘記的名字。靠近時空氣會變得冰冰的。",
     "spawnLevels": [
       17
     ],
@@ -448,6 +465,7 @@
     "image": "assets/images/monsters/bridge_shade_imp.webp",
     "imageHit": "assets/images/monsters/bridge_shade_imp2.webp",
     "trait": "在橋邊徘徊的暗影小鬼，喜歡在黃昏時出沒",
+    "description": "每天黃昏都在橋邊數影子，數錯就從頭開始。牠最得意的收藏是一枚缺角銅鈴。",
     "spawnLevels": [
       18
     ],
@@ -475,6 +493,7 @@
     "image": "assets/images/monsters/abyss_eyeball.webp",
     "imageHit": "assets/images/monsters/abyss_eyeball2.webp",
     "trait": "無數眼球凝視著你，讓人感到毛骨悚然",
+    "description": "其實只是非常好奇，會用許多眼睛同時觀察新事物。若被盯太久，揮揮手牠會眨眼回應。",
     "spawnLevels": [
       19
     ],
@@ -499,6 +518,7 @@
     "image": "assets/images/monsters/ruin-guardian.webp",
     "imageHit": "assets/images/monsters/ruin-guardian2.webp",
     "trait": "曾守護古老聖所的石衛，如今只剩扭曲的執念支撐身軀",
+    "description": "仍記得古殿鐘聲的節拍，巡邏時會停下來扶正倒塌的石柱，像在守護舊日約定。",
     "spawnLevels": [
       20
     ],
@@ -524,6 +544,7 @@
     "image": "assets/images/monsters/gloom_crawler.webp",
     "imageHit": "assets/images/monsters/gloom_crawler2.webp",
     "trait": "在岩壁縫隙中穿梭的怪物，動作極其敏捷",
+    "description": "會把亮晶晶的小石子藏進岩縫，移動快得像一陣黑風。聽到回音時會立刻追過去。",
     "spawnLevels": [
       21
     ],
@@ -548,6 +569,7 @@
     "image": "assets/images/monsters/skeletal_warrior.webp",
     "imageHit": "assets/images/monsters/skeletal_warrior2.webp",
     "trait": "白骨構成的士兵，即使粉碎也會再次重組",
+    "description": "每天都努力把盔甲穿整齊，雖然骨頭常裝錯位置。牠仍認真守著早已不存在的隊列。",
     "spawnLevels": [
       22
     ],
@@ -572,6 +594,7 @@
     "image": "assets/images/monsters/wraith.webp",
     "imageHit": "assets/images/monsters/wraith2.webp",
     "trait": "帶著強烈的執念而無法超脫，尖叫聲能震懾靈魂",
+    "description": "會在夜裡重複哼著忘記歌詞的歌，聲音有點哀傷。若聽見溫柔回應，會安靜片刻。",
     "spawnLevels": [
       23
     ],
@@ -596,6 +619,7 @@
     "image": "assets/images/monsters/demon_gatekeeper.webp",
     "imageHit": "assets/images/monsters/demon_gatekeeper2.webp",
     "trait": "守護著通往更深處的門戶，力量驚人",
+    "description": "負責看守深處的大門，會把鑰匙串擦得亮亮的。其實牠很在意門牌是否掛正。",
     "spawnLevels": [
       24
     ],
@@ -620,6 +644,7 @@
     "image": "assets/images/monsters/dark-knight.webp",
     "imageHit": "assets/images/monsters/dark-knight2.webp",
     "trait": "穿著鏽跡斑斑的鎧甲，手中的長劍依舊鋒利",
+    "description": "鎧甲雖然斑駁，仍每天練習標準行禮。傳說牠在等待一場能讓自己想起名字的決鬥。",
     "spawnLevels": [
       25
     ],
@@ -644,6 +669,7 @@
     "image": "assets/images/monsters/blood_crystal_wraith.webp",
     "imageHit": "assets/images/monsters/blood_crystal_wraith2.webp",
     "trait": "被血色結晶束縛的亡魂，在裂縫間發出令人心寒的低鳴",
+    "description": "身上的血晶會隨情緒微微發亮。牠常把晶片排列成花形，像是在記念遙遠的春天。",
     "spawnLevels": [
       26
     ],
@@ -668,6 +694,7 @@
     "image": "assets/images/monsters/abyss_lord.webp",
     "imageHit": "assets/images/monsters/abyss_lord2.webp",
     "trait": "支配深淵的強大存在，散發著壓倒性的魔力",
+    "description": "喜歡在深淵邊緣聽回聲，並把回聲當作臣子的報告。偶爾也會為空洞太安靜而嘆氣。",
     "spawnLevels": [
       27
     ],
@@ -692,6 +719,7 @@
     "image": "assets/images/monsters/scarlet_ooze.webp",
     "imageHit": "assets/images/monsters/scarlet_ooze2.webp",
     "trait": "自血河深處爬出的詭異流體，會吞噬接近的一切生命",
+    "description": "會慢慢流過石縫收集熱氣，表面偶爾冒出小泡泡。牠其實很怕乾燥的風。",
     "spawnLevels": [
       28
     ],
@@ -716,6 +744,7 @@
     "image": "assets/images/monsters/throne_hexer.webp",
     "imageHit": "assets/images/monsters/throne_hexer2.webp",
     "trait": "侍奉黑紅王座的禁術使者，能以詛咒侵蝕意志與肉體",
+    "description": "會把咒文寫在飄浮紙片上，錯字就偷偷燒掉。牠最討厭別人打斷施法前的深呼吸。",
     "spawnLevels": [
       29
     ],
@@ -740,6 +769,7 @@
     "image": "assets/images/monsters/crimson-throne-lord.webp",
     "imageHit": "assets/images/monsters/crimson-throne-lord2.webp",
     "trait": "盤踞於血色王座的深淵支配者，光是注視就像會被拖進無盡詛咒",
+    "description": "王座旁堆滿被詛咒染紅的旗幟。牠沉默時像在審判世界，其實也會整理披風褶皺。",
     "spawnLevels": [
       30
     ],
@@ -764,6 +794,7 @@
     "image": "assets/images/monsters/sky_sanctum_warden.webp",
     "imageHit": "assets/images/monsters/sky_sanctum_warden2.webp",
     "trait": "長年守望浮空聖域的古老衛士，腳步聲在雲海間格外沉重",
+    "description": "會在雲橋上慢慢巡邏，替迷路的風鈴歸位。沉重腳步聲是聖域清晨的第一個節拍。",
     "spawnLevels": [
       31
     ],
@@ -788,6 +819,7 @@
     "image": "assets/images/monsters/luminous_judicator.webp",
     "imageHit": "assets/images/monsters/luminous_judicator2.webp",
     "trait": "身披聖光而來的審判者，目光冷冽得像能看穿一切虛妄",
+    "description": "會用光羽記錄每一次選擇，判斷嚴格卻公平。牠最欣賞勇於訂正錯誤的旅人。",
     "spawnLevels": [
       32
     ],
@@ -813,6 +845,7 @@
     "image": "assets/images/monsters/fallen_seraph_shade.webp",
     "imageHit": "assets/images/monsters/fallen_seraph_shade2.webp",
     "trait": "失去榮耀的熾天殘影，殘存的神聖與墮落彼此拉扯，令人不敢直視",
+    "description": "翅光忽明忽暗，像仍在尋找回家的方向。牠會避開花田，怕自己的餘燼燙傷花瓣。",
     "spawnLevels": [
       33
     ],
@@ -837,6 +870,7 @@
     "image": "assets/images/monsters/astral_temple_seer.webp",
     "imageHit": "assets/images/monsters/astral_temple_seer2.webp",
     "trait": "徘徊於高空神殿的預言者，低語間像在宣告凡人無法違逆的命運",
+    "description": "夜裡會把星光排成謎題，自己再慢慢解開。牠的預言常很準，只有早餐時間例外。",
     "spawnLevels": [
       34
     ],
@@ -861,6 +895,7 @@
     "image": "assets/images/monsters/celestial-throne-arbiter.webp",
     "imageHit": "assets/images/monsters/celestial-throne-arbiter2.webp",
     "trait": "端坐雲上終殿的裁決者，聖潔威壓之下連呼吸都像是一種冒犯",
+    "description": "守著雲上終殿的最後鐘聲，裁決前會垂目聆聽。牠相信真正的勇氣會在沉默裡發光。",
     "spawnLevels": [
       35
     ],
@@ -885,6 +920,7 @@
     "image": "assets/images/monsters/void-throne-lord.webp",
     "imageHit": "assets/images/monsters/void-throne-lord2.webp",
     "trait": "端坐於斷界王座深處的終焉支配者，黑暗與星屑都只是祂意志的餘燼",
+    "description": "斷界深處的星屑圍著王座旋轉，像一場不會結束的夜。祂靜靜等待能讀懂光的人。",
     "spawnLevels": [
       36
     ],

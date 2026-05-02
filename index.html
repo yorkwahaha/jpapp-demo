@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26050204'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26050301'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -58,8 +58,8 @@
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/styles.css?v=26050204">
-    <link rel="stylesheet" href="assets/css/escape.css?v=26050204">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26050301">
+    <link rel="stylesheet" href="assets/css/escape.css?v=26050301">
 
 
 
@@ -69,7 +69,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26050204';
+            const v = window.APP_VERSION || '26050301';
 
 
 
@@ -2547,9 +2547,13 @@
                             <div class="map-hud-actions">
 
                                 <button @click="isCodexOpen = true; playSfx('uiPop');"
-                                    class="map-hud-btn"><span>📖</span></button>
+                                    class="map-hud-btn map-hud-btn--spirit-codex" type="button"
+                                    aria-label="小助靈圖鑑"><span>📖</span></button>
+                                <button @click="openMonsterCodex" class="map-hud-btn map-hud-btn--monster-codex"
+                                    type="button" aria-label="怪物圖鑑"><span>🐾</span></button>
                                 <button @click="isMenuOpen = true; playSfx('uiPop');"
-                                    class="map-hud-btn"><span>⚙️</span></button>
+                                    class="map-hud-btn map-hud-btn--system" type="button"
+                                    aria-label="系統選單"><span>⚙️</span></button>
 
                             </div>
 
@@ -2658,8 +2662,13 @@
                         </div>
 
                         <div class="map-hud-actions">
-                            <button @click="isCodexOpen = true" class="map-hud-btn"><span>📖</span></button>
-                            <button @click="isMenuOpen = true" class="map-hud-btn"><span>⚙️</span></button>
+                            <button @click="isCodexOpen = true; playSfx('uiPop');"
+                                class="map-hud-btn map-hud-btn--spirit-codex" type="button"
+                                aria-label="小助靈圖鑑"><span>📖</span></button>
+                            <button @click="openMonsterCodex" class="map-hud-btn map-hud-btn--monster-codex"
+                                type="button" aria-label="怪物圖鑑"><span>🐾</span></button>
+                            <button @click="isMenuOpen = true; playSfx('uiPop');" class="map-hud-btn map-hud-btn--system"
+                                type="button" aria-label="系統選單"><span>⚙️</span></button>
                         </div>
 
                     </div>
@@ -3161,6 +3170,75 @@
                         </div>
                         <button @click="codexPage = Math.min(codexTotalPages - 1, codexPage + 1); flippedCardId = null"
                             :disabled="codexPage >= codexTotalPages - 1" class="codex-nav-btn">後頁 →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── 怪物圖鑑（地圖頁可用） ── -->
+            <div v-if="isMonsterCodexOpen"
+                class="modal-overlay monster-codex-overlay fixed inset-0 z-[2100] flex items-center justify-center p-3 sm:p-6"
+                @click.self="isMonsterCodexOpen = false; playSfx('click')">
+                <div class="absolute inset-0 bg-black/72 backdrop-blur-sm pointer-events-none"></div>
+                <div class="monster-codex-panel relative w-full flex flex-col">
+                    <div class="monster-codex-header">
+                        <div class="flex items-center gap-3">
+                            <span class="monster-codex-mark">🐾</span>
+                            <div>
+                                <h2 class="monster-codex-title">怪物圖鑑</h2>
+                                <p class="monster-codex-subtitle">MONSTER INDEX</p>
+                            </div>
+                        </div>
+                        <button @click="isMonsterCodexOpen = false; playSfx('click')" class="codex-close-btn"
+                            aria-label="關閉怪物圖鑑">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="monster-codex-body">
+                        <div class="monster-codex-list custom-scrollbar" role="list">
+                            <button v-for="entry in monsterCodexEntries" :key="entry.id"
+                                @click="selectMonsterCodexEntry(entry)" class="monster-codex-card"
+                                :class="{ 'is-active': selectedMonsterCodexEntry?.id === entry.id, 'is-locked': !entry.isUnlocked }"
+                                type="button" role="listitem">
+                                <span class="monster-codex-card-icon">{{ entry.isUnlocked ? '👾' : '？' }}</span>
+                                <span class="monster-codex-card-main">
+                                    <strong>{{ entry.isUnlocked ? entry.name : '???' }}</strong>
+                                    <small>{{ entry.isUnlocked ? entry.stageText : '未遭遇' }}</small>
+                                </span>
+                                <span class="monster-codex-card-lock">{{ entry.isUnlocked ? 'OPEN' : 'LOCK' }}</span>
+                            </button>
+                        </div>
+
+                        <div class="monster-codex-detail custom-scrollbar" v-if="selectedMonsterCodexEntry">
+                            <template v-if="selectedMonsterCodexEntry.isUnlocked">
+                                <div class="monster-codex-portrait-wrap">
+                                    <img class="monster-codex-portrait" :src="selectedMonsterCodexEntry.image"
+                                        :alt="selectedMonsterCodexEntry.name" @error="handleMonsterCodexImageError">
+                                </div>
+                                <div class="monster-codex-detail-copy">
+                                    <p class="monster-codex-kicker">{{ selectedMonsterCodexEntry.stageText }}</p>
+                                    <h3 class="monster-codex-name">{{ selectedMonsterCodexEntry.name }}</h3>
+                                    <p class="monster-codex-trait">{{ selectedMonsterCodexEntry.traitText }}</p>
+
+                                    <div class="monster-codex-stats">
+                                        <div><span>HP</span><strong>{{ selectedMonsterCodexEntry.hpText }}</strong></div>
+                                        <div><span>攻擊力</span><strong>{{ selectedMonsterCodexEntry.damageText }}</strong></div>
+                                        <div><span>迴避率</span><strong>{{ selectedMonsterCodexEntry.evasionText }}</strong></div>
+                                        <div><span>攻擊間隔</span><strong>{{ selectedMonsterCodexEntry.intervalText }}</strong></div>
+                                    </div>
+                                </div>
+                            </template>
+                            <template v-else>
+                                <div class="monster-codex-locked-detail">
+                                    <div class="monster-codex-unknown">?</div>
+                                    <h3>???</h3>
+                                    <p>尚未遭遇的怪物。推進地圖後會逐步補上資料。</p>
+                                </div>
+                            </template>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -3743,7 +3821,12 @@
                         class="flex-1 mx-2 text-center text-xs font-bold text-amber-300 drop-shadow-md truncate"
                         aria-live="polite"></div>
 
-                    <div class="w-10 flex-shrink-0"></div>
+                    <div class="battle-mode-toggle pointer-events-auto" aria-label="攻擊模式切換">
+                        <button type="button" @click="answerMode = 'tap'"
+                            :class="{ 'is-active': answerMode === 'tap' }">TAP</button>
+                        <button type="button" @click="answerMode = 'flick'"
+                            :class="{ 'is-active': answerMode === 'flick' }">Flick</button>
+                    </div>
 
                 </div>
 
@@ -3819,7 +3902,7 @@
             <!-- [L5] Bottom HUD Console -->
 
             <div id="hud" v-if="!isFinished"
-                class="fixed md:absolute bottom-0 left-0 w-full md:w-[60%] md:min-w-[400px] md:max-w-[700px] md:left-1/2 md:-translate-x-1/2 z-50 glass-panel border-t md:border-x border-white/20 shadow-[0_-15px_40px_rgba(0,0,0,0.5)] flex flex-col justify-start !p-0 !min-h-0 h-auto overflow-visible"
+                class="battle-hud-root fixed md:absolute bottom-0 left-0 w-full md:w-[60%] md:min-w-[400px] md:max-w-[700px] md:left-1/2 md:-translate-x-1/2 z-50 glass-panel border-t md:border-x border-white/20 shadow-[0_-15px_40px_rgba(0,0,0,0.5)] flex flex-col justify-start !p-0 !min-h-0 h-auto overflow-visible"
                 style="background: rgba(15, 23, 42, 0.15); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-top-left-radius: 20px; border-top-right-radius: 20px; padding-bottom: env(safe-area-inset-bottom, 2px);">
 
 
@@ -3828,17 +3911,6 @@
 
                     <div class="h-full relative overflow-visible flex flex-col hud-interactive-rows"
                         :class="{ 'hud-tap-mode': answerMode === 'tap' }">
-
-
-
-                        <!-- Hint Overlay anchored above HUD -->
-
-                        <div
-                            class="absolute left-1/2 -translate-x-1/2 -top-5 z-[60] pointer-events-none text-[11px] font-black tracking-widest text-amber-300 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)] hidden md:block">
-
-                            {{ answerMode === 'flick' ? 'FLICK TO ATTACK' : 'TAP TO ATTACK' }}
-
-                        </div>
 
 
 
@@ -3851,7 +3923,8 @@
 
                                     <button v-for="(opt, i) in currentQuestion.choices"
                                         :key="'tap_' + opt + '_' + i" @click="selectChoice(opt)"
-                                        class="resonance-slot group" :class="getChoiceBtnClass(opt)">
+                                        class="resonance-slot group" :class="getChoiceBtnClass(opt)"
+                                        type="button" :aria-label="'選項 ' + opt">
 
                                         <div class="resonance-icon-wrap">
                                             <div class="resonance-spirit-aura"></div>
@@ -3863,8 +3936,6 @@
                                                 class="resonance-spirit-rune">{{ String(opt || '').slice(0, 1) }}</div>
                                         </div>
 
-                                        <span class="resonance-label">{{ opt }}</span>
-
                                     </button>
 
                                 </div>
@@ -3873,11 +3944,12 @@
 
                                 <div v-if="answerMode === 'flick' && !hasSubmitted" id="flickLayer"
                                     class="resonance-wheel flick-mode pt-1" @pointermove="moveFlick"
-                                    @pointerup="endFlick" @pointercancel="endFlick" @pointerleave="endFlick">
+                                    @pointerup="endFlick" @pointercancel="endFlick">
 
                                     <button v-for="(opt, i) in currentQuestion.choices" :key="'flick_' + opt + '_' + i"
                                         class="resonance-slot"
                                         :class="{ 'is-active': flickState.activeOpt === opt, 'is-correct': flickState.successOpt === opt }"
+                                        type="button" :aria-label="'選項 ' + opt"
                                         @pointerdown="startFlick($event, opt)">
 
                                         <div class="resonance-icon-wrap">
@@ -3890,8 +3962,6 @@
                                                 class="resonance-spirit-rune">{{ String(opt || '').slice(0, 1) }}</div>
                                         </div>
 
-                                        <span class="resonance-label">{{ opt }}</span>
-
                                     </button>
 
                                 </div>
@@ -3901,7 +3971,7 @@
                                 <!-- Feedback Overlay -->
 
                                 <div v-show="hasSubmitted"
-                                    class="absolute inset-0 w-full h-full flex items-center justify-center gap-4 z-20 pointer-events-none">
+                                    class="battle-answer-feedback-overlay absolute inset-0 w-full h-full flex items-center justify-center gap-4 z-20 pointer-events-none">
 
                                     <div class="flex items-center justify-center gap-4 px-6 py-2 rounded-full border shadow-[0_0_20px_rgba(0,0,0,0.8)] pointer-events-auto"
                                         :class="isCurrentCorrect ? 'border-emerald-500 bg-emerald-950/80' : 'border-rose-500 bg-rose-950/80'">
@@ -3936,7 +4006,7 @@
 
                         <!-- Row 2: Attack Button (Compacted) -->
 
-                        <div v-if="answerMode === 'tap'" class="w-full px-2 py-0.5 flex justify-center flex-none"
+                        <div v-if="answerMode === 'tap'" class="battle-tap-attack-row w-full px-2 py-0.5 flex justify-center flex-none"
                             style="height: 38px;">
 
                             <button v-show="!hasSubmitted" @click="checkAnswer"
@@ -3944,7 +4014,7 @@
                                 class="w-[60%] max-w-[320px] h-[32px] md:h-[36px] rounded-2xl bg-gradient-to-r from-amber-600 to-amber-500 border border-amber-300 shadow-xl text-slate-900 text-[12px] font-black tracking-widest transition-transform active:scale-95 disabled:opacity-50 disabled:grayscale hover:brightness-110 flex justify-center items-center leading-none"
                                 :class="(isChoiceMode && !userAnswers[0]) ? 'cursor-not-allowed opacity-50' : ''">
 
-                                攻擊 ATTACK
+                                攻擊
 
                             </button>
 
@@ -3954,40 +4024,14 @@
 
                         <!-- Row 3: Status Info -->
 
-                        <div class="w-full px-2 pb-0.5 pt-0.5 flex-none border-t border-white/10 bg-black/5">
+                        <div class="battle-status-panel w-full px-2 pb-0.5 pt-0.5 flex-none border-t border-white/10 bg-black/5">
 
-                            <div class="flex flex-row items-center gap-1 w-full max-w-lg md:max-w-2xl mx-auto">
-
-                                <!-- Left: Mode Toggle (Vertical Dual Switch) -->
-
-                                <div class="flex-shrink-0 flex flex-col gap-1 items-center w-auto md:flex-none">
-
-                                    <button @click="answerMode = 'flick'"
-                                        class="w-14 md:w-16 h-5 md:h-6 rounded-sm flex items-center justify-center transition-all shadow-md border border-white/10"
-                                        :class="answerMode === 'flick' ? 'bg-amber-400 text-slate-900 border-amber-200' : 'bg-slate-800 text-slate-500 opacity-60'">
-
-                                        <span
-                                            class="text-[9px] font-black tracking-tighter uppercase leading-none">FLICK</span>
-
-                                    </button>
-
-                                    <button @click="answerMode = 'tap'"
-                                        class="w-14 md:w-16 h-5 md:h-6 rounded-sm flex items-center justify-center transition-all shadow-md border border-white/10"
-                                        :class="answerMode === 'tap' ? 'bg-amber-400 text-slate-900 border-amber-200' : 'bg-slate-800 text-slate-500 opacity-60'">
-
-                                        <span
-                                            class="text-[9px] font-black tracking-tighter uppercase leading-none">TAP</span>
-
-                                    </button>
-
-                                </div>
-
-
+                            <div class="battle-status-content flex flex-row items-center gap-1 w-full max-w-lg md:max-w-2xl mx-auto">
 
                                 <!-- Center: HP/SP (Compacted) -->
 
                                 <div
-                                    class="flex-1 flex flex-col justify-center gap-0.5 md:gap-1 max-w-[160px] md:max-w-xs mx-auto">
+                                    class="battle-hud-bars flex-1 flex flex-col justify-center gap-0.5 md:gap-1 max-w-[160px] md:max-w-xs mx-auto">
                                     <div class="w-full flex items-center gap-1.5">
                                         <span class="hud-bar-label hud-bar-label--hp w-5">HP</span>
                                         <div class="flex-1 h-1.5 hud-bar-track">
@@ -4014,7 +4058,7 @@
                                 <!-- Right: Icons (Enlarged) -->
 
                                 <div
-                                    class="flex-shrink-0 flex flex-nowrap items-center justify-end gap-2 md:gap-3 w-auto md:flex-none">
+                                    class="battle-hud-actions flex-shrink-0 flex flex-nowrap items-center justify-end gap-2 md:gap-3 w-auto md:flex-none">
 
 
                                     <button @click="isSkillOpen = true; pauseBattle(); playSfx('uiPop');"

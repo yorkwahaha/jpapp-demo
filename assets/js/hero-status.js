@@ -225,17 +225,36 @@ function updateHeroStatusBar() {
         overlay.innerHTML = '';
 
         if (heroBuffs.giragiraTurns > 0 || heroBuffs.morimoriTurns > 0 || heroBuffs.jiwajiwaTurns > 0 || heroBuffs.wakuwakuTurns > 0 || heroBuffs.gachigachiTurns > 0) {
-            // Match hero's exact screen rect so aura + badge align with hero
+            // Anchor badges to HP/SP card first; fallback to hero anchor if HUD bars are unavailable.
+            const barsEl = document.querySelector('.battle-hud-bars');
+            const barsRect = barsEl ? barsEl.getBoundingClientRect() : null;
             const heroEl = document.getElementById('heroAvatar');
-            const r = heroEl ? heroEl.getBoundingClientRect() : null;
+            const heroRect = heroEl ? heroEl.getBoundingClientRect() : null;
+            const useBarsAnchor = !!(barsRect && barsRect.width > 0);
+            const useHeroAnchor = !useBarsAnchor && !!(heroRect && heroRect.width > 0);
 
-            if (r && r.width > 0) {
+            if (useBarsAnchor) {
+                const centerX = barsRect.left + (barsRect.width / 2);
+                const topY = barsRect.bottom + 6;
                 overlay.style.cssText =
                     'position:fixed!important;' +
-                    'left:' + r.left + 'px!important;' +
-                    'top:' + r.top + 'px!important;' +
-                    'width:' + r.width + 'px!important;' +
-                    'height:' + r.height + 'px!important;' +
+                    'left:' + centerX + 'px!important;' +
+                    'top:' + topY + 'px!important;' +
+                    'width:' + Math.max(160, Math.round(barsRect.width + 48)) + 'px!important;' +
+                    'min-height:24px!important;' +
+                    'z-index:55!important;' +
+                    'pointer-events:none!important;' +
+                    'overflow:visible!important;' +
+                    'display:block!important;' +
+                    'transform:translateX(-50%)!important;' +
+                    'margin:0!important;padding:0!important;background:none!important;';
+            } else if (useHeroAnchor) {
+                overlay.style.cssText =
+                    'position:fixed!important;' +
+                    'left:' + heroRect.left + 'px!important;' +
+                    'top:' + heroRect.top + 'px!important;' +
+                    'width:' + heroRect.width + 'px!important;' +
+                    'height:' + heroRect.height + 'px!important;' +
                     'z-index:47!important;' +
                     'pointer-events:none!important;' +
                     'overflow:visible!important;' +
@@ -314,17 +333,18 @@ function updateHeroStatusBar() {
             }
 
             overlay.innerHTML =
-                // Aura glow ring (only if GIRAGIRA is active)
-                (heroBuffs.giragiraTurns > 0 ?
+                // Aura glow ring only when using hero-anchor fallback.
+                ((heroBuffs.giragiraTurns > 0 && useHeroAnchor) ?
                     '<div style="position:absolute;inset:-10px;border-radius:50%;' +
                     'border:2px solid rgba(251,191,36,0.75);' +
                     'box-shadow:0 0 14px 4px rgba(251,191,36,0.45),0 0 28px 8px rgba(251,191,36,0.2);' +
                     'animation:giragira-aurora 1.5s ease-in-out infinite;' +
                     'z-index:0;pointer-events:none;"></div>' : '') +
 
-                // Badges container at top-right of hero
-                '<div id="heroBadgeContainer" style="position:absolute;top:-14px;right:-30px;' +
-                'display:flex;flex-direction:column;align-items:flex-end;gap:4px;z-index:2;">' +
+                // Badges align as a status row under HP/SP card.
+                '<div id="heroBadgeContainer" style="position:relative;left:0;top:0;' +
+                'display:flex;flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:center;' +
+                'column-gap:4px;row-gap:4px;z-index:2;max-width:100%;">' +
                 badgesHtml + '</div>';
         } else {
             overlay.style.cssText = 'display:none!important;';

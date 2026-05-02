@@ -1312,7 +1312,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26050201";
+        const APP_VERSION = window.APP_VERSION || "26050301";
 
         const appVersion = ref(APP_VERSION);
 
@@ -1484,6 +1484,8 @@ const _jpApp = Vue.createApp({
         const codexPage = ref(0);
         const codexChapter = ref('all');
         const flippedCardId = ref(null);
+        const isMonsterCodexOpen = ref(false);
+        const selectedMonsterCodexId = ref(null);
         // [ /CODEX - STATE ]
 
         const MENTOR_SEEN_KEY = 'jpRpgMentorSeenV1';
@@ -2241,6 +2243,79 @@ const _jpApp = Vue.createApp({
         const getSkillMasteryStyle = (skillId) => ({
             width: `${getSkillMastery(skillId)}%`
         });
+
+        const formatMonsterCodexValue = (value, suffix = '') => {
+            if (value === null || value === undefined || value === '') return '未記錄';
+            return `${value}${suffix}`;
+        };
+
+        const getMonsterStageText = (levels = []) => {
+            if (!Array.isArray(levels) || !levels.length) return '出現關卡：未記錄';
+            return `出現關卡：${levels.map(lv => {
+                const config = LEVEL_CONFIG.value?.[Number(lv)];
+                const label = config?.levelName || config?.name || `Stage ${lv}`;
+                return `Lv.${lv} ${label}`;
+            }).join(' / ')}`;
+        };
+
+        const monsterCodexEntries = computed(() => {
+            return (ENEMIES.value || []).map((enemy, idx) => {
+                const spawnLevels = Array.isArray(enemy.spawnLevels) ? enemy.spawnLevels : [];
+                const enemyStats = enemy.enemyStats || {};
+                const damage = enemyStats.damage || {};
+                const hp = enemyStats.hp ?? enemy.hpMax ?? null;
+                const damageMin = typeof damage === 'number' ? damage : (damage.min ?? enemy.attackDamageMin ?? null);
+                const damageMax = typeof damage === 'number' ? damage : (damage.max ?? enemy.attackDamageMax ?? null);
+                const attackIntervalMs = enemyStats.attackIntervalMs ?? enemy.attackIntervalMs ?? null;
+                const evasionRate = enemyStats.evasionRate ?? enemy.evasionRate ?? null;
+                const isUnlocked = spawnLevels.some(lv =>
+                    clearedLevels.value.includes(Number(lv)) || unlockedLevels.value.includes(Number(lv))
+                );
+
+                return {
+                    id: enemy.id || `monster-${idx}`,
+                    sortLevel: spawnLevels[0] ?? 999,
+                    isUnlocked,
+                    name: enemy.name || '未記錄',
+                    image: enemy.image || DEFAULT_IMAGE_PATHS.monsterSprite,
+                    spawnLevels,
+                    stageText: getMonsterStageText(spawnLevels),
+                    traitText: enemy.description || enemy.trait || '未記錄',
+                    hpText: formatMonsterCodexValue(hp),
+                    damageText: damageMin === null && damageMax === null
+                        ? '未記錄'
+                        : `${formatMonsterCodexValue(damageMin)} - ${formatMonsterCodexValue(damageMax)}`,
+                    evasionText: evasionRate === null ? '未記錄' : `${Math.round(Number(evasionRate) * 100)}%`,
+                    intervalText: attackIntervalMs === null ? '未記錄' : `${(Number(attackIntervalMs) / 1000).toFixed(1)} 秒`
+                };
+            }).sort((a, b) => a.sortLevel - b.sortLevel || a.name.localeCompare(b.name, 'zh-Hant'));
+        });
+
+        const selectedMonsterCodexEntry = computed(() => {
+            if (!monsterCodexEntries.value.length) return null;
+            return monsterCodexEntries.value.find(entry => entry.id === selectedMonsterCodexId.value) || monsterCodexEntries.value[0];
+        });
+
+        const openMonsterCodex = () => {
+            if (!selectedMonsterCodexId.value && monsterCodexEntries.value[0]) {
+                selectedMonsterCodexId.value = monsterCodexEntries.value[0].id;
+            }
+            isMonsterCodexOpen.value = true;
+            playSfx('uiPop');
+        };
+
+        const selectMonsterCodexEntry = (entry) => {
+            if (!entry) return;
+            selectedMonsterCodexId.value = entry.id;
+            playSfx('click');
+        };
+
+        const handleMonsterCodexImageError = (event) => {
+            const img = event?.target;
+            if (!img || img.dataset.fallbackApplied === 'true') return;
+            img.dataset.fallbackApplied = 'true';
+            img.src = DEFAULT_IMAGE_PATHS.monsterSprite;
+        };
         // [ /CODEX - COMPUTED ]
 
 
@@ -2250,6 +2325,9 @@ const _jpApp = Vue.createApp({
             if (e.key === 'Escape' && isCodexOpen.value) {
                 isCodexOpen.value = false;
                 resumeBattle();
+            }
+            if (e.key === 'Escape' && isMonsterCodexOpen.value) {
+                isMonsterCodexOpen.value = false;
             }
         });
         // [ /CODEX - GLOBAL EVENTS ]
@@ -2486,7 +2564,7 @@ const _jpApp = Vue.createApp({
 
         const applyTurnLogic = () => {
 
-            // Turn-based logic (JIWAJIWA, MORIMORI, WAKUWAKU remain here)
+            // Turn-based logic (JIWAJIWA, MORIMORI remain here; WAKUWAKU is consumed only by enemy attack attempts)
 
             // MORIMORI：SP 每回合恢復
             if (heroBuffs.morimoriTurns > 0) {
@@ -2524,18 +2602,6 @@ const _jpApp = Vue.createApp({
                     pushBattleLog("ジワジワ 效果結束（再生停止）", 'info');
                 }
             }
-
-            // WAKUWAKU：回合遞減 (增強邏輯在 checkAnswer)
-            if (heroBuffs.wakuwakuTurns > 0) {
-                heroBuffs.wakuwakuTurns--;
-                if (heroBuffs.wakuwakuTurns <= 0) {
-                    heroBuffs.wakuwakuTurns = 0;
-                    heroBuffs.wakuwakuStacks = 0;
-                    pushBattleLog("ワクワク 效果結束（鬥志冷卻）", 'info');
-                }
-            }
-
-
 
             updateHeroStatusBar();
 
@@ -2718,9 +2784,8 @@ const _jpApp = Vue.createApp({
                     pushBattleLog(`使用了 ${skill.name}：6 回合內每回合恢復 HP +6！`, 'buff');
                 }
             } else if (id === 'WAKUWAKU') {
-                // Grants 50% evasion for next 6 attacks
-                evasionBuffAttacksLeft.value = 6;
-                heroBuffs.wakuwakuTurns = 6;
+                // Refreshes to 6 enemy attack attempts; does not stack.
+                refreshWakuwakuCounter(6);
                 if (typeof setSpeedStatus === 'function') setSpeedStatus(25000);
                 showStatusToast('⚡ 感覺輕盈！ (閃避上升)', {
                     bg: 'rgba(8,145,178,0.92)',
@@ -2728,7 +2793,7 @@ const _jpApp = Vue.createApp({
                     color: '#083344'
                 });
                 if (typeof pushBattleLog === 'function') {
-                    pushBattleLog(`使用了 ${skill.name}：接下來 6 次攻擊期間自身閃避率提升到 50%！`, 'buff');
+                    pushBattleLog(`使用了 ${skill.name}：接下來 6 次敵方攻擊，閃避率提升到 50%！`, 'buff');
                 }
             } else {
 
@@ -2819,6 +2884,34 @@ const _jpApp = Vue.createApp({
         const inventory = ref({ potions: INITIAL_POTIONS });
 
         const evasionBuffAttacksLeft = ref(0);
+
+
+        const refreshWakuwakuCounter = (count = 6) => {
+            const next = Math.max(0, Number(count) || 0);
+            heroBuffs.wakuwakuTurns = next;
+            heroBuffs.wakuwakuStacks = 0;
+            evasionBuffAttacksLeft.value = next;
+        };
+
+        const consumeWakuwakuOnEnemyAttackAttempt = () => {
+            if (heroBuffs.wakuwakuTurns <= 0) {
+                evasionBuffAttacksLeft.value = 0;
+                return false;
+            }
+
+            heroBuffs.wakuwakuTurns = Math.max(0, heroBuffs.wakuwakuTurns - 1);
+            evasionBuffAttacksLeft.value = heroBuffs.wakuwakuTurns;
+
+            if (heroBuffs.wakuwakuTurns <= 0) {
+                heroBuffs.wakuwakuStacks = 0;
+                if (typeof clearSpeedStatus === 'function') clearSpeedStatus();
+                if (typeof pushBattleLog === 'function') pushBattleLog("ワクワク 效果結束（鬥志冷卻）", 'info');
+            } else if (typeof updateHeroStatusBar === 'function') {
+                updateHeroStatusBar();
+            }
+
+            return true;
+        };
 
 
 
@@ -3869,7 +3962,7 @@ const _jpApp = Vue.createApp({
         const getNormalizedSfxVolume = () => normalizeVolumeValue(sfxVolume.value);
 
         const getBgmUiDuckScale = () => {
-            let scale = (isMenuOpen.value || isCodexOpen.value || isMentorModalOpen.value || isMistakesOpen.value) ? 0.35 : 1.0;
+            let scale = (isMenuOpen.value || isCodexOpen.value || isMonsterCodexOpen.value || isMentorModalOpen.value || isMistakesOpen.value) ? 0.35 : 1.0;
 
             if (isMentorVoicePlaying.value) {
                 scale = (scale === 1.0) ? 0.25 : 0.15;
@@ -4752,7 +4845,7 @@ const _jpApp = Vue.createApp({
 
 
 
-        watch([isMenuOpen, isCodexOpen, isMentorModalOpen, isMistakesOpen, bgmVolume, masterVolume, isMuted, sfxVolume], () => {
+        watch([isMenuOpen, isCodexOpen, isMonsterCodexOpen, isMentorModalOpen, isMistakesOpen, bgmVolume, masterVolume, isMuted, sfxVolume], () => {
 
             updateGainVolumes();
 
@@ -6412,14 +6505,9 @@ const _jpApp = Vue.createApp({
             }
 
             let isMiss = Math.random() < 0.05;
-            if (evasionBuffAttacksLeft.value > 0) {
+            if (heroBuffs.wakuwakuTurns > 0) {
                 isMiss = Math.random() < 0.50;
-                evasionBuffAttacksLeft.value--;
-                heroBuffs.wakuwakuTurns = evasionBuffAttacksLeft.value;
-                if (typeof updateHeroStatusBar === 'function') updateHeroStatusBar();
-                if (evasionBuffAttacksLeft.value <= 0) {
-                    clearSpeedStatus();
-                }
+                consumeWakuwakuOnEnemyAttackAttempt();
             }
 
             // --- IMPACT SYNC: Delay damage/sfx to match lunge bottom ---
@@ -10673,6 +10761,7 @@ const _jpApp = Vue.createApp({
             heroBuffs,
             skillList, castAbility, spState, settings, shouldShowNextButton, praiseToast, comboPopup, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG, getSkillTypeLabel,
             particleMastery, particleCorrectCounts, skillMastery, skillCorrectCounts, getParticleMastery, getParticleMasteryStyle, getSkillMastery, getSkillMasteryStyle,
+            isMonsterCodexOpen, openMonsterCodex, monsterCodexEntries, selectedMonsterCodexEntry, selectMonsterCodexEntry, handleMonsterCodexImageError,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
             isMentorModalOpen, isLevelJumpOpen, isAdvancedSettingsOpen, isStageRecordsOpen, stageRecordRows, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
             displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,
