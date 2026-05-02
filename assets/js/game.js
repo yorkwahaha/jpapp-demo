@@ -579,7 +579,7 @@ const _jpApp = Vue.createApp({
         });
 
         const currentMapBgm = computed(() => {
-            return activeSegment.value?.mapBgm || 'assets/audio/bgm/map.mp3';
+            return activeSegment.value?.mapBgm || 'assets/audio/bgm_m4a/map.m4a';
         });
 
 
@@ -842,7 +842,7 @@ const _jpApp = Vue.createApp({
 
                 if (typeof bgmAudio !== 'undefined') {
 
-                    const expectedAbs = new URL('assets/audio/bgm/map.mp3', window.location.href).href;
+                    const expectedAbs = new URL('assets/audio/bgm_m4a/map.m4a', window.location.href).href;
 
                     if (!bgmAudio.value) {
 
@@ -856,7 +856,7 @@ const _jpApp = Vue.createApp({
 
                         if (typeof audioPool !== 'undefined') {
 
-                            audioPool.set(BGM_BASE + 'BGM_1.mp3', bgmAudio.value);
+                            audioPool.set(BGM_BASE + 'BGM_1.m4a', bgmAudio.value);
 
                         }
 
@@ -1882,7 +1882,7 @@ const _jpApp = Vue.createApp({
 
             const pNum = String(pageIndex + 1).padStart(2, '0');
 
-            return `assets/audio/mentor/wa-topic-basic-p${pNum}.mp3`;
+            return `assets/audio/mentor_m4a/wa-topic-basic-p${pNum}.m4a`;
 
         };
 
@@ -3501,9 +3501,9 @@ const _jpApp = Vue.createApp({
 
 
 
-        const BGM_BASE = 'assets/audio/bgm/';
+        const BGM_BASE = 'assets/audio/bgm_m4a/';
 
-        const currentBattleBgmPick = ref(BGM_BASE + 'BGM_1.mp3');
+        const currentBattleBgmPick = ref(BGM_BASE + 'BGM_1.m4a');
 
         let lastNormalBgm = null;
 
@@ -3519,7 +3519,7 @@ const _jpApp = Vue.createApp({
 
                 currentBattleBgmPick.value = BGM_BASE + configBgm;
 
-                if (configBgm === 'BGM_boss.mp3') lastNormalBgm = null;
+                if (configBgm === 'BGM_boss.m4a') lastNormalBgm = null;
 
                 return;
 
@@ -3527,13 +3527,13 @@ const _jpApp = Vue.createApp({
 
             if (lv % 5 === 0) {
 
-                currentBattleBgmPick.value = BGM_BASE + 'BGM_boss.mp3';
+                currentBattleBgmPick.value = BGM_BASE + 'BGM_boss.m4a';
 
                 lastNormalBgm = null;
 
             } else {
 
-                const normalBgms = ['BGM_1.mp3', 'BGM_2.mp3', 'BGM_3.mp3', 'BGM_4.mp3'];
+                const normalBgms = ['BGM_1.m4a', 'BGM_2.m4a', 'BGM_3.m4a', 'BGM_4.m4a'];
 
                 const pool = lastNormalBgm ? normalBgms.filter(b => b !== lastNormalBgm) : normalBgms;
 
@@ -3561,7 +3561,7 @@ const _jpApp = Vue.createApp({
 
 
 
-            const criticalAssets = [BGM_BASE + 'BGM_1.mp3', BGM_BASE + 'BGM_2.mp3', BGM_BASE + 'BGM_3.mp3', BGM_BASE + 'BGM_4.mp3', BGM_BASE + 'BGM_boss.mp3', 'assets/audio/bgm/map.mp3', sfxPaths.click, sfxPaths.uiPop, sfxPaths.battlePop];
+            const criticalAssets = [BGM_BASE + 'BGM_1.m4a', BGM_BASE + 'BGM_2.m4a', BGM_BASE + 'BGM_3.m4a', BGM_BASE + 'BGM_4.m4a', BGM_BASE + 'BGM_boss.m4a', 'assets/audio/bgm_m4a/map.m4a', sfxPaths.click, sfxPaths.uiPop, sfxPaths.battlePop];
 
             const promises = [];
 
@@ -3837,8 +3837,8 @@ const _jpApp = Vue.createApp({
         };
 
         const getMobileLowBgmUrl = (url) => {
-            if (!url || !/\.mp3(?:$|[?#])/i.test(url)) return url;
-            return url.replace(/\.mp3(?=($|[?#]))/i, '_mobile_low.mp3');
+            if (!url || !/\.m4a(?:$|[?#])/i.test(url)) return url;
+            return url.replace(/\.m4a(?=($|[?#]))/i, '_mobile_low.m4a');
         };
 
         const shouldUseMobileLowBgmFile = () => {
@@ -4260,17 +4260,17 @@ const _jpApp = Vue.createApp({
 
             try {
 
-                let bgm = audioPool.get(BGM_BASE + 'BGM_1.mp3');
+                let bgm = audioPool.get(BGM_BASE + 'BGM_1.m4a');
 
                 if (!bgm) {
 
-                    bgm = new Audio(BGM_BASE + 'BGM_1.mp3');
+                    bgm = new Audio(BGM_BASE + 'BGM_1.m4a');
 
                     bgm.crossOrigin = "anonymous";
 
                     bgm.preload = "auto";
 
-                    audioPool.set(BGM_BASE + 'BGM_1.mp3', bgm);
+                    audioPool.set(BGM_BASE + 'BGM_1.m4a', bgm);
 
                     bgm.load();
 
@@ -4581,7 +4581,7 @@ const _jpApp = Vue.createApp({
 
             } else {
 
-                expectedUrl = currentBattleBgmPick.value || (BGM_BASE + 'BGM_1.mp3');
+                expectedUrl = currentBattleBgmPick.value || (BGM_BASE + 'BGM_1.m4a');
 
             }
 
@@ -4780,7 +4780,7 @@ const _jpApp = Vue.createApp({
 
             if (!isBattleActive) return null;
 
-            return currentBattleBgmPick.value || (BGM_BASE + 'BGM_1.mp3');
+            return currentBattleBgmPick.value || (BGM_BASE + 'BGM_1.m4a');
         };
 
         const shouldResumeBgmForCurrentView = () => {
@@ -7218,7 +7218,7 @@ const _jpApp = Vue.createApp({
             const expectedBgm = getExpectedLoopBgmForCurrentState() ||
                 currentBattleBgmPick.value ||
                 currentMapBgm.value ||
-                (BGM_BASE + 'BGM_1.mp3');
+                (BGM_BASE + 'BGM_1.m4a');
 
             if (connected) {
                 await playHtmlBgmFallback(expectedBgm, 'debug-test-fallback-audioctx-v2-bgm');
@@ -7232,7 +7232,7 @@ const _jpApp = Vue.createApp({
             const expectedBgm = getExpectedLoopBgmForCurrentState() ||
                 currentBattleBgmPick.value ||
                 currentMapBgm.value ||
-                (BGM_BASE + 'BGM_1.mp3');
+                (BGM_BASE + 'BGM_1.m4a');
             await playHtmlBgmFallback(expectedBgm, 'debug-test-fallback-bgm');
             refreshAudioDebugState();
         };
@@ -7440,17 +7440,17 @@ const _jpApp = Vue.createApp({
 
         const ensureBgmElementSync = () => {
 
-            let bgm = audioPool.get(BGM_BASE + 'BGM_1.mp3');
+            let bgm = audioPool.get(BGM_BASE + 'BGM_1.m4a');
 
             if (!bgm) {
 
-                bgm = new Audio(BGM_BASE + 'BGM_1.mp3');
+                bgm = new Audio(BGM_BASE + 'BGM_1.m4a');
 
                 bgm.crossOrigin = "anonymous";
 
                 bgm.loop = true;
 
-                audioPool.set(BGM_BASE + 'BGM_1.mp3', bgm);
+                audioPool.set(BGM_BASE + 'BGM_1.m4a', bgm);
 
             }
 

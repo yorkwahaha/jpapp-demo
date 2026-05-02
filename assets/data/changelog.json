@@ -1,5 +1,17 @@
 [
     {
+        "version": "26050203",
+        "date": "2026-05-02",
+        "title": "BGM／導師語音改用 M4A 並移除舊 MP3",
+        "changes": [
+            "BGM 改用 AAC M4A（與現行 Web Audio／HTMLAudio 相容，利於 iOS Safari）。",
+            "導師語音改用 AAC M4A。",
+            "移除已不再引用的 assets/audio/bgm 與 assets/audio/mentor 舊 MP3。",
+            "音訊體積約略：BGM 約 142MB → 52MB；導師語音約 33MB → 8.4MB。",
+            "其他 SFX／skill／根目錄 MP3 暫時保留。"
+        ]
+    },
+    {
         "version": "26050202",
         "date": "2026-05-02",
         "title": "怪物圖片改用 WebP 並精簡儲存庫",

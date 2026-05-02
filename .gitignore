@@ -9,3 +9,6 @@ config.secret.local.js
 .env
 .env.*
 config.local.*
+
+ffmpeg.exe
+assets/audio/bgm_test_m4a/

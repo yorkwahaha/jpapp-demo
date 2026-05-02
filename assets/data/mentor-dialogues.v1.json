@@ -23,11 +23,11 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/prologue_01.mp3",
-      "assets/audio/mentor/prologue_02.mp3",
-      "assets/audio/mentor/prologue_03.mp3",
-      "assets/audio/mentor/prologue_04.mp3",
-      "assets/audio/mentor/prologue_05.mp3"
+      "assets/audio/mentor_m4a/prologue_01.m4a",
+      "assets/audio/mentor_m4a/prologue_02.m4a",
+      "assets/audio/mentor_m4a/prologue_03.m4a",
+      "assets/audio/mentor_m4a/prologue_04.m4a",
+      "assets/audio/mentor_m4a/prologue_05.m4a"
     ],
     "portraitVideo": {
       "webm": "assets/video/mentor/prologue-opening.webm",
@@ -63,12 +63,12 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/wa-topic-basic-p01.mp3",
-      "assets/audio/mentor/wa-topic-basic-p02.mp3",
-      "assets/audio/mentor/wa-topic-basic-p03.mp3",
-      "assets/audio/mentor/wa-topic-basic-p04.mp3",
-      "assets/audio/mentor/wa-topic-basic-p05.mp3",
-      "assets/audio/mentor/wa-topic-basic-p06.mp3"
+      "assets/audio/mentor_m4a/wa-topic-basic-p01.m4a",
+      "assets/audio/mentor_m4a/wa-topic-basic-p02.m4a",
+      "assets/audio/mentor_m4a/wa-topic-basic-p03.m4a",
+      "assets/audio/mentor_m4a/wa-topic-basic-p04.m4a",
+      "assets/audio/mentor_m4a/wa-topic-basic-p05.m4a",
+      "assets/audio/mentor_m4a/wa-topic-basic-p06.m4a"
     ]
   },
   "NO_POSSESSIVE": {
@@ -103,13 +103,13 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/no-possessive-p01.mp3",
-      "assets/audio/mentor/no-possessive-p02.mp3",
-      "assets/audio/mentor/no-possessive-p03.mp3",
-      "assets/audio/mentor/no-possessive-p04.mp3",
-      "assets/audio/mentor/no-possessive-p05.mp3",
-      "assets/audio/mentor/no-possessive-p06.mp3",
-      "assets/audio/mentor/no-possessive-p07.mp3"
+      "assets/audio/mentor_m4a/no-possessive-p01.m4a",
+      "assets/audio/mentor_m4a/no-possessive-p02.m4a",
+      "assets/audio/mentor_m4a/no-possessive-p03.m4a",
+      "assets/audio/mentor_m4a/no-possessive-p04.m4a",
+      "assets/audio/mentor_m4a/no-possessive-p05.m4a",
+      "assets/audio/mentor_m4a/no-possessive-p06.m4a",
+      "assets/audio/mentor_m4a/no-possessive-p07.m4a"
     ]
   },
   "GA_INTRANSITIVE": {
@@ -140,12 +140,12 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/ga-intransitive-p01.mp3",
-      "assets/audio/mentor/ga-intransitive-p02.mp3",
-      "assets/audio/mentor/ga-intransitive-p03.mp3",
-      "assets/audio/mentor/ga-intransitive-p04.mp3",
-      "assets/audio/mentor/ga-intransitive-p05.mp3",
-      "assets/audio/mentor/ga-intransitive-p06.mp3"
+      "assets/audio/mentor_m4a/ga-intransitive-p01.m4a",
+      "assets/audio/mentor_m4a/ga-intransitive-p02.m4a",
+      "assets/audio/mentor_m4a/ga-intransitive-p03.m4a",
+      "assets/audio/mentor_m4a/ga-intransitive-p04.m4a",
+      "assets/audio/mentor_m4a/ga-intransitive-p05.m4a",
+      "assets/audio/mentor_m4a/ga-intransitive-p06.m4a"
     ]
   },
   "WO_OBJECT_BASIC": {
@@ -176,12 +176,12 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/wo-object-basic-p01.mp3",
-      "assets/audio/mentor/wo-object-basic-p02.mp3",
-      "assets/audio/mentor/wo-object-basic-p03.mp3",
-      "assets/audio/mentor/wo-object-basic-p04.mp3",
-      "assets/audio/mentor/wo-object-basic-p05.mp3",
-      "assets/audio/mentor/wo-object-basic-p06.mp3"
+      "assets/audio/mentor_m4a/wo-object-basic-p01.m4a",
+      "assets/audio/mentor_m4a/wo-object-basic-p02.m4a",
+      "assets/audio/mentor_m4a/wo-object-basic-p03.m4a",
+      "assets/audio/mentor_m4a/wo-object-basic-p04.m4a",
+      "assets/audio/mentor_m4a/wo-object-basic-p05.m4a",
+      "assets/audio/mentor_m4a/wo-object-basic-p06.m4a"
     ]
   },
   "BOSS_REVIEW_01": {
@@ -220,14 +220,14 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/boss-review-01-p01.mp3",
-      "assets/audio/mentor/boss-review-01-p02.mp3",
-      "assets/audio/mentor/boss-review-01-p03.mp3",
-      "assets/audio/mentor/boss-review-01-p04.mp3",
-      "assets/audio/mentor/boss-review-01-p05.mp3",
-      "assets/audio/mentor/boss-review-01-p06.mp3",
-      "assets/audio/mentor/boss-review-01-p07.mp3",
-      "assets/audio/mentor/boss-review-01-p08.mp3"
+      "assets/audio/mentor_m4a/boss-review-01-p01.m4a",
+      "assets/audio/mentor_m4a/boss-review-01-p02.m4a",
+      "assets/audio/mentor_m4a/boss-review-01-p03.m4a",
+      "assets/audio/mentor_m4a/boss-review-01-p04.m4a",
+      "assets/audio/mentor_m4a/boss-review-01-p05.m4a",
+      "assets/audio/mentor_m4a/boss-review-01-p06.m4a",
+      "assets/audio/mentor_m4a/boss-review-01-p07.m4a",
+      "assets/audio/mentor_m4a/boss-review-01-p08.m4a"
     ]
   },
   "HE_DIRECTION": {
@@ -254,11 +254,11 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/he-direction-p01.mp3",
-      "assets/audio/mentor/he-direction-p02.mp3",
-      "assets/audio/mentor/he-direction-p03.mp3",
-      "assets/audio/mentor/he-direction-p04.mp3",
-      "assets/audio/mentor/he-direction-p05.mp3"
+      "assets/audio/mentor_m4a/he-direction-p01.m4a",
+      "assets/audio/mentor_m4a/he-direction-p02.m4a",
+      "assets/audio/mentor_m4a/he-direction-p03.m4a",
+      "assets/audio/mentor_m4a/he-direction-p04.m4a",
+      "assets/audio/mentor_m4a/he-direction-p05.m4a"
     ]
   },
   "MO_ALSO_BASIC": {
@@ -281,10 +281,10 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/mo-also-p01.mp3",
-      "assets/audio/mentor/mo-also-p02.mp3",
-      "assets/audio/mentor/mo-also-p03.mp3",
-      "assets/audio/mentor/mo-also-p04.mp3"
+      "assets/audio/mentor_m4a/mo-also-p01.m4a",
+      "assets/audio/mentor_m4a/mo-also-p02.m4a",
+      "assets/audio/mentor_m4a/mo-also-p03.m4a",
+      "assets/audio/mentor_m4a/mo-also-p04.m4a"
     ]
   },
   "NI_TIME": {
@@ -311,11 +311,11 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/ni-time-p01.mp3",
-      "assets/audio/mentor/ni-time-p02.mp3",
-      "assets/audio/mentor/ni-time-p03.mp3",
-      "assets/audio/mentor/ni-time-p04.mp3",
-      "assets/audio/mentor/ni-time-p05.mp3"
+      "assets/audio/mentor_m4a/ni-time-p01.m4a",
+      "assets/audio/mentor_m4a/ni-time-p02.m4a",
+      "assets/audio/mentor_m4a/ni-time-p03.m4a",
+      "assets/audio/mentor_m4a/ni-time-p04.m4a",
+      "assets/audio/mentor_m4a/ni-time-p05.m4a"
     ]
   },
   "TO_AND": {
@@ -342,11 +342,11 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/to-and-p01.mp3",
-      "assets/audio/mentor/to-and-p02.mp3",
-      "assets/audio/mentor/to-and-p03.mp3",
-      "assets/audio/mentor/to-and-p04.mp3",
-      "assets/audio/mentor/to-and-p05.mp3"
+      "assets/audio/mentor_m4a/to-and-p01.m4a",
+      "assets/audio/mentor_m4a/to-and-p02.m4a",
+      "assets/audio/mentor_m4a/to-and-p03.m4a",
+      "assets/audio/mentor_m4a/to-and-p04.m4a",
+      "assets/audio/mentor_m4a/to-and-p05.m4a"
     ]
   },
   "BOSS_REVIEW_02": {
@@ -385,14 +385,14 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/boss-review-02-p01.mp3",
-      "assets/audio/mentor/boss-review-02-p02.mp3",
-      "assets/audio/mentor/boss-review-02-p03.mp3",
-      "assets/audio/mentor/boss-review-02-p04.mp3",
-      "assets/audio/mentor/boss-review-02-p05.mp3",
-      "assets/audio/mentor/boss-review-02-p06.mp3",
-      "assets/audio/mentor/boss-review-02-p07.mp3",
-      "assets/audio/mentor/boss-review-02-p08.mp3"
+      "assets/audio/mentor_m4a/boss-review-02-p01.m4a",
+      "assets/audio/mentor_m4a/boss-review-02-p02.m4a",
+      "assets/audio/mentor_m4a/boss-review-02-p03.m4a",
+      "assets/audio/mentor_m4a/boss-review-02-p04.m4a",
+      "assets/audio/mentor_m4a/boss-review-02-p05.m4a",
+      "assets/audio/mentor_m4a/boss-review-02-p06.m4a",
+      "assets/audio/mentor_m4a/boss-review-02-p07.m4a",
+      "assets/audio/mentor_m4a/boss-review-02-p08.m4a"
     ]
   },
   "DE_ACTION_PLACE": {
@@ -415,10 +415,10 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/de-action-place-p01.mp3",
-      "assets/audio/mentor/de-action-place-p02.mp3",
-      "assets/audio/mentor/de-action-place-p03.mp3",
-      "assets/audio/mentor/de-action-place-p04.mp3"
+      "assets/audio/mentor_m4a/de-action-place-p01.m4a",
+      "assets/audio/mentor_m4a/de-action-place-p02.m4a",
+      "assets/audio/mentor_m4a/de-action-place-p03.m4a",
+      "assets/audio/mentor_m4a/de-action-place-p04.m4a"
     ]
   },
   "NI_EXIST_PLACE": {
@@ -441,10 +441,10 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/ni-exist-place-p01.mp3",
-      "assets/audio/mentor/ni-exist-place-p02.mp3",
-      "assets/audio/mentor/ni-exist-place-p03.mp3",
-      "assets/audio/mentor/ni-exist-place-p04.mp3"
+      "assets/audio/mentor_m4a/ni-exist-place-p01.m4a",
+      "assets/audio/mentor_m4a/ni-exist-place-p02.m4a",
+      "assets/audio/mentor_m4a/ni-exist-place-p03.m4a",
+      "assets/audio/mentor_m4a/ni-exist-place-p04.m4a"
     ]
   },
   "GA_EXIST_SUBJECT": {
@@ -467,10 +467,10 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/ga-exist-subject-p01.mp3",
-      "assets/audio/mentor/ga-exist-subject-p02.mp3",
-      "assets/audio/mentor/ga-exist-subject-p03.mp3",
-      "assets/audio/mentor/ga-exist-subject-p04.mp3"
+      "assets/audio/mentor_m4a/ga-exist-subject-p01.m4a",
+      "assets/audio/mentor_m4a/ga-exist-subject-p02.m4a",
+      "assets/audio/mentor_m4a/ga-exist-subject-p03.m4a",
+      "assets/audio/mentor_m4a/ga-exist-subject-p04.m4a"
     ]
   },
   "TO_WITH": {
@@ -497,11 +497,11 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/to-with-p01.mp3",
-      "assets/audio/mentor/to-with-p02.mp3",
-      "assets/audio/mentor/to-with-p03.mp3",
-      "assets/audio/mentor/to-with-p04.mp3",
-      "assets/audio/mentor/to-with-p05.mp3"
+      "assets/audio/mentor_m4a/to-with-p01.m4a",
+      "assets/audio/mentor_m4a/to-with-p02.m4a",
+      "assets/audio/mentor_m4a/to-with-p03.m4a",
+      "assets/audio/mentor_m4a/to-with-p04.m4a",
+      "assets/audio/mentor_m4a/to-with-p05.m4a"
     ]
   },
   "BOSS_REVIEW_03": {
@@ -540,14 +540,14 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/boss-review-03-p01.mp3",
-      "assets/audio/mentor/boss-review-03-p02.mp3",
-      "assets/audio/mentor/boss-review-03-p03.mp3",
-      "assets/audio/mentor/boss-review-03-p04.mp3",
-      "assets/audio/mentor/boss-review-03-p05.mp3",
-      "assets/audio/mentor/boss-review-03-p06.mp3",
-      "assets/audio/mentor/boss-review-03-p07.mp3",
-      "assets/audio/mentor/boss-review-03-p08.mp3"
+      "assets/audio/mentor_m4a/boss-review-03-p01.m4a",
+      "assets/audio/mentor_m4a/boss-review-03-p02.m4a",
+      "assets/audio/mentor_m4a/boss-review-03-p03.m4a",
+      "assets/audio/mentor_m4a/boss-review-03-p04.m4a",
+      "assets/audio/mentor_m4a/boss-review-03-p05.m4a",
+      "assets/audio/mentor_m4a/boss-review-03-p06.m4a",
+      "assets/audio/mentor_m4a/boss-review-03-p07.m4a",
+      "assets/audio/mentor_m4a/boss-review-03-p08.m4a"
     ]
   },
   "KARA_SOURCE_START": {
@@ -570,10 +570,10 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/kara-source-start-p01.mp3",
-      "assets/audio/mentor/kara-source-start-p02.mp3",
-      "assets/audio/mentor/kara-source-start-p03.mp3",
-      "assets/audio/mentor/kara-source-start-p04.mp3"
+      "assets/audio/mentor_m4a/kara-source-start-p01.m4a",
+      "assets/audio/mentor_m4a/kara-source-start-p02.m4a",
+      "assets/audio/mentor_m4a/kara-source-start-p03.m4a",
+      "assets/audio/mentor_m4a/kara-source-start-p04.m4a"
     ]
   },
   "MADE_LIMIT_END": {
@@ -596,10 +596,10 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/made-limit-end-p01.mp3",
-      "assets/audio/mentor/made-limit-end-p02.mp3",
-      "assets/audio/mentor/made-limit-end-p03.mp3",
-      "assets/audio/mentor/made-limit-end-p04.mp3"
+      "assets/audio/mentor_m4a/made-limit-end-p01.m4a",
+      "assets/audio/mentor_m4a/made-limit-end-p02.m4a",
+      "assets/audio/mentor_m4a/made-limit-end-p03.m4a",
+      "assets/audio/mentor_m4a/made-limit-end-p04.m4a"
     ]
   },
   "NI_DESTINATION": {
@@ -618,9 +618,9 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/ni-destination-p01.mp3",
-      "assets/audio/mentor/ni-destination-p02.mp3",
-      "assets/audio/mentor/ni-destination-p03.mp3"
+      "assets/audio/mentor_m4a/ni-destination-p01.m4a",
+      "assets/audio/mentor_m4a/ni-destination-p02.m4a",
+      "assets/audio/mentor_m4a/ni-destination-p03.m4a"
     ]
   },
   "DE_TOOL_MEANS": {
@@ -639,9 +639,9 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/de-tool-means-p01.mp3",
-      "assets/audio/mentor/de-tool-means-p02.mp3",
-      "assets/audio/mentor/de-tool-means-p03.mp3"
+      "assets/audio/mentor_m4a/de-tool-means-p01.m4a",
+      "assets/audio/mentor_m4a/de-tool-means-p02.m4a",
+      "assets/audio/mentor_m4a/de-tool-means-p03.m4a"
     ]
   },
   "BOSS_REVIEW_04": {
@@ -668,11 +668,11 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/boss-review-04-p01.mp3",
-      "assets/audio/mentor/boss-review-04-p02.mp3",
-      "assets/audio/mentor/boss-review-04-p03.mp3",
-      "assets/audio/mentor/boss-review-04-p04.mp3",
-      "assets/audio/mentor/boss-review-04-p05.mp3"
+      "assets/audio/mentor_m4a/boss-review-04-p01.m4a",
+      "assets/audio/mentor_m4a/boss-review-04-p02.m4a",
+      "assets/audio/mentor_m4a/boss-review-04-p03.m4a",
+      "assets/audio/mentor_m4a/boss-review-04-p04.m4a",
+      "assets/audio/mentor_m4a/boss-review-04-p05.m4a"
     ]
   },
   "NI_TARGET": {
@@ -695,10 +695,10 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/ni-target-p01.mp3",
-      "assets/audio/mentor/ni-target-p02.mp3",
-      "assets/audio/mentor/ni-target-p03.mp3",
-      "assets/audio/mentor/ni-target-p04.mp3"
+      "assets/audio/mentor_m4a/ni-target-p01.m4a",
+      "assets/audio/mentor_m4a/ni-target-p02.m4a",
+      "assets/audio/mentor_m4a/ni-target-p03.m4a",
+      "assets/audio/mentor_m4a/ni-target-p04.m4a"
     ]
   },
   "GA_BUT": {
@@ -725,11 +725,11 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/ga-but-p01.mp3",
-      "assets/audio/mentor/ga-but-p02.mp3",
-      "assets/audio/mentor/ga-but-p03.mp3",
-      "assets/audio/mentor/ga-but-p04.mp3",
-      "assets/audio/mentor/ga-but-p05.mp3"
+      "assets/audio/mentor_m4a/ga-but-p01.m4a",
+      "assets/audio/mentor_m4a/ga-but-p02.m4a",
+      "assets/audio/mentor_m4a/ga-but-p03.m4a",
+      "assets/audio/mentor_m4a/ga-but-p04.m4a",
+      "assets/audio/mentor_m4a/ga-but-p05.m4a"
     ]
   },
   "MO_COMPLETE_NEGATION": {
@@ -752,10 +752,10 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/mo-complete-negation-p01.mp3",
-      "assets/audio/mentor/mo-complete-negation-p02.mp3",
-      "assets/audio/mentor/mo-complete-negation-p03.mp3",
-      "assets/audio/mentor/mo-complete-negation-p04.mp3"
+      "assets/audio/mentor_m4a/mo-complete-negation-p01.m4a",
+      "assets/audio/mentor_m4a/mo-complete-negation-p02.m4a",
+      "assets/audio/mentor_m4a/mo-complete-negation-p03.m4a",
+      "assets/audio/mentor_m4a/mo-complete-negation-p04.m4a"
     ]
   },
   "TO_CONDITIONAL": {
@@ -782,11 +782,11 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/to-conditional-p01.mp3",
-      "assets/audio/mentor/to-conditional-p02.mp3",
-      "assets/audio/mentor/to-conditional-p03.mp3",
-      "assets/audio/mentor/to-conditional-p04.mp3",
-      "assets/audio/mentor/to-conditional-p05.mp3"
+      "assets/audio/mentor_m4a/to-conditional-p01.m4a",
+      "assets/audio/mentor_m4a/to-conditional-p02.m4a",
+      "assets/audio/mentor_m4a/to-conditional-p03.m4a",
+      "assets/audio/mentor_m4a/to-conditional-p04.m4a",
+      "assets/audio/mentor_m4a/to-conditional-p05.m4a"
     ]
   },
   "BOSS_REVIEW_05": {
@@ -817,12 +817,12 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/boss-review-05-p01.mp3",
-      "assets/audio/mentor/boss-review-05-p02.mp3",
-      "assets/audio/mentor/boss-review-05-p03.mp3",
-      "assets/audio/mentor/boss-review-05-p04.mp3",
-      "assets/audio/mentor/boss-review-05-p05.mp3",
-      "assets/audio/mentor/boss-review-05-p06.mp3"
+      "assets/audio/mentor_m4a/boss-review-05-p01.m4a",
+      "assets/audio/mentor_m4a/boss-review-05-p02.m4a",
+      "assets/audio/mentor_m4a/boss-review-05-p03.m4a",
+      "assets/audio/mentor_m4a/boss-review-05-p04.m4a",
+      "assets/audio/mentor_m4a/boss-review-05-p05.m4a",
+      "assets/audio/mentor_m4a/boss-review-05-p06.m4a"
     ]
   },
   "YA_AND_OTHERS": {
@@ -849,11 +849,11 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/ya-and-others-p01.mp3",
-      "assets/audio/mentor/ya-and-others-p02.mp3",
-      "assets/audio/mentor/ya-and-others-p03.mp3",
-      "assets/audio/mentor/ya-and-others-p04.mp3",
-      "assets/audio/mentor/ya-and-others-p05.mp3"
+      "assets/audio/mentor_m4a/ya-and-others-p01.m4a",
+      "assets/audio/mentor_m4a/ya-and-others-p02.m4a",
+      "assets/audio/mentor_m4a/ya-and-others-p03.m4a",
+      "assets/audio/mentor_m4a/ya-and-others-p04.m4a",
+      "assets/audio/mentor_m4a/ya-and-others-p05.m4a"
     ]
   },
   "DE_SCOPE": {
@@ -876,10 +876,10 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/de-scope-p01.mp3",
-      "assets/audio/mentor/de-scope-p02.mp3",
-      "assets/audio/mentor/de-scope-p03.mp3",
-      "assets/audio/mentor/de-scope-p04.mp3"
+      "assets/audio/mentor_m4a/de-scope-p01.m4a",
+      "assets/audio/mentor_m4a/de-scope-p02.m4a",
+      "assets/audio/mentor_m4a/de-scope-p03.m4a",
+      "assets/audio/mentor_m4a/de-scope-p04.m4a"
     ]
   },
   "NI_PURPOSE": {
@@ -906,11 +906,11 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/ni-purpose-p01.mp3",
-      "assets/audio/mentor/ni-purpose-p02.mp3",
-      "assets/audio/mentor/ni-purpose-p03.mp3",
-      "assets/audio/mentor/ni-purpose-p04.mp3",
-      "assets/audio/mentor/ni-purpose-p05.mp3"
+      "assets/audio/mentor_m4a/ni-purpose-p01.m4a",
+      "assets/audio/mentor_m4a/ni-purpose-p02.m4a",
+      "assets/audio/mentor_m4a/ni-purpose-p03.m4a",
+      "assets/audio/mentor_m4a/ni-purpose-p04.m4a",
+      "assets/audio/mentor_m4a/ni-purpose-p05.m4a"
     ]
   },
   "TO_QUOTE": {
@@ -937,11 +937,11 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/to-quote-p01.mp3",
-      "assets/audio/mentor/to-quote-p02.mp3",
-      "assets/audio/mentor/to-quote-p03.mp3",
-      "assets/audio/mentor/to-quote-p04.mp3",
-      "assets/audio/mentor/to-quote-p05.mp3"
+      "assets/audio/mentor_m4a/to-quote-p01.m4a",
+      "assets/audio/mentor_m4a/to-quote-p02.m4a",
+      "assets/audio/mentor_m4a/to-quote-p03.m4a",
+      "assets/audio/mentor_m4a/to-quote-p04.m4a",
+      "assets/audio/mentor_m4a/to-quote-p05.m4a"
     ]
   },
   "BOSS_REVIEW_06": {
@@ -972,12 +972,12 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/boss-review-06-p01.mp3",
-      "assets/audio/mentor/boss-review-06-p02.mp3",
-      "assets/audio/mentor/boss-review-06-p03.mp3",
-      "assets/audio/mentor/boss-review-06-p04.mp3",
-      "assets/audio/mentor/boss-review-06-p05.mp3",
-      "assets/audio/mentor/boss-review-06-p06.mp3"
+      "assets/audio/mentor_m4a/boss-review-06-p01.m4a",
+      "assets/audio/mentor_m4a/boss-review-06-p02.m4a",
+      "assets/audio/mentor_m4a/boss-review-06-p03.m4a",
+      "assets/audio/mentor_m4a/boss-review-06-p04.m4a",
+      "assets/audio/mentor_m4a/boss-review-06-p05.m4a",
+      "assets/audio/mentor_m4a/boss-review-06-p06.m4a"
     ]
   },
   "KARA_REASON": {
@@ -1004,11 +1004,11 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/kara-reason-p01.mp3",
-      "assets/audio/mentor/kara-reason-p02.mp3",
-      "assets/audio/mentor/kara-reason-p03.mp3",
-      "assets/audio/mentor/kara-reason-p04.mp3",
-      "assets/audio/mentor/kara-reason-p05.mp3"
+      "assets/audio/mentor_m4a/kara-reason-p01.m4a",
+      "assets/audio/mentor_m4a/kara-reason-p02.m4a",
+      "assets/audio/mentor_m4a/kara-reason-p03.m4a",
+      "assets/audio/mentor_m4a/kara-reason-p04.m4a",
+      "assets/audio/mentor_m4a/kara-reason-p05.m4a"
     ]
   },
   "YORI_COMPARE": {
@@ -1031,10 +1031,10 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/yori-compare-p01.mp3",
-      "assets/audio/mentor/yori-compare-p02.mp3",
-      "assets/audio/mentor/yori-compare-p03.mp3",
-      "assets/audio/mentor/yori-compare-p04.mp3"
+      "assets/audio/mentor_m4a/yori-compare-p01.m4a",
+      "assets/audio/mentor_m4a/yori-compare-p02.m4a",
+      "assets/audio/mentor_m4a/yori-compare-p03.m4a",
+      "assets/audio/mentor_m4a/yori-compare-p04.m4a"
     ]
   },
   "NI_FREQUENCY": {
@@ -1057,10 +1057,10 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/ni-frequency-p01.mp3",
-      "assets/audio/mentor/ni-frequency-p02.mp3",
-      "assets/audio/mentor/ni-frequency-p03.mp3",
-      "assets/audio/mentor/ni-frequency-p04.mp3"
+      "assets/audio/mentor_m4a/ni-frequency-p01.m4a",
+      "assets/audio/mentor_m4a/ni-frequency-p02.m4a",
+      "assets/audio/mentor_m4a/ni-frequency-p03.m4a",
+      "assets/audio/mentor_m4a/ni-frequency-p04.m4a"
     ]
   },
   "DE_MATERIAL": {
@@ -1087,11 +1087,11 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/de-material-p01.mp3",
-      "assets/audio/mentor/de-material-p02.mp3",
-      "assets/audio/mentor/de-material-p03.mp3",
-      "assets/audio/mentor/de-material-p04.mp3",
-      "assets/audio/mentor/de-material-p05.mp3"
+      "assets/audio/mentor_m4a/de-material-p01.m4a",
+      "assets/audio/mentor_m4a/de-material-p02.m4a",
+      "assets/audio/mentor_m4a/de-material-p03.m4a",
+      "assets/audio/mentor_m4a/de-material-p04.m4a",
+      "assets/audio/mentor_m4a/de-material-p05.m4a"
     ]
   },
   "FINAL_BOSS_35": {
@@ -1118,11 +1118,11 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/final-boss-35-p01.mp3",
-      "assets/audio/mentor/final-boss-35-p02.mp3",
-      "assets/audio/mentor/final-boss-35-p03.mp3",
-      "assets/audio/mentor/final-boss-35-p04.mp3",
-      "assets/audio/mentor/final-boss-35-p05.mp3"
+      "assets/audio/mentor_m4a/final-boss-35-p01.m4a",
+      "assets/audio/mentor_m4a/final-boss-35-p02.m4a",
+      "assets/audio/mentor_m4a/final-boss-35-p03.m4a",
+      "assets/audio/mentor_m4a/final-boss-35-p04.m4a",
+      "assets/audio/mentor_m4a/final-boss-35-p05.m4a"
     ]
   },
   "ENDING_L35_NORMAL": {
@@ -1153,12 +1153,12 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/ending-l35-normal-p01.mp3",
-      "assets/audio/mentor/ending-l35-normal-p02.mp3",
-      "assets/audio/mentor/ending-l35-normal-p03.mp3",
-      "assets/audio/mentor/ending-l35-normal-p04.mp3",
-      "assets/audio/mentor/ending-l35-normal-p05.mp3",
-      "assets/audio/mentor/ending-l35-normal-p06.mp3"
+      "assets/audio/mentor_m4a/ending-l35-normal-p01.m4a",
+      "assets/audio/mentor_m4a/ending-l35-normal-p02.m4a",
+      "assets/audio/mentor_m4a/ending-l35-normal-p03.m4a",
+      "assets/audio/mentor_m4a/ending-l35-normal-p04.m4a",
+      "assets/audio/mentor_m4a/ending-l35-normal-p05.m4a",
+      "assets/audio/mentor_m4a/ending-l35-normal-p06.m4a"
     ]
   },
   "ENDING_L35_ALL_S": {
@@ -1181,10 +1181,10 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/ending-l35-all-s-p01.mp3",
-      "assets/audio/mentor/ending-l35-all-s-p02.mp3",
-      "assets/audio/mentor/ending-l35-all-s-p03.mp3",
-      "assets/audio/mentor/ending-l35-all-s-p04.mp3"
+      "assets/audio/mentor_m4a/ending-l35-all-s-p01.m4a",
+      "assets/audio/mentor_m4a/ending-l35-all-s-p02.m4a",
+      "assets/audio/mentor_m4a/ending-l35-all-s-p03.m4a",
+      "assets/audio/mentor_m4a/ending-l35-all-s-p04.m4a"
     ]
   },
   "ENDING_L35_ALL_S_AT_35": {
@@ -1211,11 +1211,11 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/ending-l35-all-s-at-35-p01.mp3",
-      "assets/audio/mentor/ending-l35-all-s-at-35-p02.mp3",
-      "assets/audio/mentor/ending-l35-all-s-at-35-p03.mp3",
-      "assets/audio/mentor/ending-l35-all-s-at-35-p04.mp3",
-      "assets/audio/mentor/ending-l35-all-s-at-35-p05.mp3"
+      "assets/audio/mentor_m4a/ending-l35-all-s-at-35-p01.m4a",
+      "assets/audio/mentor_m4a/ending-l35-all-s-at-35-p02.m4a",
+      "assets/audio/mentor_m4a/ending-l35-all-s-at-35-p03.m4a",
+      "assets/audio/mentor_m4a/ending-l35-all-s-at-35-p04.m4a",
+      "assets/audio/mentor_m4a/ending-l35-all-s-at-35-p05.m4a"
     ]
   },
   "L36_FIRST_ENTRY": {
@@ -1242,11 +1242,11 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/l36-first-entry-p01.mp3",
-      "assets/audio/mentor/l36-first-entry-p02.mp3",
-      "assets/audio/mentor/l36-first-entry-p03.mp3",
-      "assets/audio/mentor/l36-first-entry-p04.mp3",
-      "assets/audio/mentor/l36-first-entry-p05.mp3"
+      "assets/audio/mentor_m4a/l36-first-entry-p01.m4a",
+      "assets/audio/mentor_m4a/l36-first-entry-p02.m4a",
+      "assets/audio/mentor_m4a/l36-first-entry-p03.m4a",
+      "assets/audio/mentor_m4a/l36-first-entry-p04.m4a",
+      "assets/audio/mentor_m4a/l36-first-entry-p05.m4a"
     ]
   },
   "HIDDEN_BOSS_36": {
@@ -1264,7 +1264,7 @@
         "emotion": "concerned"
       },
       {
-        "text": "不用著急。先問問自己。這個句子現在，在做什麼呢...就這樣。看見職責，路就會跟著出現。",
+        "text": "不用著急，先問問自己，這個句子現在在做什麼呢？像這樣看見職責，路就會跟著出現。",
         "emotion": "encourage"
       },
       {
@@ -1272,17 +1272,17 @@
         "emotion": "gentle"
       },
       {
-        "text": "好了。最後的深淵，就在眼前了。我在這裡，是為了親眼見證你用自己的力量越過去的那一刻。抬起頭，往前走。",
+        "text": "好了。最後的深淵就在眼前了，我在這裡，是為了親眼見證你用自己的力量越過去的那一刻，抬起頭，往前走。",
         "emotion": "blessing"
       }
     ],
     "audio": [
-      "assets/audio/mentor/hidden-boss-36-p01.mp3",
-      "assets/audio/mentor/hidden-boss-36-p02.mp3",
-      "assets/audio/mentor/hidden-boss-36-p03.mp3",
-      "assets/audio/mentor/hidden-boss-36-p04.mp3",
-      "assets/audio/mentor/hidden-boss-36-p05.mp3",
-      "assets/audio/mentor/hidden-boss-36-p06.mp3"
+      "assets/audio/mentor_m4a/hidden-boss-36-p01.m4a",
+      "assets/audio/mentor_m4a/hidden-boss-36-p02.m4a",
+      "assets/audio/mentor_m4a/hidden-boss-36-p03.m4a",
+      "assets/audio/mentor_m4a/hidden-boss-36-p04.m4a",
+      "assets/audio/mentor_m4a/hidden-boss-36-p05.m4a",
+      "assets/audio/mentor_m4a/hidden-boss-36-p06.m4a"
     ]
   },
   "MAIN_ENDING_FINALE": {
@@ -1329,16 +1329,16 @@
       }
     ],
     "audio": [
-      "assets/audio/mentor/final-ending-p01.mp3",
-      "assets/audio/mentor/final-ending-p02.mp3",
-      "assets/audio/mentor/final-ending-p03.mp3",
-      "assets/audio/mentor/final-ending-p04.mp3",
-      "assets/audio/mentor/final-ending-p05.mp3",
-      "assets/audio/mentor/final-ending-p06.mp3",
-      "assets/audio/mentor/final-ending-p07.mp3",
-      "assets/audio/mentor/final-ending-p08.mp3",
-      "assets/audio/mentor/final-ending-p09.mp3",
-      "assets/audio/mentor/final-ending-p10.mp3"
+      "assets/audio/mentor_m4a/final-ending-p01.m4a",
+      "assets/audio/mentor_m4a/final-ending-p02.m4a",
+      "assets/audio/mentor_m4a/final-ending-p03.m4a",
+      "assets/audio/mentor_m4a/final-ending-p04.m4a",
+      "assets/audio/mentor_m4a/final-ending-p05.m4a",
+      "assets/audio/mentor_m4a/final-ending-p06.m4a",
+      "assets/audio/mentor_m4a/final-ending-p07.m4a",
+      "assets/audio/mentor_m4a/final-ending-p08.m4a",
+      "assets/audio/mentor_m4a/final-ending-p09.m4a",
+      "assets/audio/mentor_m4a/final-ending-p10.m4a"
     ]
   }
 }

@@ -92,7 +92,7 @@
     "focusParticle": "Boss",
     "focusLabel": "複習",
     "bgImage": "assets/images/backgrounds/boss_l5.webp",
-    "bgm": "BGM_boss.mp3"
+    "bgm": "BGM_boss.m4a"
   },
   {
     "id": "L6",
@@ -191,7 +191,7 @@
     "focusParticle": "Boss",
     "focusLabel": "複習",
     "bgImage": "assets/images/backgrounds/boss_l10_v2.webp",
-    "bgm": "BGM_boss.mp3"
+    "bgm": "BGM_boss.m4a"
   },
   {
     "id": "L11",
@@ -290,7 +290,7 @@
     "focusParticle": "Boss",
     "focusLabel": "複習",
     "bgImage": "assets/images/backgrounds/boss_l15.webp",
-    "bgm": "BGM_boss.mp3"
+    "bgm": "BGM_boss.m4a"
   },
   {
     "id": "L16",
@@ -389,7 +389,7 @@
     "focusParticle": "Boss",
     "focusLabel": "複習",
     "bgImage": "assets/images/backgrounds/boss_l20_v2.webp",
-    "bgm": "BGM_boss.mp3"
+    "bgm": "BGM_boss.m4a"
   },
   {
     "id": "L21",
@@ -484,7 +484,7 @@
     "focusParticle": "Boss",
     "focusLabel": "複習",
     "bgImage": "assets/images/backgrounds/boss_l25_v2.webp",
-    "bgm": "BGM_boss.mp3"
+    "bgm": "BGM_boss.m4a"
   },
   {
     "id": "L26",
@@ -579,7 +579,7 @@
     "focusParticle": "Boss",
     "focusLabel": "複習",
     "bgImage": "assets/images/backgrounds/boss_l30_v3.webp",
-    "bgm": "BGM_boss.mp3"
+    "bgm": "BGM_boss.m4a"
   },
   {
     "id": "L31",
@@ -674,7 +674,7 @@
     "focusParticle": "Boss",
     "focusLabel": "最終",
     "bgImage": "assets/images/backgrounds/boss_l35_v4.webp",
-    "bgm": "BGM_boss.mp3"
+    "bgm": "BGM_boss.m4a"
   },
   {
     "id": "L36_HIDDEN",
@@ -694,6 +694,6 @@
     "focusParticle": "Boss",
     "focusLabel": "極限",
     "bgImage": "assets/images/backgrounds/boss_l36.webp",
-    "bgm": "Do_not_go_against_me.mp3"
+    "bgm": "Do_not_go_against_me.m4a"
   }
 ]
