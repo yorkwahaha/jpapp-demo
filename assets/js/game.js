@@ -2435,6 +2435,15 @@ const _jpApp = Vue.createApp({
 
         );
 
+        const SKILL_TYPE_LABELS = {
+            debuff: 'DEBUFF',
+            buff: 'BUFF',
+            heal: 'HEAL',
+            attackBuff: 'ATK'
+        };
+
+        const getSkillTypeLabel = (type) => SKILL_TYPE_LABELS[type] || 'BUFF';
+
         const isSkillOpen = ref(false);
 
         const pendingLevelUpAbility = ref(null);
@@ -2837,6 +2846,55 @@ const _jpApp = Vue.createApp({
         const comboCount = ref(0);
 
         const maxComboCount = ref(0);
+
+        const comboPopup = ref({
+            show: false,
+            value: 0,
+            tier: 'good',
+            key: 0,
+            leftPct: 72,
+            topPct: 52,
+        });
+
+        let comboPopupTimer = null;
+
+        const COMBO_POPUP_DURATION_MS = 1350;
+
+        const getComboTier = (combo) => {
+            if (combo >= 20) return 'max';
+            if (combo >= 10) return 'amazing';
+            if (combo >= 5) return 'great';
+            return 'good';
+        };
+
+        const randomComboPopupPosition = () => {
+            const isPhonePortrait =
+                typeof window !== 'undefined'
+                && window.matchMedia?.('(max-width: 640px) and (orientation: portrait)').matches;
+
+            const leftSide = Math.random() < 0.5;
+            const rnd = (a, b) => a + Math.random() * (b - a);
+            const leftPct = leftSide ? rnd(25, 38) : rnd(62, 75);
+            const topPct = isPhonePortrait ? rnd(44, 62) : rnd(42, 58);
+            return { leftPct, topPct };
+        };
+
+        const showComboPopup = (combo) => {
+            if (combo < 2) return;
+            const { leftPct, topPct } = randomComboPopupPosition();
+            comboPopup.value = {
+                show: true,
+                value: combo,
+                tier: getComboTier(combo),
+                key: Date.now(),
+                leftPct,
+                topPct,
+            };
+            if (comboPopupTimer) clearTimeout(comboPopupTimer);
+            comboPopupTimer = setTimeout(() => {
+                comboPopup.value = { ...comboPopup.value, show: false };
+            }, COMBO_POPUP_DURATION_MS);
+        };
 
         const currentLevel = ref(1);
 
@@ -7153,7 +7211,7 @@ const _jpApp = Vue.createApp({
 
         const debugTestRawAudio = async () => {
             try {
-                const raw = new Audio('assets/audio/sfx_click.mp3');
+                const raw = new Audio('assets/audio/sfx/sfx_click.mp3');
                 raw.volume = Math.max(0, Math.min(1, sfxVolume.value * masterVolume.value));
                 await raw.play();
                 lastRawAudioResult.value = `resolved @ ${new Date().toLocaleTimeString()}`;
@@ -9099,10 +9157,6 @@ const _jpApp = Vue.createApp({
 
 
 
-        let lastPraiseTime = 0;
-
-        let lastPraiseText = '';
-
         const ONEESAN_PRAISES = ['せいかい！', 'ナイス！', 'いいね！', 'すごい！', 'かっこいい！', 'まじか！', 'さいこう！'];
 
 
@@ -9110,6 +9164,68 @@ const _jpApp = Vue.createApp({
         const praiseToast = ref({ show: false, text: '' });
 
         let praiseToastTimer = null;
+
+        const FEEDBACK_VOICE_BASE = 'assets/audio/feedback_m4a/';
+
+        const FEEDBACK_VOICE_PATHS = {
+            'combo-good': ['combo-good-01.m4a', 'combo-good-02.m4a'],
+            'combo-great': ['combo-great-01.m4a', 'combo-great-02.m4a'],
+            'combo-amazing': ['combo-amazing-01.m4a', 'combo-amazing-02.m4a'],
+            'combo-max': ['combo-max-01.m4a', 'combo-max-02.m4a'],
+            'combo-perfect': ['combo-perfect-01.m4a', 'combo-perfect-02.m4a'],
+            correct: ['correct-01.m4a', 'correct-02.m4a'],
+            wrong: ['wrong-01.m4a'],
+            'low-hp': ['low-hp-01.m4a'],
+            victory: ['victory-01.m4a']
+        };
+
+        const feedbackVoiceWarnedPaths = new Set();
+
+        /** Combo 語音僅在剛達門檻當下播放一次；非門檻不播（16+ 暫無）。 */
+        const COMBO_FEEDBACK_MILESTONES = {
+            3: 'combo-good',
+            6: 'combo-great',
+            9: 'combo-amazing',
+            12: 'combo-max',
+            15: 'combo-perfect',
+        };
+
+        const pickComboTierFeedbackKey = (comboCount) => COMBO_FEEDBACK_MILESTONES[comboCount] || null;
+
+        const playOptionalAudio = (path, options = {}) => {
+            if (!path || isMuted.value || sfxVolume.value <= 0 || masterVolume.value <= 0) return;
+            try {
+                const audio = new Audio(path);
+                audio.preload = 'auto';
+                audio.volume = Math.max(0, Math.min(1, (options.volume ?? 0.9) * sfxVolume.value * masterVolume.value));
+                const warnOnce = (err) => {
+                    if (feedbackVoiceWarnedPaths.has(path)) return;
+                    feedbackVoiceWarnedPaths.add(path);
+                    console.warn('[feedback-voice] optional local file unavailable; skipped', path, err?.name || err?.message || err || '');
+                };
+                audio.addEventListener('error', () => warnOnce('error'), { once: true });
+                const playPromise = audio.play();
+                if (playPromise?.catch) playPromise.catch(warnOnce);
+            } catch (err) {
+                if (!feedbackVoiceWarnedPaths.has(path)) {
+                    feedbackVoiceWarnedPaths.add(path);
+                    console.warn('[feedback-voice] optional local file unavailable; skipped', path, err?.name || err?.message || err || '');
+                }
+            }
+        };
+
+        const playFeedbackVoice = (categoryOrId) => {
+            const files = FEEDBACK_VOICE_PATHS[categoryOrId];
+            if (!files || files.length === 0) return;
+            const file = files[Math.floor(Math.random() * files.length)];
+            playOptionalAudio(FEEDBACK_VOICE_BASE + file);
+        };
+
+        const playComboTierFeedbackVoice = (combo) => {
+            const key = pickComboTierFeedbackKey(combo);
+            if (!key) return;
+            playFeedbackVoice(key);
+        };
 
         const showPraiseToast = (text, ms = 900) => {
 
@@ -9164,31 +9280,6 @@ const _jpApp = Vue.createApp({
                 const text = ONEESAN_PRAISES[praiseIndex];
 
                 showPraiseToast(text);
-
-
-
-                const milestones = [3, 5, 7, 10, 15, 20];
-
-                if (milestones.includes(combo)) {
-
-                    const now = Date.now();
-
-                    if (now - lastPraiseTime >= 1500 && lastPraiseText !== text) {
-
-                        lastPraiseTime = now;
-
-                        lastPraiseText = text;
-
-                        if (praiseIndex <= 0) {
-                            playTtsKey(`ui.praise_${praiseIndex}`, text);
-                        } else {
-                            // 3回以上 combo 時直接走雲端/WebSpeech，避免 404 噪音
-                            speakCloudTts(text);
-                        }
-
-                    }
-
-                }
 
             }
 
@@ -9398,6 +9489,10 @@ const _jpApp = Vue.createApp({
 
                         comboCount.value++;
 
+                        playComboTierFeedbackVoice(comboCount.value);
+
+                        showComboPopup(comboCount.value);
+
                         if (comboCount.value > maxComboCount.value) maxComboCount.value = comboCount.value;
 
                         const timeTaken = (Date.now() - questionStartTime) / 1000;
@@ -9473,6 +9568,8 @@ const _jpApp = Vue.createApp({
                     initAudio();
 
                     if (_isMobileSfx) playUiSfx('miss'); else playSfx('miss');
+
+                    playFeedbackVoice('wrong');
 
                     pushBattleLog(`攻擊失敗！`, 'info');
 
@@ -10520,6 +10617,7 @@ const _jpApp = Vue.createApp({
             isLevelJumpOpen.value = false;
 
             praiseToast.value.show = false;
+            comboPopup.value.show = false;
 
             window._disableMentorAutoTrigger = true;
 
@@ -10573,7 +10671,7 @@ const _jpApp = Vue.createApp({
             answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, expandedSkillId, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             handleEscapeToMap, escapeOverlayVisible, escapeOverlayOpacity, isEscaping,
             heroBuffs,
-            skillList, castAbility, spState, settings, shouldShowNextButton, praiseToast, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG,
+            skillList, castAbility, spState, settings, shouldShowNextButton, praiseToast, comboPopup, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG, getSkillTypeLabel,
             particleMastery, particleCorrectCounts, skillMastery, skillCorrectCounts, getParticleMastery, getParticleMasteryStyle, getSkillMastery, getSkillMasteryStyle,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
             isMentorModalOpen, isLevelJumpOpen, isAdvancedSettingsOpen, isStageRecordsOpen, stageRecordRows, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,

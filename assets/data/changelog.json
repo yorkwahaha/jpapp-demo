@@ -1,5 +1,18 @@
 [
     {
+        "version": "26050204",
+        "date": "2026-05-02",
+        "title": "Combo 回饋與音訊資產整理",
+        "changes": [
+            "技能頁加入 buff / debuff / heal / attack 類型標示與精簡文案。",
+            "Combo popup 強化：移除右上角小 badge、改為怪物左右側跳出、提升可讀性。",
+            "移除戰鬥畫面怪物黃字介紹，只保留名稱與 HP。",
+            "新增 feedback_m4a combo 語音接線，3 / 6 / 9 / 12 / 15 里程碑播放。",
+            "assets/audio 根目錄 SFX 整理到 assets/audio/sfx/。",
+            "root SFX 路徑改接 assets/audio/sfx/。"
+        ]
+    },
+    {
         "version": "26050203",
         "date": "2026-05-02",
         "title": "BGM／導師語音改用 M4A 並移除舊 MP3",

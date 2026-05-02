@@ -1352,7 +1352,7 @@
                     // stop bgm first to ensure gameover sound is audible
                     try { if (bgmAudio.value) { bgmAudio.value.pause(); try { bgmAudio.value.currentTime = 0; } catch (_) { } } } catch (_) { }
                     try {
-                        gameOverAudio.value = new Audio('assets/audio/sfx_gameover.mp3');
+                        gameOverAudio.value = new Audio('assets/audio/sfx/sfx_gameover.mp3');
                         gameOverAudio.value.volume = isMuted.value ? 0 : sfxVolume.value;
                         gameOverAudio.value.play().catch(() => { console.log('無法播放 gameover 音效，可能缺少檔案'); });
                     } catch (_) { console.log('建立 gameover 音效失敗'); }
@@ -1411,14 +1411,14 @@
                 const playSfx = (name) => {
                     if (!audioInited.value) return;
                     const srcMap = {
-                        hit: 'assets/audio/sfx_hit.mp3',
-                        miss: 'assets/audio/mmiss.mp3',
-                        potion: 'assets/audio/sfx_potion.mp3',
-                        click: 'assets/audio/sfx_click.mp3',
-                        damage: 'assets/audio/damage.mp3',
-                        fanfare: 'assets/audio/fanfare.mp3',
-                        pop: 'assets/audio/pop.mp3',
-                        win: 'assets/audio/win.mp3'
+                        hit: 'assets/audio/sfx/sfx_hit.mp3',
+                        miss: 'assets/audio/sfx/mmiss.mp3',
+                        potion: 'assets/audio/sfx/sfx_potion.mp3',
+                        click: 'assets/audio/sfx/sfx_click.mp3',
+                        damage: 'assets/audio/sfx/damage.mp3',
+                        fanfare: 'assets/audio/sfx/fanfare.mp3',
+                        pop: 'assets/audio/sfx/pop.mp3',
+                        win: 'assets/audio/sfx/win.mp3'
                     };
                     const src = srcMap[name];
                     if (!src) return;

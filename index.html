@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26050203'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26050204'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -58,8 +58,8 @@
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/styles.css?v=26050203">
-    <link rel="stylesheet" href="assets/css/escape.css?v=26050203">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26050204">
+    <link rel="stylesheet" href="assets/css/escape.css?v=26050204">
 
 
 
@@ -69,7 +69,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26050203';
+            const v = window.APP_VERSION || '26050204';
 
 
 
@@ -1267,6 +1267,203 @@
             color: #fff;
             letter-spacing: 0.15em;
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8), 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+
+        .skill-type-badge {
+            flex: 0 0 auto;
+            padding: 1px 6px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: rgba(15, 23, 42, 0.75);
+            color: #cbd5e1;
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            line-height: 1.35;
+        }
+
+        .skill-card--debuff .skill-icon-frame,
+        .skill-card--debuff .skill-type-badge {
+            border-color: rgba(248, 113, 113, 0.75);
+            color: #fecaca;
+            box-shadow: 0 0 18px rgba(239, 68, 68, 0.18);
+        }
+
+        .skill-card--buff .skill-icon-frame,
+        .skill-card--buff .skill-type-badge {
+            border-color: rgba(45, 212, 191, 0.75);
+            color: #99f6e4;
+            box-shadow: 0 0 18px rgba(20, 184, 166, 0.16);
+        }
+
+        .skill-card--heal .skill-icon-frame,
+        .skill-card--heal .skill-type-badge {
+            border-color: rgba(74, 222, 128, 0.75);
+            color: #bbf7d0;
+            box-shadow: 0 0 18px rgba(34, 197, 94, 0.18);
+        }
+
+        .skill-card--attackBuff .skill-icon-frame,
+        .skill-card--attackBuff .skill-type-badge {
+            border-color: rgba(251, 191, 36, 0.85);
+            color: #fde68a;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.22);
+        }
+
+        .combo-popup-anchor {
+            position: absolute;
+            left: var(--combo-left, 72%);
+            top: var(--combo-top, 52%);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            --combo-popup-dur: 1.35s;
+        }
+
+        .combo-center-popup {
+            display: flex;
+            align-items: baseline;
+            gap: 0.42rem;
+            color: #fff7d6;
+            white-space: nowrap;
+            transform-origin: 50% 60%;
+            animation: combo-center-burst var(--combo-popup-dur, 1.35s) cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .combo-center-popup__value {
+            font-size: clamp(2.4rem, 8vw, 4.8rem);
+            line-height: 0.9;
+            font-weight: 950;
+            letter-spacing: 0.02em;
+            color: #fff4c2;
+            -webkit-text-stroke: 1.5px rgba(72, 36, 12, 0.9);
+            paint-order: stroke fill;
+            text-shadow:
+                0 2px 0 rgba(70, 35, 10, 0.95),
+                0 4px 8px rgba(0, 0, 0, 0.65),
+                0 0 6px rgba(255, 190, 70, 0.75);
+        }
+
+        .combo-center-popup__label {
+            margin-left: 0.08em;
+            font-size: clamp(1.08rem, 3.24vw, 1.62rem);
+            line-height: 1;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            color: #fffcf5;
+            -webkit-text-stroke: 1.1px rgba(48, 28, 12, 0.92);
+            paint-order: stroke fill;
+            text-shadow:
+                0 2px 0 rgba(52, 30, 14, 0.95),
+                0 4px 8px rgba(0, 0, 0, 0.65),
+                0 0 5px rgba(255, 200, 95, 0.55);
+        }
+
+        .combo-center-popup--great .combo-center-popup__value {
+            font-size: clamp(2.9rem, 9vw, 5.6rem);
+            color: #fff7d6;
+            text-shadow:
+                0 2px 0 rgba(70, 35, 10, 0.95),
+                0 4px 8px rgba(0, 0, 0, 0.65),
+                0 0 6px rgba(255, 190, 70, 0.75),
+                0 0 9px rgba(255, 205, 100, 0.45);
+        }
+
+        .combo-center-popup--amazing,
+        .combo-center-popup--max {
+            color: #fffbe6;
+            animation-name: combo-center-burst-strong;
+        }
+
+        .combo-center-popup--amazing .combo-center-popup__value,
+        .combo-center-popup--max .combo-center-popup__value {
+            font-size: clamp(3.4rem, 10vw, 6.4rem);
+            color: #fff7dc;
+            text-shadow:
+                0 2px 0 rgba(70, 35, 10, 0.95),
+                0 4px 8px rgba(0, 0, 0, 0.65),
+                0 0 6px rgba(255, 190, 70, 0.75),
+                0 0 9px rgba(255, 215, 130, 0.55),
+                0 0 8px rgba(255, 148, 90, 0.22);
+        }
+
+        .combo-center-popup--amazing .combo-center-popup__label,
+        .combo-center-popup--max .combo-center-popup__label {
+            color: #fffdf8;
+            text-shadow:
+                0 2px 0 rgba(52, 30, 14, 0.95),
+                0 4px 8px rgba(0, 0, 0, 0.65),
+                0 0 5px rgba(255, 205, 120, 0.45);
+        }
+
+        .combo-pop-leave-active {
+            transition: opacity 120ms ease;
+        }
+
+        .combo-pop-leave-to {
+            opacity: 0;
+        }
+
+        @keyframes combo-center-burst {
+            0% {
+                opacity: 0;
+                transform: translateY(10px) scale(0.72);
+            }
+            14% {
+                opacity: 1;
+                transform: translateY(-2px) scale(1.1);
+            }
+            28% {
+                transform: translateY(-8px) scale(1);
+            }
+            55% {
+                opacity: 1;
+                transform: translateY(-12px) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.92);
+            }
+        }
+
+        @keyframes combo-center-burst-strong {
+            0% {
+                opacity: 0;
+                transform: translateY(10px) scale(0.72) rotate(-1deg);
+            }
+            12% {
+                opacity: 1;
+                transform: translateY(-4px) scale(1.16) rotate(1deg);
+            }
+            26% {
+                transform: translateY(-10px) scale(1.02) rotate(-0.8deg);
+            }
+            40% {
+                transform: translateY(-14px) scale(1.04) rotate(0.6deg);
+            }
+            58% {
+                opacity: 1;
+                transform: translateY(-16px) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-26px) scale(0.94) rotate(0deg);
+            }
+        }
+
+        @media (max-width: 640px) and (orientation: portrait) {
+            .combo-center-popup__value {
+                font-size: clamp(2.1rem, 11vw, 3.8rem);
+            }
+
+            .combo-center-popup__label {
+                font-size: clamp(1.03rem, 3.42vw, 1.54rem);
+            }
+
+            .combo-center-popup--great .combo-center-popup__value,
+            .combo-center-popup--amazing .combo-center-popup__value,
+            .combo-center-popup--max .combo-center-popup__value {
+                font-size: clamp(2.4rem, 12vw, 4.4rem);
+            }
         }
 
         .banner-slide-enter-active {
@@ -3437,10 +3634,7 @@
 
                                             monster.name }}</span>
 
-                                        <span class="text-sm font-bold text-amber-300 text-center"
-                                            style="white-space: pre-line; line-height: 1.15; text-shadow: 0 2px 8px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9);">{{
-
-                                            monster.trait?.replace(/，/g, '\n') }}</span>
+                                        <!-- 戰鬥 UI 不顯示怪物介紹（monster.trait）；資料仍載入供圖鑑等沿用 -->
 
                                     </div>
 
@@ -3490,18 +3684,20 @@
 
 
 
-            <!-- Praise Toast Layer -->
+            <!-- Praise Toast Layer: 中央大字回饋已停用（game.js praiseToast / showPraise 仍保留） -->
 
-            <div class="absolute inset-0 pointer-events-none z-40">
-
-                <transition name="praise-pop">
-
-                    <div v-if="praiseToast.show"
-                        class="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-5xl font-black text-rose-300 drop-shadow-[0_0_20px_rgba(244,63,94,1)] tracking-widest text-center"
-                        style="-webkit-text-stroke: 1.5px #881337; text-shadow: 0 4px 6px rgba(0,0,0,0.5); width: max-content;">
-
-                        {{ praiseToast.text }}
-
+            <!-- Combo Popup Layer -->
+            <div class="absolute inset-0 pointer-events-none z-[45]">
+                <transition name="combo-pop">
+                    <div v-if="comboPopup.show" :key="comboPopup.key" class="combo-popup-anchor"
+                        :style="{
+                            '--combo-left': (comboPopup.leftPct != null ? comboPopup.leftPct : 72) + '%',
+                            '--combo-top': (comboPopup.topPct != null ? comboPopup.topPct : 52) + '%'
+                        }">
+                        <div class="combo-center-popup" :class="'combo-center-popup--' + comboPopup.tier">
+                            <span class="combo-center-popup__value">{{ comboPopup.value }}</span>
+                            <span class="combo-center-popup__label">COMBO</span>
+                        </div>
                     </div>
                 </transition>
             </div>
@@ -3547,16 +3743,7 @@
                         class="flex-1 mx-2 text-center text-xs font-bold text-amber-300 drop-shadow-md truncate"
                         aria-live="polite"></div>
 
-                    <div class="flex items-center gap-2">
-
-                        <span v-if="comboCount > 1"
-                            class="px-2 py-0.5 bg-rose-900/60 border border-rose-500/50 rounded text-rose-300 font-black text-[10px] animate-pulse">
-
-                            🔥 {{ comboCount }} COMBO
-
-                        </span>
-
-                    </div>
+                    <div class="w-10 flex-shrink-0"></div>
 
                 </div>
 
@@ -4220,10 +4407,10 @@
 
                         <div v-for="skill in skillList" :key="skill.id" @click="castAbility(skill.id)"
                             class="group relative bg-slate-900/60 border border-slate-700 hover:border-amber-500/50 rounded-xl p-2.5 flex gap-3 cursor-pointer transition-all hover:bg-slate-800"
-                            :class="{ 'opacity-50 grayscale cursor-not-allowed': spState.cur < skill.cost || playerDead || monsterDead }">
+                            :class="['skill-card--' + (skill.type || 'buff'), { 'opacity-50 grayscale cursor-not-allowed': spState.cur < skill.cost || playerDead || monsterDead }]">
 
                             <div
-                                class="w-14 h-14 flex-shrink-0 bg-slate-800 rounded-lg flex items-center justify-center text-2xl border border-slate-600 group-hover:border-amber-400">
+                                class="skill-icon-frame w-14 h-14 flex-shrink-0 bg-slate-800 rounded-lg flex items-center justify-center text-2xl border border-slate-600 group-hover:border-amber-400">
 
                                 {{ skill.icon }}
 
@@ -4233,10 +4420,15 @@
 
                                 <div class="flex justify-between items-start mb-1">
 
-                                    <h3 class="font-bold text-slate-200 group-hover:text-amber-300 transition-colors">
+                                    <div class="min-w-0">
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <h3 class="font-bold text-slate-200 group-hover:text-amber-300 transition-colors truncate">
                                         {{
 
                                         skill.name }}</h3>
+                                            <span class="skill-type-badge">{{ getSkillTypeLabel(skill.type) }}</span>
+                                        </div>
+                                    </div>
 
                                     <span
                                         class="text-xs font-black px-2 py-0.5 rounded-full bg-cyan-900 text-cyan-300 border border-cyan-700">{{
