@@ -613,56 +613,6 @@ rt {
     }
 }
 
-.battle-log {
-    position: absolute;
-    top: calc(10px + env(safe-area-inset-top, 0px));
-    left: 50%;
-    transform: translateX(-50%);
-    width: min(680px, 92vw);
-    height: auto;
-    background: rgba(0, 0, 0, 0.45);
-    border: 2px solid rgba(255, 200, 80, 0.35);
-    border-radius: 14px;
-    padding: 10px 14px;
-    z-index: 40;
-    pointer-events: none;
-    font-size: 14px;
-    line-height: 1.2;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    text-align: center;
-}
-
-.battle-log:empty {
-    display: none;
-}
-
-.battle-log .log-item {
-    transition: opacity 0.3s ease;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.battle-log .log-item.type-dmg {
-    color: #fca5a5;
-}
-
-.battle-log .log-item.type-heal {
-    color: #86efac;
-}
-
-.battle-log .log-item.type-buff {
-    color: #fde047;
-}
-
-.battle-log .log-item.type-info {
-    color: #e2e8f0;
-}
-
 @keyframes fadeInLog {
     0% {
         opacity: 0;
@@ -673,15 +623,6 @@ rt {
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-.battle-log.flash {
-    filter: brightness(1.25);
-}
-
-.battle-log,
-.battle-log.flash {
-    transition: filter 180ms ease;
 }
 
 .hero-avatar,
@@ -923,30 +864,6 @@ rt {
         border: none !important;
         border-radius: 0 !important;
         background: #0f172a !important;
-    }
-
-    .battle-log {
-        position: absolute;
-        top: 8px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 92%;
-        height: 38px !important;
-        line-height: 38px !important;
-        padding: 0 16px !important;
-        background: rgba(30, 41, 59, 1) !important;
-        border: 2px solid #5fa7ff !important;
-        border-radius: 20px !important;
-        font-size: 13px !important;
-        color: #fff !important;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-        z-index: 100;
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
     #battleScene>div.absolute.top-4.left-4,
