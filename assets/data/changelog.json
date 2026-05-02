@@ -1,5 +1,18 @@
 [
     {
+        "version": "26050201",
+        "date": "2026-05-02",
+        "title": "導師語音收尾與清理",
+        "changes": [
+            "導師語音大批補齊並完成 mentor-dialogues 引用檢查。",
+            "L35 結局提示改走 mentor-dialogues.v1.json 與正式 mp3 音檔。",
+            "新增 jpDebug.playMentor(id)，方便測試一次性導師台詞。",
+            "將 game.js 內的純常數與 path 設定外移到 game-constants.js。",
+            "移除已失效的 battle-log 舊 CSS。",
+            "導師台詞缺少或無法播放正式 mp3 時，不再 fallback 中文 TTS，改為顯示文字並記錄警告。"
+        ]
+    },
+    {
         "version": "26050102",
         "date": "2026-05-01",
         "title": "共鳴位圖示與常數整理",

@@ -332,10 +332,10 @@ const { ref, reactive, computed, watch, onMounted, nextTick } = Vue;
 const _jpApp = Vue.createApp({
 
     setup() {
+        const GAME_CONSTANTS = window.JPAPP_CONSTANTS || {}, SCENE_IMAGE_PATHS = GAME_CONSTANTS.SCENE_IMAGE_PATHS || {}, DEFAULT_IMAGE_PATHS = GAME_CONSTANTS.DEFAULT_IMAGE_PATHS || {};
+
         // ---- [ NEW: ONE-TIME SCENE CONSTANTS ] ----
-        const PROLOGUE_BG = ''; // Add path here if needed
         const PROLOGUE_BGM = ''; // Add path here if needed
-        const MAIN_ENDING_BG = 'assets/images/levels/bg_lv1.webp';
         const MAIN_ENDING_BGM = ''; // Add path here if needed
 
         onMounted(async () => {
@@ -376,8 +376,6 @@ const _jpApp = Vue.createApp({
         // --- 資料抽離：讀取全域早期關卡資料庫 ---
 
         const pool = window.EARLY_GAME_POOLS || { skills: {} };
-        const GAME_CONSTANTS = window.JPAPP_CONSTANTS || {};
-
         // legacy placeholder — legacyDb content removed; kept empty for debug.js compatibility
         const db = {};
 
@@ -456,7 +454,7 @@ const _jpApp = Vue.createApp({
         const getSpiritIconPath = (opt) => {
             const key = getSpiritIconKey(opt);
             if (!key) return '';
-            return `assets/images/spirits/icons/${key}.webp`;
+            return `${GAME_CONSTANTS.SPIRIT_ICON_BASE_PATH}${key}.webp`;
         };
 
         const shouldShowSpiritIcon = (opt) => {
@@ -468,7 +466,7 @@ const _jpApp = Vue.createApp({
             failedSpiritIcons.value = { ...failedSpiritIcons.value, [opt]: true };
         };
 
-        const SPIRIT_IMAGE_PLACEHOLDER = 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><radialGradient id="g" cx="50%" cy="38%" r="58%"><stop offset="0%" stop-color="#fef3c7" stop-opacity=".9"/><stop offset="50%" stop-color="#fbbf24" stop-opacity=".38"/><stop offset="100%" stop-color="#1e1b4b" stop-opacity=".05"/></radialGradient></defs><rect width="512" height="512" rx="96" fill="#161225"/><circle cx="256" cy="246" r="162" fill="url(#g)"/><path d="M256 116c58 0 105 49 105 110 0 76-63 130-105 170-42-40-105-94-105-170 0-61 47-110 105-110Z" fill="#fbbf24" opacity=".36"/><circle cx="256" cy="224" r="46" fill="#fff7ed" opacity=".48"/><path d="M170 391c45 28 127 28 172 0" fill="none" stroke="#fde68a" stroke-width="18" stroke-linecap="round" opacity=".48"/></svg>`);
+        const SPIRIT_IMAGE_PLACEHOLDER = GAME_CONSTANTS.SPIRIT_IMAGE_PLACEHOLDER;
 
         const getSpiritForSkillId = (skillId) => {
             if (!skillId || typeof skillId !== 'string') return null;
@@ -524,7 +522,7 @@ const _jpApp = Vue.createApp({
         // --- オノマトペ Skills (unlocked on boss clear) ---
         const unlockedOnomatopeIds = ref([]);
 
-        const MASTERY_PARTICLES = ['は', 'の', 'が', 'を', 'に', 'へ', 'も', 'で', 'と', 'から', 'まで', 'や', 'より'];
+        const MASTERY_PARTICLES = GAME_CONSTANTS.MASTERY_PARTICLES;
         const createParticleProgressMap = (initialValue = 0) => {
             return MASTERY_PARTICLES.reduce((acc, particle) => {
                 acc[particle] = initialValue;
@@ -572,24 +570,7 @@ const _jpApp = Vue.createApp({
         // battle.marginBottom: CSS string applied to #heroAvatar margin-bottom (e.g. '24px' or 'clamp(135px,18dvh,160px)')
         // map.src: image path for .map-hud-avatar-img elements
         // thresholds: hp-based steady-state expression; hpPct is lower bound (>= value uses expression)
-        const HERO_VISUAL_CONFIG = {
-            battle: {
-                marginBottom: '150px',
-                width: 'clamp(110px, 7vw, 160px)',
-                height: 'clamp(110px, 7vw, 160px)',
-                leftMobile: '1rem',
-                leftDesktop: '50%',
-                desktopOffsetX: '-180px'
-            },
-            map: {
-                src: 'assets/images/hero/hero_001.png'
-            },
-            thresholds: [
-                { hpPct: 0.8, expression: 'neutral' },
-                { hpPct: 0.4, expression: 'ase' },
-                { hpPct: 0.0, expression: 'lose' }
-            ]
-        };
+        const HERO_VISUAL_CONFIG = GAME_CONSTANTS.HERO_VISUAL_CONFIG;
 
         const activeSegment = computed(() => {
             const ch = mapChapters.value[activeChapter.value];
@@ -798,7 +779,7 @@ const _jpApp = Vue.createApp({
         const checkPrologueTrigger = () => {
             if (!localStorage.getItem('jpapp_seen_prologue_opening')) {
                 // Determine background
-                const bg = PROLOGUE_BG || 'assets/images/bg_home_painterly.png';
+                const bg = SCENE_IMAGE_PATHS.prologueBg || SCENE_IMAGE_PATHS.prologueFallbackBg;
 
                 // Initialize Scene
                 isSpecialSceneActive.value = true;
@@ -1176,7 +1157,7 @@ const _jpApp = Vue.createApp({
                 if (!hasSeenFinale) {
                     // Set Scene
                     isSpecialSceneActive.value = true;
-                    specialSceneBg.value = MAIN_ENDING_BG;
+                    specialSceneBg.value = SCENE_IMAGE_PATHS.mainEndingBg;
                     showMap.value = true;
                     showLevelSelect.value = false; // Hide home screen if debug-triggered from home
 
@@ -1217,16 +1198,25 @@ const _jpApp = Vue.createApp({
             const isAllS = checkAllSRank();
             const hasSeenAllS = localStorage.getItem('jpRpgL36Unlocked');
             const hasSeenNormal = localStorage.getItem('jpRpgL35EndingSeen');
+            const openL35EndingDialogue = (id, fallbackDialogue) => {
+                setupMentorDialogue({
+                    id,
+                    name: '導師・優依',
+                    mentorDialogue: fallbackDialogue
+                });
+            };
             if (isAllS && !hasSeenAllS) {
                 localStorage.setItem('jpRpgL36Unlocked', 'true');
                 if (!unlockedLevels.value.includes(36)) unlockedLevels.value.push(36);
                 saveProgression();
-                const endingDialogue = { ...window.ENDING_DIALOGUES.ENDING_L35_ALL_S };
-                if (currentLevel.value === 35) endingDialogue.mentorDialogue = window.ENDING_DIALOGUES.ENDING_L35_ALL_S_AT_35;
-                setTimeout(() => setupMentorDialogue(endingDialogue), 800);
+                const endingId = currentLevel.value === 35 ? 'ENDING_L35_ALL_S_AT_35' : 'ENDING_L35_ALL_S';
+                const fallbackDialogue = currentLevel.value === 35
+                    ? window.ENDING_DIALOGUES?.ENDING_L35_ALL_S_AT_35
+                    : window.ENDING_DIALOGUES?.ENDING_L35_ALL_S?.mentorDialogue;
+                setTimeout(() => openL35EndingDialogue(endingId, fallbackDialogue), 800);
             } else if (!isAllS && !hasSeenNormal && currentLevel.value === 35) {
                 localStorage.setItem('jpRpgL35EndingSeen', 'true');
-                setTimeout(() => setupMentorDialogue(window.ENDING_DIALOGUES.ENDING_L35_NORMAL), 800);
+                setTimeout(() => openL35EndingDialogue('ENDING_L35_NORMAL', window.ENDING_DIALOGUES?.ENDING_L35_NORMAL?.mentorDialogue), 800);
             }
         };
 
@@ -1322,7 +1312,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26050102";
+        const APP_VERSION = window.APP_VERSION || "26050201";
 
         const appVersion = ref(APP_VERSION);
 
@@ -1928,9 +1918,7 @@ const _jpApp = Vue.createApp({
             const token = ++mentorAudioPlayToken;
             const expectedSkillId = currentMentorSkill.value.id;
             const expectedPageIndex = mentorDialogueIndex.value;
-            const text = currentMentorLine.value || "";
             const path = getMentorAudioPath(expectedSkillId, expectedPageIndex);
-            let mentorAudioFallbackStarted = false;
 
             const isCurrentMentorAudioRequest = () => (
                 token === mentorAudioPlayToken &&
@@ -1948,29 +1936,12 @@ const _jpApp = Vue.createApp({
                 }
             };
 
-            // Inner helper for TTS fallback
-            const playTtsFallback = async (reason = 'missing-official-audio') => {
-                if (mentorAudioFallbackStarted) return false;
-                mentorAudioFallbackStarted = true;
-                if (!isCurrentMentorAudioRequest()) {
-                    warnIfStale(`tts-fallback:${reason}`);
-                    return false;
-                }
-                if (typeof speakCloudTts === 'function' && text) {
-                    // 導師說明頁固定使用中文 TTS，避免因內文包含日文例句而被誤判為全頁日文語音。
-                    // 未來若需處理中日混讀，可再於 TTS Worker 層面處理。
-                    const played = await speakCloudTts(text, 'zh-TW-Neural2-B');
-                    if (!isCurrentMentorAudioRequest()) {
-                        warnIfStale(`tts-fallback-complete:${reason}`);
-                        return false;
-                    }
-                    return played;
-                }
-                return false;
-            };
-
             if (!path) {
-                return playTtsFallback('missing-official-audio-path');
+                console.warn('[mentor-audio] official mp3 path missing; showing text only', {
+                    skillId: expectedSkillId,
+                    pageIndex: expectedPageIndex
+                });
+                return;
             }
 
             // Check if local file exists before playing (to avoid 404 console spam)
@@ -1981,8 +1952,8 @@ const _jpApp = Vue.createApp({
                     return;
                 }
                 if (!res.ok) {
-                    console.warn('[mentor-audio] official mp3 unavailable, using TTS fallback', res.status, path);
-                    return playTtsFallback('official-audio-unavailable');
+                    console.warn('[mentor-audio] official mp3 unavailable; showing text only', res.status, path);
+                    return;
                 }
 
                 const audio = new Audio(path);
@@ -2003,8 +1974,8 @@ const _jpApp = Vue.createApp({
                         warnIfStale('error');
                         return;
                     }
-                    console.warn('[mentor-audio] mp3 playback failed, using TTS fallback', path);
-                    playTtsFallback('official-audio-playback-error');
+                    console.warn('[mentor-audio] mp3 playback failed; showing text only', path);
+                    if (typeof restoreMapBgmAfterVoice === 'function') restoreMapBgmAfterVoice();
                 };
 
                 audio.play().then(() => {
@@ -2018,8 +1989,8 @@ const _jpApp = Vue.createApp({
                         warnIfStale('play-catch');
                         return;
                     }
-                    console.warn('[mentor-audio] mp3 play blocked, using TTS fallback', path, err);
-                    return playTtsFallback('official-audio-play-blocked');
+                    console.warn('[mentor-audio] mp3 play blocked; showing text only', path, err);
+                    if (typeof restoreMapBgmAfterVoice === 'function') restoreMapBgmAfterVoice();
                 });
             } catch (e) {
                 // Fetch failed or other error
@@ -2027,8 +1998,8 @@ const _jpApp = Vue.createApp({
                     warnIfStale('catch');
                     return;
                 }
-                console.warn('[mentor-audio] official mp3 check failed, using TTS fallback', path, e);
-                return playTtsFallback('official-audio-check-failed');
+                console.warn('[mentor-audio] official mp3 check failed; showing text only', path, e);
+                return;
             }
         };
 
@@ -2849,7 +2820,7 @@ const _jpApp = Vue.createApp({
 
         const difficulty = ref('easy');
 
-        const currentBg = ref('assets/images/bg_01.jpg');
+        const currentBg = ref(DEFAULT_IMAGE_PATHS.battleBg);
 
 
 
@@ -8949,7 +8920,7 @@ const _jpApp = Vue.createApp({
 
 
             // 安全 fallback：全關卡已有 enemies.v1.json；若未比對則用預設屬性
-            const mdef = { hpMax: MONSTER_HP, name: '助詞怪', sprite: 'assets/images/monsters/slime.png', trait: '普通型' };
+            const mdef = { hpMax: MONSTER_HP, name: '助詞怪', sprite: DEFAULT_IMAGE_PATHS.monsterSprite, trait: '普通型' };
 
 
 
@@ -9931,7 +9902,7 @@ const _jpApp = Vue.createApp({
 
             console.warn('[MapImage] Load failed, falling back to chapter1.png');
 
-            e.target.src = 'assets/images/maps/chapter1.png';
+            e.target.src = DEFAULT_IMAGE_PATHS.mapFallback;
 
         };
 
@@ -9951,7 +9922,7 @@ const _jpApp = Vue.createApp({
 
             if (!monster.value || !monster.value.sprite) return '👹';
 
-            if (isMonsterImageError.value) return 'assets/images/monsters/slime.png';
+            if (isMonsterImageError.value) return DEFAULT_IMAGE_PATHS.monsterSprite;
 
             // 只有在受擊中、非錯誤狀態、且該怪物尚未被標記為缺乏 *2 圖時，嘗試切換
 

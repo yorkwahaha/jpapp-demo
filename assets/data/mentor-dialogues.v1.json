@@ -169,6 +169,10 @@
       {
         "text": "比如說，「本を読む（讀書）」。「讀」這個動作的對象是「書」。「を」就告訴了你這個連結。",
         "emotion": "explain"
+      },
+      {
+        "text": "這個動作，是在指向什麼呢？當你看見這一點的時候，「を」就會回應你了。",
+        "emotion": "explain"
       }
     ],
     "audio": [
@@ -176,7 +180,8 @@
       "assets/audio/mentor/wo-object-basic-p02.mp3",
       "assets/audio/mentor/wo-object-basic-p03.mp3",
       "assets/audio/mentor/wo-object-basic-p04.mp3",
-      "assets/audio/mentor/wo-object-basic-p05.mp3"
+      "assets/audio/mentor/wo-object-basic-p05.mp3",
+      "assets/audio/mentor/wo-object-basic-p06.mp3"
     ]
   },
   "BOSS_REVIEW_01": {
@@ -946,7 +951,11 @@
         "emotion": "proud"
       },
       {
-        "text": "「や」是拿出幾個代表的孩子。這個「で」是圈出比較範圍的孩子。這個「に」是帶著目的來的孩子。這個「と」是捧著語言傳遞的孩子。",
+        "text": "「や」是拿出幾個代表的孩子。這個「で」是圈出比較範圍的孩子。",
+        "emotion": "explain"
+      },
+      {
+        "text": "這個「に」是帶著目的來的孩子。這個「と」是捧著語言傳遞的孩子。",
         "emotion": "explain"
       },
       {
@@ -967,7 +976,8 @@
       "assets/audio/mentor/boss-review-06-p02.mp3",
       "assets/audio/mentor/boss-review-06-p03.mp3",
       "assets/audio/mentor/boss-review-06-p04.mp3",
-      "assets/audio/mentor/boss-review-06-p05.mp3"
+      "assets/audio/mentor/boss-review-06-p05.mp3",
+      "assets/audio/mentor/boss-review-06-p06.mp3"
     ]
   },
   "KARA_REASON": {
@@ -1091,12 +1101,16 @@
         "emotion": "gentle"
       },
       {
-        "text": "最初的你，有點不安，有點迷惘。而現在，已經能好好接住那些失落的聲音了。這樣的變化，我一直在你身邊看著。",
+        "text": "第一次遇見你的時候，老實說，我很害怕。是不是又要一個人走到最後了呢。",
+        "emotion": "gentle"
+      },
+      {
+        "text": "但是，你來了。一個一個，認真地聽了下來。",
         "emotion": "proud"
       },
       {
-        "text": "看到句子的時候，先問問自己。這個孩子現在，擔任著什麼職責呢...就這樣就夠了。",
-        "emotion": "encourage"
+        "text": "看到句子的時候，先問問自己。這個孩子現在，擔任著什麼職責呢？就這樣就夠了。",
+        "emotion": "proud"
       },
       {
         "text": "好了，最後一關了。抬起頭，往前走。我會在你身邊，好好見證的。",
@@ -1107,7 +1121,101 @@
       "assets/audio/mentor/final-boss-35-p01.mp3",
       "assets/audio/mentor/final-boss-35-p02.mp3",
       "assets/audio/mentor/final-boss-35-p03.mp3",
-      "assets/audio/mentor/final-boss-35-p04.mp3"
+      "assets/audio/mentor/final-boss-35-p04.mp3",
+      "assets/audio/mentor/final-boss-35-p05.mp3"
+    ]
+  },
+  "ENDING_L35_NORMAL": {
+    "dialogue": [
+      {
+        "text": "……你做到了。三十五道試煉，全部越過來了呢。",
+        "emotion": "gentle"
+      },
+      {
+        "text": "你的力量，已經不是剛開始的樣子了。",
+        "emotion": "proud"
+      },
+      {
+        "text": "但是……你感覺到了嗎？這個世界的深處，還有什麼東西沉睡著。",
+        "emotion": "concerned"
+      },
+      {
+        "text": "其實，有一道隱藏的封印。只有將過去三十五道試煉全部以「完美無瑕（S級）」越過的人，才能觸碰那扇門。",
+        "emotion": "explain"
+      },
+      {
+        "text": "只要有一道留下了遺憾，那扇門就不會開啟。",
+        "emotion": "concerned"
+      },
+      {
+        "text": "準備好了的話，隨時都能回來。我會在這裡等著你回來的。",
+        "emotion": "blessing"
+      }
+    ],
+    "audio": [
+      "assets/audio/mentor/ending-l35-normal-p01.mp3",
+      "assets/audio/mentor/ending-l35-normal-p02.mp3",
+      "assets/audio/mentor/ending-l35-normal-p03.mp3",
+      "assets/audio/mentor/ending-l35-normal-p04.mp3",
+      "assets/audio/mentor/ending-l35-normal-p05.mp3",
+      "assets/audio/mentor/ending-l35-normal-p06.mp3"
+    ]
+  },
+  "ENDING_L35_ALL_S": {
+    "dialogue": [
+      {
+        "text": "……找到了呢，那條隱藏的路。",
+        "emotion": "gentle"
+      },
+      {
+        "text": "三十五道試煉，全部完美。一道都沒有留下遺憾，全是S級。",
+        "emotion": "proud"
+      },
+      {
+        "text": "老實說，沒想到真的會有人做到這一步……我有點驚訝。",
+        "emotion": "surprised"
+      },
+      {
+        "text": "那麼，讓我來開啟這扇門吧。最後的封印深處，有人在等著你。",
+        "emotion": "blessing"
+      }
+    ],
+    "audio": [
+      "assets/audio/mentor/ending-l35-all-s-p01.mp3",
+      "assets/audio/mentor/ending-l35-all-s-p02.mp3",
+      "assets/audio/mentor/ending-l35-all-s-p03.mp3",
+      "assets/audio/mentor/ending-l35-all-s-p04.mp3"
+    ]
+  },
+  "ENDING_L35_ALL_S_AT_35": {
+    "dialogue": [
+      {
+        "text": "……三十五道試煉，越過來了呢。辛苦了。",
+        "emotion": "gentle"
+      },
+      {
+        "text": "你的力量，已經不需要任何懷疑了。從最開始到現在，我一直都看著的。",
+        "emotion": "proud"
+      },
+      {
+        "text": "而且……三十五關全部，無一例外，完美的S級。",
+        "emotion": "surprised"
+      },
+      {
+        "text": "能看見這扇門的人，只有極少數。你，成為了其中之一。",
+        "emotion": "blessing"
+      },
+      {
+        "text": "最後的封印深處，還有未曾見過的敵人在等待。準備好了嗎，喚語者。",
+        "emotion": "encourage"
+      }
+    ],
+    "audio": [
+      "assets/audio/mentor/ending-l35-all-s-at-35-p01.mp3",
+      "assets/audio/mentor/ending-l35-all-s-at-35-p02.mp3",
+      "assets/audio/mentor/ending-l35-all-s-at-35-p03.mp3",
+      "assets/audio/mentor/ending-l35-all-s-at-35-p04.mp3",
+      "assets/audio/mentor/ending-l35-all-s-at-35-p05.mp3"
     ]
   },
   "L36_FIRST_ENTRY": {
@@ -1117,7 +1225,11 @@
         "emotion": "proud"
       },
       {
-        "text": "前方等待著的，是你至今遇見過的所有聲音交匯的地方。不是從誰那裡得到答案。是用你自己的力量，開闢最後道路的戰鬥。",
+        "text": "前方等待著的，是你至今遇見過的所有聲音交匯的地方。",
+        "emotion": "gentle"
+      },
+      {
+        "text": "不是從誰那裡得到答案。是用你自己的力量，開闢最後道路的戰鬥。",
         "emotion": "gentle"
       },
       {
@@ -1125,7 +1237,7 @@
         "emotion": "gentle"
       },
       {
-        "text": "去吧，呼喚者。用你自己的光，在這個故事裡刻下終結。",
+        "text": "去吧，喚語者。用你自己的光，在這個故事裡刻下終結。",
         "emotion": "blessing"
       }
     ],
@@ -1133,7 +1245,8 @@
       "assets/audio/mentor/l36-first-entry-p01.mp3",
       "assets/audio/mentor/l36-first-entry-p02.mp3",
       "assets/audio/mentor/l36-first-entry-p03.mp3",
-      "assets/audio/mentor/l36-first-entry-p04.mp3"
+      "assets/audio/mentor/l36-first-entry-p04.mp3",
+      "assets/audio/mentor/l36-first-entry-p05.mp3"
     ]
   },
   "HIDDEN_BOSS_36": {
@@ -1175,7 +1288,7 @@
   "MAIN_ENDING_FINALE": {
     "dialogue": [
       {
-        "text": "……你來到這裡了呢。辛苦了，呼喚者。真的非常努力了。",
+        "text": "……你來到這裡了呢。辛苦了，喚語者。真的非常努力了。",
         "emotion": "gentle"
       },
       {
@@ -1211,7 +1324,7 @@
         "emotion": "gentle"
       },
       {
-        "text": "……保重啊，呼喚者。往後的日子，也帶著那份溫柔而堅韌的力量...願你能越過所有還未見到的明天。",
+        "text": "……保重啊，喚語者。往後的日子，也帶著那份溫柔而堅韌的力量...願你能越過所有還未見到的明天。",
         "emotion": "blessing"
       }
     ],
