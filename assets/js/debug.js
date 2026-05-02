@@ -738,6 +738,19 @@ window.__attachDebugTools = function (refs) {
                     pauseBattle();
                     console.log(`[jpDebug] Replaying mentor dialogue for: ${skillId}`);
                 },
+
+                playMentor(id) {
+                    const key = String(id || '').trim();
+                    const mentorMap = MENTOR_AUDIO_MAP?.value || {};
+                    if (!key || !mentorMap[key]) {
+                        console.warn(`[jpDebug.playMentor] mentor dialogue key not found: "${key}"`, Object.keys(mentorMap).sort());
+                        return false;
+                    }
+                    setupMentorDialogue({ id: key, name: '導師・優依' });
+                    if (typeof pauseBattle === 'function') pauseBattle();
+                    console.log(`[jpDebug] Playing mentor dialogue: ${key}`);
+                    return true;
+                },
                 
                 playPrologueOpening() {
                     if (typeof playPrologueOpening === 'function') {
@@ -1300,6 +1313,7 @@ Audit Tools (Question Distribution):
 Mentor/Tutorial:
 - jpDebug.resetMentorTutorials()
 - jpDebug.replayMentor('WA_TOPIC_BASIC')
+- jpDebug.playMentor('ENDING_L35_NORMAL')
 - jpDebug.playPrologueOpening()
 - jpDebug.playMainEndingFinale()
       `.trim();
