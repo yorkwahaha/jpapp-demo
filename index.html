@@ -2655,7 +2655,6 @@
                                         </div>
                                     </div>
                                     <div v-else-if="unlockedSkillIds.includes(codexPageSkills[0].id)" class="codex-flip-card"
-                                        :class="{ 'codex-flip-card--highlight': expandedSkillId === codexPageSkills[0].id }"
                                         @click="flippedCardId = (flippedCardId === codexPageSkills[0].id ? null : codexPageSkills[0].id); playSfx('uiPop')">
                                         <div class="codex-flip-inner"
                                             :class="{ 'is-flipped': flippedCardId === codexPageSkills[0].id }">
@@ -2796,7 +2795,6 @@
                                         </div>
                                     </div>
                                     <div v-else-if="unlockedSkillIds.includes(codexNextSkill.id)" class="codex-flip-card"
-                                        :class="{ 'codex-flip-card--highlight': expandedSkillId === codexNextSkill.id }"
                                         @click="flippedCardId = (flippedCardId === codexNextSkill.id ? null : codexNextSkill.id); playSfx('uiPop')">
                                         <div class="codex-flip-inner"
                                             :class="{ 'is-flipped': flippedCardId === codexNextSkill.id }">
@@ -4292,7 +4290,6 @@
                                         </div>
                                     </div>
                                     <div v-else-if="unlockedSkillIds.includes(codexPageSkills[0].id)" class="codex-flip-card"
-                                        :class="{ 'codex-flip-card--highlight': expandedSkillId === codexPageSkills[0].id }"
                                         @click="flippedCardId = (flippedCardId === codexPageSkills[0].id ? null : codexPageSkills[0].id); playSfx('uiPop')">
                                         <div class="codex-flip-inner"
                                             :class="{ 'is-flipped': flippedCardId === codexPageSkills[0].id }">
@@ -4424,7 +4421,6 @@
                                         </div>
                                     </div>
                                     <div v-else-if="unlockedSkillIds.includes(codexNextSkill.id)" class="codex-flip-card"
-                                        :class="{ 'codex-flip-card--highlight': expandedSkillId === codexNextSkill.id }"
                                         @click="flippedCardId = (flippedCardId === codexNextSkill.id ? null : codexNextSkill.id); playSfx('uiPop')">
                                         <div class="codex-flip-inner"
                                             :class="{ 'is-flipped': flippedCardId === codexNextSkill.id }">

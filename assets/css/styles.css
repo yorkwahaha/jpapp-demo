@@ -9736,11 +9736,6 @@ body.lock-scroll {
     z-index: 2;
 }
 
-.codex-flip-card--highlight .codex-flip-inner {
-    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.78), 0 0 34px rgba(251, 191, 36, 0.28), 0 18px 38px rgba(55, 22, 20, 0.38);
-    border-radius: 24px;
-}
-
 .codex-flip-card {
     width: 100%;
     max-width: clamp(242px, 62vw, 286px);
