@@ -482,324 +482,6 @@
 
         }
 
-
-
-        .stage-card-v4 {
-
-            position: relative;
-
-            display: block;
-
-            min-width: 190px;
-
-            padding: 0 !important;
-
-            background: transparent !important;
-
-            border: none;
-
-            box-shadow: none;
-
-            overflow: visible;
-
-        }
-
-
-
-        .stage-card-v4-panel {
-
-            position: relative;
-
-            min-height: 68px;
-
-            padding: 12px 13px 10px 47px;
-
-            border-radius: 15px;
-
-            background: linear-gradient(160deg, rgba(255, 255, 255, 0.2), rgba(241, 245, 249, 0.15) 38%, rgba(148, 163, 184, 0.12) 72%, rgba(71, 85, 105, 0.14) 100%);
-
-            backdrop-filter: blur(18px) saturate(128%);
-
-            -webkit-backdrop-filter: blur(18px) saturate(128%);
-
-            border: 1px solid rgba(255, 255, 255, 0.24);
-
-            box-shadow:
-
-                0 14px 28px rgba(15, 23, 42, 0.24),
-
-                0 3px 10px rgba(255, 255, 255, 0.05),
-
-                inset 0 2px 0 rgba(255, 255, 255, 0.28),
-
-                inset 0 -12px 18px rgba(15, 23, 42, 0.16),
-
-                inset 1.5px 0 0 rgba(255, 255, 255, 0.1),
-
-                inset -1.5px 0 0 rgba(15, 23, 42, 0.08),
-
-                inset 0 12px 18px rgba(255, 255, 255, 0.025);
-
-        }
-
-
-
-        .stage-card-v4-panel::before {
-
-            content: '';
-
-            position: absolute;
-
-            inset: 0;
-
-            border-radius: 14px;
-
-            background:
-
-                radial-gradient(110% 80% at 12% 0%, rgba(255, 255, 255, 0.2) 0%, transparent 48%),
-
-                linear-gradient(to bottom, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.1) 14%, transparent 42%);
-
-            pointer-events: none;
-
-        }
-
-
-
-        .stage-card-v4-panel::after {
-
-            content: '';
-
-            position: absolute;
-
-            inset: 0;
-
-            border-radius: 14px;
-
-            box-shadow:
-
-                inset 0 -1.5px 0 rgba(15, 23, 42, 0.28),
-
-                inset 0 -9px 14px rgba(15, 23, 42, 0.12),
-
-                inset 1.5px 0 0 rgba(255, 255, 255, 0.1),
-
-                inset -1.5px 0 0 rgba(15, 23, 42, 0.08),
-
-                inset 0 12px 18px rgba(255, 255, 255, 0.025);
-
-            pointer-events: none;
-
-        }
-
-
-
-        .stage-card-v4-letter {
-
-            position: absolute;
-
-            left: 7px;
-
-            top: -22px;
-
-            transform: skewX(-8deg);
-
-            z-index: 3;
-
-            display: block;
-
-            font-size: 70px;
-
-            line-height: 0.88;
-
-            font-weight: 900;
-
-            letter-spacing: -0.06em;
-
-            pointer-events: none;
-
-            filter: drop-shadow(0 12px 16px rgba(15, 23, 42, 0.24));
-
-        }
-
-
-
-        .stage-card-v4-letter.text-purple-400 {
-
-            color: #b95cff;
-
-            -webkit-text-stroke: 2.2px rgba(88, 28, 135, 0.42);
-
-            text-shadow:
-
-                0 1px 2px rgba(250, 245, 255, 0.32),
-
-                0 2px 0 rgba(147, 51, 234, 0.34),
-
-                0 4px 0 rgba(107, 33, 168, 0.24),
-
-                0 8px 14px rgba(76, 29, 149, 0.22),
-
-                0 12px 20px rgba(15, 23, 42, 0.18);
-
-        }
-
-
-
-        .stage-card-v4-letter.text-yellow-400,
-
-        .stage-card-v4-letter.text-yellow-300 {
-
-            color: #fcd34d;
-
-            -webkit-text-stroke: 2.2px rgba(120, 53, 15, 0.4);
-
-            text-shadow:
-
-                0 6px 14px rgba(15, 23, 42, 0.28),
-
-                0 2px 4px rgba(15, 23, 42, 0.34),
-
-                0 0 1px rgba(255, 255, 255, 0.28),
-
-                0 0 10px rgba(252, 211, 77, 0.1);
-
-        }
-
-
-
-        .stage-card-v4-letter.text-blue-400,
-
-        .stage-card-v4-letter.text-cyan-400 {
-
-            color: #22d3ee;
-
-            -webkit-text-stroke: 2px rgba(8, 47, 73, 0.55);
-
-            text-shadow:
-
-                0 4px 10px rgba(0, 0, 0, 0.42),
-
-                0 2px 3px rgba(15, 23, 42, 0.72),
-
-                0 0 10px rgba(34, 211, 238, 0.14);
-
-        }
-
-
-
-        .stage-card-v4-letter.text-orange-400,
-
-        .stage-card-v4-letter.text-amber-600 {
-
-            color: #60a5fa;
-
-            -webkit-text-stroke: 2px rgba(30, 64, 175, 0.55);
-
-            text-shadow:
-
-                0 4px 10px rgba(0, 0, 0, 0.42),
-
-                0 2px 3px rgba(15, 23, 42, 0.72),
-
-                0 0 10px rgba(96, 165, 250, 0.14);
-
-        }
-
-
-
-        .stage-card-v4-letter.text-slate-200,
-
-        .stage-card-v4-letter.text-gray-200 {
-
-            color: #f8fafc;
-
-            -webkit-text-stroke: 2px rgba(51, 65, 85, 0.45);
-
-            text-shadow:
-
-                0 4px 10px rgba(0, 0, 0, 0.38),
-
-                0 2px 3px rgba(15, 23, 42, 0.7);
-
-        }
-
-
-
-        .stage-card-v4-info {
-
-            position: relative;
-
-            z-index: 2;
-
-            display: flex;
-
-            flex-direction: column;
-
-            align-items: flex-start;
-
-            gap: 3px;
-
-            text-align: left;
-
-            margin-left: -1px;
-
-        }
-
-
-
-        .stage-card-v4-number {
-
-            font-size: 0.66rem;
-
-            color: rgba(244, 247, 251, 0.72);
-
-            font-weight: 800;
-
-            letter-spacing: 0.17em;
-
-            line-height: 1;
-
-            text-shadow:
-
-                0 1px 2px rgba(15, 23, 42, 0.18),
-
-                0 0 1px rgba(15, 23, 42, 0.1),
-
-                0 1px 0 rgba(255, 255, 255, 0.04),
-
-                0 2px 3px rgba(15, 23, 42, 0.08);
-
-        }
-
-
-
-        .stage-card-v4-title {
-
-            font-size: 0.99rem;
-
-            color: rgba(248, 250, 252, 0.94);
-
-            font-weight: 900;
-
-            letter-spacing: 0.01em;
-
-            line-height: 1.18;
-
-            text-shadow:
-
-                0 2px 4px rgba(15, 23, 42, 0.18),
-
-                0 0 1px rgba(15, 23, 42, 0.12),
-
-                0 1px 0 rgba(255, 255, 255, 0.035),
-
-                0 3px 6px rgba(15, 23, 42, 0.08);
-
-        }
-
-
-
         /* S/A/B Grade Badge - Primary Visual Focus */
 
         .grade-badge {
@@ -2974,7 +2656,7 @@
                                     </div>
                                     <div v-else-if="unlockedSkillIds.includes(codexPageSkills[0].id)" class="codex-flip-card"
                                         :class="{ 'codex-flip-card--highlight': expandedSkillId === codexPageSkills[0].id }"
-                                        @click="flippedCardId = (flippedCardId === codexPageSkills[0].id ? null : codexPageSkills[0].id); playCardFlip()">
+                                        @click="flippedCardId = (flippedCardId === codexPageSkills[0].id ? null : codexPageSkills[0].id); playSfx('uiPop')">
                                         <div class="codex-flip-inner"
                                             :class="{ 'is-flipped': flippedCardId === codexPageSkills[0].id }">
                                             <div class="codex-face codex-face-front">
@@ -3115,7 +2797,7 @@
                                     </div>
                                     <div v-else-if="unlockedSkillIds.includes(codexNextSkill.id)" class="codex-flip-card"
                                         :class="{ 'codex-flip-card--highlight': expandedSkillId === codexNextSkill.id }"
-                                        @click="flippedCardId = (flippedCardId === codexNextSkill.id ? null : codexNextSkill.id); playCardFlip()">
+                                        @click="flippedCardId = (flippedCardId === codexNextSkill.id ? null : codexNextSkill.id); playSfx('uiPop')">
                                         <div class="codex-flip-inner"
                                             :class="{ 'is-flipped': flippedCardId === codexNextSkill.id }">
                                             <div class="codex-face codex-face-front">
@@ -4611,7 +4293,7 @@
                                     </div>
                                     <div v-else-if="unlockedSkillIds.includes(codexPageSkills[0].id)" class="codex-flip-card"
                                         :class="{ 'codex-flip-card--highlight': expandedSkillId === codexPageSkills[0].id }"
-                                        @click="flippedCardId = (flippedCardId === codexPageSkills[0].id ? null : codexPageSkills[0].id); playCardFlip()">
+                                        @click="flippedCardId = (flippedCardId === codexPageSkills[0].id ? null : codexPageSkills[0].id); playSfx('uiPop')">
                                         <div class="codex-flip-inner"
                                             :class="{ 'is-flipped': flippedCardId === codexPageSkills[0].id }">
                                             <div class="codex-face codex-face-front">
@@ -4743,7 +4425,7 @@
                                     </div>
                                     <div v-else-if="unlockedSkillIds.includes(codexNextSkill.id)" class="codex-flip-card"
                                         :class="{ 'codex-flip-card--highlight': expandedSkillId === codexNextSkill.id }"
-                                        @click="flippedCardId = (flippedCardId === codexNextSkill.id ? null : codexNextSkill.id); playCardFlip()">
+                                        @click="flippedCardId = (flippedCardId === codexNextSkill.id ? null : codexNextSkill.id); playSfx('uiPop')">
                                         <div class="codex-flip-inner"
                                             :class="{ 'is-flipped': flippedCardId === codexNextSkill.id }">
                                             <div class="codex-face codex-face-front">

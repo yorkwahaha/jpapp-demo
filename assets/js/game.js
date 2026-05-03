@@ -4876,7 +4876,7 @@ const _jpApp = Vue.createApp({
         const POOLED_SFX_KEYS = new Set([
             ...WARMUP_SFX_KEYS,
             'hit2', 'miss', 'potion', 'fanfare', 'monsterDeathCry', 'bossDeathCry',
-            'bossExplosion', 'win', 'gameover', 'cardFlip', 'escape', 'bossClear',
+            'bossExplosion', 'win', 'gameover', 'escape', 'bossClear',
             'damage2', 'damage3', 'damage4', 'damage5', 'damage6', 'damage7', 'damage8'
         ]);
 
@@ -4884,7 +4884,7 @@ const _jpApp = Vue.createApp({
             // Pool Size 1: Long sounds or low-frequency sounds that don't need overlapping playback
             const size1Keys = [
                 'monsterDeathCry', 'bossDeathCry', 'bossExplosion', 'win', 'gameover',
-                'escape', 'bossClear', 'skillget', 'cardFlip', 'fanfare', 'potion'
+                'escape', 'bossClear', 'skillget', 'fanfare', 'potion'
             ];
             if (size1Keys.includes(key)) return 1;
             return 4; // Default for repetitive sounds (hit, damage, click, etc.)
@@ -10435,8 +10435,6 @@ const _jpApp = Vue.createApp({
             pendingKnowledgeCards, activeKnowledgeCard, isKnowledgeCardShowing, isKnowledgeCardAbsorbing, triggerNextKnowledgeCard, closeKnowledgeCard,
             getSpiritForSkill, getSpiritForKnowledgeCard, getSpiritImageSrc, handleSpiritImageError,
             isSpecialSceneActive, specialSceneBg,
-            playCardFlip: () => playSfx('cardFlip'),
-
         };
 
 

@@ -94,7 +94,6 @@
             gameover: 'assets/audio/sfx/sfx_gameover.mp3',
             skillpop: 'assets/audio/sfx/skillpop.mp3',
             skillget: 'assets/audio/sfx/skillget.mp3',
-            cardFlip: 'assets/audio/sfx/card-flip.mp3',
             escape: 'assets/audio/sfx/sfx_escape.mp3'
         },
 
