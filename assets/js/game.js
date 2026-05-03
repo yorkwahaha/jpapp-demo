@@ -1312,7 +1312,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26050301";
+        const APP_VERSION = window.APP_VERSION || "26050302";
 
         const appVersion = ref(APP_VERSION);
 
@@ -8042,25 +8042,28 @@ const _jpApp = Vue.createApp({
 
 
 
+            const getAllowedEarlyParticles = (lv) => {
+                if (lv === 1 || lv === 2) return ['は', 'の'];
+                if (lv === 3) return ['は', 'の', 'が'];
+                if (lv === 4 || lv === 5) return ['は', 'の', 'が', 'を'];
+                if (lv === 6) return ['は', 'の', 'が', 'を', 'へ'];
+                if (lv === 7) return ['は', 'の', 'が', 'を', 'へ', 'も'];
+                if (lv === 8) return ['は', 'の', 'が', 'を', 'へ', 'も', 'に'];
+                if (lv === 9 || lv === 10) return ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と'];
+                if (lv >= 11 && lv <= 15) return ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で'];
+                if (lv === 16) return ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で', 'から'];
+                if (lv >= 17 && lv <= 25) return ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で', 'から', 'まで'];
+                if (lv >= 26 && lv <= 31) return ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で', 'から', 'まで', 'や'];
+                return ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で', 'から', 'まで', 'や', 'より'];
+            };
+
             const getChoices = (defaultChoices, correctAns) => {
                 const targetCount = getChoiceCountForLevel(currentLevel.value);
                 const validParticles = ['は', 'の', 'が', 'を', 'に', 'へ', 'も', 'で', 'と', 'から', 'まで', 'や', 'より'];
 
                 const lv = currentLevel.value;
                 const isGatedPool = lv <= 35;
-                let allowedEarlyParticles = [];
-                if (lv === 1 || lv === 2) allowedEarlyParticles = ['は', 'の'];
-                else if (lv === 3) allowedEarlyParticles = ['は', 'の', 'が'];
-                else if (lv === 4 || lv === 5) allowedEarlyParticles = ['は', 'の', 'が', 'を'];
-                else if (lv === 6) allowedEarlyParticles = ['は', 'の', 'が', 'を', 'へ'];
-                else if (lv === 7) allowedEarlyParticles = ['は', 'の', 'が', 'を', 'へ', 'も'];
-                else if (lv === 8) allowedEarlyParticles = ['は', 'の', 'が', 'を', 'へ', 'も', 'に'];
-                else if (lv === 9 || lv === 10) allowedEarlyParticles = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と'];
-                else if (lv >= 11 && lv <= 15) allowedEarlyParticles = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で'];
-                else if (lv === 16) allowedEarlyParticles = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で', 'から'];
-                else if (lv >= 17 && lv <= 25) allowedEarlyParticles = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で', 'から', 'まで'];
-                else if (lv >= 26 && lv <= 31) allowedEarlyParticles = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で', 'から', 'まで', 'や'];
-                else if (lv >= 32 && lv <= 35) allowedEarlyParticles = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で', 'から', 'まで', 'や', 'より'];
+                let allowedEarlyParticles = getAllowedEarlyParticles(lv);
 
                 // [Refined Safety Patch] Context-aware filtering
                 const isParticleSkill = skillDef.particle && validParticles.includes(skillDef.particle);
@@ -8222,7 +8225,11 @@ const _jpApp = Vue.createApp({
                     // Redundant fill to ensure targetCount is met
                     if (finalChoices.length < targetCount) {
                         const currentSet = new Set(finalChoices);
-                        const candidates = choicesOptions.filter(p => !excludeChoices.includes(p) && !currentSet.has(p));
+                        let fallbackPool = choicesOptions;
+                        if (currentLevel.value <= 35 && skillDef.particle) {
+                            fallbackPool = getAllowedEarlyParticles(currentLevel.value);
+                        }
+                        const candidates = fallbackPool.filter(p => !excludeChoices.includes(p) && !currentSet.has(p));
                         while (finalChoices.length < targetCount && candidates.length > 0) {
                             finalChoices.push(candidates.splice(Math.floor(Math.random() * candidates.length), 1)[0]);
                         }
@@ -8230,10 +8237,13 @@ const _jpApp = Vue.createApp({
 
                     // [Failsafe] HE_DIRECTION final hardfill
                     if ((skillId === 'HE_DEST' || skillId === 'HE_DIRECTION') && finalChoices.length < targetCount) {
-                        const emgPool = ["は", "が", "の", "も", "と", "で", "を", "へ"];
+                        let emgPool = ["は", "が", "の", "も", "と", "で", "を", "へ"];
+                        if (currentLevel.value <= 35) {
+                            emgPool = getAllowedEarlyParticles(currentLevel.value);
+                        }
                         const currentSet = new Set(finalChoices);
                         for (const p of emgPool) {
-                            if (finalChoices.length >= 4) break;
+                            if (finalChoices.length >= targetCount) break;
                             if (p !== 'に' && !currentSet.has(p)) {
                                 finalChoices.push(p);
                                 currentSet.add(p);

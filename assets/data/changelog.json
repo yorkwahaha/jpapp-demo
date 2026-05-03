@@ -1,5 +1,16 @@
 [
     {
+        "version": "26050302",
+        "date": "2026-05-03",
+        "title": "Level 10 題庫與選項 gating 修正",
+        "changes": [
+            "修正 Level 10「へ」題池中容易與「に」歸著點混淆的題目。",
+            "將「山へ登る」替換為更明確的「教室へ行く」。",
+            "補強早期關卡選項 gating，避免 Level 10 出現尚未教學的「で」。",
+            "fallback fill 與 HE_DIRECTION 安全池改走 getAllowedEarlyParticles。"
+        ]
+    },
+    {
         "version": "26050301",
         "date": "2026-05-03",
         "title": "戰鬥 HUD 2.1 與怪物圖鑑 v1",

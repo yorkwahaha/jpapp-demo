@@ -1046,13 +1046,13 @@ window.EARLY_GAME_POOLS = {
                     "rightRuby": "むかう"
                 },
                 {
-                    "j": "山へ登る",
-                    "r": "やまへのぼる",
-                    "zh": "爬山",
-                    "left": "山",
-                    "leftRuby": "やま",
-                    "right": "登る",
-                    "rightRuby": "のぼる"
+                    "j": "教室へ行く",
+                    "r": "きょうしつへいく",
+                    "zh": "去教室",
+                    "left": "教室",
+                    "leftRuby": "きょうしつ",
+                    "right": "行く",
+                    "rightRuby": "いく"
                 },
                 {
                     "j": "下へ降りる",
