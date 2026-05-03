@@ -2107,15 +2107,10 @@ const _jpApp = Vue.createApp({
             } catch (e) { }
 
             try {
-
                 const res = await fetch(`assets/data/mentor-dialogues.v1.json?v=${appVersion.value}`);
-
                 if (res.ok) {
-
                     MENTOR_AUDIO_MAP.value = await res.json();
-
                 }
-
             } catch (e) { }
 
         };
@@ -3275,13 +3270,9 @@ const _jpApp = Vue.createApp({
 
                 lastNormalBgm = pick;
 
-                currentBattleBgmPick.value = BGM_BASE + pick;
-
             }
 
         };
-
-
 
         const preloadAllAudio = async () => {
 

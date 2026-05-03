@@ -2,13 +2,9 @@
 
 
 function setHeroAvatar(state) {
-
     const el = document.getElementById('heroAvatar');
-
     if (!el) return;
-
     const img = el.querySelector('img');
-
     if (!img) return;
 
     el.dataset.state = state;
@@ -24,7 +20,6 @@ function setHeroAvatar(state) {
     else if (state === 'scary') img.src = 'assets/images/hero/hero_scary.png';
 
     else if (state === 'ase') img.src = 'assets/images/hero/hero_ase.png';
-
 }
 
 
