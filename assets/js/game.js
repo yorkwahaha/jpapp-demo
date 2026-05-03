@@ -190,16 +190,8 @@ const _jpApp = Vue.createApp({
         const failedSpiritIcons = ref({});
         const particleToIconMap = GAME_CONSTANTS.PARTICLE_TO_ICON_MAP || {};
 
-        const getSpiritIconKey = (opt) => {
-            const normalized = String(opt || '').trim();
-            return particleToIconMap[normalized] || '';
-        };
-
-        const getSpiritIconPath = (opt) => {
-            const key = getSpiritIconKey(opt);
-            if (!key) return '';
-            return `${GAME_CONSTANTS.SPIRIT_ICON_BASE_PATH}${key}.webp`;
-        };
+        const getSpiritIconKey = (opt) => window.JPAPPCodexDisplayUtils.getSpiritIconKey(opt);
+        const getSpiritIconPath = (opt) => window.JPAPPCodexDisplayUtils.getSpiritIconPath(opt);
 
         const shouldShowSpiritIcon = (opt) => {
             return Boolean(getSpiritIconPath(opt)) && !failedSpiritIcons.value[opt];
@@ -227,20 +219,8 @@ const _jpApp = Vue.createApp({
             return spirit ? { ...skill, spirit } : skill;
         };
 
-        const getSpiritImageSrc = (spirit) => {
-            if (!spirit?.implemented || !spirit.imageBase) return SPIRIT_IMAGE_PLACEHOLDER;
-            return `${spirit.imageBase}.webp`;
-        };
-
-        const handleSpiritImageError = (event, spirit) => {
-            const img = event?.target;
-            if (!img) return;
-            if (spirit?.implemented && spirit.imageBase && img.src.includes('.webp')) {
-                img.src = `${spirit.imageBase}.png`;
-                return;
-            }
-            img.src = SPIRIT_IMAGE_PLACEHOLDER;
-        };
+        const getSpiritImageSrc = (spirit) => window.JPAPPCodexDisplayUtils.getSpiritImageSrc(spirit);
+        const handleSpiritImageError = (event, spirit) => window.JPAPPCodexDisplayUtils.handleSpiritImageError(event, spirit);
 
         const getResultSpiritForLevel = (levelId) => {
             const pendingSpirit = pendingKnowledgeCards.value
@@ -1025,81 +1005,49 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26050305";
+        const APP_VERSION = window.APP_VERSION || "26050306";
 
         const appVersion = ref(APP_VERSION);
 
         const VFX_ENHANCED = true;
 
-
-
-
-
-        const SETTINGS_KEY = 'jpRpgSettingsV1';
+        const DEFAULT_TTS_VOICE = 'ja-JP-Neural2-B';
 
         const settings = reactive({
-
             autoReadOnWrong: true,
-
             correctAdvanceDelayMs: null,
-
             wrongAdvanceDelayMs: null,
-
             enemyAttackMode: 'atb',
-
             feedbackStyle: 'oneesan',
-
             defaultAttackMode: 'tap',
-
-            ttsVoice: 'ja-JP-Neural2-B'
-
+            ttsVoice: DEFAULT_TTS_VOICE
         });
-
-
-        const DEFAULT_TTS_VOICE = 'ja-JP-Neural2-B';
 
         const _settingsDefaults = { autoReadOnWrong: true, correctAdvanceDelayMs: null, wrongAdvanceDelayMs: null, enemyAttackMode: 'atb', feedbackStyle: 'oneesan', defaultAttackMode: 'tap', ttsVoice: DEFAULT_TTS_VOICE };
 
         const loadSettings = () => {
-
             try {
-
-                const raw = localStorage.getItem(SETTINGS_KEY);
-
-                if (raw) {
-
-                    const parsed = JSON.parse(raw);
-
+                const parsed = window.JPAPPSettingsManager.loadGeneralSettings();
+                if (parsed && typeof parsed === 'object') {
                     Object.keys(_settingsDefaults).forEach(k => {
-
                         if (parsed[k] !== undefined) settings[k] = parsed[k];
-
                     });
-
                 }
 
                 if (!settings.ttsVoice || !VALID_TTS_VOICES.includes(settings.ttsVoice)) {
-
                     settings.ttsVoice = DEFAULT_TTS_VOICE;
-
                 }
-
                 if (!['tap', 'flick'].includes(settings.defaultAttackMode)) {
                     settings.defaultAttackMode = 'tap';
                 }
-
                 if (settings.enemyAttackMode !== 'atb') {
                     settings.enemyAttackMode = 'atb';
                 }
-
             } catch (e) { console.warn('[Settings] load error', e); }
-
         };
 
         const saveSettings = () => {
-
-            try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...settings })); } catch (e) { }
-
+            window.JPAPPSettingsManager.saveGeneralSettings({ ...settings });
         };
 
         loadSettings();
@@ -1107,8 +1055,6 @@ const _jpApp = Vue.createApp({
         watch(settings, saveSettings, { deep: true });
 
         window.__initVfxHelpers?.(settings);
-
-
 
         const isChangelogOpen = ref(false);
 
@@ -1199,8 +1145,6 @@ const _jpApp = Vue.createApp({
         const isMonsterCodexOpen = ref(false);
         const selectedMonsterCodexId = ref(null);
         // [ /CODEX - STATE ]
-
-        const MENTOR_SEEN_KEY = 'jpRpgMentorSeenV1';
 
         const mentorTutorialSeen = ref([]);
 
@@ -1458,21 +1402,13 @@ const _jpApp = Vue.createApp({
         };
 
         const loadMentorState = () => {
-
             try {
-
-                const raw = localStorage.getItem(MENTOR_SEEN_KEY);
-
-                if (raw) mentorTutorialSeen.value = JSON.parse(raw);
-
+                mentorTutorialSeen.value = window.JPAPPStorageManager.loadMentorSeen();
             } catch (e) { }
-
         };
 
         const saveMentorState = () => {
-
-            try { localStorage.setItem(MENTOR_SEEN_KEY, JSON.stringify(mentorTutorialSeen.value)); } catch (e) { }
-
+            window.JPAPPStorageManager.saveMentorSeen(mentorTutorialSeen.value);
         };
 
         loadMentorState();
@@ -1956,10 +1892,7 @@ const _jpApp = Vue.createApp({
             width: `${getSkillMastery(skillId)}%`
         });
 
-        const formatMonsterCodexValue = (value, suffix = '') => {
-            if (value === null || value === undefined || value === '') return '未記錄';
-            return `${value}${suffix}`;
-        };
+        const formatMonsterCodexValue = (v, s) => window.JPAPPCodexDisplayUtils.formatMonsterCodexValue(v, s);
 
         const getMonsterStageText = (levels = []) => {
             if (!Array.isArray(levels) || !levels.length) return '出現關卡：未記錄';
@@ -1988,17 +1921,15 @@ const _jpApp = Vue.createApp({
                     id: enemy.id || `monster-${idx}`,
                     sortLevel: spawnLevels[0] ?? 999,
                     isUnlocked,
-                    name: enemy.name || '未記錄',
+                    name: window.JPAPPCodexDisplayUtils.formatMonsterName(enemy.name),
                     image: enemy.image || DEFAULT_IMAGE_PATHS.monsterSprite,
                     spawnLevels,
                     stageText: getMonsterStageText(spawnLevels),
-                    traitText: enemy.description || enemy.trait || '未記錄',
+                    traitText: window.JPAPPCodexDisplayUtils.formatMonsterTrait(enemy.trait, enemy.description),
                     hpText: formatMonsterCodexValue(hp),
-                    damageText: damageMin === null && damageMax === null
-                        ? '未記錄'
-                        : `${formatMonsterCodexValue(damageMin)} - ${formatMonsterCodexValue(damageMax)}`,
-                    evasionText: evasionRate === null ? '未記錄' : `${Math.round(Number(evasionRate) * 100)}%`,
-                    intervalText: attackIntervalMs === null ? '未記錄' : `${(Number(attackIntervalMs) / 1000).toFixed(1)} 秒`
+                    damageText: window.JPAPPCodexDisplayUtils.formatMonsterDamageRange(damageMin, damageMax),
+                    evasionText: window.JPAPPCodexDisplayUtils.formatMonsterEvasion(evasionRate),
+                    intervalText: window.JPAPPCodexDisplayUtils.formatMonsterAttackInterval(attackIntervalMs)
                 };
             }).sort((a, b) => a.sortLevel - b.sortLevel || a.name.localeCompare(b.name, 'zh-Hant'));
         });
@@ -2023,10 +1954,7 @@ const _jpApp = Vue.createApp({
         };
 
         const handleMonsterCodexImageError = (event) => {
-            const img = event?.target;
-            if (!img || img.dataset.fallbackApplied === 'true') return;
-            img.dataset.fallbackApplied = 'true';
-            img.src = DEFAULT_IMAGE_PATHS.monsterSprite;
+            window.JPAPPCodexDisplayUtils.handleMonsterImageError(event, DEFAULT_IMAGE_PATHS.monsterSprite);
         };
         // [ /CODEX - COMPUTED ]
 
@@ -2212,7 +2140,12 @@ const _jpApp = Vue.createApp({
         );
 
 
-        const getSkillTypeLabel = (type) => SKILL_TYPE_LABELS[type] || 'BUFF';
+        const getSkillTypeLabel = (type) => window.JPAPPCodexDisplayUtils.getSkillTypeLabel(type);
+        const formatParticleBadge = (p) => window.JPAPPCodexDisplayUtils.formatParticleBadge(p);
+        const formatSkillSpiritName = (s, sp) => window.JPAPPCodexDisplayUtils.formatSkillSpiritName(s, sp);
+        const formatSkillMeaning = (m) => window.JPAPPCodexDisplayUtils.formatSkillMeaning(m);
+        const formatSkillRule = (r) => window.JPAPPCodexDisplayUtils.formatSkillRule(r);
+        const formatUnlockLevel = (l) => window.JPAPPCodexDisplayUtils.formatUnlockLevel(l);
 
         const isSkillOpen = ref(false);
 
@@ -2992,11 +2925,6 @@ const _jpApp = Vue.createApp({
         const masterGain = ref(null);
         const bgmGain = ref(null);
         const sfxGain = ref(null);
-        // [ FUTURE - NARRATOR / TTS ]
-        // const narratorGain = ref(null); // Suggest adding this for sister's voice
-        // [ /FUTURE ]
-
-
 
         const bgmVolume = ref(0.35);
 
@@ -3013,8 +2941,6 @@ const _jpApp = Vue.createApp({
 
         const needsUserGestureToResumeBgm = ref(false);
         const isBgmSuppressed = ref(false);
-        // When true, SFX should use HTML Audio fallback instead of WebAudio buffers.
-        // Set on background→foreground transition; cleared on successful gesture-based AudioContext resume.
         let _sfxNeedsGestureRecovery = false;
         const HTML_BGM_FALLBACK_SCALE = 0.85;
         const MOBILE_HTML_BGM_FALLBACK_SCALE = 0.4;
@@ -3025,22 +2951,11 @@ const _jpApp = Vue.createApp({
         const isAudioDebugEnabled = ref(false);
         try {
             const params = new URLSearchParams(window.location.search);
-            isAudioDebugEnabled.value = params.get('audioDebug') === '1' || localStorage.getItem('jpapp_audio_debug') === '1';
+            isAudioDebugEnabled.value = params.get('audioDebug') === '1' || window.JPAPPStorageManager.loadAudioDebugEnabled();
         } catch (_) { }
         const isAudioDebugOpen = ref(isAudioDebugEnabled.value);
-        const AUDIO_DEBUG_POS_KEY = 'jpapp_audio_debug_pos';
         const loadAudioDebugPosition = () => {
-            try {
-                const raw = localStorage.getItem(AUDIO_DEBUG_POS_KEY);
-                if (!raw) return null;
-                const parsed = JSON.parse(raw);
-                const left = Number(parsed?.left);
-                const top = Number(parsed?.top);
-                if (!Number.isFinite(left) || !Number.isFinite(top)) return null;
-                return { left, top };
-            } catch (_) {
-                return null;
-            }
+            return window.JPAPPStorageManager.loadAudioDebugPosition();
         };
         const audioDebugPosition = ref(loadAudioDebugPosition());
         const isAudioDebugDragging = ref(false);
@@ -3128,9 +3043,7 @@ const _jpApp = Vue.createApp({
 
         const saveAudioDebugPosition = () => {
             if (!audioDebugPosition.value) return;
-            try {
-                localStorage.setItem(AUDIO_DEBUG_POS_KEY, JSON.stringify(audioDebugPosition.value));
-            } catch (_) { }
+            window.JPAPPStorageManager.saveAudioDebugPosition(audioDebugPosition.value);
         };
 
         const setAudioDebugPosition = (position, shouldSave = false) => {
@@ -3298,54 +3211,29 @@ const _jpApp = Vue.createApp({
 
         // ================= [ AUDIO & TTS ] =================
         const loadAudioSettings = () => {
-
             try {
-
-                const raw = localStorage.getItem(audioSettingsKey);
-
-                if (raw) {
-
-                    const obj = JSON.parse(raw);
-
+                const obj = window.JPAPPSettingsManager.loadAudioSettings();
+                if (obj && typeof obj === 'object') {
                     bgmVolume.value = obj.bgmVolume ?? bgmVolume.value;
-
                     sfxVolume.value = obj.sfxVolume ?? sfxVolume.value;
-
                     masterVolume.value = obj.masterVolume ?? masterVolume.value;
-
                     isMuted.value = obj.isMuted ?? isMuted.value;
-
                 }
-
-            } catch (_) { }
-
+            } catch (e) { console.warn('[AudioSettings] load error', e); }
         };
-
-
 
         const saveAudioSettings = () => {
-
             try {
-
-                localStorage.setItem(audioSettingsKey, JSON.stringify({
-
+                window.JPAPPSettingsManager.saveAudioSettings({
                     bgmVolume: bgmVolume.value,
-
                     sfxVolume: sfxVolume.value,
-
                     masterVolume: masterVolume.value,
-
-                    isMuted: isMuted.value
-
-                }));
-
-            } catch (_) { }
-
+                    isMuted: isMuted.value,
+                    updatedAt: new Date().toISOString()
+                });
+            } catch (e) { }
             updateGainVolumes();
-
         };
-
-
 
         const BGM_BASE = 'assets/audio/bgm_m4a/';
 
@@ -3637,18 +3525,11 @@ const _jpApp = Vue.createApp({
 
 
 
-        const clampAudioVolume = (value) => Math.max(0, Math.min(1, Number(value) || 0));
+        const clampAudioVolume = (value) => window.JPAPPSettingsManager.clampVolume(value);
 
-        const normalizeVolumeValue = (value) => {
-            const numeric = Number(value);
-            if (!Number.isFinite(numeric)) return 0;
-            return clampAudioVolume(numeric > 1 ? numeric / 100 : numeric);
-        };
+        const normalizeVolumeValue = (value) => window.JPAPPSettingsManager.normalizeVolumeValue(value);
 
-        const curveVolumeValue = (value, exponent) => {
-            const normalized = normalizeVolumeValue(value);
-            return clampAudioVolume(Math.pow(normalized, exponent));
-        };
+        const curveVolumeValue = (value, exponent) => window.JPAPPSettingsManager.curveVolumeValue(value, exponent);
 
         const getNormalizedMasterVolume = () => normalizeVolumeValue(masterVolume.value);
 
@@ -4835,6 +4716,140 @@ const _jpApp = Vue.createApp({
             schedulePageLoopAudioResume('visibilitychange');
         };
 
+        const createSfxAudioElement = (src, name) => {
+            const a = new Audio(src);
+            a.preload = 'auto';
+            if ('playsInline' in a) a.playsInline = true;
+            a.dataset.sfxName = name || '';
+
+            // Diagnostic markers
+            a._sfxKey = name || '';
+            a._sfxSrc = src || '';
+            a._fromSfxPool = false; // Default, will be overridden by poolers
+
+            // Only use anonymous for remote assets if needed. For local assets on same-origin,
+            // omitting it can avoid unnecessary CORS preflights which may fail on simple dev servers.
+            // a.crossOrigin = "anonymous";
+
+            a.addEventListener('error', () => {
+                const errorCode = a.error?.code || 'unknown';
+                // Only warn once per source to avoid flooding the debug overlay
+                const warnKey = name || src || 'unknown';
+                if (!a._hasWarned && !_sfxErrorLoggedKeys.has(warnKey)) {
+                    _sfxErrorLoggedKeys.add(warnKey);
+                    warnSfxPlayback('sfx-audio-error', {
+                        sfx: name || a._sfxKey,
+                        src: src || a._sfxSrc,
+                        fromPool: !!a._fromSfxPool,
+                        errorCode,
+                        readyState: a.readyState,
+                        networkState: a.networkState,
+                        currentSrc: a.currentSrc || 'none'
+                    });
+                    a._hasWarned = true;
+                }
+            });
+            return a;
+        };
+
+        const warmupSfx = () => {
+            const warmed = [];
+            WARMUP_SFX_KEYS.forEach(key => {
+                const src = _uiSfxSrcMap[key];
+                if (!src) return;
+                const entry = ensureSfxPool(key, src);
+                if (entry?.els?.length) warmed.push(`${key}:${entry.els.length}`);
+            });
+            window.__JPAPP_SFX_WARMUP_STATE = {
+                ranAt: new Date().toISOString(),
+                defaultPoolSize: SFX_POOL_SIZE,
+                warmed,
+                pools: Object.fromEntries(Array.from(sfxAudioPools.entries()).map(([key, entry]) => [
+                    key,
+                    {
+                        src: entry.src,
+                        count: entry.els.length,
+                        readyStates: entry.els.map(audio => audio.readyState),
+                        networkStates: entry.els.map(audio => audio.networkState)
+                    }
+                ]))
+            };
+            if (!window.__JPAPP_SFX_WARMUP_LOGGED) {
+                window.__JPAPP_SFX_WARMUP_LOGGED = true;
+                console.debug('[sfx-warmup]', window.__JPAPP_SFX_WARMUP_STATE);
+            }
+        };
+
+        const markSfxElementWarmupState = (audio, state) => {
+            audio._warmupState = state;
+            audio._warmupStateAt = Date.now();
+        };
+
+        const loadSfxPoolElement = (audio) => {
+            if (!audio || audio._warmupLoadStarted) return;
+            audio._warmupLoadStarted = true;
+            audio.addEventListener('loadeddata', () => markSfxElementWarmupState(audio, 'loadeddata'), { once: true });
+            audio.addEventListener('canplaythrough', () => markSfxElementWarmupState(audio, 'canplaythrough'), { once: true });
+            audio.addEventListener('error', () => markSfxElementWarmupState(audio, 'error'), { once: true });
+            try { audio.load(); } catch (_) { }
+        };
+
+        const ensureSfxPool = (name, src = _uiSfxSrcMap[name]) => {
+            if (!src) return null;
+            const targetSize = getSfxPoolSize(name);
+            const existing = sfxAudioPools.get(name);
+            if (existing?.src === src && existing.els?.length === targetSize) return existing;
+
+            const els = Array.from({ length: targetSize }, (_, i) => {
+                const audio = createSfxAudioElement(src, name);
+                audio._fromSfxPool = true;
+                audio._sfxPoolKey = name;
+                audio._sfxKey = name;
+                audio._sfxSrc = src;
+                audio.volume = clampAudioVolume(masterVolume.value * sfxVolume.value * (SFX_SCALES[name] ?? 1.0));
+                // Only load the first element immediately to reduce simultaneous network requests
+                if (i === 0) loadSfxPoolElement(audio);
+                return audio;
+            });
+
+            const entry = { src, els, idx: 0 };
+            sfxAudioPools.set(name, entry);
+            audioPool.set(src, els[0]);
+            return entry;
+        };
+
+        const replaceSfxPoolChannel = (entry, index, name) => {
+            if (!entry?.src || !Array.isArray(entry.els)) return null;
+            const next = createSfxAudioElement(entry.src, name);
+            next._fromSfxPool = true;
+            next._sfxPoolKey = name;
+            next._sfxKey = name;
+            next._sfxSrc = entry.src;
+            next.volume = clampAudioVolume(masterVolume.value * sfxVolume.value * (SFX_SCALES[name] ?? 1.0));
+            loadSfxPoolElement(next);
+            entry.els[index] = next;
+            if (index === 0) audioPool.set(entry.src, next);
+            return next;
+        };
+
+        const getSfxPoolChannel = (name, src = _uiSfxSrcMap[name]) => {
+            const entry = ensureSfxPool(name, src);
+            if (!entry?.els?.length) return null;
+
+            const channelIndex = entry.idx % entry.els.length;
+            entry.idx = (entry.idx + 1) % entry.els.length;
+
+            let audio = entry.els[channelIndex];
+            if (audio && !audio._warmupLoadStarted) {
+                // Load on demand if not already loaded
+                loadSfxPoolElement(audio);
+            }
+            if (!audio || audio.error) {
+                audio = replaceSfxPoolChannel(entry, channelIndex, name);
+            }
+            return audio ? { audio, entry, channelIndex } : null;
+        };
+
         document.addEventListener("visibilitychange", handlePageAudioVisibilityChange);
         window.addEventListener('pagehide', () => {
             markAudioDebugEvent(lastAudioLifecycleEvent, 'pagehide');
@@ -4861,6 +4876,31 @@ const _jpApp = Vue.createApp({
 
         const _sfxWarnLastAt = new Map();
 
+        const _sfxErrorLoggedKeys = new Set();
+
+        const SFX_POOL_SIZE = 4;
+
+        const WARMUP_SFX_KEYS = ['click', 'uiPop', 'battlePop', 'hit', 'damage', 'damage1', 'skillpop', 'skillget'];
+
+        const POOLED_SFX_KEYS = new Set([
+            ...WARMUP_SFX_KEYS,
+            'hit2', 'miss', 'potion', 'fanfare', 'monsterDeathCry', 'bossDeathCry',
+            'bossExplosion', 'win', 'gameover', 'cardFlip', 'escape', 'bossClear',
+            'damage2', 'damage3', 'damage4', 'damage5', 'damage6', 'damage7', 'damage8'
+        ]);
+
+        const getSfxPoolSize = (key) => {
+            // Pool Size 1: Long sounds or low-frequency sounds that don't need overlapping playback
+            const size1Keys = [
+                'monsterDeathCry', 'bossDeathCry', 'bossExplosion', 'win', 'gameover',
+                'escape', 'bossClear', 'skillget', 'cardFlip', 'fanfare', 'potion'
+            ];
+            if (size1Keys.includes(key)) return 1;
+            return 4; // Default for repetitive sounds (hit, damage, click, etc.)
+        };
+
+        const sfxAudioPools = new Map();
+
         const warnSfxPlayback = (tag, payload = {}, intervalMs = 5000) => {
             const key = `${tag}:${payload.sfx || payload.src || 'global'}`;
             const now = Date.now();
@@ -4876,22 +4916,6 @@ const _jpApp = Vue.createApp({
             refreshAudioDebugState();
         };
 
-        const createSfxAudioElement = (src, name) => {
-            const a = new Audio(src);
-            a.preload = 'auto';
-            if ('playsInline' in a) a.playsInline = true;
-            a.dataset.sfxName = name || '';
-            a.addEventListener('error', () => {
-                warnSfxPlayback('sfx-audio-error', {
-                    sfx: name,
-                    src,
-                    errorCode: a.error?.code || 'unknown',
-                    readyState: a.readyState,
-                    networkState: a.networkState
-                });
-            });
-            return a;
-        };
 
         const _getOrCreatePoly = (name) => {
 
@@ -4904,15 +4928,21 @@ const _jpApp = Vue.createApp({
                 return null;
             }
 
-            const els = Array.from({ length: POLY }, () => {
-
-                return createSfxAudioElement(src, name);
-
+            const targetSize = getSfxPoolSize(name);
+            const els = Array.from({ length: targetSize }, () => {
+                const audio = createSfxAudioElement(src, name);
+                audio._fromSfxPool = true;
+                audio._sfxPoolKey = name;
+                audio._sfxKey = name;
+                audio._sfxSrc = src;
+                loadSfxPoolElement(audio);
+                return audio;
             });
 
             const entry = { els, idx: 0, src };
 
             _polyPool.set(name, entry);
+            audioPool.set(src, els[0]);
 
             return entry;
 
@@ -4921,7 +4951,13 @@ const _jpApp = Vue.createApp({
         const replacePolyChannel = (entry, index, name) => {
             if (!entry?.src || !Array.isArray(entry.els)) return null;
             const next = createSfxAudioElement(entry.src, name);
+            next._fromSfxPool = true;
+            next._sfxPoolKey = name;
+            next._sfxKey = name;
+            next._sfxSrc = entry.src;
+            loadSfxPoolElement(next);
             entry.els[index] = next;
+            if (index === 0) audioPool.set(entry.src, next);
             return next;
         };
 
@@ -4969,14 +5005,8 @@ const _jpApp = Vue.createApp({
                 return;
             }
 
-            let channelIndex = entry.els.findIndex(el => el && !el.error && (el.paused || el.ended || el.currentTime === 0));
-            let useClone = false;
-
-            if (channelIndex < 0) {
-                channelIndex = entry.idx % POLY;
-                useClone = true;
-                warnSfxPlayback('sfx-channel-reused', { sfx: name, channels: entry.els.length }, 2000);
-            }
+            const channelIndex = entry.idx % entry.els.length;
+            entry.idx = (entry.idx + 1) % entry.els.length;
 
             let a = entry.els[channelIndex];
 
@@ -4989,29 +5019,7 @@ const _jpApp = Vue.createApp({
                 return;
             }
 
-            entry.idx++;
-
-            if (useClone) {
-                a = a.cloneNode(true);
-                a.dataset.sfxName = name;
-                a.addEventListener('ended', () => {
-                    a.src = '';
-                    a.remove();
-                }, { once: true });
-                a.addEventListener('error', () => {
-                    warnSfxPlayback('sfx-audio-error', {
-                        sfx: name,
-                        src: entry.src,
-                        errorCode: a.error?.code || 'unknown',
-                        readyState: a.readyState,
-                        networkState: a.networkState
-                    });
-                    a.src = '';
-                    a.remove();
-                }, { once: true });
-            } else {
-                a.pause();
-            }
+            a.pause();
 
             a.currentTime = 0;
 
@@ -5024,9 +5032,17 @@ const _jpApp = Vue.createApp({
 
             a.play().catch(e => {
                 const errorMessage = e?.name || e?.message || String(e);
-                warnSfxPlayback('sfx-play-failed', { sfx: name, src: entry.src, error: errorMessage });
+                warnSfxPlayback('sfx-play-failed', {
+                    sfx: name,
+                    src: entry.src,
+                    fromPool: true,
+                    readyState: a.readyState,
+                    networkState: a.networkState,
+                    currentSrc: a.currentSrc || 'none',
+                    error: errorMessage
+                });
                 markSfxPlaybackState('html-poly', `rejected ${name}`, errorMessage);
-                if (!useClone) replacePolyChannel(entry, channelIndex, name);
+                replacePolyChannel(entry, channelIndex, name);
                 playHtmlSfxFallback(name, entry.src);
             });
 
@@ -5056,8 +5072,17 @@ const _jpApp = Vue.createApp({
             }
 
             try {
-                const audio = createSfxAudioElement(src, name);
-                audio.crossOrigin = 'anonymous';
+                let audio;
+                const usePool = POOLED_SFX_KEYS.has(name);
+                if (usePool) {
+                    const pooled = getSfxPoolChannel(name, src);
+                    audio = pooled?.audio;
+                }
+
+                if (!audio) {
+                    audio = createSfxAudioElement(src, name);
+                    audio.crossOrigin = 'anonymous';
+                }
                 audio.volume = getHtmlSfxFallbackVolume(name);
                 audio.muted = isMuted.value || audio.volume <= 0;
                 if (audio.muted || audio.volume <= 0) {
@@ -5084,7 +5109,10 @@ const _jpApp = Vue.createApp({
                 });
                 audio.onended = () => {
                     htmlSfxFallbackActive.delete(audio);
-                    audio.src = '';
+                    // Do not clear src for pooled elements to allow reuse
+                    if (!audio._fromSfxPool) {
+                        audio.src = '';
+                    }
                 };
             } catch (e) {
                 lastHtmlSfxFallbackResult.value = `failed ${name} @ ${new Date().toLocaleTimeString()}`;
@@ -5210,17 +5238,32 @@ const _jpApp = Vue.createApp({
 
 
             try {
-                const isFrequent = ['hit', 'hit2', 'click', 'damage', 'uiPop', 'battlePop'].includes(name);
-                let a = audioPool.get(src);
+                const usePool = POOLED_SFX_KEYS.has(name);
+                const pooledChannel = usePool ? getSfxPoolChannel(name, src) : null;
+                const poolEntry = pooledChannel?.entry || null;
+                let a = pooledChannel?.audio || audioPool.get(src);
                 if (!a || a.error) {
-                    if (a?.error) warnSfxPlayback('sfx-audio-error', { sfx: name, src, errorCode: a.error.code });
-                    a = createSfxAudioElement(src, name);
-                    a.crossOrigin = "anonymous";
-                    audioPool.set(src, a);
-                } else if (isFrequent) {
-                    // 對於高頻次音效，使用 CloneNode 實現複音，避免 currentTime=0 造成的切音
-                    a = a.cloneNode(true);
+                    if (a?.error) {
+                        warnSfxPlayback('sfx-audio-error', {
+                            sfx: name,
+                            src,
+                            fromPool: !!a._fromSfxPool,
+                            errorCode: a.error.code,
+                            readyState: a.readyState,
+                            networkState: a.networkState,
+                            currentSrc: a.currentSrc || 'none'
+                        });
+                    }
+                    if (poolEntry) {
+                        a = replaceSfxPoolChannel(poolEntry, pooledChannel.channelIndex, name);
+                    } else {
+                        a = createSfxAudioElement(src, name);
+                        a.crossOrigin = "anonymous";
+                        audioPool.set(src, a);
+                    }
                 }
+
+                if (!a) return null;
 
                 if (audioCtx.value && audioCtx.value.state !== 'running') {
                     audioCtx.value.resume().catch(e => {
@@ -5230,8 +5273,11 @@ const _jpApp = Vue.createApp({
 
                 if (audioCtx.value) {
                     try {
-                        const source = audioCtx.value.createMediaElementSource(a);
-                        source.connect(sfxGain.value);
+                        if (!a._connected) {
+                            const source = audioCtx.value.createMediaElementSource(a);
+                            source.connect(sfxGain.value);
+                            a._connected = true;
+                        }
                     } catch (_) {
                         a.volume = clampAudioVolume(masterVolume.value * sfxVolume.value * (SFX_SCALES[name] ?? 1.0));
                     }
@@ -5239,17 +5285,33 @@ const _jpApp = Vue.createApp({
                     a.volume = clampAudioVolume(masterVolume.value * sfxVolume.value * (SFX_SCALES[name] ?? 1.0));
                 }
 
-                a.currentTime = 0;
-                a.play().catch(e => {
-                    warnSfxPlayback('sfx-play-failed', { sfx: name, src, error: e?.name || e?.message || e });
-                    audioPool.delete(src);
+                a.volume = clampAudioVolume(masterVolume.value * sfxVolume.value * (SFX_SCALES[name] ?? 1.0));
+                try {
+                    a.pause();
+                    a.currentTime = 0;
+                } catch (_) { }
+
+                a.play().then(() => {
+                    markSfxPlaybackState(usePool ? 'html-pool' : 'html-audio', `started ${name}`);
+                }).catch(e => {
+                    const errorMessage = e?.name || e?.message || String(e);
+                    warnSfxPlayback('sfx-play-failed', {
+                        sfx: name,
+                        src,
+                        fromPool: !!a._fromSfxPool,
+                        readyState: a.readyState,
+                        networkState: a.networkState,
+                        currentSrc: a.currentSrc || 'none',
+                        error: errorMessage
+                    });
+                    if (poolEntry) {
+                        replaceSfxPoolChannel(poolEntry, pooledChannel.channelIndex, name);
+                    } else {
+                        audioPool.delete(src);
+                    }
+                    markSfxPlaybackState(usePool ? 'html-pool' : 'html-audio', `rejected ${name}`, errorMessage);
                     playHtmlSfxFallback(name, src);
                 });
-
-                // 如果是 Clone，結束後釋放資源
-                if (isFrequent && a !== audioPool.get(src)) {
-                    a.onended = () => { a.src = ""; a.remove(); };
-                }
 
                 return a;
             } catch (e) { return null; }
@@ -6318,21 +6380,11 @@ const _jpApp = Vue.createApp({
 
 
         const loadMistakes = () => {
-
-            try {
-
-                const data = JSON.parse(localStorage.getItem('jpRpgMistakesV1') || '[]');
-
-                mistakes.value = data;
-
-            } catch (_) { }
-
+            mistakes.value = window.JPAPPStorageManager.loadMistakes();
         };
 
         const saveMistakes = () => {
-
-            try { localStorage.setItem('jpRpgMistakesV1', JSON.stringify(mistakes.value)); } catch (_) { }
-
+            window.JPAPPStorageManager.saveMistakes(mistakes.value);
         };
 
 
@@ -6698,13 +6750,13 @@ const _jpApp = Vue.createApp({
 
         // ── One-time AudioContext warmup (runs only on first user gesture) ──
         const unlockAudioOnce = () => {
-
             if (_audioUnlockTried.value) return;
-
             _audioUnlockTried.value = true;
 
-            try {
+            // Warm up critical SFX to reduce first-play latency
+            try { warmupSfx(); } catch(e) {}
 
+            try {
                 if (!audioCtx.value) {
 
                     const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -10172,6 +10224,8 @@ const _jpApp = Vue.createApp({
 
 
             const unlockAudioOnce = () => {
+                // Warm up critical SFX
+                try { warmupSfx(); } catch(e) {}
 
                 initAudioCtx().then(() => {
 
@@ -10362,6 +10416,7 @@ const _jpApp = Vue.createApp({
             handleEscapeToMap, escapeOverlayVisible, escapeOverlayOpacity, isEscaping,
             heroBuffs,
             skillList, castAbility, spState, settings, shouldShowNextButton, praiseToast, comboPopup, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG, getSkillTypeLabel,
+            formatParticleBadge, formatSkillSpiritName, formatSkillMeaning, formatSkillRule, formatUnlockLevel,
             particleMastery, particleCorrectCounts, skillMastery, skillCorrectCounts, getParticleMastery, getParticleMasteryStyle, getSkillMastery, getSkillMasteryStyle,
             isMonsterCodexOpen, openMonsterCodex, monsterCodexEntries, selectedMonsterCodexEntry, selectMonsterCodexEntry, handleMonsterCodexImageError,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,

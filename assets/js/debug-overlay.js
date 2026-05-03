@@ -12,88 +12,57 @@
     const FOCUS_KEYWORDS = ['[BGM]', '[AZURE]', '[PRAISE]'];
 
     window.__DEBUG_OVERLAY_MODE = 'focus';
-
     let _lines = [];
-
     let _el = null;
-
     let _enabled = false;
-
-
+    let _seenLogs = new Set(); // For deduplication
 
     function _ts() {
-
         const d = new Date();
-
         return String(d.getMinutes()).padStart(2, '0') + ':' +
-
             String(d.getSeconds()).padStart(2, '0') + '.' +
-
             String(d.getMilliseconds()).padStart(3, '0');
-
     }
-
-
 
     function _createOverlay() {
-
         if (_el) return;
-
         _el = document.createElement('div');
-
         _el.id = 'debugOverlay';
-
         Object.assign(_el.style, {
-
             position: 'fixed', top: '8px', right: '8px', zIndex: '9999999',
-
             background: 'rgba(0,0,0,0.72)', color: '#7fff7f',
-
             font: '11px/1.45 monospace', padding: '6px 8px', borderRadius: '8px',
-
             maxHeight: '35vh', width: 'min(90vw, 420px)', overflowY: 'hidden',
-
             whiteSpace: 'pre-wrap', wordBreak: 'break-all',
-
             pointerEvents: 'none', display: 'none',
-
             boxShadow: '0 2px 12px rgba(0,0,0,.5)',
-
             opacity: '0.92'
-
         });
-
         document.body.appendChild(_el);
-
     }
-
-
 
     function _render() {
-
         if (!_el) return;
-
         _el.innerHTML = _lines.slice(-MAX_LINES).join('\n');
-
         _el.scrollTop = _el.scrollHeight;
-
     }
 
-
-
     function _push(level, args) {
-
         if (!_enabled) return;
-
         if (_isExternalNullErrorNoise(level, args)) return;
 
         const msg = args.map(a => {
-
             if (typeof a === 'string') return a;
-
             try { return JSON.stringify(a); } catch { return String(a); }
-
         }).join(' ');
+
+        // Deduplication for repetitive errors/warnings (max 100 seen entries)
+        if (level !== 'log') {
+            const dedupKey = `${level}:${msg}`;
+            if (_seenLogs.has(dedupKey)) return;
+            _seenLogs.add(dedupKey);
+            if (_seenLogs.size > 100) _seenLogs.clear();
+        }
 
 
 
@@ -130,17 +99,27 @@
     }
 
     function _isExternalNullErrorNoise(level, args) {
-
         if (level !== 'error') return false;
 
-        const text = args.map(a => a == null ? 'null' : String(a)).join(' ');
+        // Convert args to a single string for pattern matching
+        const text = args.map(a => {
+            if (a == null) return 'null';
+            if (typeof a === 'object') {
+                try { return JSON.stringify(a); } catch { return String(a); }
+            }
+            return String(a);
+        }).join(' ');
 
+        // 1. SES / Lockdown Noise
         if (text.includes('SES_UNCAUGHT_EXCEPTION') && text.includes('null')) return true;
 
-        if (args.length >= 2 && args[0] === '全局錯誤:' && args[1] == null) return true;
+        // 2. Global null errors (often from external scripts or timing issues)
+        if (text.includes('全局錯誤:') && (text.includes(' null') || text.includes(':null') || text.endsWith(': null'))) return true;
+
+        // 3. Single null arg
+        if (args.length === 1 && (args[0] == null || args[0] === 'null')) return true;
 
         return false;
-
     }
 
 
