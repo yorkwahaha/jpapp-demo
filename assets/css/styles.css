@@ -1,4 +1,4 @@
-[v-cloak] {
+﻿[v-cloak] {
     display: none !important;
 }
 
@@ -7279,7 +7279,7 @@ body.lock-scroll {
     position: fixed;
     left: 50%;
     right: auto;
-    bottom: 0;
+    bottom: env(safe-area-inset-bottom, 0px);
     z-index: 48;
     width: var(--map-visible-width, 100vw);
     max-width: 100vw;
@@ -7321,14 +7321,14 @@ body.lock-scroll {
 /* On narrow phones (<640px): nudge the center group right to clear the avatar */
 @media (max-width: 639px) {
     .map-page-container .map-ui-mobile-zone .map-hud-center {
-        transform: translateX(clamp(28px, 9vw, 52px));
+        transform: translateX(clamp(42px, 12vw, 68px));
     }
 }
 
 .map-page-container .map-ui-mobile-zone .map-hud-avatar {
     position: fixed;
-    left: 0;
-    bottom: 0;
+    left: calc(env(safe-area-inset-left, 0px) + 8px);
+    bottom: env(safe-area-inset-bottom, 0px);
     z-index: 49;
     pointer-events: none;
 }
@@ -9343,24 +9343,19 @@ body.lock-scroll {
 .monster-codex-portrait-wrap {
     display: grid;
     place-items: center;
-    min-height: 230px;
+    min-height: 180px;
     border-radius: 24px;
-    background:
-        radial-gradient(circle at 50% 48%, rgba(251, 191, 36, 0.18), transparent 42%),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(15, 23, 42, 0.34));
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    box-shadow: inset 0 0 28px rgba(251, 191, 36, 0.08);
 }
 
 .monster-codex-portrait {
-    max-width: min(72%, 300px);
-    max-height: 230px;
+    max-width: min(72%, 240px);
+    max-height: 180px;
     object-fit: contain;
     filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.48));
 }
 
 .monster-codex-detail-copy {
-    margin-top: 16px;
+    margin-top: 12px;
 }
 
 .monster-codex-kicker {
@@ -9370,31 +9365,31 @@ body.lock-scroll {
 }
 
 .monster-codex-name {
-    margin-top: 4px;
+    margin-top: 2px;
     color: #f8fafc;
-    font-size: clamp(1.45rem, 3vw, 2rem);
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
     font-weight: 950;
     letter-spacing: 0.08em;
 }
 
 .monster-codex-trait {
-    margin-top: 10px;
+    margin-top: 6px;
     color: rgba(226, 232, 240, 0.78);
-    font-size: 0.92rem;
-    line-height: 1.75;
+    font-size: 0.85rem;
+    line-height: 1.6;
     white-space: pre-line;
 }
 
 .monster-codex-stats {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    margin-top: 16px;
+    gap: 8px;
+    margin-top: 12px;
 }
 
 .monster-codex-stats div {
-    padding: 10px 12px;
-    border-radius: 16px;
+    padding: 8px 10px;
+    border-radius: 14px;
     background: rgba(15, 23, 42, 0.48);
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -11695,6 +11690,16 @@ body.lock-scroll {
     pointer-events: auto;
 }
 
+/* Shell and inner wheel are layout/decoration — only the actual slot buttons need events */
+.resonance-wheel-shell,
+.resonance-wheel-stage,
+.resonance-wheel {
+    pointer-events: none;
+}
+.resonance-slot {
+    pointer-events: auto;
+}
+
 .battle-status-panel {
     min-height: var(--battle-hud-status-height);
     padding-top: 0.32rem !important;
@@ -11783,16 +11788,22 @@ body.lock-scroll {
 }
 
 .battle-tap-attack-row {
-    height: 34px !important;
-    margin-top: -4px;
-    margin-bottom: 4px;
+    height: auto !important;
+    min-height: 42px;
+    margin-top: 0;
+    margin-bottom: clamp(10px, 2.8vw, 18px);
+    padding-top: 2px !important;
+    padding-bottom: 6px !important;
     padding-left: clamp(12px, 3vw, 18px) !important;
     padding-right: clamp(12px, 3vw, 18px) !important;
+    position: relative;
+    z-index: 60;
 }
 
 .battle-tap-attack-row button {
     width: clamp(150px, 34vw, 220px) !important;
     max-width: 220px !important;
+    min-height: 34px;
 }
 
 .resonance-wheel-shell {
@@ -12014,15 +12025,79 @@ body.lock-scroll {
   drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5));
 }
 
-/* Arc Positioning - Concave (Smile) */
-.resonance-slot:nth-child(1),
-.resonance-slot:nth-last-child(1) {
+/* Arc Positioning - Concave (Smile) - Default / Flick Mode */
+.resonance-wheel:not(.tap-mode) .resonance-slot:nth-child(1),
+.resonance-wheel:not(.tap-mode) .resonance-slot:nth-last-child(1) {
  transform: translateY(-4px);
 }
-.resonance-slot:nth-child(2):nth-last-child(2),
-.resonance-slot:nth-child(2):nth-last-child(3),
-.resonance-slot:nth-child(3):nth-last-child(2) {
+.resonance-wheel:not(.tap-mode) .resonance-slot:nth-child(2):nth-last-child(2),
+.resonance-wheel:not(.tap-mode) .resonance-slot:nth-child(2):nth-last-child(3),
+.resonance-wheel:not(.tap-mode) .resonance-slot:nth-child(3):nth-last-child(2) {
  transform: translateY(10px);
+}
+
+/* GLOBAL: 2 Options — TAP mode (lower specificity is fine, tap-mode class adds distinction) */
+.resonance-wheel.tap-mode .resonance-slot:nth-child(1):nth-last-child(2),
+.resonance-wheel.tap-mode .resonance-slot:nth-child(2):nth-last-child(1) {
+ flex: 0 0 auto;
+ transform: translateY(-4px);
+}
+.resonance-wheel.tap-mode .resonance-slot:nth-child(1):nth-last-child(2) {
+ margin-right: clamp(14px, 3vw, 28px);
+}
+.resonance-wheel.tap-mode .resonance-slot:nth-child(2):nth-last-child(1) {
+ margin-left: clamp(14px, 3vw, 28px);
+}
+
+/* Flick 2 options use the same inner stance as the middle two slots in the 4-option arc. */
+#flickLayer.resonance-wheel:has(> .resonance-slot:nth-child(2):last-child) {
+    justify-content: center;
+    gap: clamp(42px, 7vw, 70px);
+}
+
+#flickLayer.resonance-wheel .resonance-slot:nth-child(1):nth-last-child(2),
+#flickLayer.resonance-wheel .resonance-slot:nth-child(2):nth-last-child(1) {
+    flex: 0 0 auto !important;
+    max-width: none;
+    margin-inline: 0;
+    transform: translateY(10px);
+}
+
+/* --- TAP Mode DOM Rhythm --- */
+.hud-tap-mode .resonance-wheel-shell {
+    min-height: clamp(84px, 20vw, 108px);
+    height: auto;
+    margin-top: -6px;
+}
+.hud-tap-mode .resonance-wheel {
+    min-height: clamp(80px, 19vw, 104px);
+}
+
+/* --- TAP Mode Visual Layout --- */
+/* NO translateY here — that creates an invisible dead-zone over the attack button */
+.resonance-wheel.tap-mode {
+ justify-content: center;
+}
+
+/* TAP: 3 Options */
+/* Keep the default wheel horizontal distribution; only lift the 3-slot arc. */
+.resonance-wheel.tap-mode .resonance-slot:nth-child(1):nth-last-child(3),
+.resonance-wheel.tap-mode .resonance-slot:nth-child(3):nth-last-child(1) {
+ transform: translateY(-18px);
+}
+.resonance-wheel.tap-mode .resonance-slot:nth-child(2):nth-last-child(2) {
+ transform: translateY(-4px);
+}
+
+/* TAP: 4 Options */
+/* Retain original default flex sizing so 4 items fit automatically within max-width. Just flatten the arc slightly. */
+.resonance-wheel.tap-mode .resonance-slot:nth-child(1):nth-last-child(4),
+.resonance-wheel.tap-mode .resonance-slot:nth-child(4):nth-last-child(1) {
+ transform: translateY(-6px);
+}
+.resonance-wheel.tap-mode .resonance-slot:nth-child(2):nth-last-child(3),
+.resonance-wheel.tap-mode .resonance-slot:nth-child(3):nth-last-child(2) {
+ transform: translateY(0px);
 }
 
 /* Feedback Glows */
@@ -12157,13 +12232,13 @@ body.lock-scroll {
   height: 88%;
  }
 
- .resonance-slot:nth-child(1),
- .resonance-slot:nth-last-child(1) {
+ .resonance-wheel:not(.tap-mode) .resonance-slot:nth-child(1),
+ .resonance-wheel:not(.tap-mode) .resonance-slot:nth-last-child(1) {
   transform: translateY(-5px);
  }
- .resonance-slot:nth-child(2):nth-last-child(2),
- .resonance-slot:nth-child(2):nth-last-child(3),
- .resonance-slot:nth-child(3):nth-last-child(2) {
+ .resonance-wheel:not(.tap-mode) .resonance-slot:nth-child(2):nth-last-child(2),
+ .resonance-wheel:not(.tap-mode) .resonance-slot:nth-child(2):nth-last-child(3),
+ .resonance-wheel:not(.tap-mode) .resonance-slot:nth-child(3):nth-last-child(2) {
   transform: translateY(11px);
  }
 
@@ -12171,6 +12246,7 @@ body.lock-scroll {
   padding-left: 8px !important;
   padding-right: 8px !important;
   justify-content: center !important;
+  margin-bottom: 10px;
  }
 
  .battle-tap-attack-row button {
@@ -12181,7 +12257,7 @@ body.lock-scroll {
  }
 
  .map-page-container .map-ui-mobile-zone .map-hud-avatar {
-  left: clamp(20px, 6vw, 30px);
+  left: calc(env(safe-area-inset-left, 0px) + 8px);
  }
 }
 
@@ -12287,6 +12363,11 @@ body.lock-scroll {
   gap: clamp(14px, 1.5vw, 22px);
  }
 
+ #flickLayer.resonance-wheel:has(> .resonance-slot:nth-child(2):last-child) {
+  justify-content: center;
+  gap: clamp(56px, 5vw, 76px);
+ }
+
  .resonance-wheel::before {
   left: 5%;
   right: 5%;
@@ -12338,10 +12419,26 @@ body.lock-scroll {
   transform: none !important;
  }
 
+ .resonance-wheel.tap-mode > .resonance-slot:nth-child(1):nth-last-child(3),
+ .resonance-wheel.tap-mode > .resonance-slot:nth-child(3):nth-last-child(1) {
+  --slot-arc-top: -62px;
+ }
+
+ .resonance-wheel.tap-mode > .resonance-slot:nth-child(2):nth-last-child(2) {
+  --slot-arc-top: -26px;
+ }
+
  .resonance-wheel > .resonance-slot:nth-child(1):nth-last-child(2),
  .resonance-wheel > .resonance-slot:nth-child(2):nth-last-child(1) {
   --slot-arc-top: -30px;
   transform: none !important;
+ }
+
+ #flickLayer.resonance-wheel > .resonance-slot:nth-child(1):nth-last-child(2),
+ #flickLayer.resonance-wheel > .resonance-slot:nth-child(2):nth-last-child(1) {
+  --slot-arc-top: -18px;
+  flex: 0 0 auto !important;
+  margin-inline: 0 !important;
  }
 
  .resonance-wheel > .resonance-slot:hover,
@@ -12365,6 +12462,7 @@ body.lock-scroll {
 
  .battle-tap-attack-row {
   justify-content: center !important;
+  margin-bottom: clamp(24px, 2.4vw, 34px);
  }
 
  .battle-tap-attack-row button {
@@ -12379,5 +12477,31 @@ body.lock-scroll {
 
  .map-ui-desktop-zone .map-hud-bottom {
   padding-left: 162px !important;
+ }
+}
+
+/* Spirit Breathing Animation */
+@keyframes spirit-breathe {
+ 0%, 100% { transform: translateY(0) scale(1); }
+ 50% { transform: translateY(-2px) scale(1.02); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+ .resonance-spirit-icon {
+  animation: spirit-breathe 3s ease-in-out infinite;
+ }
+
+ .resonance-slot:nth-child(1) .resonance-spirit-icon { animation-delay: 0.0s; }
+ .resonance-slot:nth-child(2) .resonance-spirit-icon { animation-delay: -0.7s; }
+ .resonance-slot:nth-child(3) .resonance-spirit-icon { animation-delay: -1.4s; }
+ .resonance-slot:nth-child(4) .resonance-spirit-icon { animation-delay: -2.1s; }
+
+ .resonance-slot.is-active .resonance-spirit-icon,
+ .resonance-slot.is-selected .resonance-spirit-icon,
+ .resonance-slot.is-correct .resonance-spirit-icon,
+ .resonance-slot.is-wrong .resonance-spirit-icon,
+ .resonance-slot:active .resonance-spirit-icon,
+ .resonance-slot[disabled] .resonance-spirit-icon {
+  animation-play-state: paused;
  }
 }

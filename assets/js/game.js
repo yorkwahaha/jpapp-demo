@@ -1312,7 +1312,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26050302";
+        const APP_VERSION = window.APP_VERSION || "26050303";
 
         const appVersion = ref(APP_VERSION);
 
@@ -2269,7 +2269,7 @@ const _jpApp = Vue.createApp({
                 const attackIntervalMs = enemyStats.attackIntervalMs ?? enemy.attackIntervalMs ?? null;
                 const evasionRate = enemyStats.evasionRate ?? enemy.evasionRate ?? null;
                 const isUnlocked = spawnLevels.some(lv =>
-                    clearedLevels.value.includes(Number(lv)) || unlockedLevels.value.includes(Number(lv))
+                    clearedLevels.value.includes(Number(lv))
                 );
 
                 return {
@@ -9319,10 +9319,28 @@ const _jpApp = Vue.createApp({
             playOptionalAudio(FEEDBACK_VOICE_BASE + file);
         };
 
+        let comboFeedbackPlayToken = 0;
+
         const playComboTierFeedbackVoice = (combo) => {
             const key = pickComboTierFeedbackKey(combo);
             if (!key) return;
-            playFeedbackVoice(key);
+
+            const expectedLevel = currentLevel.value;
+            const currentToken = ++comboFeedbackPlayToken;
+
+            setTimeout(() => {
+                // 若被新語音蓋過，舊的不播
+                if (currentToken !== comboFeedbackPlayToken) return;
+
+                // 檢查是否仍在戰鬥狀態 (同關卡且未結算)
+                const inBattle = !showLevelSelect.value && !isFinished.value && currentLevel.value > 0;
+                if (!inBattle || currentLevel.value !== expectedLevel) return;
+
+                // 檢查 combo 是否中斷 (允許 combo 繼續增加)
+                if (comboCount.value < combo) return;
+
+                playFeedbackVoice(key);
+            }, 1000);
         };
 
         const showPraiseToast = (text, ms = 900) => {
