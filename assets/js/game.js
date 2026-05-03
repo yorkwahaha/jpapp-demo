@@ -1,21 +1,14 @@
 
 
-
 window.__sp = { cur: 20, max: 20 };
 
 const spawnFloatingDamage = window.__JPAPP_VFX?.spawnFloatingDamage || function () {};
 window.spawnFloatingDamage = spawnFloatingDamage;
 
-
-
 // window.spawnSkillActivationVfx — 已移至 assets/js/skill-vfx.js (載入順序在本檔之前)
-
-
 
 const spawnGiraGiraHitVfx = window.__JPAPP_VFX?.spawnGiraGiraHitVfx || function () {};
 window.spawnGiraGiraHitVfx = spawnGiraGiraHitVfx;
-
-
 
 window.updateSpUI = function () {
 
@@ -62,7 +55,6 @@ const _jpApp = Vue.createApp({
     setup() {
         const GAME_CONSTANTS = window.JPAPP_CONSTANTS || {}, SCENE_IMAGE_PATHS = GAME_CONSTANTS.SCENE_IMAGE_PATHS || {}, DEFAULT_IMAGE_PATHS = GAME_CONSTANTS.DEFAULT_IMAGE_PATHS || {};
         const {
-            SKILL_TYPE_LABELS,
             VALID_TTS_VOICES,
             ONEESAN_PRAISES,
             COMBO_FEEDBACK_MILESTONES,
@@ -118,15 +110,12 @@ const _jpApp = Vue.createApp({
             document.head.appendChild(script);
         });
 
-
-
         // ================= [ CONFIG & STATE — VUE REACTIVE SETUP ] =================
         // --- 資料抽離：讀取全域早期關卡資料庫 ---
 
         const pool = window.EARLY_GAME_POOLS || { skills: {} };
 
         const LEVEL_CONFIG = ref({});
-
 
         const SKILLS = ref([]);
 
@@ -142,8 +131,6 @@ const _jpApp = Vue.createApp({
 
         const maxLevel = ref(35);
 
-
-
         // --- Stage Map / Progression State ---
 
         const PROGRESSION_KEY = 'jpapp_progression_v1';
@@ -151,7 +138,6 @@ const _jpApp = Vue.createApp({
         const showMap = ref(false);
 
         const unlockedLevels = ref([1]);
-
 
         const lastClearedLevel = ref(null);
 
@@ -161,10 +147,6 @@ const _jpApp = Vue.createApp({
         const stageBestRecords = ref({}); // { stageNumber: { bestStars, bestTimeMs, bestTimeSeconds, bestCorrectRate, bestMaxCombo, updatedAt } }
 
         const clearedLevels = ref([]);
-
-
-
-
 
         const mapChapters = ref({});
 
@@ -188,7 +170,6 @@ const _jpApp = Vue.createApp({
 
         // --- NEW: Spirit Icon Fallback Mechanism ---
         const failedSpiritIcons = ref({});
-        const particleToIconMap = GAME_CONSTANTS.PARTICLE_TO_ICON_MAP || {};
         const getSpiritIconPath = (opt) => window.JPAPPCodexDisplayUtils.getSpiritIconPath(opt);
 
         const shouldShowSpiritIcon = (opt) => {
@@ -199,8 +180,6 @@ const _jpApp = Vue.createApp({
             if (!opt) return;
             failedSpiritIcons.value = { ...failedSpiritIcons.value, [opt]: true };
         };
-
-        const SPIRIT_IMAGE_PLACEHOLDER = GAME_CONSTANTS.SPIRIT_IMAGE_PLACEHOLDER;
 
         const getSpiritForSkillId = (skillId) => {
             if (!skillId || typeof skillId !== 'string') return null;
@@ -304,73 +283,16 @@ const _jpApp = Vue.createApp({
             return activeSegment.value?.mapBgm || 'assets/audio/bgm_m4a/map.m4a';
         });
 
+        const autoSelectSegment = () => window.JPAPPSettingsManager.runAutoSelectMapSegmentIndex(unlockedLevels.value, selectedSegmentIdx);
 
+        const isSegmentUnlocked = (idx) => window.JPAPPSettingsManager.isMapSegmentIndexUnlocked(idx, {
+            clearedLevels: clearedLevels.value,
+            unlockedLevels: unlockedLevels.value
+        });
 
-        const autoSelectSegment = () => {
-
-            const maxUnlocked = Math.max(...unlockedLevels.value, 1);
-
-            // Dynamic selection: 1-5 -> 0, 6-10 -> 1, 11-15 -> 2, etc.
-
-            selectedSegmentIdx.value = Math.floor((maxUnlocked - 1) / 5);
-        };
-
-        const isSegmentUnlocked = (idx) => {
-
-            if (idx === 0) return true;
-
-            // Chapter 8 (segment 7) becomes accessible once L35 is cleared so the
-            // player can see the locked Stage 36 and its S-rank seal progress.
-            if (idx === 7) return clearedLevels.value.includes(35);
-
-            const maxUnlocked = Math.max(...unlockedLevels.value, 1);
-
-            // A segment is unlocked if the first level of that segment is unlocked
-
-            return maxUnlocked >= (idx * 5) + 1;
-
-        };
-
-        const getMapNodeStyle = (node) => {
-
-            if (!node) return {};
-
-
-
-            const isDesktop = window.innerWidth >= 1024;
-
-            let x = node.x;
-
-            let y = node.y;
-
-
-
-            if (node.desktopX !== undefined) x = node.desktopX;
-            if (node.desktopY !== undefined) y = node.desktopY;
-
-
-            return {
-
-                left: x + '%',
-
-                bottom: y + '%',
-
-                position: 'absolute',
-
-                transform: 'translate(-50%, 50%)' // Center the anchor
-
-            };
-
-        };
-
-
-
-
-
-
+        const getMapNodeStyle = (node) => window.JPAPPSettingsManager.getMapNodePositionStyle(node);
 
         let _pendingAbilityIds = null;
-
 
         const saveProgression = () => {
 
@@ -398,7 +320,6 @@ const _jpApp = Vue.createApp({
 
                     skillCorrectCounts: skillCorrectCounts.value,
 
-
                     lastViewedMap: { chapter: activeChapter.value, segment: selectedSegmentIdx.value }
 
                 };
@@ -412,8 +333,6 @@ const _jpApp = Vue.createApp({
             }
 
         };
-
-
 
         const loadProgression = () => {
 
@@ -444,7 +363,6 @@ const _jpApp = Vue.createApp({
                     if (parsed.skillMastery) skillMastery.value = normalizeSkillMasteryMap(parsed.skillMastery);
 
                     if (parsed.skillCorrectCounts) skillCorrectCounts.value = normalizeSkillCorrectCountsMap(parsed.skillCorrectCounts);
-
 
                     if (parsed.lastViewedMap && isSegmentUnlocked(parsed.lastViewedMap.segment)) {
                         activeChapter.value = parsed.lastViewedMap.chapter || 'chapter1';
@@ -528,8 +446,6 @@ const _jpApp = Vue.createApp({
 
                 if (typeof unlockAudioOnce === 'function') unlockAudioOnce();
 
-
-
                 if (typeof bgmAudio !== 'undefined') {
 
                     const expectedAbs = new URL('assets/audio/bgm_m4a/map.m4a', window.location.href).href;
@@ -584,8 +500,6 @@ const _jpApp = Vue.createApp({
 
             }
 
-
-
             // 然後再切換 UI / showMap
 
             showLevelSelect.value = false;
@@ -607,8 +521,6 @@ const _jpApp = Vue.createApp({
 
             showMap.value = true;
 
-
-
             // Reset battle UI states
 
             monsterResultShown.value = false;
@@ -619,13 +531,9 @@ const _jpApp = Vue.createApp({
 
             isNextBtnVisible.value = false;
 
-
-
             const vfxLayer = document.getElementById('global-vfx-layer');
 
             if (vfxLayer) vfxLayer.innerHTML = '';
-
-
 
             // Auto scroll to target
 
@@ -633,15 +541,11 @@ const _jpApp = Vue.createApp({
 
             scrollToStage(target);
 
-
-
             // Stop battle music and play map music
 
             stopAllAudio();
 
             playBgm();
-
-
 
             checkGlobalEndingTriggers();
 
@@ -652,70 +556,33 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
-        const scrollToStage = (n) => {
-
-            Vue.nextTick(() => {
-
-                const el = document.querySelector(`[data-stage-node="${n}"]`);
-
-                if (el) {
-
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-                }
-
-            });
-
-        };
-
-
+        const scrollToStage = (n) => window.JPAPPSettingsManager.scrollStageNodeIntoView(n, Vue.nextTick);
 
         const isLevelUnlocked = (n) => unlockedLevels.value.includes(Number(n));
 
         const isLevelCleared = (n) => clearedLevels.value.includes(Number(n));
 
-        const getStageNodeClass = (n) => {
-            const lvNum = Number(n);
-            if (!isLevelUnlocked(lvNum)) return 'is-locked';
-            if (isLevelCleared(lvNum)) return 'is-cleared';
-            const currentTarget = Math.min(...unlockedLevels.value.filter(lv => !clearedLevels.value.includes(lv)));
-            if (lvNum === currentTarget) return 'is-current';
-            return '';
-        };
+        const getStageNodeClass = (n) => window.JPAPPSettingsManager.getStageNodeClassForMap(
+            n,
+            unlockedLevels.value,
+            clearedLevels.value
+        );
 
-        const getLevelTitle = (n) => {
-            const conf = LEVEL_CONFIG.value[n];
-            return conf ? conf.title : `Level ${n}`;
-        };
+        const getLevelTitle = (n) => window.JPAPPSettingsManager.getLevelTitleForConfig(n, LEVEL_CONFIG.value);
 
-        const getStageFocusParticle = (n) => {
-            const conf = LEVEL_CONFIG.value[Number(n)];
-            if (!conf) return '?';
-            if (conf.focusParticle) return conf.focusParticle === 'Boss' ? '魔' : conf.focusParticle;
+        const getStageFocusParticle = (n) => window.JPAPPSettingsManager.computeStageFocusParticleDisplay(
+            n,
+            LEVEL_CONFIG.value,
+            skillsAll.value
+        );
 
-            const skillId = conf.skillId || (conf.unlockSkills && conf.unlockSkills[0]);
-            const skill = skillsAll.value[skillId];
-            return skill?.particle || '?';
-        };
+        const getStageFocusLabel = (n) => window.JPAPPSettingsManager.computeStageFocusLabelDisplay(
+            n,
+            LEVEL_CONFIG.value,
+            skillsAll.value
+        );
 
-        const getStageFocusLabel = (n) => {
-            const conf = LEVEL_CONFIG.value[Number(n)];
-            if (!conf) return '';
-            if (conf.boss || conf.focusParticle === 'Boss') return '共鳴試煉';
-            if (conf.focusLabel) return conf.focusLabel;
-
-            const skillId = conf.skillId || (conf.unlockSkills && conf.unlockSkills[0]);
-            const skill = skillsAll.value[skillId];
-            return skill?.meaning || skill?.name || '';
-        };
-
-        const hasMentor = (n) => {
-            const conf = LEVEL_CONFIG.value[Number(n)];
-            if (!conf) return false;
-            return !!(conf.skillId || (conf.unlockSkills && conf.unlockSkills.length > 0));
-        };
+        const hasMentor = (n) => window.JPAPPSettingsManager.stageConfigHasMentorSkillPath(n, LEVEL_CONFIG.value);
 
         const handleMapTabClick = (idx) => {
             if (!isSegmentUnlocked(idx)) {
@@ -819,22 +686,7 @@ const _jpApp = Vue.createApp({
             }
         };
 
-        const checkAllSRank = () => {
-            for (let i = 1; i <= 35; i++) {
-                if (bestGrades.value[i] !== 'S') return false;
-            }
-            return true;
-        };
-
-        const sRankCount = computed(() => {
-            let count = 0;
-            for (let i = 1; i <= 35; i++) {
-                if (bestGrades.value[i] === 'S') count++;
-            }
-            return count;
-        });
-
-        if (unlockedLevels.value.includes(36) && !checkAllSRank()) {
+        if (unlockedLevels.value.includes(36) && !window.JPAPPResultDisplayManager.isAllStagesSRank(bestGrades.value, 35)) {
             unlockedLevels.value = unlockedLevels.value.filter(lv => lv !== 36);
             localStorage.removeItem('jpRpgL36Unlocked');
         }
@@ -889,7 +741,7 @@ const _jpApp = Vue.createApp({
                 return;
             }
             if (!clearedLevels.value.includes(35)) return;
-            const isAllS = checkAllSRank();
+            const isAllS = window.JPAPPResultDisplayManager.isAllStagesSRank(bestGrades.value, 35);
             const hasSeenAllS = localStorage.getItem('jpRpgL36Unlocked');
             const hasSeenNormal = localStorage.getItem('jpRpgL35EndingSeen');
             const openL35EndingDialogue = (id) => {
@@ -1009,42 +861,10 @@ const _jpApp = Vue.createApp({
 
         const DEFAULT_TTS_VOICE = 'ja-JP-Neural2-B';
 
-        const settings = reactive({
-            autoReadOnWrong: true,
-            correctAdvanceDelayMs: null,
-            wrongAdvanceDelayMs: null,
-            enemyAttackMode: 'atb',
-            feedbackStyle: 'oneesan',
-            defaultAttackMode: 'tap',
-            ttsVoice: DEFAULT_TTS_VOICE
-        });
-
-        const _settingsDefaults = { autoReadOnWrong: true, correctAdvanceDelayMs: null, wrongAdvanceDelayMs: null, enemyAttackMode: 'atb', feedbackStyle: 'oneesan', defaultAttackMode: 'tap', ttsVoice: DEFAULT_TTS_VOICE };
-
-        const loadSettings = () => {
-            try {
-                const parsed = window.JPAPPSettingsManager.loadGeneralSettings();
-                if (parsed && typeof parsed === 'object') {
-                    Object.keys(_settingsDefaults).forEach(k => {
-                        if (parsed[k] !== undefined) settings[k] = parsed[k];
-                    });
-                }
-
-                if (!settings.ttsVoice || !VALID_TTS_VOICES.includes(settings.ttsVoice)) {
-                    settings.ttsVoice = DEFAULT_TTS_VOICE;
-                }
-                if (!['tap', 'flick'].includes(settings.defaultAttackMode)) {
-                    settings.defaultAttackMode = 'tap';
-                }
-                if (settings.enemyAttackMode !== 'atb') {
-                    settings.enemyAttackMode = 'atb';
-                }
-            } catch (e) { console.warn('[Settings] load error', e); }
-        };
-
-        const saveSettings = () => {
-            window.JPAPPSettingsManager.saveGeneralSettings({ ...settings });
-        };
+        const { settings, loadSettings, saveSettings } = window.JPAPPSettingsManager.createVueBoundGeneralSettings(
+            { reactive },
+            { VALID_TTS_VOICES, DEFAULT_TTS_VOICE }
+        );
 
         loadSettings();
 
@@ -1052,7 +872,10 @@ const _jpApp = Vue.createApp({
 
         window.__initVfxHelpers?.(settings);
 
-        const isChangelogOpen = ref(false);
+        const { isChangelogOpen, changelogData, changelogError, openChangelog } = window.JPAPPChangelogManager.createChangelogState({
+            ref,
+            APP_VERSION
+        });
 
         const answerMode = ref('tap');
 
@@ -1086,51 +909,12 @@ const _jpApp = Vue.createApp({
 
         });
 
-        const changelogData = ref([]);
-
-        const changelogError = ref(false);
-
-        const openChangelog = async () => {
-
-            isChangelogOpen.value = true;
-
-            if (changelogData.value.length === 0 && !changelogError.value) {
-
-                try {
-
-                    const res = await fetch(`assets/data/changelog.json?v=${APP_VERSION}`);
-
-                    if (res.ok) {
-
-                        changelogData.value = await res.json();
-
-                        changelogError.value = false;
-
-                    } else {
-
-                        changelogError.value = true;
-
-                    }
-
-                } catch (e) {
-
-                    changelogError.value = true;
-
-                }
-
-            }
-
-        };
-
-
-
         // ---- [ STATE — SKILLS & CODEX ] ----
         const skillsAll = ref({});
 
         const skillUnlockMap = ref({});
 
         const unlockedSkillIds = ref([]);
-
 
         // [ CODEX - STATE ]
         const isCodexOpen = ref(false);
@@ -1181,8 +965,6 @@ const _jpApp = Vue.createApp({
 
         let mentorAudioPlayToken = 0;
 
-
-
         // 分頁輔助：將多行對話切碎
 
         const fragmentMentorDialogue = (dialogues) => {
@@ -1197,13 +979,9 @@ const _jpApp = Vue.createApp({
 
                 const sentences = text.match(/[^。！？]+[。！？]?[」』"']?/g) || [text];
 
-
-
                 let currentPage = "";
 
                 let sentenceCount = 0;
-
-
 
                 sentences.forEach(s => {
 
@@ -1240,8 +1018,6 @@ const _jpApp = Vue.createApp({
             return pages;
 
         };
-
-
 
         const currentMentorLine = computed(() => {
 
@@ -1291,8 +1067,6 @@ const _jpApp = Vue.createApp({
         const handleMentorSceneImageError = (event) => handleMentorImageError(event, MENTOR_FALLBACK_SCENE_IMAGE);
         const handleMentorModalImageError = (event) => handleMentorImageError(event, MENTOR_DEFAULT_MODAL_IMAGE);
 
-
-
         const isLastMentorLine = computed(() => {
 
             if (mentorPages.value.length === 0) return true;
@@ -1300,8 +1074,6 @@ const _jpApp = Vue.createApp({
             return mentorDialogueIndex.value >= mentorPages.value.length - 1;
 
         });
-
-
 
         const mentorVideoSources = computed(() => {
 
@@ -1408,8 +1180,6 @@ const _jpApp = Vue.createApp({
 
         loadMentorState();
 
-
-
         // ================= [ MENTOR DIALOGUE ] =================
         const setupMentorDialogue = (skill) => {
             currentMentorSkill.value = skill;
@@ -1423,8 +1193,6 @@ const _jpApp = Vue.createApp({
 
             mentorDialogueIndex.value = 0;
 
-
-
             if (showMap.value) {
 
                 isMapMentorOpen.value = true;
@@ -1436,8 +1204,6 @@ const _jpApp = Vue.createApp({
                 isMentorModalOpen.value = true;
                 isMapMentorOpen.value = false;
             }
-
-
 
             isMentorPortraitError.value = false;
 
@@ -1451,15 +1217,11 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const triggerMentorDialogue = (skillId, force = false) => {
 
             const skill = skillsAll.value[skillId];
 
             if (!skill || !skill.mentorDialogue) return false;
-
-
 
             // If NOT forced, check if already seen
 
@@ -1469,15 +1231,11 @@ const _jpApp = Vue.createApp({
 
             }
 
-
-
             setupMentorDialogue(skill);
 
             return true;
 
         };
-
-
 
         const startMentorTyping = (text) => {
 
@@ -1513,8 +1271,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const getMentorAudioPath = (skillId, pageIndex) => {
 
             const entry = MENTOR_AUDIO_MAP.value?.[skillId];
@@ -1530,8 +1286,6 @@ const _jpApp = Vue.createApp({
             return `assets/audio/mentor_m4a/wa-topic-basic-p${pNum}.m4a`;
 
         };
-
-
 
         const stopMentorAudio = () => {
             mentorAudioPlayToken++;
@@ -1552,8 +1306,6 @@ const _jpApp = Vue.createApp({
 
             if (typeof restoreMapBgmAfterVoice === 'function') restoreMapBgmAfterVoice();
         };
-
-
 
         const playMentorAudioForCurrentPage = async () => {
             stopMentorAudio();
@@ -1648,8 +1400,6 @@ const _jpApp = Vue.createApp({
             }
         };
 
-
-
         const completeMentorLine = () => {
 
             if (typingTimerMentor) {
@@ -1666,8 +1416,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const restartMentorDialogue = () => {
 
             mentorDialogueIndex.value = 0;
@@ -1682,8 +1430,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const nextMentorLine = () => {
 
             if (isTypingMentor.value) {
@@ -1693,8 +1439,6 @@ const _jpApp = Vue.createApp({
                 return;
 
             }
-
-
 
             if (mentorDialogueIndex.value >= mentorPages.value.length - 1) {
 
@@ -1711,8 +1455,6 @@ const _jpApp = Vue.createApp({
             }
 
         };
-
-
 
         const finishMentorDialogue = () => {
 
@@ -1748,13 +1490,9 @@ const _jpApp = Vue.createApp({
                 stageConfirmSuspendedForMentor.value = false;
             }
 
-
-
             // 立即刷新音量 (因 isMentorModalOpen 已設為 false)
 
             updateGainVolumes();
-
-
 
             if (window._resumeAfterMentor) {
 
@@ -1767,8 +1505,6 @@ const _jpApp = Vue.createApp({
             }
 
         };
-
-
 
         const startMentorSkipPress = () => {
 
@@ -1788,8 +1524,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const cancelMentorSkipPress = () => {
 
             isMentorSkipPressing.value = false;
@@ -1803,8 +1537,6 @@ const _jpApp = Vue.createApp({
             }
 
         };
-
-
 
         // [ CODEX - COMPUTED ]
         const skillsWithUnlockLevel = computed(() => {
@@ -1953,8 +1685,6 @@ const _jpApp = Vue.createApp({
         };
         // [ /CODEX - COMPUTED ]
 
-
-
         // [ CODEX - GLOBAL EVENTS ]
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && isCodexOpen.value) {
@@ -1966,8 +1696,6 @@ const _jpApp = Vue.createApp({
             }
         });
         // [ /CODEX - GLOBAL EVENTS ]
-
-
 
         const loadGameData = async () => {
 
@@ -1988,8 +1716,6 @@ const _jpApp = Vue.createApp({
                 }
 
             } catch (e) { }
-
-
 
             try {
 
@@ -2013,8 +1739,6 @@ const _jpApp = Vue.createApp({
                 SPIRITS.value = [];
                 spiritsBySkillId.value = {};
             }
-
-
 
             try {
 
@@ -2040,7 +1764,6 @@ const _jpApp = Vue.createApp({
 
                         };
 
-
                         mappedLevels[lvNum] = config;
 
                     });
@@ -2048,8 +1771,6 @@ const _jpApp = Vue.createApp({
                     LEVEL_CONFIG.value = mappedLevels;
 
                     maxLevel.value = data.length;
-
-
 
                     const tempMap = {};
 
@@ -2087,8 +1808,6 @@ const _jpApp = Vue.createApp({
 
             } catch (e) { }
 
-
-
             try {
 
                 const res = await fetch(`assets/data/enemies.v1.json?v=${appVersion.value}`);
@@ -2112,8 +1831,6 @@ const _jpApp = Vue.createApp({
 
         loadGameData();
 
-
-
         const unlockedAbilityIds = ref(_pendingAbilityIds || []);
 
         _pendingAbilityIds = null;
@@ -2128,7 +1845,6 @@ const _jpApp = Vue.createApp({
             allAbilities.value.filter(a => unlockedAbilityIds.value.includes(a.id))
 
         );
-
 
         const getSkillTypeLabel = (type) => window.JPAPPCodexDisplayUtils.getSkillTypeLabel(type);
         const formatParticleBadge = (p) => window.JPAPPCodexDisplayUtils.formatParticleBadge(p);
@@ -2147,8 +1863,6 @@ const _jpApp = Vue.createApp({
 
         const abilitiesMap = {};
 
-
-
         fetch(`assets/data/abilities.v1.json?v=${appVersion.value}&t=${Date.now()}`)
 
             .then(res => res.json())
@@ -2163,8 +1877,6 @@ const _jpApp = Vue.createApp({
 
             .catch(err => console.error("Failed to load abilities", err));
 
-
-
         function openSkillOverlay() {
             playSfx('uiPop'); // Added feedback for skill reveal
             isSkillOpen.value = true;
@@ -2174,8 +1886,6 @@ const _jpApp = Vue.createApp({
             playSfx('click');
             isSkillOpen.value = false;
         }
-
-
 
         const applyTurnLogic = () => {
 
@@ -2224,8 +1934,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const grantAbilityReward = (abilityId) => {
 
             if (!abilityId) return null;
@@ -2234,15 +1942,11 @@ const _jpApp = Vue.createApp({
 
             if (unlockedAbilityIds.value.includes(abilityId)) return null;
 
-
-
             unlockedAbilityIds.value.push(abilityId);
 
             return abilitiesMap[abilityId];
 
         };
-
-
 
         // 1. 補回遺失的「技能專屬音效播放器」
 
@@ -2270,8 +1974,6 @@ const _jpApp = Vue.createApp({
             } catch (e) { }
         };
 
-
-
         // 2. 原本的技能施放邏輯 (完整保留)
 
         const castAbility = (id) => {
@@ -2280,13 +1982,9 @@ const _jpApp = Vue.createApp({
 
             if (!skill || !canAffordSP(skill.cost) || (typeof playerDead !== 'undefined' && (playerDead.value || monsterDead.value))) return;
 
-
-
             // 扣除 SP
 
             spendSP(skill.cost);
-
-
 
             // 播放專屬音效 (第一段與第二段)
 
@@ -2420,22 +2118,16 @@ const _jpApp = Vue.createApp({
 
             }
 
-
-
             // 更新畫面狀態
 
             updateHeroStatusBar();
 
             if (typeof updateMonsterStatusBar === 'function') updateMonsterStatusBar();
 
-
-
             if (typeof setBattleMessage === 'function') setBattleMessage(skill.name, 1600);
             if (typeof closeSkillOverlay === 'function') closeSkillOverlay();
             if (typeof resumeBattle === 'function') resumeBattle();
         };
-
-
 
         onMounted(() => {
 
@@ -2452,13 +2144,10 @@ const _jpApp = Vue.createApp({
 
         });
 
-
-
         // --- 遊戲核心常數 ---
         const MONSTER_HP = 100;
         const POTION_HP = 30;
         const INITIAL_POTIONS = 3;
-
 
         const BASE_MAX_DAMAGE = 20;
         const COMBO_DAMAGE_START = 5;
@@ -2468,8 +2157,6 @@ const _jpApp = Vue.createApp({
         const getComboMaxDamage = (combo) => {
             return BASE_MAX_DAMAGE + Math.max(0, combo - (COMBO_DAMAGE_START - 1)) * COMBO_DAMAGE_BONUS_PER_STACK;
         };
-
-
 
         const showLevelSelect = ref(true);
 
@@ -2500,7 +2187,6 @@ const _jpApp = Vue.createApp({
 
         const evasionBuffAttacksLeft = ref(0);
 
-
         const refreshWakuwakuCounter = (count = 6) => {
             const next = Math.max(0, Number(count) || 0);
             heroBuffs.wakuwakuTurns = next;
@@ -2528,18 +2214,13 @@ const _jpApp = Vue.createApp({
             return true;
         };
 
-
-
         const playerBlink = ref(false);
 
         const hpBarDanger = ref(false);
 
-
         const difficulty = ref('easy');
 
         const currentBg = ref(DEFAULT_IMAGE_PATHS.battleBg);
-
-
 
         const questions = ref([]);
 
@@ -2634,7 +2315,6 @@ const _jpApp = Vue.createApp({
 
         const earnedExp = ref(0);
 
-
         const animatedExp = ref(0);
 
         const battleStartedAtMs = ref(null);
@@ -2642,8 +2322,6 @@ const _jpApp = Vue.createApp({
         const stageClearElapsedSeconds = ref(null);
 
         const stageResultIsNewBest = ref(false);
-
-        const STAR_TIME_LIMIT_SECONDS = 90;
 
         const resetStageClearMetrics = () => {
             battleStartedAtMs.value = null;
@@ -2668,7 +2346,6 @@ const _jpApp = Vue.createApp({
             stageClearElapsedSeconds.value = Number.isFinite(elapsed) ? elapsed : null;
             return stageClearElapsedSeconds.value;
         };
-
 
         const monsterHit = ref(false);
         const monsterDodge = ref(false);
@@ -2897,8 +2574,6 @@ const _jpApp = Vue.createApp({
             }, 10000);
         };
 
-
-
         // ---- [ STATE — AUDIO REFS ] ----
         const audioInited = ref(false);
 
@@ -2907,8 +2582,6 @@ const _jpApp = Vue.createApp({
         const bgmAudio = ref(null);
 
         const gameOverAudio = ref(null);
-
-
 
         const audioCtx = ref(null);
 
@@ -2928,7 +2601,6 @@ const _jpApp = Vue.createApp({
 
         const bufferPool = new Map();
 
-
         const needsUserGestureToResumeBgm = ref(false);
         const isBgmSuppressed = ref(false);
         let _sfxNeedsGestureRecovery = false;
@@ -2938,27 +2610,7 @@ const _jpApp = Vue.createApp({
         const HTML_SFX_FALLBACK_BOOST = 1.35;
         const HTML_SFX_FALLBACK_CURVE = 1.2;
 
-        const isAudioDebugEnabled = ref(false);
-        try {
-            const params = new URLSearchParams(window.location.search);
-            isAudioDebugEnabled.value = params.get('audioDebug') === '1' || window.JPAPPStorageManager.loadAudioDebugEnabled();
-        } catch (_) { }
-        const isAudioDebugOpen = ref(isAudioDebugEnabled.value);
-        const loadAudioDebugPosition = () => {
-            return window.JPAPPStorageManager.loadAudioDebugPosition();
-        };
-        const audioDebugPosition = ref(loadAudioDebugPosition());
-        const isAudioDebugDragging = ref(false);
-        const audioDebugOverlayStyle = computed(() => {
-            if (!audioDebugPosition.value) return {};
-            return {
-                left: `${audioDebugPosition.value.left}px`,
-                top: `${audioDebugPosition.value.top}px`,
-                right: 'auto',
-                bottom: 'auto'
-            };
-        });
-        let audioDebugDragState = null;
+        let audioDebugCoreActions = {};
         const audioDebugTick = ref(0);
         const lastAudioLifecycleEvent = ref('none');
         const lastAudioGestureEvent = ref('none');
@@ -2999,103 +2651,80 @@ const _jpApp = Vue.createApp({
         const lastMobileLowBgmResult = ref('not used');
         const mobileLowBgmApplied = ref(false);
         const mobileLowBgmFallbackToOriginal = ref(false);
+        if (typeof window.JPAPPAudioDebugManager?.createAudioDebugManager !== 'function') {
+            window.JPAPPAudioDebugManager = {
+                createAudioDebugManager: ({ vue }) => {
+                    const fallbackRef = vue?.ref || ((v) => ({ value: v }));
+                    const fallbackComputed = vue?.computed || ((getter) => ({ get value() { return getter(); } }));
+                    const noop = () => {};
+                    return {
+                        isAudioDebugEnabled: fallbackRef(false),
+                        isAudioDebugOpen: fallbackRef(false),
+                        isAudioDebugDragging: fallbackRef(false),
+                        audioDebugOverlayStyle: fallbackComputed(() => ({})),
+                        audioDebugSections: fallbackComputed(() => []),
+                        refreshAudioDebugState: noop,
+                        startAudioDebugDrag: noop,
+                        markAudioDebugEvent: noop,
+                        debugResumeAudioContext: noop,
+                        debugTestSfx: noop,
+                        debugTestBgmPlay: noop,
+                        debugPauseBgm: noop,
+                        debugTestRawAudio: noop,
+                        debugEnableHtmlAudioFallback: noop,
+                        debugDisableHtmlAudioFallback: noop,
+                        debugEnableFallbackAudioContextV2: noop,
+                        debugDisableFallbackAudioContextV2: noop,
+                        debugResumeFallbackAudioContext: noop,
+                        debugTestFallbackContextBgm: noop,
+                        debugTestFallbackBgm: noop,
+                        debugTestFallbackSfx: noop,
+                        debugShowAudioState: noop
+                    };
+                }
+            };
+        }
+        const audioDebug = window.JPAPPAudioDebugManager.createAudioDebugManager({
+            vue: { ref, computed, watch, onMounted, nextTick },
+            storageManager: window.JPAPPStorageManager,
+            formatAudioDebugValue: (value) => formatAudioDebugValue(value),
+            getAudioDebugState: () => getAudioDebugState(),
+            getActions: () => audioDebugCoreActions
+        });
+        const {
+            isAudioDebugEnabled,
+            isAudioDebugOpen,
+            isAudioDebugDragging,
+            audioDebugOverlayStyle,
+            audioDebugSections,
+            refreshAudioDebugState,
+            startAudioDebugDrag,
+            markAudioDebugEvent,
+            debugResumeAudioContext,
+            debugTestSfx,
+            debugTestBgmPlay,
+            debugPauseBgm,
+            debugTestRawAudio,
+            debugEnableHtmlAudioFallback,
+            debugDisableHtmlAudioFallback,
+            debugEnableFallbackAudioContextV2,
+            debugDisableFallbackAudioContextV2,
+            debugResumeFallbackAudioContext,
+            debugTestFallbackContextBgm,
+            debugTestFallbackBgm,
+            debugTestFallbackSfx,
+            debugShowAudioState
+        } = audioDebug;
         const audioOutputFallbackMode = computed(() => (
             useFallbackGain.value ? 'fallback-audioctx-v2' :
                 (useHtmlAudioBgmFallback.value || useHtmlAudioSfxFallback.value ? 'html-audio' : 'none')
         ));
-
-        const markAudioDebugEvent = (targetRef, label) => {
-            if (!isAudioDebugEnabled.value) return;
-            targetRef.value = `${label} @ ${new Date().toLocaleTimeString()}`;
-            audioDebugTick.value += 1;
-        };
-
-        const refreshAudioDebugState = () => {
-            audioDebugTick.value += 1;
-        };
-
-        const getAudioDebugOverlayElement = () => document.querySelector('.audio-debug-overlay');
-
-        const clampAudioDebugPosition = (position = audioDebugPosition.value) => {
-            if (!position) return null;
-            const overlay = getAudioDebugOverlayElement();
-            const rect = overlay?.getBoundingClientRect();
-            const width = Math.max(120, rect?.width || (isAudioDebugOpen.value ? 520 : 290));
-            const height = Math.max(52, rect?.height || 74);
-            const margin = 8;
-            const maxLeft = Math.max(margin, window.innerWidth - width - margin);
-            const maxTop = Math.max(margin, window.innerHeight - height - margin);
-            return {
-                left: Math.min(Math.max(margin, Number(position.left) || margin), maxLeft),
-                top: Math.min(Math.max(margin, Number(position.top) || margin), maxTop)
-            };
-        };
-
-        const saveAudioDebugPosition = () => {
-            if (!audioDebugPosition.value) return;
-            window.JPAPPStorageManager.saveAudioDebugPosition(audioDebugPosition.value);
-        };
-
-        const setAudioDebugPosition = (position, shouldSave = false) => {
-            const clamped = clampAudioDebugPosition(position);
-            if (!clamped) return;
-            audioDebugPosition.value = clamped;
-            if (shouldSave) saveAudioDebugPosition();
-        };
-
-        const handleAudioDebugDragMove = (event) => {
-            if (!audioDebugDragState) return;
-            event.preventDefault();
-            setAudioDebugPosition({
-                left: audioDebugDragState.startLeft + event.clientX - audioDebugDragState.pointerX,
-                top: audioDebugDragState.startTop + event.clientY - audioDebugDragState.pointerY
-            });
-        };
-
-        const stopAudioDebugDrag = () => {
-            if (!audioDebugDragState) return;
-            isAudioDebugDragging.value = false;
-            audioDebugDragState = null;
-            saveAudioDebugPosition();
-            window.removeEventListener('pointermove', handleAudioDebugDragMove);
-            window.removeEventListener('pointerup', stopAudioDebugDrag);
-            window.removeEventListener('pointercancel', stopAudioDebugDrag);
-        };
-
-        const startAudioDebugDrag = (event) => {
-            if (event?.target?.closest?.('button')) return;
-            const overlay = event.currentTarget?.closest?.('.audio-debug-overlay') || getAudioDebugOverlayElement();
-            if (!overlay) return;
-            const rect = overlay.getBoundingClientRect();
-            const currentPosition = clampAudioDebugPosition(audioDebugPosition.value || { left: rect.left, top: rect.top }) || { left: rect.left, top: rect.top };
-            audioDebugPosition.value = currentPosition;
-            audioDebugDragState = {
-                pointerX: event.clientX,
-                pointerY: event.clientY,
-                startLeft: currentPosition.left,
-                startTop: currentPosition.top
-            };
-            isAudioDebugDragging.value = true;
-            event.preventDefault();
-            try { event.currentTarget.setPointerCapture?.(event.pointerId); } catch (_) { }
-            window.addEventListener('pointermove', handleAudioDebugDragMove, { passive: false });
-            window.addEventListener('pointerup', stopAudioDebugDrag);
-            window.addEventListener('pointercancel', stopAudioDebugDrag);
-        };
-
-        const restoreAudioDebugPositionIntoViewport = () => {
-            if (!audioDebugPosition.value) return;
-            nextTick(() => setAudioDebugPosition(audioDebugPosition.value, true));
-        };
 
         let timerId = null;
 
         let pauseTimerId = null;
 
         let questionStartTime = 0;
-
-
-
 
         let _sfxDuckTimer = null;
 
@@ -3104,8 +2733,6 @@ const _jpApp = Vue.createApp({
         let wasTimerRunning = false;
 
         let wasPauseTimerRunning = false;
-
-
 
         const startSfxDuck = (durationMs = 1800) => {
 
@@ -3131,8 +2758,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         // ---- [ BATTLE CONTROL — PAUSE / RESUME ] ----
         const pauseBattle = () => {
 
@@ -3146,13 +2771,9 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const resumeBattle = () => {
 
             if (isMenuOpen.value || isCodexOpen.value || isMentorModalOpen.value || isMistakesOpen.value) return;
-
-
 
             // NEW: Ensure battle starts if logically in battle but timer not running (e.g. after mentor/skill tutorial)
 
@@ -3176,8 +2797,6 @@ const _jpApp = Vue.createApp({
 
             }
 
-
-
             if (wasTimerRunning && !timerId) timerId = setInterval(runTimerLogic, 100);
 
             if (wasPauseTimerRunning && !pauseTimerId) pauseTimerId = setInterval(runPauseTimerLogic, 1000);
@@ -3188,14 +2807,10 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const closeCodex = () => {
             isCodexOpen.value = false;
             flippedCardId.value = null;
         };
-
-
 
         // ================= [ AUDIO & TTS ] =================
         const loadAudioSettings = () => {
@@ -3228,8 +2843,6 @@ const _jpApp = Vue.createApp({
         const currentBattleBgmPick = ref(BGM_BASE + 'BGM_1.m4a');
 
         let lastNormalBgm = null;
-
-
 
         const pickBattleBgm = (level) => {
 
@@ -3273,17 +2886,11 @@ const _jpApp = Vue.createApp({
 
             isPreloading.value = true;
 
-
-
             const sfxPaths = { ...(GAME_CONSTANTS.PRELOAD_SFX_PATHS || {}) };
-
-
 
             const criticalAssets = [BGM_BASE + 'BGM_1.m4a', BGM_BASE + 'BGM_2.m4a', BGM_BASE + 'BGM_3.m4a', BGM_BASE + 'BGM_4.m4a', BGM_BASE + 'BGM_boss.m4a', 'assets/audio/bgm_m4a/map.m4a', sfxPaths.click, sfxPaths.uiPop, sfxPaths.battlePop];
 
             const promises = [];
-
-
 
             const loadAsset = (url) => {
 
@@ -3307,8 +2914,6 @@ const _jpApp = Vue.createApp({
 
             };
 
-
-
             for (const url of criticalAssets) promises.push(loadAsset(url));
 
             for (const key in sfxPaths) promises.push(loadAsset(sfxPaths[key]));
@@ -3316,8 +2921,6 @@ const _jpApp = Vue.createApp({
             promises.push(loadAsset(TTS_AUDIO_BASE + 'ui_correct.mp3'));
 
             promises.push(loadAsset(TTS_AUDIO_BASE + 'ui_wrong.mp3'));
-
-
 
             try {
 
@@ -3339,8 +2942,6 @@ const _jpApp = Vue.createApp({
 
             } catch (e) { }
 
-
-
             const abilityIds = ['ODOODO', 'GACHIGACHI', 'UTOUTO', 'WAKUWAKU'];
 
             for (const sid of abilityIds) {
@@ -3350,8 +2951,6 @@ const _jpApp = Vue.createApp({
                 promises.push(loadAsset(`assets/audio/skill/${sid.toLowerCase()}2.mp3`));
 
             }
-
-
 
             const shortSfxPaths = { ...(GAME_CONSTANTS.SHORT_SFX_PATHS || {}) };
 
@@ -3373,11 +2972,7 @@ const _jpApp = Vue.createApp({
 
             await Promise.allSettled(decodePromises);
 
-
-
             isPreloading.value = false;
-
-
 
             const tryPreConnect = () => {
 
@@ -3418,8 +3013,6 @@ const _jpApp = Vue.createApp({
             }
 
         };
-
-
 
         const initAudioCtx = async () => {
 
@@ -3465,13 +3058,9 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const isMentorVoicePlaying = ref(false);
 
         let mentorVoiceRestoreTimer = null;
-
-
 
         const duckMapBgmForVoice = () => {
 
@@ -3489,8 +3078,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const restoreMapBgmAfterVoice = () => {
 
             if (mentorVoiceRestoreTimer) return;
@@ -3506,8 +3093,6 @@ const _jpApp = Vue.createApp({
             }, 600);
 
         };
-
-
 
         const clampAudioVolume = (value) => window.JPAPPSettingsManager.clampVolume(value);
 
@@ -3856,7 +3441,6 @@ const _jpApp = Vue.createApp({
             return playHtmlBgmFallback(expectedUrl, reason);
         };
 
-
         const resumeFallbackCtxOnGesture = async (reason = 'fallback-v2-gesture-resume') => {
             if (!useFallbackGain.value || !fallbackCtxNeedsGestureResume.value) return false;
 
@@ -3895,7 +3479,6 @@ const _jpApp = Vue.createApp({
             }
         };
 
-
         const enableHtmlAudioFallback = async (reason = 'enable-html-fallback', options = {}) => {
             useHtmlAudioBgmFallback.value = true;
             useHtmlAudioSfxFallback.value = options.enableSfxFallback === true;
@@ -3922,8 +3505,6 @@ const _jpApp = Vue.createApp({
             return true;
         };
 
-
-
         const updateGainVolumes = () => {
 
             syncHtmlBgmFallbackVolume();
@@ -3940,13 +3521,9 @@ const _jpApp = Vue.createApp({
 
             }
 
-
-
             const b = bgmVolume.value;
 
             let bScale = getBgmUiDuckScale();
-
-
 
             if (isFinite(cTime)) {
 
@@ -3957,8 +3534,6 @@ const _jpApp = Vue.createApp({
             }
 
         };
-
-
 
         /** 初始化音效池：preload SFX / BGM，建立 AudioContext 並注入 gain nodes */
         const initAudio = async () => {
@@ -3991,8 +3566,6 @@ const _jpApp = Vue.createApp({
 
                 bgmAudio.value.loop = true;
 
-
-
                 if (audioCtx.value && !bgm._connected) {
 
                     const source = audioCtx.value.createMediaElementSource(bgm);
@@ -4006,8 +3579,6 @@ const _jpApp = Vue.createApp({
             } catch (_) { }
 
         };
-
-
 
         const stopAllAudio = () => {
 
@@ -4129,8 +3700,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const defeatReturn = () => {
             const sc = document.getElementById('battleScene');
             if (sc) sc.classList.remove('grayscale-filter');
@@ -4165,9 +3734,6 @@ const _jpApp = Vue.createApp({
             if (pauseTimerId) { clearInterval(pauseTimerId); pauseTimerId = null; }
             playSfx('gameover');
         };
-
-
-
 
         const handleEscapeToMap = () => {
             if (isEscaping.value) return;
@@ -4243,8 +3809,6 @@ const _jpApp = Vue.createApp({
             }, ttlMs);
         };
 
-
-
         // ── iOS Safari Background Audio Guard ──
         const isIosDevice = () => {
             return /iPad|iPhone|iPod/i.test(navigator.userAgent) ||
@@ -4314,8 +3878,6 @@ const _jpApp = Vue.createApp({
 
             const curSrc = bgmAudio.value?.src || '';
 
-
-
             if (bgmAudio.value && curSrc !== expectedAbs) {
 
                 bgmAudio.value.pause();
@@ -4327,8 +3889,6 @@ const _jpApp = Vue.createApp({
                 bgmAudio.value.load();
 
             }
-
-
 
             if (bgmAudio.value && bgmAudio.value.paused) {
 
@@ -4344,18 +3904,11 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         watch(showMap, (val) => {
 
             if (val) playBgm();
 
         });
-
-
-
-
-
 
         const resumeBattleBgm = (resumeAbs) => {
 
@@ -4403,15 +3956,11 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         watch([isMenuOpen, isCodexOpen, isMonsterCodexOpen, isMentorModalOpen, isMistakesOpen, bgmVolume, masterVolume, isMuted, sfxVolume], () => {
 
             updateGainVolumes();
 
         });
-
-
 
         watch(isMuted, (newVal, oldVal) => {
 
@@ -4430,8 +3979,6 @@ const _jpApp = Vue.createApp({
             }
 
         });
-
-
 
         watch(() => player.value.hp, (newHp) => {
             const el = document.getElementById('heroAvatar');
@@ -4454,8 +4001,6 @@ const _jpApp = Vue.createApp({
             window.heroMaxHP = player.value.maxHp;
             updateHeroStatusBar();
         });
-
-
 
         const isUnlockOrResultOverlayActive = () => {
             return isKnowledgeCardShowing.value ||
@@ -4846,15 +4391,11 @@ const _jpApp = Vue.createApp({
         window.addEventListener('pageshow', () => schedulePageLoopAudioResume('pageshow'));
         window.addEventListener('focus', () => schedulePageLoopAudioResume('focus'));
 
-
-
-
         const _isMobileSfx = /iPad|iPhone|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 2);
 
         const POLY = 4;
 
         const _uiSfxSrcMap = { ...(GAME_CONSTANTS.UI_SFX_SRC_MAP || {}) };
-
 
         const _polyPool = new Map();
 
@@ -4890,6 +4431,12 @@ const _jpApp = Vue.createApp({
             const now = Date.now();
             if ((now - (_sfxWarnLastAt.get(key) || 0)) < intervalMs) return;
             _sfxWarnLastAt.set(key, now);
+            // Pool warmup/preload can emit transient HTMLAudio error events even when
+            // actual user-triggered playback succeeds. Keep them out of warn/error lanes
+            // unless explicit audio debug is enabled.
+            if (tag === 'sfx-audio-error' && payload?.fromPool && !window.JPAPP_DEBUG_AUDIO) {
+                return;
+            }
             console.warn(`[${tag}]`, payload);
         };
 
@@ -4899,7 +4446,6 @@ const _jpApp = Vue.createApp({
             lastSfxError.value = error || '';
             refreshAudioDebugState();
         };
-
 
         const _getOrCreatePoly = (name) => {
 
@@ -5032,15 +4578,11 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const _prewarmUiSfx = () => { _getOrCreatePoly('hit'); _getOrCreatePoly('hit2'); _getOrCreatePoly('miss'); };
 
         document.addEventListener('pointerdown', _prewarmUiSfx, { once: true, capture: true });
 
         document.addEventListener('touchstart', _prewarmUiSfx, { once: true, capture: true, passive: true });
-
-
 
         const SFX_SCALES = GAME_CONSTANTS.SFX_SCALES || {};
 
@@ -5193,8 +4735,6 @@ const _jpApp = Vue.createApp({
 
                 };
 
-
-
                 if (audioCtx.value.state !== 'running') {
 
                     audioCtx.value.resume().then(doPlay).catch((e) => {
@@ -5218,8 +4758,6 @@ const _jpApp = Vue.createApp({
                 playHtmlSfxFallback(name, src);
                 return;
             }
-
-
 
             try {
                 const usePool = POOLED_SFX_KEYS.has(name);
@@ -5302,15 +4840,11 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const clearTimer = () => {
 
             if (timerId) { clearInterval(timerId); timerId = null; }
 
         };
-
-
 
         const handleRuneClick = (opt, isFromFlick = false) => {
 
@@ -5322,18 +4856,9 @@ const _jpApp = Vue.createApp({
 
             checkAnswer();
 
-
-
             flickState.successOpt = opt;
 
             setTimeout(() => { flickState.successOpt = null; }, 400);
-
-        };
-
-
-        const isMobileOrIOS = () => {
-
-            return /iPad|iPhone|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
 
         };
 
@@ -5454,8 +4979,6 @@ const _jpApp = Vue.createApp({
             return { targetX: impactPoint.x, targetY: impactPoint.y, hitsMonster: true };
         };
 
-
-
         const startFlick = (e, opt) => {
 
             if (answerMode.value !== 'flick' || monsterDead.value || playerDead.value || isFinished.value || hasSubmitted.value) return;
@@ -5466,17 +4989,12 @@ const _jpApp = Vue.createApp({
 
             resumePageAudioOnGesture();
 
-
-
             const startPoint = getFlickClientPoint(e);
             if (!startPoint) return;
-
 
             const el = e.currentTarget;
 
             el.setPointerCapture(e.pointerId);
-
-
 
             flickState.activeOpt = opt;
 
@@ -5500,8 +5018,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const moveFlick = (e) => {
 
             if (!flickState.isArmed) return;
@@ -5510,15 +5026,11 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const endFlick = (e) => {
 
             if (!flickState.isArmed) return;
 
             if (window.primeVoiceOnGesture) window.primeVoiceOnGesture();
-
-
 
             let shot = null;
 
@@ -5554,8 +5066,6 @@ const _jpApp = Vue.createApp({
 
             }
 
-
-
             flickState.isArmed = false;
 
             flickState.activeOpt = null;
@@ -5570,8 +5080,6 @@ const _jpApp = Vue.createApp({
             }
 
         };
-
-
 
         const runTimerLogic = () => {
 
@@ -5618,8 +5126,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         // ---- [ TIMER ] ----
         const startTimer = () => {
 
@@ -5637,8 +5143,6 @@ const _jpApp = Vue.createApp({
 
             questionStartTime = Date.now();
 
-
-
             if (isMenuOpen.value || isCodexOpen.value) {
 
                 wasTimerRunning = true;
@@ -5651,21 +5155,15 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         // 預防 Boss 特殊攻擊重複播出的鎖定狀態
 
         let _isBossSpecialAttackPlaying = false;
-
-
 
         const playBossVineAttackVfx = () => {
 
             if (_isBossSpecialAttackPlaying) return;
 
             _isBossSpecialAttackPlaying = true;
-
-
 
             const vfxLayer = getVfxLayer();
 
@@ -5677,15 +5175,11 @@ const _jpApp = Vue.createApp({
 
             }
 
-
-
             // 隨機分布藤蔓位置與方向
 
             const group = document.createElement('div');
 
             group.className = 'boss-vine-group';
-
-
 
             // 垂直藤蔓
 
@@ -5706,8 +5200,6 @@ const _jpApp = Vue.createApp({
 
             });
 
-
-
             // 橫向藤蔓 (左右交錯)
 
             [30, 70].forEach((top, i) => {
@@ -5727,11 +5219,7 @@ const _jpApp = Vue.createApp({
 
             });
 
-
-
             vfxLayer.appendChild(group);
-
-
 
             // 震動與閃光放在藤蔓出現後一點點
 
@@ -5740,8 +5228,6 @@ const _jpApp = Vue.createApp({
                 bossScreenShake.value = true;
 
                 setTimeout(() => { bossScreenShake.value = false; }, 400);
-
-
 
                 const flash = document.createElement('div');
 
@@ -5753,8 +5239,6 @@ const _jpApp = Vue.createApp({
 
             }, 100);
 
-
-
             setTimeout(() => {
 
                 if (vfxLayer.contains(group)) vfxLayer.removeChild(group);
@@ -5765,15 +5249,11 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const playBossSmashAttackVfx = () => {
 
             if (_isBossSpecialAttackPlaying) return;
 
             _isBossSpecialAttackPlaying = true;
-
-
 
             const vfxLayer = getVfxLayer();
 
@@ -5785,8 +5265,6 @@ const _jpApp = Vue.createApp({
 
             }
 
-
-
             // 修正：使用 group 容器確保特效置中，而非相對於全螢幕左上角
 
             const group = document.createElement('div');
@@ -5794,8 +5272,6 @@ const _jpApp = Vue.createApp({
             group.className = 'boss-smash-group';
 
             vfxLayer.appendChild(group);
-
-
 
             // 1. 預備動作 (Anticipation)：畫面變暗
 
@@ -5805,23 +5281,17 @@ const _jpApp = Vue.createApp({
 
             vfxLayer.appendChild(anti);
 
-
-
             // 2. 延遲 400ms 後發動重擊
 
             setTimeout(() => {
 
                 if (vfxLayer.contains(anti)) vfxLayer.removeChild(anti);
 
-
-
                 // 強力震動
 
                 bossScreenShake.value = true;
 
                 setTimeout(() => { bossScreenShake.value = false; }, 600);
-
-
 
                 // 核心視覺特效 - 改為加在 group 內
 
@@ -5831,23 +5301,17 @@ const _jpApp = Vue.createApp({
 
                 group.appendChild(flash);
 
-
-
                 const crack = document.createElement('div');
 
                 crack.className = 'boss-vfx-crack';
 
                 group.appendChild(crack);
 
-
-
                 const shockwave = document.createElement('div');
 
                 shockwave.className = 'boss-vfx-shockwave';
 
                 group.appendChild(shockwave);
-
-
 
                 // 3. 餘震 (Aftershock)
 
@@ -5856,8 +5320,6 @@ const _jpApp = Vue.createApp({
                 residual.className = 'boss-vfx-residual';
 
                 group.appendChild(residual);
-
-
 
                 setTimeout(() => {
 
@@ -5871,21 +5333,15 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const playMonsterClawAttackVfx = () => {
 
             if (_isBossSpecialAttackPlaying) return;
 
             _isBossSpecialAttackPlaying = true;
 
-
-
             bossScreenShake.value = true;
 
             setTimeout(() => { bossScreenShake.value = false; }, 400);
-
-
 
             const vfxLayer = getVfxLayer();
 
@@ -5897,8 +5353,6 @@ const _jpApp = Vue.createApp({
 
             }
 
-
-
             // 1. 背景分量：亮紅閃光與衝擊白閃
 
             const flash = document.createElement('div');
@@ -5907,23 +5361,17 @@ const _jpApp = Vue.createApp({
 
             vfxLayer.appendChild(flash);
 
-
-
             const impact = document.createElement('div');
 
             impact.className = 'boss-vfx-impact-flash';
 
             vfxLayer.appendChild(impact);
 
-
-
             // 2. 1.2 版核心：建立統一的「爪痕群組」容器
 
             const group = document.createElement('div');
 
             group.className = 'boss-claw-group';
-
-
 
             // 三道爪痕的相對配置 (中間為主，左右各偏移)
 
@@ -5936,8 +5384,6 @@ const _jpApp = Vue.createApp({
                 { offset: 65, scale: 0.85, type: 'is-side' }
 
             ];
-
-
 
             clawConfigs.forEach(cfg => {
 
@@ -5955,11 +5401,7 @@ const _jpApp = Vue.createApp({
 
             });
 
-
-
             vfxLayer.appendChild(group);
-
-
 
             // 3. 清理：1.2 版動畫時間約 1.0s，保留一點 buffer 以確保淡出完全
 
@@ -5976,8 +5418,6 @@ const _jpApp = Vue.createApp({
             }, 1200);
 
         };
-
-
 
         // L20 ruin-guardian: 巨大石拳斜上鉤拳
         const playBossStoneFistUppercutVfx = () => {
@@ -6013,8 +5453,6 @@ const _jpApp = Vue.createApp({
             }, 1200);
 
         };
-
-
 
         // L25 dark-knight: 虛空X字斬
         const playBossVoidCrossSlashVfx = () => {
@@ -6067,8 +5505,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         // L30 crimson-throne-lord: 星辰崩壞
         const playBossStarCollapseVfx = () => {
             if (_isBossSpecialAttackPlaying) return;
@@ -6110,8 +5546,6 @@ const _jpApp = Vue.createApp({
                 _isBossSpecialAttackPlaying = false;
             }, 1550);
         };
-
-
 
         // L35 celestial-throne-arbiter: 審判羽刑
         const playBossDualJudgementVfx = () => {
@@ -6172,8 +5606,6 @@ const _jpApp = Vue.createApp({
             }, 1550);
         };
 
-
-
         // L36 void-throne-lord: 虛無侵蝕
         const playBossVoidErosionVfx = () => {
 
@@ -6216,8 +5648,6 @@ const _jpApp = Vue.createApp({
             }, 1600);
         };
 
-
-
         const runPauseTimerLogic = () => {
 
             wrongAnswerPauseCountdown.value--;
@@ -6235,8 +5665,6 @@ const _jpApp = Vue.createApp({
             }
 
         };
-
-
 
         const applyMonsterAttack = () => {
             monsterAttackLunge.value = true;
@@ -6361,8 +5789,6 @@ const _jpApp = Vue.createApp({
             }, 100);
         };
 
-
-
         const loadMistakes = () => {
             mistakes.value = window.JPAPPStorageManager.loadMistakes();
         };
@@ -6370,8 +5796,6 @@ const _jpApp = Vue.createApp({
         const saveMistakes = () => {
             window.JPAPPStorageManager.saveMistakes(mistakes.value);
         };
-
-
 
         const buildQuestionLogText = (q) => {
 
@@ -6424,8 +5848,6 @@ const _jpApp = Vue.createApp({
 
             const questionText = buildQuestionLogText(q);
 
-
-
             // 3. 存入符合新版 HTML 排版的四個屬性
 
             const entry = {
@@ -6448,15 +5870,11 @@ const _jpApp = Vue.createApp({
 
             };
 
-
-
             mistakes.value.unshift(entry);
 
             saveMistakes();
 
         };
-
-
 
         const logStageQuestion = (isCorrect) => {
 
@@ -6465,8 +5883,6 @@ const _jpApp = Vue.createApp({
             if (!q) return;
 
             const questionText = buildQuestionLogText(q);
-
-
 
             const entry = {
 
@@ -6490,13 +5906,9 @@ const _jpApp = Vue.createApp({
 
             };
 
-
-
             stageLog.value.push(entry);
 
         };
-
-
 
         const playMistakeVoice = async (m) => {
 
@@ -6509,8 +5921,6 @@ const _jpApp = Vue.createApp({
         };
 
         const clearMistakes = () => { mistakes.value = []; saveMistakes(); };
-
-
 
         // ================= [ QUESTION GENERATION ] =================
         const ALL_PARTICLES = ['は', 'が', 'を', 'に', 'で', 'へ', 'と'];
@@ -6635,14 +6045,10 @@ const _jpApp = Vue.createApp({
             if (window.__DEBUG__) console.table(skillCount);
         };
 
-
-
         const getChoiceCountForLevel = (lv) => {
             if (lv === 1 || lv === 2) return 2;
             return (lv % 5 === 0 || lv >= 36) ? 4 : 3;
         };
-
-
 
         const makeChoices = (correct) => {
 
@@ -6727,8 +6133,6 @@ const _jpApp = Vue.createApp({
             return shuffle(picked);
 
         };
-
-
 
         const _audioUnlockTried = ref(false);
 
@@ -6973,188 +6377,134 @@ const _jpApp = Vue.createApp({
             };
         };
 
-        const audioDebugSections = computed(() => {
-            const state = getAudioDebugState();
-            return Object.entries(state).map(([title, values]) => ({
-                title,
-                rows: Object.entries(values).map(([key, value]) => ({
-                    key,
-                    value: formatAudioDebugValue(value)
-                }))
-            }));
-        });
-
-        const debugResumeAudioContext = async () => {
-            try {
-                await initAudioCtx();
-                if (audioCtx.value && (audioCtx.value.state === 'suspended' || audioCtx.value.state === 'interrupted')) {
-                    await audioCtx.value.resume();
+        audioDebugCoreActions = {
+            debugResumeAudioContext: async () => {
+                try {
+                    await initAudioCtx();
+                    if (audioCtx.value && (audioCtx.value.state === 'suspended' || audioCtx.value.state === 'interrupted')) {
+                        await audioCtx.value.resume();
+                    }
+                    lastAudioContextResumeResult.value = `ok: ${audioCtx.value?.state || 'none'} @ ${new Date().toLocaleTimeString()}`;
+                    lastAudioContextResumeError.value = '';
+                } catch (e) {
+                    lastAudioContextResumeResult.value = 'failed';
+                    lastAudioContextResumeError.value = e?.name || e?.message || String(e);
                 }
-                lastAudioContextResumeResult.value = `ok: ${audioCtx.value?.state || 'none'} @ ${new Date().toLocaleTimeString()}`;
-                lastAudioContextResumeError.value = '';
-            } catch (e) {
-                lastAudioContextResumeResult.value = 'failed';
-                lastAudioContextResumeError.value = e?.name || e?.message || String(e);
-            }
-            refreshAudioDebugState();
-        };
-
-        const debugTestSfx = () => {
-            try {
-                playSfx('click');
-                lastSfxTestResult.value = `triggered click @ ${new Date().toLocaleTimeString()}`;
-            } catch (e) {
-                lastSfxTestResult.value = `failed: ${e?.name || e?.message || e}`;
-            }
-            refreshAudioDebugState();
-        };
-
-        const debugTestBgmPlay = async () => {
-            const bgm = bgmAudio.value;
-            if (!bgm) {
-                lastBgmPlayResult.value = 'failed: no bgmAudio';
-                refreshAudioDebugState();
-                return;
-            }
-
-            try {
-                updateGainVolumes();
-                await bgm.play();
-                lastBgmPlayResult.value = `resolved @ ${new Date().toLocaleTimeString()}`;
-                lastBgmPlayError.value = '';
-                needsUserGestureToResumeBgm.value = false;
-                pageLoopAudioWasInterrupted = false;
-            } catch (e) {
-                lastBgmPlayResult.value = 'rejected';
-                lastBgmPlayError.value = e?.name || e?.message || String(e);
-            }
-            refreshAudioDebugState();
-        };
-
-        const debugPauseBgm = () => {
-            try {
-                bgmAudio.value?.pause();
+            },
+            debugTestSfx: () => {
+                try {
+                    playSfx('click');
+                    lastSfxTestResult.value = `triggered click @ ${new Date().toLocaleTimeString()}`;
+                } catch (e) {
+                    lastSfxTestResult.value = `failed: ${e?.name || e?.message || e}`;
+                }
+            },
+            debugTestBgmPlay: async () => {
+                const bgm = bgmAudio.value;
+                if (!bgm) {
+                    lastBgmPlayResult.value = 'failed: no bgmAudio';
+                    return;
+                }
+                try {
+                    updateGainVolumes();
+                    await bgm.play();
+                    lastBgmPlayResult.value = `resolved @ ${new Date().toLocaleTimeString()}`;
+                    lastBgmPlayError.value = '';
+                    needsUserGestureToResumeBgm.value = false;
+                    pageLoopAudioWasInterrupted = false;
+                } catch (e) {
+                    lastBgmPlayResult.value = 'rejected';
+                    lastBgmPlayError.value = e?.name || e?.message || String(e);
+                }
+            },
+            debugPauseBgm: () => {
+                try {
+                    bgmAudio.value?.pause();
+                    pauseHtmlBgmFallback();
+                    lastBgmPlayResult.value = `paused @ ${new Date().toLocaleTimeString()}`;
+                    lastHtmlBgmFallbackResult.value = `paused @ ${new Date().toLocaleTimeString()}`;
+                } catch (e) {
+                    lastBgmPlayResult.value = `pause failed: ${e?.name || e?.message || e}`;
+                }
+            },
+            debugTestRawAudio: async () => {
+                try {
+                    const raw = new Audio('assets/audio/sfx/sfx_click.mp3');
+                    raw.volume = Math.max(0, Math.min(1, sfxVolume.value * masterVolume.value));
+                    await raw.play();
+                    lastRawAudioResult.value = `resolved @ ${new Date().toLocaleTimeString()}`;
+                } catch (e) {
+                    lastRawAudioResult.value = `rejected: ${e?.name || e?.message || e}`;
+                }
+            },
+            debugEnableHtmlAudioFallback: async () => {
+                await enableHtmlAudioFallback('debug-enable-html-fallback');
+            },
+            debugDisableHtmlAudioFallback: () => {
+                useHtmlAudioBgmFallback.value = false;
+                useHtmlAudioSfxFallback.value = false;
+                if (useFallbackGain.value || fallbackAudioCtx.value || fallbackMediaSource.value) {
+                    disableFallbackGainMode(true);
+                }
                 pauseHtmlBgmFallback();
-                lastBgmPlayResult.value = `paused @ ${new Date().toLocaleTimeString()}`;
-                lastHtmlBgmFallbackResult.value = `paused @ ${new Date().toLocaleTimeString()}`;
-            } catch (e) {
-                lastBgmPlayResult.value = `pause failed: ${e?.name || e?.message || e}`;
-            }
-            refreshAudioDebugState();
-        };
-
-        const debugTestRawAudio = async () => {
-            try {
-                const raw = new Audio('assets/audio/sfx/sfx_click.mp3');
-                raw.volume = Math.max(0, Math.min(1, sfxVolume.value * masterVolume.value));
-                await raw.play();
-                lastRawAudioResult.value = `resolved @ ${new Date().toLocaleTimeString()}`;
-            } catch (e) {
-                lastRawAudioResult.value = `rejected: ${e?.name || e?.message || e}`;
-            }
-            refreshAudioDebugState();
-        };
-
-        const debugEnableHtmlAudioFallback = async () => {
-            await enableHtmlAudioFallback('debug-enable-html-fallback');
-        };
-
-        const debugDisableHtmlAudioFallback = () => {
-            useHtmlAudioBgmFallback.value = false;
-            useHtmlAudioSfxFallback.value = false;
-            if (useFallbackGain.value || fallbackAudioCtx.value || fallbackMediaSource.value) {
+                lastHtmlBgmFallbackResult.value = `disabled @ ${new Date().toLocaleTimeString()}`;
+                lastHtmlSfxFallbackResult.value = `disabled @ ${new Date().toLocaleTimeString()}`;
+            },
+            debugEnableFallbackAudioContextV2: async () => {
+                await enableHtmlAudioFallback('debug-enable-fallback-audioctx-v2', { preferFallbackGain: true });
+            },
+            debugDisableFallbackAudioContextV2: () => {
                 disableFallbackGainMode(true);
-            }
-            pauseHtmlBgmFallback();
-            lastHtmlBgmFallbackResult.value = `disabled @ ${new Date().toLocaleTimeString()}`;
-            lastHtmlSfxFallbackResult.value = `disabled @ ${new Date().toLocaleTimeString()}`;
-            refreshAudioDebugState();
-        };
-
-        const debugEnableFallbackAudioContextV2 = async () => {
-            await enableHtmlAudioFallback('debug-enable-fallback-audioctx-v2', { preferFallbackGain: true });
-        };
-
-        const debugDisableFallbackAudioContextV2 = () => {
-            disableFallbackGainMode(true);
-            refreshAudioDebugState();
-        };
-
-        const debugResumeFallbackAudioContext = async () => {
-            try {
-                if (!fallbackAudioCtx.value) {
-                    await tryConnectFallbackGain(getOrCreateHtmlBgmAudio());
+            },
+            debugResumeFallbackAudioContext: async () => {
+                try {
+                    if (!fallbackAudioCtx.value) {
+                        await tryConnectFallbackGain(getOrCreateHtmlBgmAudio());
+                    }
+                    if (fallbackAudioCtx.value && (fallbackAudioCtx.value.state === 'suspended' || fallbackAudioCtx.value.state === 'interrupted')) {
+                        await fallbackAudioCtx.value.resume();
+                    }
+                    applyFallbackGainVolume();
+                    fallbackCtxNeedsGestureResume.value = false;
+                    lastFallbackCtxResumeResult.value = `manual resume: ${fallbackAudioCtx.value?.state || 'none'} @ ${new Date().toLocaleTimeString()}`;
+                    lastFallbackCtxResumeError.value = '';
+                    lastFallbackGainResult.value = `resume: ${fallbackAudioCtx.value?.state || 'none'} @ ${new Date().toLocaleTimeString()}`;
+                    lastFallbackGainError.value = '';
+                } catch (e) {
+                    lastFallbackGainResult.value = `resume failed @ ${new Date().toLocaleTimeString()}`;
+                    lastFallbackGainError.value = e?.name || e?.message || String(e);
                 }
-
-                if (fallbackAudioCtx.value && (fallbackAudioCtx.value.state === 'suspended' || fallbackAudioCtx.value.state === 'interrupted')) {
-                    await fallbackAudioCtx.value.resume();
+            },
+            debugTestFallbackContextBgm: async () => {
+                useHtmlAudioBgmFallback.value = true;
+                const audio = getOrCreateHtmlBgmAudio();
+                const connected = await tryConnectFallbackGain(audio);
+                const expectedBgm = getExpectedLoopBgmForCurrentState() ||
+                    currentBattleBgmPick.value ||
+                    currentMapBgm.value ||
+                    (BGM_BASE + 'BGM_1.m4a');
+                if (connected) {
+                    await playHtmlBgmFallback(expectedBgm, 'debug-test-fallback-audioctx-v2-bgm');
+                } else {
+                    await playHtmlBgmFallback(expectedBgm, 'debug-test-fallback-audioctx-v2-v1-fallback');
                 }
-
-                applyFallbackGainVolume();
-                fallbackCtxNeedsGestureResume.value = false;
-                lastFallbackCtxResumeResult.value = `manual resume: ${fallbackAudioCtx.value?.state || 'none'} @ ${new Date().toLocaleTimeString()}`;
-                lastFallbackCtxResumeError.value = '';
-                lastFallbackGainResult.value = `resume: ${fallbackAudioCtx.value?.state || 'none'} @ ${new Date().toLocaleTimeString()}`;
-                lastFallbackGainError.value = '';
-            } catch (e) {
-                lastFallbackGainResult.value = `resume failed @ ${new Date().toLocaleTimeString()}`;
-                lastFallbackGainError.value = e?.name || e?.message || String(e);
-            }
-            refreshAudioDebugState();
-        };
-
-        const debugTestFallbackContextBgm = async () => {
-            useHtmlAudioBgmFallback.value = true;
-            const audio = getOrCreateHtmlBgmAudio();
-            const connected = await tryConnectFallbackGain(audio);
-            const expectedBgm = getExpectedLoopBgmForCurrentState() ||
-                currentBattleBgmPick.value ||
-                currentMapBgm.value ||
-                (BGM_BASE + 'BGM_1.m4a');
-
-            if (connected) {
-                await playHtmlBgmFallback(expectedBgm, 'debug-test-fallback-audioctx-v2-bgm');
-            } else {
-                await playHtmlBgmFallback(expectedBgm, 'debug-test-fallback-audioctx-v2-v1-fallback');
-            }
-            refreshAudioDebugState();
-        };
-
-        const debugTestFallbackBgm = async () => {
-            const expectedBgm = getExpectedLoopBgmForCurrentState() ||
-                currentBattleBgmPick.value ||
-                currentMapBgm.value ||
-                (BGM_BASE + 'BGM_1.m4a');
-            await playHtmlBgmFallback(expectedBgm, 'debug-test-fallback-bgm');
-            refreshAudioDebugState();
-        };
-
-        const debugTestFallbackSfx = () => {
-            playHtmlSfxFallback('click', _uiSfxSrcMap.click);
-            refreshAudioDebugState();
-        };
-
-        const debugShowAudioState = () => {
-            refreshAudioDebugState();
-            if (isAudioDebugEnabled.value) {
-                console.log('[audio debug state]', getAudioDebugState());
+            },
+            debugTestFallbackBgm: async () => {
+                const expectedBgm = getExpectedLoopBgmForCurrentState() ||
+                    currentBattleBgmPick.value ||
+                    currentMapBgm.value ||
+                    (BGM_BASE + 'BGM_1.m4a');
+                await playHtmlBgmFallback(expectedBgm, 'debug-test-fallback-bgm');
+            },
+            debugTestFallbackSfx: () => {
+                playHtmlSfxFallback('click', _uiSfxSrcMap.click);
+            },
+            debugShowAudioState: () => {
+                if (isAudioDebugEnabled.value) {
+                    console.log('[audio debug state]', getAudioDebugState());
+                }
             }
         };
-
-        if (isAudioDebugEnabled.value) {
-            setInterval(() => {
-                if (isAudioDebugOpen.value) refreshAudioDebugState();
-            }, 1000);
-            onMounted(() => {
-                restoreAudioDebugPositionIntoViewport();
-                window.addEventListener('resize', restoreAudioDebugPositionIntoViewport);
-                window.addEventListener('orientationchange', restoreAudioDebugPositionIntoViewport);
-            });
-        }
-
-        watch(isAudioDebugOpen, () => {
-            restoreAudioDebugPositionIntoViewport();
-        });
 
         // ── Per-gesture AudioContext resume + conservative BGM play ──
         // iOS Safari can corrupt the media pipeline if page resume reloads BGM.
@@ -7249,8 +6599,6 @@ const _jpApp = Vue.createApp({
         window.addEventListener('touchstart', handlePageAudioGesture, { capture: true, passive: true });
         window.addEventListener('click', handlePageAudioGesture, { capture: true, passive: true });
 
-
-
         const onUserGesture = () => {
 
             unlockAudioOnce();
@@ -7259,9 +6607,6 @@ const _jpApp = Vue.createApp({
             resumePageAudioOnGesture();
 
             if (!audioInited.value) initAudio();
-
-
-
 
             if (window._preConnectRetry) {
 
@@ -7299,15 +6644,11 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const levelConfig = computed(() => LEVEL_CONFIG.value[currentLevel.value] || LEVEL_CONFIG.value[1] || {});
 
         const levelTitle = computed(() => levelConfig.value.title || '');
 
         const isChoiceMode = computed(() => levelConfig.value.blanks === 1);
-
-
 
         const playBeep = (frequency, duration, type) => {
 
@@ -7343,10 +6684,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
-
-
         const ensureBgmElementSync = () => {
 
             let bgm = audioPool.get(BGM_BASE + 'BGM_1.m4a');
@@ -7369,8 +6706,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         /** 載入並啟動指定關卡：停止舊音效、選播 BGM、呼叫 initGame。withMentor=true 時由導師圖示觸發。 */
         const startLevel = async (level, withMentor = false) => {
 
@@ -7386,8 +6721,6 @@ const _jpApp = Vue.createApp({
 
             preloadAllAudio();
 
-
-
             playSfx('click');
 
             showLevelSelect.value = false;
@@ -7395,8 +6728,6 @@ const _jpApp = Vue.createApp({
             showMap.value = false; // CRITICAL: Hide map to show battle HUD
 
             currentLevel.value = lv;
-
-
 
             // withMentor = true means user clicked the "Mentor Icon" -> forceMentor = true
 
@@ -7408,8 +6739,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const usePotion = () => {
 
             initAudioCtx();
@@ -7418,12 +6747,7 @@ const _jpApp = Vue.createApp({
 
             resumePageAudioOnGesture();
 
-
-
-
             if (inventory.value.potions <= 0 || player.value.hp >= player.value.maxHp) return;
-
-
 
             playSfx('potion');
 
@@ -7434,11 +6758,6 @@ const _jpApp = Vue.createApp({
             pushBattleLog(`喝了藥水，回復 ${POTION_HP} 點 HP！`, 'heal');
 
         };
-
-
-
-
-
 
         const getHistoricalSkills = (upToLevel) => {
             const historical = new Set();
@@ -7506,8 +6825,6 @@ const _jpApp = Vue.createApp({
             return poolToUse[Math.floor(Math.random() * poolToUse.length)];
         };
 
-
-
         let bossSkillQueue = [];
         let bossQuestionQueue = []; // L36 專用：不重複題目的完整對列
 
@@ -7520,8 +6837,6 @@ const _jpApp = Vue.createApp({
             // 第五關固定複習池：は / の / が / を
 
             const level5Pool = ['WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE', 'WO_OBJECT_BASIC'];
-
-
 
             if (lv === 5) {
                 let fullQueue = [];
@@ -7600,8 +6915,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const pickSkillForBoss = () => {
 
             if (bossSkillQueue.length === 0) return null;
@@ -7616,8 +6929,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const isBossLevel = (levelId) => {
 
             if (levelId % 5 === 0) return true;
@@ -7627,8 +6938,6 @@ const _jpApp = Vue.createApp({
             return false;
 
         };
-
-
 
         const pickSkillIdForNextQuestion = (levelId) => {
 
@@ -7645,11 +6954,6 @@ const _jpApp = Vue.createApp({
             return pickSkillForNormalLevel(levelId);
 
         };
-
-
-
-
-
 
         const safeFallbackQuestion = (skillId) => {
 
@@ -7679,8 +6983,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         /** 依 skillId 生成單道助詞題（包含所有 if/else 助詞都合邏輯分支）。回傳 question object 或 null。 */
         const generateQuestionBySkill = (skillId, blanks, forceTargetCount = null) => {
             // L36 專用：不重複題目的抽題邏輯
@@ -7697,13 +6999,9 @@ const _jpApp = Vue.createApp({
 
             if (skillId === 'MO_ALSO') skillId = 'MO_ALSO_BASIC';
 
-
-
             const skillDef = skillsAll.value[skillId];
 
             if (!skillDef || !skillDef.id) return null;
-
-
 
             const tipText = (skillDef.meaning || '') + (skillDef.rule ? ' / ' + skillDef.rule : '');
 
@@ -7716,10 +7014,6 @@ const _jpApp = Vue.createApp({
                 isBlank: false
 
             });
-
-
-
-
 
             const makeParticleQuestion = ({
 
@@ -7779,8 +7073,6 @@ const _jpApp = Vue.createApp({
 
                 };
             };
-
-
 
             const getAllowedEarlyParticles = (lv) => {
                 if (lv === 1 || lv === 2) return ['は', 'の'];
@@ -7917,8 +7209,6 @@ const _jpApp = Vue.createApp({
                 return selected.sort(() => Math.random() - 0.5);
             };
 
-
-
             let q = null;
 
             // --- Shuffle Bag Injection ---
@@ -8012,31 +7302,6 @@ const _jpApp = Vue.createApp({
                 });
             }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             else if (skillDef.id === 'BOSS_REVIEW_01') {
                 const reviewSkills = ['WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE', 'WO_OBJECT_BASIC'];
                 const chosenSkillId = pickOne(reviewSkills);
@@ -8088,8 +7353,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         // ================= [ BATTLE INIT ] =================
         /** 主戰鬥初始化：依關卡 ID 生成題庫、配置怪物、重置所有 battle state、啟動計時器。 */
         let _mentorResumeToken = 0;
@@ -8123,11 +7386,7 @@ const _jpApp = Vue.createApp({
 
             else if (ratio < 0.8) startState = 'ase';
 
-
-
             setHeroAvatar(startState);
-
-
 
             window.heroHP = player.value.hp;
 
@@ -8136,8 +7395,6 @@ const _jpApp = Vue.createApp({
             inventory.value.potions = INITIAL_POTIONS;
 
             clearSpeedStatus();
-
-
 
             heroBuffs.enemyAtbMult = 1.0;
 
@@ -8156,8 +7413,6 @@ const _jpApp = Vue.createApp({
             evasionBuffAttacksLeft.value = 0;
 
             updateHeroStatusBar();
-
-
 
             // Comprehensive Reset for Battle/Timer State (Fix ATB Carryover)
 
@@ -8181,8 +7436,6 @@ const _jpApp = Vue.createApp({
 
             resetBattleOutcomePresentation();
             resetStageClearMetrics();
-
-
 
             isMonsterImageError.value = false;
 
@@ -8220,8 +7473,6 @@ const _jpApp = Vue.createApp({
 
             const config = LEVEL_CONFIG.value[lv] || LEVEL_CONFIG.value[1] || { blanks: 1 };
 
-
-
             if (config.unlockSkills && config.unlockSkills.length > 0) {
 
                 const newUnlocks = [];
@@ -8239,9 +7490,6 @@ const _jpApp = Vue.createApp({
                 });
 
                 if (newUnlocks.length > 0) {
-
-
-
 
                     if (window._disableMentorAutoTrigger || skipMentor) {
 
@@ -8272,8 +7520,6 @@ const _jpApp = Vue.createApp({
                 }
 
             }
-
-
 
             // Instruction mentor logic
 
@@ -8306,11 +7552,6 @@ const _jpApp = Vue.createApp({
 
             }
 
-
-
-
-
-
             const blanks = config.blanks;
 
             const qList = [];
@@ -8335,8 +7576,6 @@ const _jpApp = Vue.createApp({
             let reviewCycle = { remainingReview: 1, remainingL2: 3, lastWasReview: false };
 
             const allowSkills = ['WA_TOPIC_BASIC', 'NO_POSSESSIVE'];
-
-
 
             // L5 固定 review pool（不依賴 unlockedSkillIds，確保 refresh/skip level 時仍完整）
 
@@ -8392,8 +7631,6 @@ const _jpApp = Vue.createApp({
 
             }
 
-
-
             const _totalQ = (config.skillId === 'HIDDEN_BOSS_36') ? bossQuestionQueue.length : 100;
             for (let i = 0; i < _totalQ; i++) {
 
@@ -8402,8 +7639,6 @@ const _jpApp = Vue.createApp({
                 let skillId = null;
 
                 let isReview = false;
-
-
 
                 if (lv === 1) {
 
@@ -8453,8 +7688,6 @@ const _jpApp = Vue.createApp({
 
                         else isReview = Math.random() < (reviewCycle.remainingReview / (reviewCycle.remainingReview + reviewCycle.remainingL2));
 
-
-
                         if (isReview) {
 
                             reviewCycle.remainingReview--;
@@ -8479,15 +7712,11 @@ const _jpApp = Vue.createApp({
 
                 }
 
-
-
                 let generatedFromSkill = false;
 
                 let attempts = 0;
 
                 let originalSkillId = skillId;
-
-
 
                 while (attempts < 10 && skillId && !generatedFromSkill) {
 
@@ -8507,8 +7736,6 @@ const _jpApp = Vue.createApp({
 
                     }
 
-
-
                     // Goal 2: L5 Boss distractor pool restriction
 
                     if (q && lv === 5) {
@@ -8518,8 +7745,6 @@ const _jpApp = Vue.createApp({
                         q.choices = l5Choices;
 
                     }
-
-
 
                     if (q) {
 
@@ -8545,10 +7770,6 @@ const _jpApp = Vue.createApp({
 
                         if ((skillId === 'TO_WITH' || skillId === 'TO_AND') && ansStr !== 'と') valid = false;
 
-
-
-
-
                         // 最終攔截：HE_DIRECTION 自然度與選項避讓
 
                         if (valid && (skillId === 'HE_DEST' || skillId === 'HE_DIRECTION')) {
@@ -8556,8 +7777,6 @@ const _jpApp = Vue.createApp({
                             const left = q.segments[0].text;
 
                             const right = q.segments[2].text;
-
-
 
                             // Naturalness guard: 阻攔明顯不自然的搭配
 
@@ -8568,8 +7787,6 @@ const _jpApp = Vue.createApp({
                                 if (window.DEBUG_Q_GEN) console.warn(`[NATURALNESS REJECT] HE_DIRECTION: 拒絕「外 x 曲がる」`);
 
                             }
-
-
 
                             // Choice guard: 確保「に」絕對不會作為干擾項出現（避免移動動詞雙解爭議）
 
@@ -8584,8 +7801,6 @@ const _jpApp = Vue.createApp({
                         }
 
                         // Removed restrictive MO_ALSO_BASIC guard to allow Action branch (AもVます)
-
-
 
                         if (valid && lv <= 15) {
 
@@ -8651,8 +7866,6 @@ const _jpApp = Vue.createApp({
 
                         }
 
-
-
                         if (valid) {
 
                             generatedFromSkill = true;
@@ -8665,8 +7878,6 @@ const _jpApp = Vue.createApp({
 
                     }
 
-
-
                     if (!generatedFromSkill) {
 
                         attempts++;
@@ -8674,8 +7885,6 @@ const _jpApp = Vue.createApp({
                     }
 
                 }
-
-
 
                 if (!generatedFromSkill && skillId) {
 
@@ -8685,8 +7894,6 @@ const _jpApp = Vue.createApp({
 
                 }
 
-
-
                 const REVIEW_FALLBACK_POOLS = { 5: L5_REVIEW_POOL, 10: L10_REVIEW_POOL };
                 if (!generatedFromSkill && REVIEW_FALLBACK_POOLS[lv]) {
                     const pool = REVIEW_FALLBACK_POOLS[lv];
@@ -8694,8 +7901,6 @@ const _jpApp = Vue.createApp({
                     q = safeFallbackQuestion(fallbackSkillId) || safeFallbackQuestion(pool[0]);
                     if (q) { q.skillId = fallbackSkillId; }
                 }
-
-
 
                 // 題面去重：若已出現過相同句子，且還有重試額度，退回重抽
                 if (q) {
@@ -8724,8 +7929,6 @@ const _jpApp = Vue.createApp({
 
             }
 
-
-
             questions.value = qList;
 
             currentIndex.value = 0;
@@ -8739,7 +7942,6 @@ const _jpApp = Vue.createApp({
             correctAnswersAmount.value = 0;
 
             earnedExp.value = 0;
-
 
             isFinished.value = false;
 
@@ -8755,19 +7957,12 @@ const _jpApp = Vue.createApp({
 
             animatedExp.value = 0;
 
-
-
-
             // 安全 fallback：全關卡已有 enemies.v1.json；若未比對則用預設屬性
             const mdef = { hpMax: MONSTER_HP, name: '助詞怪', sprite: DEFAULT_IMAGE_PATHS.monsterSprite, trait: '普通型' };
-
-
 
             // 挑選符合目前關卡的怪物資料 (從 enemies.v1.json)
 
             const enemyMatch = (ENEMIES.value || []).find(e => e.spawnLevels && e.spawnLevels.includes(lv));
-
-
 
             const _isBossLv = (lv % 5 === 0);
 
@@ -8882,19 +8077,13 @@ const _jpApp = Vue.createApp({
 
             }
 
-
-
             voicePlayedForCurrentQuestion.value = false;
 
             window.skillId = currentQuestion.value?.skillId;
 
         };
 
-
-
         const currentQuestion = computed(() => questions.value[currentIndex.value] || { chinese: '', segments: [] });
-
-
 
         let JA_VOICE = null;
 
@@ -8914,8 +8103,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         if (window.speechSynthesis) {
 
             initJapaneseVoice();
@@ -8924,22 +8111,11 @@ const _jpApp = Vue.createApp({
 
         }
 
-
-
-
-
-
-
-
-
-
-
         const praiseToast = ref({ show: false, text: '' });
 
         let praiseToastTimer = null;
 
         const FEEDBACK_VOICE_BASE = 'assets/audio/feedback_m4a/';
-
 
         const feedbackVoiceWarnedPaths = new Set();
 
@@ -9012,19 +8188,13 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const playCorrectFeedback = (combo) => {
 
             initAudio();
 
             const style = settings.feedbackStyle || 'oneesan';
 
-
-
             // ⚠️ 移除了這裡過早觸發的 playSfx('hit')，將它移到 checkAnswer 裡的延遲區塊中
-
-
 
             if (style === 'combat') {
 
@@ -9048,8 +8218,6 @@ const _jpApp = Vue.createApp({
 
                 else if (combo >= 3) praiseIndex = 1;
 
-
-
                 const text = ONEESAN_PRAISES[praiseIndex];
 
                 showPraiseToast(text);
@@ -9057,8 +8225,6 @@ const _jpApp = Vue.createApp({
             }
 
         };
-
-
 
         // ================= [ BATTLE LOGIC ] =================
         const getMasteryParticlesForCurrentQuestion = () => {
@@ -9110,8 +8276,6 @@ const _jpApp = Vue.createApp({
 
             hasSubmitted.value = true;
 
-
-
             if (heroBuffs.monsterSleep) {
 
                 heroBuffs.monsterSleep = false;
@@ -9120,15 +8284,11 @@ const _jpApp = Vue.createApp({
 
             }
 
-
-
             hpBarDanger.value = false;
 
             const blanks = levelConfig.value.blanks;
 
             totalQuestionsAnswered.value++;
-
-
 
             let allCorrect = true;
 
@@ -9141,8 +8301,6 @@ const _jpApp = Vue.createApp({
                 const isCorrect = acceptableAnswers.includes(userIn);
 
                 if (!isCorrect) allCorrect = false;
-
-
 
                 // 第一時間讓選項格子變色，給玩家即時反饋
 
@@ -9168,15 +8326,11 @@ const _jpApp = Vue.createApp({
 
             logStageQuestion(allCorrect);
 
-
-
             // 🌟 判定延遲時間：彈射模式等子彈飛 400ms，點選模式可以同步或無延遲 (此處統一使用 400ms 營造打擊節奏)
 
             const isFlick = answerMode.value === 'flick';
 
             const impactDelay = isFlick ? 400 : 0;
-
-
 
             setTimeout(() => {
 
@@ -9190,8 +8344,6 @@ const _jpApp = Vue.createApp({
 
                     // 🔋 SP Reward: +1 on correct answer
                     regenSP();
-
-
 
                     const isPlayerMiss = (heroBuffs.giragiraTurns > 0 || heroBuffs.monsterSleep) ? false : (Math.random() < (monster.value?.evasionRate ?? 0.05));
 
@@ -9210,8 +8362,6 @@ const _jpApp = Vue.createApp({
 
                         setTimeout(() => { monsterHit.value = false; }, 500); // 延長至 0.5s
 
-
-
                         // 正式版：只有怪物將在 2 秒內出手時，命中才追加 1 秒硬直
 
                         if (timeLeft.value < 2.0) {
@@ -9219,8 +8369,6 @@ const _jpApp = Vue.createApp({
                             timeLeft.value += 1.0;
 
                         }
-
-
 
                         // 新增邏輯：當敵方速度極快時（enemyAtbMult < 0.2），命中時獲得額外時間獎勵
 
@@ -9230,13 +8378,9 @@ const _jpApp = Vue.createApp({
 
                         }
 
-
-
                         // 🌟 子彈抵達瞬間！完美同步播放打擊音效
                         const currentHitSfx = (heroBuffs.giragiraTurns > 0) ? 'hit2' : 'hit';
                         if (_isMobileSfx) playUiSfx(currentHitSfx); else playSfx(currentHitSfx);
-
-
 
                         // 💡 點選(Tap)模式原本沒有子彈，這裡幫它補上命中爆炸特效
 
@@ -9283,7 +8427,6 @@ const _jpApp = Vue.createApp({
                             dmg = Math.round(baseDmg * 1.5);
                             heroBuffs.giragiraTurns--;
 
-
                             // UI Update Trigger
                             if (typeof updateHeroStatusBar === 'function') updateHeroStatusBar();
 
@@ -9298,9 +8441,6 @@ const _jpApp = Vue.createApp({
                             }
                         }
 
-
-
-
                         if (voicePlayedForCurrentQuestion.value) {
 
                             dmg = Math.max(2, Math.floor(dmg / 2));
@@ -9308,8 +8448,6 @@ const _jpApp = Vue.createApp({
                             pushBattleLog('偷聽：傷害減半', 'buff');
 
                         }
-
-
 
                         monster.value.hp = Math.max(0, monster.value.hp - dmg);
 
@@ -9320,8 +8458,6 @@ const _jpApp = Vue.createApp({
                         setTimeout(() => { monsterHit.value = false; }, 400);
 
                         window.spawnFloatingDamage('monster', dmg);
-
-
 
                         if (monster.value.hp <= 0) {
                             if (window.__AUTO_ADVANCE_TIMEOUT) { clearTimeout(window.__AUTO_ADVANCE_TIMEOUT); window.__AUTO_ADVANCE_TIMEOUT = null; }
@@ -9336,8 +8472,6 @@ const _jpApp = Vue.createApp({
 
                     addMistake();
 
-
-
                     initAudio();
 
                     if (_isMobileSfx) playUiSfx('miss'); else playSfx('miss');
@@ -9346,11 +8480,7 @@ const _jpApp = Vue.createApp({
 
                     pushBattleLog(`攻擊失敗！`, 'info');
 
-
-
                     if (window.__TTS_ON_WRONG_TIMEOUT) { clearTimeout(window.__TTS_ON_WRONG_TIMEOUT); window.__TTS_ON_WRONG_TIMEOUT = null; }
-
-
 
                     if (settings.autoReadOnWrong) {
 
@@ -9378,11 +8508,7 @@ const _jpApp = Vue.createApp({
 
                         if (!cleanQuestionText) cleanQuestionText = azureTextBuilder.replace(/[_ ]/g, '') || '';
 
-
-
                         const ttsQuestionIdx = currentIndex.value;
-
-
 
                         if (cleanQuestionText) {
 
@@ -9404,19 +8530,13 @@ const _jpApp = Vue.createApp({
 
                 }
 
-
-
                 if (window.__AUTO_ADVANCE_TIMEOUT) { clearTimeout(window.__AUTO_ADVANCE_TIMEOUT); window.__AUTO_ADVANCE_TIMEOUT = null; }
-
-
 
                 let delayMs = isCurrentCorrect.value
 
                     ? (settings.correctAdvanceDelayMs !== null && typeof settings.correctAdvanceDelayMs === 'number' ? settings.correctAdvanceDelayMs : 1000)
 
                     : (settings.wrongAdvanceDelayMs !== null && typeof settings.wrongAdvanceDelayMs === 'number' ? settings.wrongAdvanceDelayMs : 3000);
-
-
 
                 if (delayMs > 0 && !monsterDead.value) {
 
@@ -9438,8 +8558,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const nextQuestion = () => {
 
             if (window.__TTS_ON_WRONG_TIMEOUT) { clearTimeout(window.__TTS_ON_WRONG_TIMEOUT); window.__TTS_ON_WRONG_TIMEOUT = null; }
@@ -9450,16 +8568,11 @@ const _jpApp = Vue.createApp({
 
             resumePageAudioOnGesture();
 
-
             playSfx('click');
-
-
 
             currentIndex.value++;
 
             if (currentIndex.value >= questions.value.length) currentIndex.value = 0;
-
-
 
             userAnswers.value = [];
 
@@ -9468,8 +8581,6 @@ const _jpApp = Vue.createApp({
             hasSubmitted.value = false;
 
             applyTurnLogic();
-
-
 
             if (answerMode.value === 'flick') {
 
@@ -9484,15 +8595,11 @@ const _jpApp = Vue.createApp({
 
             if (vfxLayer) vfxLayer.innerHTML = '';
 
-
-
             questionStartTime = Date.now();
 
             voicePlayedForCurrentQuestion.value = false;
 
         };
-
-
 
         const grantRewards = () => {
             if (monsterIsDying.value || monsterTrulyDead.value || monsterResultShown.value) return;
@@ -9506,14 +8613,9 @@ const _jpApp = Vue.createApp({
 
             const baseExp = 50 + (lv * 20);
 
-
-
             earnedExp.value = baseExp;
 
-
             player.value.exp += earnedExp.value;
-
-
 
             // Unconditional HP/SP Reset on Victory
             player.value.hp = player.value.maxHp;
@@ -9537,8 +8639,6 @@ const _jpApp = Vue.createApp({
 
                 monsterResultShown.value = true;
 
-
-
                 // Update progression
 
                 lastClearedLevel.value = currentLevel.value;
@@ -9549,28 +8649,19 @@ const _jpApp = Vue.createApp({
 
                 }
 
-
-
                 // Update best grade
 
                 const currentG = calculatedGrade.value;
 
                 const oldG = bestGrades.value[currentLevel.value];
 
-
-                const isGradeBetter = (newG, oldG) => (GRADE_RANK[newG] || 0) > (GRADE_RANK[oldG] || 0);
-
-
-
-                if (!oldG || isGradeBetter(currentG, oldG)) {
+                if (window.JPAPPResultDisplayManager.shouldUpdateBestGrade(currentG, oldG, GRADE_RANK)) {
 
                     bestGrades.value[currentLevel.value] = currentG;
 
                 }
 
                 updateStageBestRecord();
-
-
 
                 const nextLv = currentLevel.value + 1;
 
@@ -9590,8 +8681,6 @@ const _jpApp = Vue.createApp({
 
                 saveProgression();
 
-
-
                 stopAllAudio();
 
                 if (isBoss) {
@@ -9605,8 +8694,6 @@ const _jpApp = Vue.createApp({
                 }
 
                 setHeroAvatar('win');
-
-
 
                 // 🌟 第二階段：死亡演出結束後，檢查是否有新技能知識卡需要播放
                 // 如果有卡片，播放完畢後才進入數字遞增環節
@@ -9626,8 +8713,6 @@ const _jpApp = Vue.createApp({
 
                 }, 800);
 
-
-
             };
 
             if (isBoss) {
@@ -9636,14 +8721,11 @@ const _jpApp = Vue.createApp({
                 scheduleBattleFlowTimeout(finalizeVictoryFlow, 2000);
             }
 
-
-
             // 拆分出數字遞增邏輯，確保在正確時機點火
 
             const startTallySequence = () => {
 
                 const expTarget = earnedExp.value;
-
 
                 const maxUnits = expTarget;
 
@@ -9651,11 +8733,7 @@ const _jpApp = Vue.createApp({
 
                 const duration = Math.min(Math.max(calculatedDuration, 800), 2000);
 
-
-
                 const startTime = Date.now();
-
-
 
                 const animateRewards = () => {
 
@@ -9664,9 +8742,6 @@ const _jpApp = Vue.createApp({
                     const progress = Math.min(elapsed / duration, 1);
 
                     animatedExp.value = Math.floor(expTarget * progress);
-
-
-
 
                     if (progress < 1) {
 
@@ -9677,7 +8752,6 @@ const _jpApp = Vue.createApp({
                         // 🌟 第三階段：遞增完成後，才顯示 Next 鈕
 
                         animatedExp.value = expTarget;
-
 
                         scheduleBattleFlowTimeout(() => {
 
@@ -9715,12 +8789,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
-
-
-
-
         const getInputStyle = (idx) => {
 
             if (!hasSubmitted.value) return '';
@@ -9728,8 +8796,6 @@ const _jpApp = Vue.createApp({
             return slotFeedbacks.value[idx] || '';
 
         };
-
-
 
         const displaySegments = computed(() => {
 
@@ -9747,8 +8813,6 @@ const _jpApp = Vue.createApp({
 
         });
 
-
-
         const handleMonsterImageError = () => {
 
             // 如果是在嘗試播放受擊圖 (*2) 時出錯，則標記該怪物不支援受擊圖並恢復原圖
@@ -9765,8 +8829,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const handleMapImageError = (e) => {
 
             console.warn('[MapImage] Load failed, falling back to chapter1.png');
@@ -9775,8 +8837,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const getAnswerForDisplay = (blankIndex) => {
 
             const ans = currentQuestion.value.answers[blankIndex];
@@ -9784,8 +8844,6 @@ const _jpApp = Vue.createApp({
             return Array.isArray(ans) ? ans[0] : ans;
 
         };
-
-
 
         const currentMonsterSprite = computed(() => {
 
@@ -9815,8 +8873,6 @@ const _jpApp = Vue.createApp({
 
         });
 
-
-
         const selectChoice = (opt) => {
 
             initAudioCtx();
@@ -9825,7 +8881,6 @@ const _jpApp = Vue.createApp({
 
             resumePageAudioOnGesture();
 
-
             playSfx('click');
 
             if (hasSubmitted.value) return;
@@ -9833,8 +8888,6 @@ const _jpApp = Vue.createApp({
             userAnswers.value[0] = opt;
 
         };
-
-
 
         const getChoiceBtnClass = (opt) => {
 
@@ -9850,8 +8903,6 @@ const _jpApp = Vue.createApp({
 
             const isSelected = userAnswers.value[0] === opt;
 
-
-
             if (isCorrectOpt) return 'is-correct';
 
             if (isSelected) return 'is-wrong';
@@ -9860,23 +8911,11 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const monsterDead = computed(() => monster.value.hp <= 0);
 
         const playerDead = computed(() => player.value.hp <= 0);
 
-        const levelPassed = computed(() => monsterDead.value);
-
-
-
-
-
-
-
         const proceedToNextLevel = () => {
-
-
 
             currentLevel.value++;
 
@@ -9896,10 +8935,7 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         // ================= [ PROGRESSION & REWARDS ] =================
-
 
         const confirmAbilityUnlockAndContinue = () => {
 
@@ -9929,8 +8965,6 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
         const retryLevel = () => {
             needsUserGestureToResumeBgm.value = false;
             isBgmSuppressed.value = false; // Explicitly unlock on retry
@@ -9938,10 +8972,6 @@ const _jpApp = Vue.createApp({
             stopAllAudio();
             initGame(currentLevel.value);
         };
-
-
-
-
 
         const revive = () => {
 
@@ -9985,110 +9015,47 @@ const _jpApp = Vue.createApp({
 
         };
 
-
-
-        const accuracyPct = computed(() => {
-
-            if (totalQuestionsAnswered.value === 0) return 0;
-
-            return Math.round((correctAnswersAmount.value / totalQuestionsAnswered.value) * 100);
-
-        });
-
-
-
-        const calculatedGrade = computed(() => {
-
-            if (playerDead.value) return '-';
-
-            const acc = accuracyPct.value;
-
-            if (acc === 100) return 'S';
-
-            if (acc >= 90) return 'A';
-
-            if (acc >= 80) return 'B';
-
-            if (acc >= 60) return 'C';
-
-            if (acc >= 40) return 'D';
-
-            return 'E';
-
-        });
-
-
-        const stageClearTimeText = computed(() => {
-            if (stageClearElapsedSeconds.value === null) return '--.-- 秒';
-            return formatStageClearTime(stageClearElapsedSeconds.value);
-        });
-
-        const isBossStageForStarRules = (levelId = currentLevel.value) => {
-            const config = LEVEL_CONFIG.value?.[Number(levelId)];
-            // Boss-specific grading can be tuned here later without changing result storage.
-            return !!config?.boss || Number(levelId) % 5 === 0 || Number(levelId) === 36;
-        };
-
-        const calculateStageStars = ({ total, correct, elapsedSeconds, levelId } = {}) => {
-            const totalCount = Math.max(0, Number(total) || 0);
-            if (totalCount <= 0) return 1;
-
-            const correctCount = Math.max(0, Number(correct) || 0);
-            const wrong = Math.max(0, totalCount - correctCount);
-            const elapsed = Number(elapsedSeconds);
-            const limit = Number(LEVEL_CONFIG.value?.[Number(levelId)]?.starTimeLimitSeconds) || STAR_TIME_LIMIT_SECONDS;
-            const isBossStage = isBossStageForStarRules(levelId);
-            if (isBossStage) {
-                // TODO: Tune boss-specific star rules after boss stage pacing is finalized.
+        const {
+            accuracyPct,
+            calculatedGrade,
+            stageClearTimeText,
+            stageStarRating,
+            stageStarDisplay,
+            getStageBestRecord,
+            getStageBestStarsDisplay,
+            getStageBestTimeText,
+            stageRecordRows,
+            sRankCount
+        } = window.JPAPPResultDisplayManager.createVueBindings(
+            { computed },
+            {
+                totalQuestionsAnswered,
+                correctAnswersAmount,
+                stageClearElapsedSeconds,
+                currentLevel,
+                monsterDead,
+                playerDead,
+                LEVEL_CONFIG,
+                formatStageClearTime,
+                maxLevel,
+                skillsAll,
+                clearedLevels,
+                bestGrades,
+                stageBestRecords,
+                normalizeStageBestRecord,
+                maxRankCountStages: 35
             }
+        );
 
-            if (wrong === 0 && Number.isFinite(elapsed) && elapsed <= limit) return 3;
-            if (wrong <= 2 || Math.round((correctCount / totalCount) * 100) >= 80) return 2;
-            return 1;
-        };
-
-        const stageStarRating = computed(() => {
-            if (!monsterDead.value || playerDead.value) return 0;
-
-            return calculateStageStars({
-                total: totalQuestionsAnswered.value,
-                correct: correctAnswersAmount.value,
-                elapsedSeconds: stageClearElapsedSeconds.value,
-                levelId: currentLevel.value
-            });
+        const buildCurrentStageRecord = () => window.JPAPPResultDisplayManager.buildCurrentStageRecordPayload({
+            totalQuestionsAnswered: totalQuestionsAnswered.value,
+            correctAnswersAmount: correctAnswersAmount.value,
+            stageClearElapsedSeconds: stageClearElapsedSeconds.value,
+            currentLevelId: currentLevel.value,
+            maxComboCount: maxComboCount.value,
+            stageStarRatingValue: stageStarRating.value,
+            LEVEL_CONFIG: LEVEL_CONFIG.value
         });
-
-        const stageStarDisplay = computed(() => {
-            const rating = Math.max(0, Math.min(3, stageStarRating.value || 0));
-            return '★'.repeat(rating) + '☆'.repeat(3 - rating);
-        });
-
-        const getStageStarsDisplay = (stars) => {
-            const rating = Math.max(0, Math.min(3, Math.floor(Number(stars) || 0)));
-            return '★'.repeat(rating) + '☆'.repeat(3 - rating);
-        };
-
-        const buildCurrentStageRecord = () => {
-            const total = Math.max(0, Number(totalQuestionsAnswered.value) || 0);
-            const correct = Math.max(0, Number(correctAnswersAmount.value) || 0);
-            const elapsed = Number(stageClearElapsedSeconds.value);
-            const elapsedMs = Number.isFinite(elapsed) ? Math.max(0, Math.round(elapsed * 1000)) : 0;
-
-            return {
-                bestStars: stageStarRating.value || calculateStageStars({
-                    total,
-                    correct,
-                    elapsedSeconds: elapsed,
-                    levelId: currentLevel.value
-                }),
-                bestTimeMs: elapsedMs,
-                bestTimeSeconds: elapsedMs / 1000,
-                bestCorrectRate: total > 0 ? Math.round((correct / total) * 100) : 0,
-                bestMaxCombo: Math.max(0, Number(maxComboCount.value) || 0),
-                updatedAt: new Date().toISOString()
-            };
-        };
-
 
         const updateStageBestRecord = () => {
             if (!monsterDead.value || playerDead.value) {
@@ -10113,99 +9080,14 @@ const _jpApp = Vue.createApp({
             return true;
         };
 
-        const getStageBestRecord = (levelId) => {
-            const record = normalizeStageBestRecord(stageBestRecords.value[String(levelId)]);
-            return record || null;
-        };
-
-        const getStageBestStarsDisplay = (levelId) => {
-            const record = getStageBestRecord(levelId);
-            return record ? getStageStarsDisplay(record.bestStars) : '☆☆☆';
-        };
-
-        const getStageBestTimeText = (levelId) => {
-            const record = getStageBestRecord(levelId);
-            return record ? formatStageClearTime(record.bestTimeSeconds) : '--.-- 秒';
-        };
-
-        const stageRecordRows = computed(() => {
-            const total = Math.max(0, Number(maxLevel.value) || 0);
-
-            return Array.from({ length: total }, (_, index) => {
-                const stageNumber = index + 1;
-                const config = LEVEL_CONFIG.value?.[stageNumber] || {};
-                const record = getStageBestRecord(stageNumber);
-                const isCleared = clearedLevels.value.includes(stageNumber) || !!record;
-                const rank = isCleared ? (bestGrades.value?.[stageNumber] || '—') : '—';
-                const bestTimeText = record ? formatStageClearTime(record.bestTimeSeconds) : '—';
-
-                return {
-                    stageNumber,
-                    title: config.title || config.name || `Stage ${String(stageNumber).padStart(2, '0')}`,
-                    focusParticle: getStageFocusParticle(stageNumber),
-                    focusLabel: getStageFocusLabel(stageNumber),
-                    rank,
-                    bestTimeText,
-                    isCleared,
-                    statusText: isCleared ? '已通關' : '未通關'
-                };
-            });
-        });
-
-
-
-
-
-
-
-
-        if (!Array.prototype.random) {
-
-            Array.prototype.random = function () { return this[Math.floor(Math.random() * this.length)]; };
-
-        }
-
-
-
         const handleReload = () => {
-
             isMenuOpen.value = false;
-
-            setTimeout(() => {
-
-                localStorage.removeItem('jpRpgAppVersion');
-
-                window.location.reload(true);
-
-            }, 100); // 確保選單已關閉後再執行
-
+            window.JPAPPSettingsManager.scheduleReloadClearingJpRpgAppVersionFlag();
         };
-
-
 
         onMounted(() => {
 
-            const savedVersion = localStorage.getItem('jpRpgAppVersion');
-
-            if (!savedVersion) {
-
-                // First load -> initialize safely
-
-                localStorage.setItem('jpRpgAppVersion', APP_VERSION);
-
-            } else if (savedVersion !== APP_VERSION) {
-
-                // Update detected -> set and reload
-
-                localStorage.setItem('jpRpgAppVersion', APP_VERSION);
-
-                alert('遊戲已更新，將重新載入最新版');
-
-                window.location.reload(true);
-
-            }
-
-
+            window.JPAPPChangelogManager.applyVersionStoragePolicy(APP_VERSION);
 
             const unlockAudioOnce = () => {
                 // Warm up critical SFX
@@ -10223,58 +9105,18 @@ const _jpApp = Vue.createApp({
 
             document.addEventListener('touchstart', unlockAudioOnce, { once: true, capture: true, passive: true });
 
-
-
-            const injectTapChoicesClass = () => {
-
-                const el = document.querySelector('#question-area ~ .flex.flex-wrap.justify-center.gap-3');
-
-                if (el && !el.classList.contains('jp-tap-choices')) {
-
-                    el.classList.add('jp-tap-choices');
-
-                }
-
-            };
-
-            const tapChoicesObserver = new MutationObserver(injectTapChoicesClass);
-
-            tapChoicesObserver.observe(document.body, { childList: true, subtree: true });
-
-            watch([answerMode, hasSubmitted], () => {
-
-                nextTick(injectTapChoicesClass);
-
+            window.JPAPPSettingsManager.installTapChoicesLayoutHooks({
+                watch, nextTick, answerMode, hasSubmitted
+            });
+            window.JPAPPSettingsManager.installQuestionAreaCompactLayoutHooks({
+                watch, nextTick, displaySegments, hasSubmitted, userAnswers
             });
 
-            injectTapChoicesClass();
-
-            const checkQuestionCompact = () => {
-                const area = document.getElementById('question-area');
-                if (!area) return;
-                const row = area.firstElementChild;
-                if (!row) return;
-                area.classList.remove('question-compact', 'question-ultra-compact');
-                if (row.scrollWidth <= area.offsetWidth + 4) return;
-                area.classList.add('question-compact');
-                if (row.scrollWidth <= area.offsetWidth + 4) return;
-                area.classList.remove('question-compact');
-                area.classList.add('question-ultra-compact');
-            };
-            watch(displaySegments, () => { nextTick(checkQuestionCompact); });
-            watch([hasSubmitted, userAnswers], () => { nextTick(checkQuestionCompact); }, { deep: true });
-            nextTick(checkQuestionCompact);
-
-
             window.__initCornerMenu?.(watch, showLevelSelect, isFinished);
-
-
 
             window.__initViewportHooks?.(watch, showLevelSelect);
 
         });
-
-
 
         const shouldShowNextButton = computed(() => {
 
@@ -10288,15 +9130,11 @@ const _jpApp = Vue.createApp({
 
         });
 
-
-
         // ================= [ DEBUG TOOLS — LEVEL JUMP ] =================
         const debugJumpToLevel = (level) => {
             resetBattleOutcomePresentation();
 
             const lv = Math.max(1, Math.min(level, maxLevel.value || 99));
-
-
 
             initAudioCtx();
 
@@ -10306,21 +9144,15 @@ const _jpApp = Vue.createApp({
 
             }
 
-
-
             if (window._bgmDuckTimer) clearTimeout(window._bgmDuckTimer);
 
             if (typingTimerMentor) clearTimeout(typingTimerMentor);
 
             stopMentorAudio();
 
-
-
             const vfxLayer = document.getElementById('global-vfx-layer');
 
             if (vfxLayer) vfxLayer.innerHTML = '';
-
-
 
             flickState.isArmed = false;
 
@@ -10336,8 +9168,6 @@ const _jpApp = Vue.createApp({
 
             }
 
-
-
             isMenuOpen.value = false;
 
             isMentorModalOpen.value = false;
@@ -10349,8 +9179,6 @@ const _jpApp = Vue.createApp({
 
             window._disableMentorAutoTrigger = true;
 
-
-
             startLevel(lv).then(() => {
 
                 window._disableMentorAutoTrigger = false;
@@ -10360,8 +9188,6 @@ const _jpApp = Vue.createApp({
         };
 
         window.debugJumpToLevel = debugJumpToLevel;
-
-
 
         setTimeout(() => {
 
@@ -10429,8 +9255,6 @@ const _jpApp = Vue.createApp({
             getSpiritForSkill, getSpiritForKnowledgeCard, getSpiritImageSrc, handleSpiritImageError,
             isSpecialSceneActive, specialSceneBg,
         };
-
-
 
     }
 

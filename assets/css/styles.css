@@ -337,6 +337,38 @@ rt {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
+#question-area>div:first-child {
+    min-width: 0;
+}
+
+/* Battle question JP row: keep segments on one baseline line; sizing via .battle-question-jp clamp */
+#question-area .battle-question-main-row {
+    flex-wrap: nowrap;
+}
+
+#question-area.question-ultra-compact .battle-question-main-row {
+    flex-wrap: wrap;
+    overflow-wrap: anywhere;
+    row-gap: 0.125rem;
+}
+
+#question-area .battle-question-jp {
+    font-size: clamp(1rem, 2.42vmin + 0.82rem, 2.375rem) !important;
+    white-space: nowrap;
+    max-width: 100%;
+    min-width: 0;
+}
+
+#question-area.question-ultra-compact .battle-question-jp {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.battle-question-text {
+    max-width: 100%;
+}
+
 .level-badge {
     position: absolute;
     top: 0.5rem;
@@ -1775,7 +1807,6 @@ body.lock-scroll {
     }
 
     #question-area .text-slate-100,
-    #question-area .particle-input,
     #question-area .particle-slot {
         font-size: inherit !important;
     }
@@ -9334,7 +9365,7 @@ body.lock-scroll {
 }
 
 .monster-codex-card-main strong {
-    font-size: 0.88rem;
+    font-size: 0.96rem;
     font-weight: 900;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -9354,6 +9385,28 @@ body.lock-scroll {
     font-size: 0.56rem;
     font-weight: 950;
     letter-spacing: 0.12em;
+}
+
+@media (min-width: 1024px) {
+    .monster-codex-list {
+        gap: 12px;
+        padding: 18px 16px;
+    }
+
+    .monster-codex-card {
+        gap: 14px;
+        padding: 14px;
+        min-height: 62px;
+    }
+
+    .monster-codex-card-icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .monster-codex-card-main strong {
+        font-size: 0.98rem;
+    }
 }
 
 .monster-codex-detail {
@@ -11392,10 +11445,9 @@ body.lock-scroll {
         margin-bottom: 2px !important;
     }
 
-    /* Main Japanese Characters */
-    .battle-top-ui-layer .battle-question-text > span:not(.blank-slot),
-    .battle-top-ui-layer .blank-slot {
-        font-size: 24px !important; /* down 2 steps from 36px */
+    /* Main Japanese Characters (clamp keeps one line longer; Tailwind sizes overridden on .battle-question-jp) */
+    .battle-top-ui-layer .battle-question-jp {
+        font-size: clamp(13px, 2.35vmin + 0.55rem, 24px) !important;
         line-height: 1.1 !important;
     }
 
@@ -11964,6 +12016,81 @@ body.lock-scroll {
  animation: auraPulse 2.5s infinite alternate ease-in-out;
  pointer-events: none;
  z-index: 1;
+}
+
+/* GIRAGIRA buff VFX: per resonance slot (HP-bar anchor no longer draws hero ring) */
+.resonance-icon-wrap .aura-giragira-choice-shell {
+ position: absolute;
+ inset: -12%;
+ pointer-events: none;
+ z-index: 4;
+ overflow: visible;
+}
+
+.resonance-icon-wrap .aura-giragira-choice-ring {
+ position: absolute;
+ inset: 5%;
+ border-radius: 50%;
+ border: 2px solid rgba(251, 191, 36, 0.82);
+ box-shadow:
+  0 0 12px 3px rgba(251, 191, 36, 0.55),
+  0 0 26px 8px rgba(245, 158, 11, 0.28),
+  inset 0 0 14px rgba(251, 191, 36, 0.12);
+ animation: giragira-pulse 1.05s ease-in-out infinite;
+}
+
+.resonance-icon-wrap .aura-giragira-choice-halo {
+ position: absolute;
+ inset: -2%;
+ border-radius: 50%;
+ pointer-events: none;
+ animation: giragira-rotate 3.6s linear infinite;
+}
+
+.resonance-icon-wrap .aura-giragira-choice-halo::before,
+.resonance-icon-wrap .aura-giragira-choice-halo::after {
+ content: '';
+ position: absolute;
+ inset: 0;
+ border-radius: 50%;
+ border: 1px dashed rgba(251, 191, 36, 0.55);
+}
+
+.resonance-icon-wrap .aura-giragira-choice-halo::after {
+ transform: rotate(62deg);
+ border-color: rgba(253, 224, 71, 0.32);
+}
+
+.resonance-slot:nth-child(1) .aura-giragira-choice-halo {
+ animation-delay: -0.6s;
+}
+
+.resonance-slot:nth-child(2) .aura-giragira-choice-halo {
+ animation-delay: -1.8s;
+}
+
+.resonance-slot:nth-child(3) .aura-giragira-choice-halo {
+ animation-delay: -3s;
+}
+
+.resonance-slot:nth-child(4) .aura-giragira-choice-halo {
+ animation-delay: -1.1s;
+}
+
+.resonance-slot:nth-child(1) .aura-giragira-choice-ring {
+ animation-delay: 0s;
+}
+
+.resonance-slot:nth-child(2) .aura-giragira-choice-ring {
+ animation-delay: -0.38s;
+}
+
+.resonance-slot:nth-child(3) .aura-giragira-choice-ring {
+ animation-delay: -0.76s;
+}
+
+.resonance-slot:nth-child(4) .aura-giragira-choice-ring {
+ animation-delay: -1.12s;
 }
 
 .resonance-icon-wrap::after {

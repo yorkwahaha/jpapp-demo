@@ -327,15 +327,6 @@ function updateHeroStatusBar() {
             }
 
             overlay.innerHTML =
-                // Aura glow ring only when using hero-anchor fallback.
-                ((heroBuffs.giragiraTurns > 0 && useHeroAnchor) ?
-                    '<div style="position:absolute;inset:-10px;border-radius:50%;' +
-                    'border:2px solid rgba(251,191,36,0.75);' +
-                    'box-shadow:0 0 14px 4px rgba(251,191,36,0.45),0 0 28px 8px rgba(251,191,36,0.2);' +
-                    'animation:giragira-aurora 1.5s ease-in-out infinite;' +
-                    'z-index:0;pointer-events:none;"></div>' : '') +
-
-                // Badges align as a status row under HP/SP card.
                 '<div id="heroBadgeContainer" style="position:relative;left:0;top:0;' +
                 'display:flex;flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:center;' +
                 'column-gap:4px;row-gap:4px;z-index:2;max-width:100%;">' +

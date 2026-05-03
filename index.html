@@ -279,6 +279,21 @@
             s10i.async = false;
             document.head.appendChild(s10i);
 
+            const s10j = document.createElement('script');
+            s10j.src = 'assets/js/audio-debug-manager.js?v=' + v;
+            s10j.async = false;
+            document.head.appendChild(s10j);
+
+            const s10k = document.createElement('script');
+            s10k.src = 'assets/js/changelog-manager.js?v=' + v;
+            s10k.async = false;
+            document.head.appendChild(s10k);
+
+            const s10m = document.createElement('script');
+            s10m.src = 'assets/js/result-display-manager.js?v=' + v;
+            s10m.async = false;
+            document.head.appendChild(s10m);
+
             const s11 = document.createElement('script');
 
             s11.src = 'assets/js/game.js?v=' + v;
@@ -1242,8 +1257,8 @@
             line-height: 1.6;
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 3px rgba(0, 0, 0, 1);
             letter-spacing: 0.02em;
-            flex-shrink: 0;
-            white-space: nowrap;
+            flex: 0 1 auto;
+            min-width: 0;
         }
 
         /* 中文輔助行：偏暖白、對比加強，不搶日文主行 */
@@ -2937,7 +2952,6 @@
                                 <span class="monster-codex-card-icon">{{ entry.isUnlocked ? '👾' : '？' }}</span>
                                 <span class="monster-codex-card-main">
                                     <strong>{{ entry.isUnlocked ? entry.name : '???' }}</strong>
-                                    <small>{{ entry.isUnlocked ? entry.stageText : '未遭遇' }}</small>
                                 </span>
                                 <span class="monster-codex-card-lock">{{ entry.isUnlocked ? '✓' : '🔒' }}</span>
                             </button>
@@ -3574,14 +3588,15 @@
 
                         <div id="question-area" class="w-full flex flex-col items-center justify-center min-h-[50px]">
 
-                            <div class="flex flex-nowrap justify-center items-center gap-2 leading-tight mb-2 sm:mb-3">
+                            <div
+                                class="battle-question-main-row flex flex-nowrap justify-center items-center gap-x-2 gap-y-1 leading-tight mb-2 sm:mb-3 w-full max-w-full min-w-0">
 
                                 <span v-for="(seg, idx) in displaySegments"
                                     :key="'seg_' + currentLevel + '_' + currentIndex + '_' + idx"
                                     class="inline-flex items-center battle-question-text">
 
                                     <span v-if="!seg.isBlank"
-                                        class="text-white text-3xl md:text-4xl font-black drop-shadow-lg">
+                                        class="battle-question-jp text-white text-3xl md:text-4xl font-black drop-shadow-lg">
 
                                         <ruby v-if="seg.ruby" class="ruby-text">{{ seg.text }}<rt
                                                 class="text-[13px] md:text-sm text-amber-300 font-black mb-1 drop-shadow-md">
@@ -3594,7 +3609,7 @@
                                     </span>
 
                                     <span v-else-if="seg.showInput && isChoiceMode"
-                                        class="blank-slot text-3xl md:text-4xl font-black mx-1"
+                                        class="battle-question-jp blank-slot text-3xl md:text-4xl font-black mx-1"
                                         :class="[getInputStyle(seg.blankIndex), { 'is-empty': !hasSubmitted && !userAnswers[seg.blankIndex] }]">
 
                                         {{ hasSubmitted ? getAnswerForDisplay(seg.blankIndex) :
@@ -3604,7 +3619,7 @@
                                     </span>
 
                                     <span v-else
-                                        class="particle-input correct inline-block px-3 py-0.5 text-3xl md:text-4xl mx-1 shadow-inner">
+                                        class="battle-question-jp particle-input correct inline-block px-3 py-0.5 text-3xl md:text-4xl mx-1 shadow-inner">
 
                                         {{ getAnswerForDisplay(seg.blankIndex) }}
 
@@ -3659,6 +3674,11 @@
 
                                         <div class="resonance-icon-wrap">
                                             <div class="resonance-spirit-aura"></div>
+                                            <div v-if="heroBuffs.giragiraTurns > 0"
+                                                class="aura-giragira-choice-shell" aria-hidden="true">
+                                                <span class="aura-giragira-choice-halo" aria-hidden="true"></span>
+                                                <span class="aura-giragira-choice-ring" aria-hidden="true"></span>
+                                            </div>
                                             <img v-if="shouldShowSpiritIcon(opt)"
                                                 :src="getSpiritIconPath(opt)"
                                                 @error="handleSpiritIconError(opt)"
@@ -3685,6 +3705,11 @@
 
                                         <div class="resonance-icon-wrap">
                                             <div class="resonance-spirit-aura"></div>
+                                            <div v-if="heroBuffs.giragiraTurns > 0"
+                                                class="aura-giragira-choice-shell" aria-hidden="true">
+                                                <span class="aura-giragira-choice-halo" aria-hidden="true"></span>
+                                                <span class="aura-giragira-choice-ring" aria-hidden="true"></span>
+                                            </div>
                                             <img v-if="shouldShowSpiritIcon(opt)"
                                                 :src="getSpiritIconPath(opt)"
                                                 @error="handleSpiritIconError(opt)"

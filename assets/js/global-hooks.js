@@ -1,5 +1,10 @@
 // ================= [ GLOBAL HOOKS ] =================
 window.addEventListener('error', (e) => {
+    const noUsableErrorPayload = !e?.error && !e?.message && !e?.filename;
+    if (noUsableErrorPayload) {
+        e.preventDefault();
+        return;
+    }
 
     const isExternalSesNullError = isExternalNullErrorNoise(e?.error, e?.message, e?.filename);
 
