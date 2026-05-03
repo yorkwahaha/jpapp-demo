@@ -8,7 +8,7 @@ window.__attachDebugTools = function (refs) {
         levelTitle, player, monster, currentQuestion,
         startLevel, retryLevel, initGame, goHome, generateQuestionBySkill,
         mentorTutorialSeen, saveMentorState, skillsAll, setupMentorDialogue,
-        pauseBattle, db, VOCAB, unlockedSkillIds, startBossQueue,
+        pauseBattle, unlockedSkillIds, startBossQueue,
         playPrologueOpening, playMainEndingFinale,
         mapChapters, activeChapter, selectedSegmentIdx, getMapNodeStyle,
         MENTOR_AUDIO_MAP
@@ -458,7 +458,7 @@ window.__attachDebugTools = function (refs) {
 
 
 
-                    const q = generateQuestionBySkill(targetId, debugBlanks, db?.value || db, VOCAB?.value || VOCAB);
+                    const q = generateQuestionBySkill(targetId, debugBlanks);
 
                     if (!q) {
 
@@ -885,7 +885,7 @@ window.__attachDebugTools = function (refs) {
                         if (typeof startBossQueue === 'function') startBossQueue(unlockedSkillIds?.value || [], 36);
                         
                         for (let i = 0; i < sampleCount; i++) {
-                            const q = generateQuestionBySkill('HIDDEN_BOSS_36_QUEUE', 1, db?.value || db, VOCAB?.value || VOCAB);
+                            const q = generateQuestionBySkill('HIDDEN_BOSS_36_QUEUE', 1);
                             if (q) {
                                 const sid = q.skillId || 'UNKNOWN';
                                 counts[sid] = (counts[sid] || 0) + 1;

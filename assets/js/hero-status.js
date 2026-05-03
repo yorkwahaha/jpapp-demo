@@ -276,9 +276,8 @@ function updateHeroStatusBar() {
             if (heroBuffs.gachigachiTurns > 0) {
                 badgesHtml +=
                     '<div style="display:flex;align-items:center;gap:3px;' +
-                    'padding:2px 7px 2px 5px;' +
-                    'background:rgba(51,65,85,0.92);border:1.5px solid #94a3b8;border-radius:10px;' +
-                    'color:#f1f5f9;font-size:13px;font-weight:900;line-height:1;' +
+                    'background:rgba(30,58,138,0.92);border:1.5px solid #60a5fa;border-radius:10px;' +
+                    'color:#eff6ff;font-size:13px;font-weight:900;line-height:1;' +
                     'box-shadow:0 2px 8px rgba(0,0,0,0.65);text-shadow:0 1px 3px rgba(0,0,0,0.8);' +
                     'animation:badge-pop 0.3s cubic-bezier(0.34,1.56,0.64,1);">' +
                     '\u786c\u00a0' + heroBuffs.gachigachiTurns + '</div>';
@@ -301,8 +300,8 @@ function updateHeroStatusBar() {
                 badgesHtml +=
                     '<div style="display:flex;align-items:center;gap:3px;' +
                     'padding:2px 7px 2px 5px;' +
-                    'background:rgba(14,116,144,0.92);border:1.5px solid #22d3ee;border-radius:10px;' +
-                    'color:#ecfeff;font-size:13px;font-weight:900;line-height:1;' +
+                    'background:rgba(30,58,138,0.92);border:1.5px solid #60a5fa;border-radius:10px;' +
+                    'color:#eff6ff;font-size:13px;font-weight:900;line-height:1;' +
                     'box-shadow:0 2px 8px rgba(0,0,0,0.65);text-shadow:0 1px 3px rgba(0,0,0,0.8);' +
                     'animation:badge-pop 0.3s cubic-bezier(0.34,1.56,0.64,1);">' +
                     '\u76db\u00a0' + heroBuffs.morimoriTurns + '</div>';
@@ -325,8 +324,8 @@ function updateHeroStatusBar() {
                 badgesHtml +=
                     '<div style="display:flex;align-items:center;gap:3px;' +
                     'padding:2px 7px 2px 5px;' +
-                    'background:rgba(8,145,178,0.92);border:1.5px solid #0891b2;border-radius:10px;' +
-                    'color:#ecfeff;font-size:13px;font-weight:900;line-height:1;' +
+                    'background:rgba(30,58,138,0.92);border:1.5px solid #60a5fa;border-radius:10px;' +
+                    'color:#eff6ff;font-size:13px;font-weight:900;line-height:1;' +
                     'box-shadow:0 2px 8px rgba(0,0,0,0.65);text-shadow:0 1px 3px rgba(0,0,0,0.8);' +
                     'animation:badge-pop 0.3s cubic-bezier(0.34,1.56,0.64,1);">' +
                     '\u8fc5\u00a0' + heroBuffs.wakuwakuTurns + '</div>';
@@ -366,7 +365,7 @@ function updateMonsterStatusBar() {
 
     if (wantOdoodo && !pillOdoodo) {
         const span = document.createElement('span');
-        span.className = 'hero-status-pill speed pill-ododo';
+        span.className = 'hero-status-pill debuff pill-ododo';
         span.title = `緩速 (${heroBuffs.odoodoTurns} 回合)`;
         span.textContent = '遲';
         bar.appendChild(span);

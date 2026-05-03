@@ -31,7 +31,7 @@
 
         PRELOAD_SFX_PATHS: {
             hit: 'assets/audio/sfx/sfx_hit.mp3',
-            miss: 'assets/audio/sfx/mmiss.mp3',
+            miss: 'assets/audio/sfx/sfx_miss.mp3',
             potion: 'assets/audio/sfx/sfx_potion.mp3',
             click: 'assets/audio/sfx/sfx_click.mp3',
             damage: 'assets/audio/sfx/damage.mp3',
@@ -46,7 +46,7 @@
 
         SHORT_SFX_PATHS: {
             hit: 'assets/audio/sfx/sfx_hit.mp3',
-            miss: 'assets/audio/sfx/mmiss.mp3',
+            miss: 'assets/audio/sfx/sfx_miss.mp3',
             potion: 'assets/audio/sfx/sfx_potion.mp3',
             click: 'assets/audio/sfx/sfx_click.mp3',
             damage: 'assets/audio/sfx/damage.mp3',

@@ -376,8 +376,6 @@ const _jpApp = Vue.createApp({
         // --- 資料抽離：讀取全域早期關卡資料庫 ---
 
         const pool = window.EARLY_GAME_POOLS || { skills: {} };
-        // legacy placeholder — legacyDb content removed; kept empty for debug.js compatibility
-        const db = {};
 
         const LEVEL_CONFIG = ref({});
 
@@ -393,8 +391,6 @@ const _jpApp = Vue.createApp({
         const MENTOR_AUDIO_MAP = ref({});
 
         const isMonsterImageError = ref(false);
-
-        const VOCAB = ref(null);
 
         const maxLevel = ref(35);
 
@@ -1179,6 +1175,7 @@ const _jpApp = Vue.createApp({
                         window._resumeAfterMentor = () => {
                             isSpecialSceneActive.value = false;
                             localStorage.setItem('jpapp_seen_main_ending_finale', 'true');
+                            localStorage.setItem('jpRpgTrueEndingSeen', 'true');
                             openMap();
                         };
                     }, 800);
@@ -1190,7 +1187,10 @@ const _jpApp = Vue.createApp({
                 const hasSeenTrueEnding = localStorage.getItem('jpRpgTrueEndingSeen');
                 if (!hasSeenTrueEnding) {
                     localStorage.setItem('jpRpgTrueEndingSeen', 'true');
-                    setTimeout(() => setupMentorDialogue(window.ENDING_DIALOGUES.TRUE_ENDING), 800);
+                    setTimeout(() => setupMentorDialogue({
+                        id: 'MAIN_ENDING_FINALE',
+                        name: 'Selene姐姐'
+                    }), 800);
                 }
                 return;
             }
@@ -1198,11 +1198,11 @@ const _jpApp = Vue.createApp({
             const isAllS = checkAllSRank();
             const hasSeenAllS = localStorage.getItem('jpRpgL36Unlocked');
             const hasSeenNormal = localStorage.getItem('jpRpgL35EndingSeen');
-            const openL35EndingDialogue = (id, fallbackDialogue) => {
+            const openL35EndingDialogue = (id) => {
                 setupMentorDialogue({
                     id,
-                    name: '導師・優依',
-                    mentorDialogue: fallbackDialogue
+                    name: 'Selene姐姐',
+                    mentorDialogue: MENTOR_AUDIO_MAP.value[id]?.dialogue || []
                 });
             };
             if (isAllS && !hasSeenAllS) {
@@ -1210,13 +1210,10 @@ const _jpApp = Vue.createApp({
                 if (!unlockedLevels.value.includes(36)) unlockedLevels.value.push(36);
                 saveProgression();
                 const endingId = currentLevel.value === 35 ? 'ENDING_L35_ALL_S_AT_35' : 'ENDING_L35_ALL_S';
-                const fallbackDialogue = currentLevel.value === 35
-                    ? window.ENDING_DIALOGUES?.ENDING_L35_ALL_S_AT_35
-                    : window.ENDING_DIALOGUES?.ENDING_L35_ALL_S?.mentorDialogue;
-                setTimeout(() => openL35EndingDialogue(endingId, fallbackDialogue), 800);
+                setTimeout(() => openL35EndingDialogue(endingId), 800);
             } else if (!isAllS && !hasSeenNormal && currentLevel.value === 35) {
                 localStorage.setItem('jpRpgL35EndingSeen', 'true');
-                setTimeout(() => openL35EndingDialogue('ENDING_L35_NORMAL', window.ENDING_DIALOGUES?.ENDING_L35_NORMAL?.mentorDialogue), 800);
+                setTimeout(() => openL35EndingDialogue('ENDING_L35_NORMAL'), 800);
             }
         };
 
@@ -1312,7 +1309,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26050303";
+        const APP_VERSION = window.APP_VERSION || "26050304";
 
         const appVersion = ref(APP_VERSION);
 
@@ -1601,8 +1598,8 @@ const _jpApp = Vue.createApp({
         });
 
         const MENTOR_FALLBACK_SCENE_IMAGE = 'assets/images/ui/mentor-cover-fullbody.png';
-        const MENTOR_FALLBACK_MODAL_IMAGE = 'assets/images/ui/mentor/mentor-neutral.png';
         const MENTOR_EMOTION_IMAGE_PATHS = Object.freeze(GAME_CONSTANTS.MENTOR_EMOTION_IMAGE_PATHS || {});
+        const MENTOR_DEFAULT_MODAL_IMAGE = MENTOR_EMOTION_IMAGE_PATHS.gentle;
 
         const currentMentorDialogueItem = computed(() => ({
             text: currentMentorLine.value || '',
@@ -1620,9 +1617,9 @@ const _jpApp = Vue.createApp({
         };
 
         const currentMentorSceneImage = computed(() => getMentorEmotionImage(currentMentorDialogueItem.value.emotion) || MENTOR_FALLBACK_SCENE_IMAGE);
-        const currentMentorModalImage = computed(() => getMentorEmotionImage(currentMentorDialogueItem.value.emotion) || MENTOR_FALLBACK_MODAL_IMAGE);
+        const currentMentorModalImage = computed(() => getMentorEmotionImage(currentMentorDialogueItem.value.emotion) || MENTOR_DEFAULT_MODAL_IMAGE);
 
-        const handleMentorImageError = (event, fallbackPath = MENTOR_FALLBACK_MODAL_IMAGE) => {
+        const handleMentorImageError = (event, fallbackPath = MENTOR_DEFAULT_MODAL_IMAGE) => {
             const failedPath = event?.target?.getAttribute('src') || '';
             if (failedPath && failedPath !== fallbackPath) {
                 failedMentorImagePaths.value = { ...failedMentorImagePaths.value, [failedPath]: true };
@@ -1638,7 +1635,7 @@ const _jpApp = Vue.createApp({
         };
 
         const handleMentorSceneImageError = (event) => handleMentorImageError(event, MENTOR_FALLBACK_SCENE_IMAGE);
-        const handleMentorModalImageError = (event) => handleMentorImageError(event, MENTOR_FALLBACK_MODAL_IMAGE);
+        const handleMentorModalImageError = (event) => handleMentorImageError(event, MENTOR_DEFAULT_MODAL_IMAGE);
 
 
 
@@ -2456,20 +2453,6 @@ const _jpApp = Vue.createApp({
 
             try {
 
-                const res = await fetch(`assets/data/vocab.v1.json?v=${appVersion.value}`);
-
-                if (res.ok) {
-
-                    VOCAB.value = await res.json();
-
-                }
-
-            } catch (e) { }
-
-
-
-            try {
-
                 const res = await fetch(`assets/data/enemies.v1.json?v=${appVersion.value}`);
 
                 if (res.ok) {
@@ -2514,10 +2497,10 @@ const _jpApp = Vue.createApp({
         );
 
         const SKILL_TYPE_LABELS = {
-            debuff: 'DEBUFF',
-            buff: 'BUFF',
-            heal: 'HEAL',
-            attackBuff: 'ATK'
+            debuff: '弱化敵方',
+            buff: '強化自身',
+            heal: '恢復狀態',
+            attackBuff: '攻擊強化'
         };
 
         const getSkillTypeLabel = (type) => SKILL_TYPE_LABELS[type] || 'BUFF';
@@ -3321,6 +3304,9 @@ const _jpApp = Vue.createApp({
 
         const needsUserGestureToResumeBgm = ref(false);
         const isBgmSuppressed = ref(false);
+        // When true, SFX should use HTML Audio fallback instead of WebAudio buffers.
+        // Set on background→foreground transition; cleared on successful gesture-based AudioContext resume.
+        let _sfxNeedsGestureRecovery = false;
         const HTML_BGM_FALLBACK_SCALE = 0.85;
         const MOBILE_HTML_BGM_FALLBACK_SCALE = 0.4;
         const HTML_BGM_FALLBACK_CURVE = 1.6;
@@ -5072,6 +5058,7 @@ const _jpApp = Vue.createApp({
 
             pageLoopAudioWasInterrupted = true;
             needsUserGestureToResumeBgm.value = true;
+            _sfxNeedsGestureRecovery = true;
         };
 
         const tryResumePageLoopAudio = async (reason, options = {}) => {
@@ -5246,6 +5233,12 @@ const _jpApp = Vue.createApp({
 
             const src = _uiSfxSrcMap[name];
 
+            // After background→foreground on iOS, bypass WebAudio and poly pool (both may be broken).
+            if (_sfxNeedsGestureRecovery && src) {
+                playHtmlSfxFallback(name, src);
+                return;
+            }
+
             if (canAttemptWebAudioSfx(src)) {
                 playSfx(name);
                 return;
@@ -5418,6 +5411,14 @@ const _jpApp = Vue.createApp({
             }
 
             // General SFX should not duck BGM. Voice/TTS paths handle BGM ducking separately.
+
+            // After iOS Safari background→foreground, the WebAudio pipeline may be broken even if
+            // AudioContext.state reads 'running'. Route through HTML Audio until the next user gesture
+            // successfully resumes the context.
+            if (_sfxNeedsGestureRecovery) {
+                playHtmlSfxFallback(name, src);
+                return;
+            }
 
             const rawBuf = bufferPool.get(src);
             if (rawBuf && audioCtx.value) {
@@ -7420,6 +7421,13 @@ const _jpApp = Vue.createApp({
 
             if (useFallbackGain.value && fallbackCtxNeedsGestureResume.value) {
                 await resumeFallbackCtxOnGesture(`${reason}:fallback-v2-gesture-resume`);
+                // Also resume primary AudioContext for SFX
+                try {
+                    await initAudioCtx();
+                    if (audioCtx.value && (audioCtx.value.state === 'suspended' || audioCtx.value.state === 'interrupted')) {
+                        await audioCtx.value.resume();
+                    }
+                } catch (_) { }
                 return;
             }
 
@@ -7431,6 +7439,15 @@ const _jpApp = Vue.createApp({
                 refreshAudioDebugState();
             }
             iosReturnedFromBackground.value = false;
+
+            // Always try to resume the primary AudioContext for SFX,
+            // even when BGM is handled by HTML fallback.
+            try {
+                await initAudioCtx();
+                if (audioCtx.value && (audioCtx.value.state === 'suspended' || audioCtx.value.state === 'interrupted')) {
+                    await audioCtx.value.resume();
+                }
+            } catch (_) { }
 
             if (useHtmlAudioBgmFallback.value) {
                 await syncHtmlBgmFallbackToExpected(`${reason}:fallback-sync`);
@@ -7445,6 +7462,7 @@ const _jpApp = Vue.createApp({
                 }
 
                 updateGainVolumes();
+
             } catch (e) {
                 warnAudioResumeState(`${reason}:ctx-resume-failed`, { error: e?.name || e?.message || e });
             }
@@ -7806,7 +7824,7 @@ const _jpApp = Vue.createApp({
                             const originalCombos = skillPool.safeCombos;
                             skillPool.safeCombos = [combo];
 
-                            const q = generateQuestionBySkill(skillId, 1, EARLY_GAME_POOLS, VOCAB.value);
+                            const q = generateQuestionBySkill(skillId, 1);
                             if (q) {
                                 const key = q.chinese + "|" + (q.segments ? q.segments.map(s => s.text).join('') : '');
                                 if (!seenKeys.has(key)) {
@@ -7938,7 +7956,7 @@ const _jpApp = Vue.createApp({
 
 
         /** 依 skillId 生成單道助詞題（包含所有 if/else 助詞都合邏輯分支）。回傳 question object 或 null。 */
-        const generateQuestionBySkill = (skillId, blanks, db, vocab, forceTargetCount = null) => {
+        const generateQuestionBySkill = (skillId, blanks, forceTargetCount = null) => {
             // L36 專用：不重複題目的抽題邏輯
             if (skillId === 'HIDDEN_BOSS_36_QUEUE') {
                 if (bossQuestionQueue.length === 0) {
@@ -7962,10 +7980,6 @@ const _jpApp = Vue.createApp({
 
 
             const tipText = (skillDef.meaning || '') + (skillDef.rule ? ' / ' + skillDef.rule : '');
-
-            const safeVocab = vocab || {};
-
-
 
             const seg = (text, ruby = '') => ({
 
@@ -8089,7 +8103,7 @@ const _jpApp = Vue.createApp({
                         // Strict mode for particle-based skills
                         return validParticles.includes(p);
                     } else {
-                        // General safety for non-particle skills (Vocabulary/Conjugation etc.)
+                        // General safety for non-particle skills.
                         if (p.length === 0) return false;
                         if (p.length > 12) return false;
                         // Exclude Kanji/Chinese if the correct answer is a pure Kana particle
@@ -8300,38 +8314,38 @@ const _jpApp = Vue.createApp({
             else if (skillDef.id === 'BOSS_REVIEW_01') {
                 const reviewSkills = ['WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE', 'WO_OBJECT_BASIC'];
                 const chosenSkillId = pickOne(reviewSkills);
-                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab, forceTargetCount);
+                return generateQuestionBySkill(chosenSkillId, blanks, forceTargetCount);
             }
             else if (skillDef.id === 'BOSS_REVIEW_02') {
                 const reviewSkills = ['HE_DIRECTION', 'MO_ALSO_BASIC', 'NI_TIME', 'TO_AND'];
                 const chosenSkillId = pickOne(reviewSkills);
-                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab, forceTargetCount);
+                return generateQuestionBySkill(chosenSkillId, blanks, forceTargetCount);
             }
             else if (skillDef.id === 'BOSS_REVIEW_03') {
                 const reviewSkills = ['DE_ACTION_PLACE', 'NI_EXIST_PLACE', 'GA_EXIST_SUBJECT', 'TO_WITH'];
                 const chosenSkillId = pickOne(reviewSkills);
-                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab, forceTargetCount);
+                return generateQuestionBySkill(chosenSkillId, blanks, forceTargetCount);
             }
             else if (skillDef.id === 'BOSS_REVIEW_04') {
                 // Mixed review of から, まで, に(落點), で(工具)
                 const reviewSkills = ['KARA_SOURCE_START', 'MADE_LIMIT_END', 'NI_DESTINATION', 'DE_TOOL_MEANS'];
                 const chosenSkillId = pickOne(reviewSkills);
-                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab, forceTargetCount);
+                return generateQuestionBySkill(chosenSkillId, blanks, forceTargetCount);
             }
             else if (skillDef.id === 'BOSS_REVIEW_05') {
                 const reviewSkills = ['NI_TARGET', 'GA_BUT', 'MO_COMPLETE_NEGATION', 'TO_CONDITIONAL'];
                 const chosenSkillId = pickOne(reviewSkills);
-                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab, forceTargetCount);
+                return generateQuestionBySkill(chosenSkillId, blanks, forceTargetCount);
             }
             else if (skillDef.id === 'BOSS_REVIEW_06') {
                 const reviewSkills = ['YA_AND_OTHERS', 'DE_SCOPE', 'NI_PURPOSE', 'TO_QUOTE'];
                 const chosenSkillId = pickOne(reviewSkills);
-                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab, forceTargetCount);
+                return generateQuestionBySkill(chosenSkillId, blanks, forceTargetCount);
             }
             else if (skillDef.id === 'FINAL_BOSS_35') {
                 const reviewSkills = ['KARA_REASON', 'YORI_COMPARE', 'NI_FREQUENCY', 'DE_MATERIAL'];
                 const chosenSkillId = pickOne(reviewSkills);
-                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab, forceTargetCount);
+                return generateQuestionBySkill(chosenSkillId, blanks, forceTargetCount);
             }
 
             else if (skillDef.id === 'HIDDEN_BOSS_36') {
@@ -8340,7 +8354,7 @@ const _jpApp = Vue.createApp({
 
                 const chosenSkillId = pickSkillForBoss();
 
-                return generateQuestionBySkill(chosenSkillId, blanks, db, vocab, forceTargetCount);
+                return generateQuestionBySkill(chosenSkillId, blanks, forceTargetCount);
 
             }
 
@@ -8747,8 +8761,6 @@ const _jpApp = Vue.createApp({
 
                 let originalSkillId = skillId;
 
-                let isFallback = false;
-
 
 
                 while (attempts < 10 && skillId && !generatedFromSkill) {
@@ -8759,7 +8771,7 @@ const _jpApp = Vue.createApp({
 
                     // Pass forceTargetCount=4 if this is a Boss Level context (lv 5, 10, 15, 20...)
                     const forceTC = (lv % 5 === 0) ? 4 : null;
-                    q = generateQuestionBySkill(skillId, blanks, db, VOCAB.value, forceTC);
+                    q = generateQuestionBySkill(skillId, blanks, forceTC);
 
                     if (isReview) {
 
@@ -8933,40 +8945,6 @@ const _jpApp = Vue.createApp({
 
                         attempts++;
 
-                        // Level 5 特殊重試與補位邏輯
-
-                        if (lv === 5) {
-
-                            if (attempts % 3 === 0 && attempts < 10) {
-
-                                isFallback = true;
-
-                                const level5Pool = ['WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE', 'WO_OBJECT_BASIC'];
-
-                                const blockStart = Math.floor(qList.length / 4) * 4;
-
-                                const usedInBlock = qList.slice(blockStart).map(qq => qq.skillId);
-
-                                const candidates = level5Pool.filter(s => s !== originalSkillId && !usedInBlock.includes(s));
-
-
-
-                                // 優先換成缺少的，若都沒缺就隨機換一個
-
-                                if (candidates.length > 0) {
-
-                                    skillId = candidates[0];
-
-                                } else {
-
-                                    skillId = level5Pool.filter(s => s !== skillId)[0] || level5Pool[0];
-
-                                }
-
-                            }
-
-                        }
-
                     }
 
                 }
@@ -8983,34 +8961,13 @@ const _jpApp = Vue.createApp({
 
 
 
-                if (!generatedFromSkill && lv === 5) {
-
-                    // L5 完全封閉在 review pool，禁止進入全域 fallback switch（emergency only）
-
-                    const fallbackSkillId = L5_REVIEW_POOL.find(s => s !== skillId) || L5_REVIEW_POOL[0];
-
-                    q = safeFallbackQuestion(fallbackSkillId) || safeFallbackQuestion(L5_REVIEW_POOL[0]);
-
+                const REVIEW_FALLBACK_POOLS = { 5: L5_REVIEW_POOL, 10: L10_REVIEW_POOL };
+                if (!generatedFromSkill && REVIEW_FALLBACK_POOLS[lv]) {
+                    const pool = REVIEW_FALLBACK_POOLS[lv];
+                    const fallbackSkillId = pool.find(s => s !== skillId) || pool[0];
+                    q = safeFallbackQuestion(fallbackSkillId) || safeFallbackQuestion(pool[0]);
                     if (q) { q.skillId = fallbackSkillId; }
-
-                } else if (!generatedFromSkill && lv === 10) {
-
-                    // L10 同樣完全封閉在 L6-9 review pool，禁止進入全域 fallback switch（emergency only）
-
-                    const fallbackSkillId = L10_REVIEW_POOL.find(s => s !== skillId) || L10_REVIEW_POOL[0];
-
-                    q = safeFallbackQuestion(fallbackSkillId) || safeFallbackQuestion(L10_REVIEW_POOL[0]);
-
-                    if (q) { q.skillId = fallbackSkillId; }
-
-
-                } else if (!generatedFromSkill) {
-                    console.warn(`[DEAD_CODE_TRAP] Reached switch(type) fallback loop for skill: ${skillId}! Type: ${typeof type !== 'undefined' ? type : 'undefined'}`);
-                    // Safety: if reached, return null to let safeFallbackQuestion handle it or skip loop
-                    q = null;
-                    continue;
-
-                } // end of else (non-L5 global fallback)
+                }
 
 
 
@@ -10774,7 +10731,7 @@ const _jpApp = Vue.createApp({
             levelTitle, player, monster, currentQuestion,
             startLevel, retryLevel, initGame, generateQuestionBySkill,
             mentorTutorialSeen, saveMentorState, skillsAll, setupMentorDialogue,
-            pauseBattle, db, VOCAB, startBossQueue, unlockedSkillIds,
+            pauseBattle, startBossQueue, unlockedSkillIds,
             playPrologueOpening, playMainEndingFinale,
             mapChapters, activeChapter, selectedSegmentIdx, getMapNodeStyle,
             MENTOR_AUDIO_MAP

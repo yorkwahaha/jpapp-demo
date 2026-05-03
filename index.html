@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26050303'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26050304'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -58,8 +58,8 @@
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/styles.css?v=26050303">
-    <link rel="stylesheet" href="assets/css/escape.css?v=26050303">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26050304">
+    <link rel="stylesheet" href="assets/css/escape.css?v=26050304">
 
 
 
@@ -69,7 +69,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26050303';
+            const v = window.APP_VERSION || '26050304';
 
 
 
@@ -181,19 +181,7 @@
             document.head.appendChild(s9);
 
 
-            // 10. 載入結局台詞資料
-
-            const s10 = document.createElement('script');
-
-            s10.src = 'assets/js/ending-dialogues.js?v=' + v;
-
-            s10.async = false;
-
-            document.head.appendChild(s10);
-
-
-
-            // 11. 載入遊戲主程式
+            // 10. 載入遊戲主程式
 
             const s10b = document.createElement('script');
 
@@ -3208,7 +3196,7 @@
                                     <strong>{{ entry.isUnlocked ? entry.name : '???' }}</strong>
                                     <small>{{ entry.isUnlocked ? entry.stageText : '未遭遇' }}</small>
                                 </span>
-                                <span class="monster-codex-card-lock">{{ entry.isUnlocked ? 'OPEN' : 'LOCK' }}</span>
+                                <span class="monster-codex-card-lock">{{ entry.isUnlocked ? '✓' : '🔒' }}</span>
                             </button>
                         </div>
 
@@ -4455,34 +4443,22 @@
 
                             <div
                                 class="skill-icon-frame w-14 h-14 flex-shrink-0 bg-slate-800 rounded-lg flex items-center justify-center text-2xl border border-slate-600 group-hover:border-amber-400">
-
                                 {{ skill.icon }}
-
                             </div>
 
-                            <div class="flex-1 flex flex-col justify-center">
-
-                                <div class="flex justify-between items-start mb-1">
-
-                                    <div class="min-w-0">
-                                        <div class="flex items-center gap-2 min-w-0">
-                                            <h3 class="font-bold text-slate-200 group-hover:text-amber-300 transition-colors truncate">
-                                        {{
-
-                                        skill.name }}</h3>
-                                            <span class="skill-type-badge">{{ getSkillTypeLabel(skill.type) }}</span>
-                                        </div>
+                            <div class="flex-1 flex flex-col justify-center min-w-0">
+                                <div class="flex justify-between items-start mb-1 gap-2">
+                                    <div class="flex flex-wrap items-center gap-1.5 min-w-0">
+                                        <h3 class="font-bold text-slate-100 group-hover:text-amber-300 transition-colors truncate text-sm">
+                                            {{ skill.name }}
+                                        </h3>
+                                        <span class="skill-type-badge shrink-0">{{ getSkillTypeLabel(skill.type) }}</span>
                                     </div>
-
-                                    <span
-                                        class="text-xs font-black px-2 py-0.5 rounded-full bg-cyan-900 text-cyan-300 border border-cyan-700">{{
-
-                                        skill.cost }} SP</span>
-
+                                    <span class="text-[10px] font-black px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 shadow-sm shrink-0">
+                                        {{ skill.cost }} SP
+                                    </span>
                                 </div>
-
-                                <p class="text-xs text-slate-400 leading-snug">{{ skill.desc }}</p>
-
+                                <p class="text-[11px] text-slate-400 leading-relaxed mt-0.5 group-hover:text-slate-300 transition-colors">{{ skill.desc }}</p>
                             </div>
 
                         </div>
