@@ -189,8 +189,6 @@ const _jpApp = Vue.createApp({
         // --- NEW: Spirit Icon Fallback Mechanism ---
         const failedSpiritIcons = ref({});
         const particleToIconMap = GAME_CONSTANTS.PARTICLE_TO_ICON_MAP || {};
-
-        const getSpiritIconKey = (opt) => window.JPAPPCodexDisplayUtils.getSpiritIconKey(opt);
         const getSpiritIconPath = (opt) => window.JPAPPCodexDisplayUtils.getSpiritIconPath(opt);
 
         const shouldShowSpiritIcon = (opt) => {
@@ -1008,8 +1006,6 @@ const _jpApp = Vue.createApp({
         const APP_VERSION = window.APP_VERSION || "26050306";
 
         const appVersion = ref(APP_VERSION);
-
-        const VFX_ENHANCED = true;
 
         const DEFAULT_TTS_VOICE = 'ja-JP-Neural2-B';
 
@@ -3091,8 +3087,6 @@ const _jpApp = Vue.createApp({
             if (!audioDebugPosition.value) return;
             nextTick(() => setAudioDebugPosition(audioDebugPosition.value, true));
         };
-
-        const audioSettingsKey = 'jpRpgAudioV1';
 
         let timerId = null;
 
