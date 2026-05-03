@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26050304'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26050305'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -58,8 +58,8 @@
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/styles.css?v=26050304">
-    <link rel="stylesheet" href="assets/css/escape.css?v=26050304">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26050305">
+    <link rel="stylesheet" href="assets/css/escape.css?v=26050305">
 
 
 
@@ -69,7 +69,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26050304';
+            const v = window.APP_VERSION || '26050305';
 
 
 
@@ -84,28 +84,24 @@
             document.head.appendChild(s1);
 
 
+            const hostname = location.hostname;
+            const isLocalEnv = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0'
+                || /^192\.168\./.test(hostname) || /^10\./.test(hostname) || /^172\.(1[6-9]|2\d|3[01])\./.test(hostname)
+                || location.protocol === 'file:';
 
-            // 2. 載入 Debug Overlay
+            if (isLocalEnv) {
+                // 2. 載入 Debug Overlay
+                const s2 = document.createElement('script');
+                s2.src = 'assets/js/debug-overlay.js?v=' + v;
+                s2.async = false;
+                document.head.appendChild(s2);
 
-            const s2 = document.createElement('script');
-
-            s2.src = 'assets/js/debug-overlay.js?v=' + v;
-
-            s2.async = false;
-
-            document.head.appendChild(s2);
-
-
-
-            // 3. 載入 Debug Tools
-
-            const s3 = document.createElement('script');
-
-            s3.src = 'assets/js/debug.js?v=' + v;
-
-            s3.async = false;
-
-            document.head.appendChild(s3);
+                // 3. 載入 Debug Tools
+                const s3 = document.createElement('script');
+                s3.src = 'assets/js/debug.js?v=' + v;
+                s3.async = false;
+                document.head.appendChild(s3);
+            }
 
 
 
@@ -172,13 +168,6 @@
 
             // 9. 載入 VFX Helpers
 
-            const s9 = document.createElement('script');
-
-            s9.src = 'assets/js/vfx-helpers.js?v=' + v;
-
-            s9.async = false;
-
-            document.head.appendChild(s9);
 
 
             // 10. 載入遊戲主程式
@@ -207,12 +196,19 @@
 
 
             const s10d = document.createElement('script');
-
             s10d.src = 'assets/js/game-constants.js?v=' + v;
-
             s10d.async = false;
-
             document.head.appendChild(s10d);
+
+            const s10e = document.createElement('script');
+            s10e.src = 'assets/js/game-utils.js?v=' + v;
+            s10e.async = false;
+            document.head.appendChild(s10e);
+
+            const s10f = document.createElement('script');
+            s10f.src = 'assets/js/vfx-helpers.js?v=' + v;
+            s10f.async = false;
+            document.head.appendChild(s10f);
 
 
 
@@ -2261,7 +2257,7 @@
 
         <div v-if="showLevelSelect" class="home-page-container">
 
-            <div class="home-bg-layer" :style="{ backgroundImage: 'url(assets/images/bg_home_painterly.png)' }"></div>
+            <div class="home-bg-layer" :style="{ backgroundImage: 'url(assets/images/bg_home_painterly.webp)' }"></div>
 
 
 

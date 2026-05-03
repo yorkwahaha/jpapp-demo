@@ -3,86 +3,8 @@
 
 window.__sp = { cur: 20, max: 20 };
 
-window.spawnFloatingDamage = function (target, amount, type = 'hp') {
-    const vfxLayer = (typeof window.getVfxLayer === 'function') ? window.getVfxLayer() : document.getElementById('global-vfx-layer');
-    if (!vfxLayer) return;
-
-    let targetEl;
-    if (target === 'player') {
-        targetEl = document.querySelector('#playerStatusBar') || document.querySelector('.hero-avatar') || document.querySelector('.hud-bg');
-    } else {
-        targetEl = document.querySelector('#monsterStatusBar') || document.querySelector('.monster-img-boss') || document.querySelector('.monster-img-normal') || document.querySelector('.monster-breath');
-    }
-
-    let x, y;
-    if (targetEl) {
-        const rect = targetEl.getBoundingClientRect();
-        if (target === 'monster') {
-            x = rect.left + rect.width / 2;
-            y = rect.top + rect.height * 0.65;
-        } else {
-            x = rect.left + rect.width * 0.85;
-            y = rect.top - 10;
-        }
-    } else {
-        x = window.innerWidth / 2;
-        y = target === 'player' ? window.innerHeight - 150 : window.innerHeight / 2 - 50;
-    }
-
-    const el = document.createElement('div');
-    el.className = `floating-dmg-ui floating-dmg-${target}`;
-
-    // Type-based styling
-    if (type === 'sp') {
-        el.classList.add('floating-dmg-sp');
-        el.style.color = '#60a5fa'; // Blue-400
-        el.style.textShadow = '0 0 15px rgba(59, 130, 246, 0.6), 0 2px 4px rgba(0,0,0,0.8)';
-    } else if (amount < 0) {
-        el.classList.add('floating-dmg-heal');
-        el.style.color = '#4ade80'; // Emerald-400
-        el.style.textShadow = '0 0 15px rgba(16, 185, 129, 0.6), 0 2px 4px rgba(0,0,0,0.8)';
-    } else if (target === 'player') {
-        // Red color for hero damage
-        el.style.color = '#ef4444'; // Red-500
-        el.style.textShadow = '0 0 10px rgba(239, 68, 68, 0.5), 0 2px 4px rgba(0,0,0,0.8)';
-    }
-
-    let fontSize = 14 + (Math.abs(amount) * 0.9);
-    if (type === 'sp' || amount < 0) fontSize = Math.max(fontSize, 28);
-    fontSize = Math.min(Math.max(fontSize, 14), 48);
-
-    const dir = Math.random() > 0.5 ? 1 : -1;
-    const dx = (Math.random() * 45 + 35) * dir;
-    const dy = (Math.random() * -15 - 5);
-    const bounce1 = Math.random() * 15 + 10;
-    const rot = (Math.random() * 20 - 10);
-
-    el.style.setProperty('--dx', `${dx}px`);
-    el.style.setProperty('--dy', `${dy}px`);
-    el.style.setProperty('--bounce1', `${bounce1}px`);
-    el.style.setProperty('--rot', `${rot}deg`);
-
-    let ox = (Math.random() - 0.5) * 20;
-    const oy = (Math.random() - 0.5) * 10;
-    if (type === 'sp') ox = 22;
-    else if (amount < 0) ox = -22;
-
-    el.style.left = `${x + ox}px`;
-    el.style.top = `${y + oy}px`;
-    el.style.fontSize = `${fontSize}px`;
-
-    // Display value
-    if (type === 'sp') {
-        el.innerHTML = `+${Math.abs(amount)}`;
-    } else if (amount < 0) {
-        el.innerHTML = `+${Math.abs(amount)}`;
-    } else {
-        el.innerHTML = `-${amount}`;
-    }
-
-    vfxLayer.appendChild(el);
-    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 1200);
-};
+const spawnFloatingDamage = window.__JPAPP_VFX?.spawnFloatingDamage || function () {};
+window.spawnFloatingDamage = spawnFloatingDamage;
 
 
 
@@ -90,202 +12,8 @@ window.spawnFloatingDamage = function (target, amount, type = 'hp') {
 
 
 
-window.spawnGiraGiraHitVfx = function (x, y) {
-    const vfxLayer = (typeof window.getVfxLayer === 'function') ? window.getVfxLayer() : document.getElementById('global-vfx-layer');
-    if (!vfxLayer) return;
-
-    const spawn = (css, dur, frames, easing, delayMs = 0) => {
-        const run = () => {
-            const el = document.createElement('div');
-            el.style.cssText = css;
-            vfxLayer.appendChild(el);
-            el.animate(frames, { duration: dur, easing: easing || 'ease-out', fill: 'forwards' });
-            setTimeout(() => { if (el.isConnected) el.remove(); }, dur + 100);
-        };
-        if (delayMs > 0) setTimeout(run, delayMs);
-        else run();
-    };
-
-    const tImpact = 82;
-
-    // 前搖：聚光收束（與主爆分開，讀感更像「斬落前一瞬」）
-    spawn(
-        `position:absolute;width:118px;height:118px;left:${x - 59}px;top:${y - 59}px;z-index:20;pointer-events:none;` +
-        `border-radius:50%;` +
-        `background:radial-gradient(circle,rgba(255,252,245,0.58) 0%,rgba(254,243,199,0.38) 38%,rgba(251,191,36,0.24) 58%,transparent 74%);` +
-        `box-shadow:0 0 26px rgba(251,191,36,0.38),0 0 40px rgba(255,255,255,0.1),inset 0 0 16px rgba(255,255,255,0.08);`,
-        110,
-        [
-            { opacity: 0.55, transform: 'scale(1.22)' },
-            { opacity: 1, transform: 'scale(0.74)' },
-            { opacity: 0, transform: 'scale(0.58)' }
-        ],
-        'cubic-bezier(0.32, 0, 0.15, 1)',
-        0
-    );
-    [[-31, 1], [31, -1]].forEach(([rot, dir]) => {
-        spawn(
-            `position:absolute;width:2px;height:108px;left:${x - 1}px;top:${y - 54}px;z-index:21;pointer-events:none;` +
-            `transform-origin:center center;mix-blend-mode:screen;` +
-            `background:linear-gradient(to bottom,transparent 10%,rgba(255,250,230,0.55) 42%,rgba(253,224,71,0.75) 52%,transparent 90%);` +
-            `box-shadow:0 0 8px rgba(255,255,255,0.45);`,
-            105,
-            [
-                { opacity: 0.2, transform: `rotate(${rot}deg) scaleY(0.14)` },
-                { opacity: 0.95, transform: `rotate(${rot + dir * 5}deg) scaleY(0.52)` },
-                { opacity: 0, transform: `rotate(${rot + dir * 8}deg) scaleY(0.62)` }
-            ],
-            'cubic-bezier(0.28, 0.82, 0.32, 1)',
-            0
-        );
-    });
-
-    // 命中核：金白集中爆閃（輪廓收緊、減少中心霧白，亮度仍高）
-    spawn(
-        `position:absolute;width:38px;height:38px;left:${x - 19}px;top:${y - 19}px;z-index:26;pointer-events:none;mix-blend-mode:screen;` +
-        `border-radius:50%;` +
-        `background:radial-gradient(circle,rgba(255,255,255,1) 0%,rgba(255,252,240,0.94) 9%,rgba(253,224,71,0.88) 26%,rgba(251,191,36,0.55) 46%,transparent 72%);` +
-        `box-shadow:0 0 1px #fff,0 0 10px rgba(255,255,255,0.82),0 0 24px rgba(254,240,138,0.58),0 0 36px rgba(251,191,36,0.32);`,
-        62,
-        [
-            { opacity: 0, transform: 'scale(0.28)' },
-            { opacity: 1, transform: 'scale(1)' },
-            { opacity: 0.72, transform: 'scale(1.04)' },
-            { opacity: 0, transform: 'scale(1.16)' }
-        ],
-        'cubic-bezier(0.12, 0.62, 0.2, 1)',
-        tImpact
-    );
-    spawn(
-        `position:absolute;width:50px;height:50px;left:${x - 25}px;top:${y - 25}px;z-index:25;pointer-events:none;` +
-        `border-radius:50%;border:1.5px solid rgba(255,248,230,0.95);` +
-        `box-shadow:0 0 8px rgba(255,255,255,0.72),0 0 22px rgba(251,191,36,0.58),inset 0 0 6px rgba(255,255,255,0.22);`,
-        205,
-        [
-            { opacity: 0, transform: 'scale(0.18)' },
-            { opacity: 1, transform: 'scale(0.52)' },
-            { opacity: 0.38, transform: 'scale(1.12)' },
-            { opacity: 0, transform: 'scale(1.92)' }
-        ],
-        'cubic-bezier(0.06, 0.88, 0.22, 1)',
-        tImpact
-    );
-    spawn(
-        `position:absolute;width:92px;height:92px;left:${x - 46}px;top:${y - 46}px;z-index:23;pointer-events:none;` +
-        `border-radius:50%;` +
-        `background:radial-gradient(circle,rgba(255,253,245,0.9) 0%,rgba(253,224,71,0.7) 38%,rgba(251,191,36,0.46) 54%,rgba(234,88,12,0.1) 68%,transparent 78%);` +
-        `box-shadow:0 0 32px rgba(254,215,102,0.42),0 0 48px rgba(251,146,60,0.16);`,
-        275,
-        [{ opacity: 1, transform: 'scale(0.14)' }, { opacity: 0, transform: 'scale(2.72)' }],
-        'cubic-bezier(0.05, 0.9, 0.18, 1)',
-        tImpact
-    );
-
-    // 刺入軸 + 極細短促斬線（高光芯、讀成「切進去」而非光團）
-    spawn(
-        `position:absolute;width:1.5px;height:96px;left:${x - 0.75}px;top:${y - 48}px;z-index:29;pointer-events:none;transform-origin:center center;mix-blend-mode:screen;` +
-        `background:linear-gradient(to bottom,transparent 6%,rgba(255,255,255,0.98) 44%,rgba(255,255,255,1) 50%,rgba(255,250,220,0.95) 56%,transparent 94%);` +
-        `box-shadow:0 0 6px rgba(255,255,255,0.95),0 0 3px rgba(253,224,71,0.9);border-radius:1px;`,
-        58,
-        [
-            { opacity: 0, transform: 'scaleY(0.12)' },
-            { opacity: 1, transform: 'scaleY(1)' },
-            { opacity: 0, transform: 'scaleY(1.06)' }
-        ],
-        'cubic-bezier(0.18, 0.75, 0.2, 1)',
-        tImpact
-    );
-    [[-9, 1], [9, -1], [-83, 1], [83, -1]].forEach(([rot, dir], si) => {
-        spawn(
-            `position:absolute;width:1px;height:84px;left:${x - 0.5}px;top:${y - 42}px;z-index:29;pointer-events:none;transform-origin:center center;mix-blend-mode:screen;` +
-            `background:linear-gradient(to bottom,transparent 8%,rgba(255,255,255,1) 42%,rgba(254,249,232,0.98) 50%,rgba(253,224,71,0.75) 62%,transparent 92%);` +
-            `box-shadow:0 0 5px rgba(255,255,255,0.88);border-radius:1px;`,
-            72 + si * 6,
-            [
-                { opacity: 0, transform: `rotate(${rot}deg) scaleY(0.08)` },
-                { opacity: 1, transform: `rotate(${rot + dir * 6}deg) scaleY(1)` },
-                { opacity: 0, transform: `rotate(${rot + dir * 10}deg) scaleY(1.12)` }
-            ],
-            'cubic-bezier(0.12, 0.88, 0.22, 1)',
-            tImpact + 2
-        );
-    });
-
-    // 斬擊刃：兩主兩副交叉（略收體積、刃緣更硬）
-    const slashes = [
-        [-54, 1, 4.5, 198, 0],
-        [54, -1, 4.5, 198, 0],
-        [-17, -1, 2.8, 158, 14],
-        [17, 1, 2.8, 158, 14]
-    ];
-    slashes.forEach(([rot, dir, sw, sh, extraDelay]) => {
-        const halfW = sw / 2;
-        const halfH = sh / 2;
-        spawn(
-            `position:absolute;width:${sw}px;height:${sh}px;left:${x - halfW}px;top:${y - halfH}px;z-index:28;pointer-events:none;` +
-            `transform-origin:center center;mix-blend-mode:screen;` +
-            `background:linear-gradient(to bottom,transparent 2%,rgba(255,255,255,0.98) 24%,rgba(255,248,220,0.96) 46%,rgba(251,191,36,1) 56%,rgba(249,115,22,0.5) 66%,transparent 97%);` +
-            `border-radius:1px;box-shadow:0 0 8px rgba(255,255,255,0.68),0 0 6px rgba(251,191,36,0.75);`,
-            242,
-            [
-                { opacity: 1, transform: `rotate(${rot}deg) scaleY(0.05)` },
-                { opacity: 1, transform: `rotate(${rot + dir * 12}deg) scaleY(1.32)` },
-                { opacity: 0, transform: `rotate(${rot + dir * 19}deg) scaleY(1.48)` }
-            ],
-            'cubic-bezier(0.05, 0.93, 0.16, 1)',
-            tImpact + extraDelay
-        );
-    });
-
-    // 星芒火花：貼近命中點的崩裂碎光（非外向煙火）
-    for (let i = 0; i < 8; i++) {
-        const ang = (Math.PI * 2 / 8) * i + (i % 2 ? 0.07 : -0.05);
-        const dist = 22 + Math.random() * 20;
-        const len = 5 + Math.random() * 7;
-        spawn(
-            `position:absolute;width:3px;height:${len}px;left:${x - 1.5}px;top:${y - len / 2}px;z-index:27;pointer-events:none;mix-blend-mode:screen;` +
-            `border-radius:1px;` +
-            `background:linear-gradient(to top,transparent,rgba(255,255,255,0.96),#fef08a,rgba(251,191,36,0.92));` +
-            `box-shadow:0 0 6px rgba(255,255,255,0.75),0 0 5px rgba(251,191,36,0.65);`,
-            118 + Math.random() * 42,
-            [
-                { opacity: 1, transform: `rotate(${ang + Math.PI / 2}rad) translate(0,0) scaleY(0.35)` },
-                { opacity: 0.9, transform: `rotate(${ang + Math.PI / 2}rad) translate(0,-${dist * 0.32}px) scaleY(1)` },
-                { opacity: 0, transform: `rotate(${ang + Math.PI / 2}rad) translate(0,-${dist}px) scaleY(0.08)` }
-            ],
-            'cubic-bezier(0.2, 0.82, 0.32, 1)',
-            tImpact + Math.floor(Math.random() * 14)
-        );
-    }
-    for (let i = 0; i < 4; i++) {
-        const r = i * 45;
-        spawn(
-            `position:absolute;width:16px;height:1.5px;left:${x - 8}px;top:${y - 0.75}px;z-index:28;pointer-events:none;mix-blend-mode:screen;` +
-            `border-radius:1px;` +
-            `background:linear-gradient(90deg,transparent,rgba(255,255,255,1),rgba(255,250,220,0.92),transparent);` +
-            `box-shadow:0 0 6px rgba(255,255,255,0.88),0 0 3px rgba(251,191,36,0.65);`,
-            98,
-            [
-                { opacity: 0, transform: `rotate(${r}deg) scaleX(0.12)` },
-                { opacity: 1, transform: `rotate(${r}deg) scaleX(1)` },
-                { opacity: 0, transform: `rotate(${r}deg) scaleX(0.42)` }
-            ],
-            'ease-out',
-            tImpact + 5 + i * 6
-        );
-    }
-
-    // 極短殘光：斬過一瞬熱痕
-    spawn(
-        `position:absolute;width:98px;height:98px;left:${x - 49}px;top:${y - 49}px;z-index:19;pointer-events:none;` +
-        `border-radius:50%;` +
-        `background:radial-gradient(circle,transparent 0%,rgba(255,237,200,0.2) 38%,rgba(251,191,36,0.12) 58%,transparent 76%);`,
-        108,
-        [{ opacity: 0.55, transform: 'scale(0.92)' }, { opacity: 0, transform: 'scale(1.22)' }],
-        'ease-out',
-        tImpact + 68
-    );
-};
+const spawnGiraGiraHitVfx = window.__JPAPP_VFX?.spawnGiraGiraHitVfx || function () {};
+window.spawnGiraGiraHitVfx = spawnGiraGiraHitVfx;
 
 
 
@@ -333,6 +61,26 @@ const _jpApp = Vue.createApp({
 
     setup() {
         const GAME_CONSTANTS = window.JPAPP_CONSTANTS || {}, SCENE_IMAGE_PATHS = GAME_CONSTANTS.SCENE_IMAGE_PATHS || {}, DEFAULT_IMAGE_PATHS = GAME_CONSTANTS.DEFAULT_IMAGE_PATHS || {};
+        const {
+            SKILL_TYPE_LABELS,
+            VALID_TTS_VOICES,
+            ONEESAN_PRAISES,
+            COMBO_FEEDBACK_MILESTONES,
+            FEEDBACK_VOICE_PATHS,
+            GRADE_RANK
+        } = GAME_CONSTANTS;
+
+        const {
+            normalizeStageBestRecord = (r) => r,
+            normalizeStageBestRecords = (s) => s,
+            parseAcceptableAnswers = (a) => (Array.isArray(a) ? a : [a]),
+            formatStageClearTime = (s) => (s + 's'),
+            getGradeColor = () => '',
+            pickOne = (a) => (a ? a[0] : null),
+            pickMany = (a, n) => (a ? a.slice(0, n) : []),
+            getStageRecordTimeMs = () => Infinity,
+            isStageRecordBetter = () => false
+        } = window.__JPAPP_UTILS || {};
 
         // ---- [ NEW: ONE-TIME SCENE CONSTANTS ] ----
         const PROLOGUE_BGM = ''; // Add path here if needed
@@ -645,38 +393,6 @@ const _jpApp = Vue.createApp({
 
         let _pendingAbilityIds = null;
 
-        const normalizeStageBestRecord = (record) => {
-            if (!record || typeof record !== 'object') return null;
-
-            const bestStars = Math.max(1, Math.min(3, Math.floor(Number(record.bestStars) || 0)));
-            if (!bestStars) return null;
-
-            const rawTimeMs = Number(record.bestTimeMs);
-            const rawTimeSeconds = Number(record.bestTimeSeconds);
-            const bestTimeMs = Number.isFinite(rawTimeMs)
-                ? Math.max(0, Math.round(rawTimeMs))
-                : (Number.isFinite(rawTimeSeconds) ? Math.max(0, Math.round(rawTimeSeconds * 1000)) : 0);
-            const bestTimeSeconds = bestTimeMs / 1000;
-            const bestCorrectRate = Math.max(0, Math.min(100, Math.round(Number(record.bestCorrectRate) || 0)));
-            const bestMaxCombo = Math.max(0, Math.floor(Number(record.bestMaxCombo) || 0));
-
-            return {
-                bestStars,
-                bestTimeMs,
-                bestTimeSeconds,
-                bestCorrectRate,
-                bestMaxCombo,
-                updatedAt: record.updatedAt || record.clearedAt || new Date().toISOString()
-            };
-        };
-
-        const normalizeStageBestRecords = (source = {}) => {
-            return Object.entries(source || {}).reduce((acc, [stageId, record]) => {
-                const normalized = normalizeStageBestRecord(record);
-                if (normalized) acc[stageId] = normalized;
-                return acc;
-            }, {});
-        };
 
         const saveProgression = () => {
 
@@ -1309,7 +1025,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26050304";
+        const APP_VERSION = window.APP_VERSION || "26050305";
 
         const appVersion = ref(APP_VERSION);
 
@@ -1339,7 +1055,6 @@ const _jpApp = Vue.createApp({
 
         });
 
-        const VALID_TTS_VOICES = ['ja-JP-Standard-A', 'ja-JP-Wavenet-A', 'ja-JP-Neural2-B', 'ja-JP-Wavenet-D'];
 
         const DEFAULT_TTS_VOICE = 'ja-JP-Neural2-B';
 
@@ -2496,12 +2211,6 @@ const _jpApp = Vue.createApp({
 
         );
 
-        const SKILL_TYPE_LABELS = {
-            debuff: '弱化敵方',
-            buff: '強化自身',
-            heal: '恢復狀態',
-            attackBuff: '攻擊強化'
-        };
 
         const getSkillTypeLabel = (type) => SKILL_TYPE_LABELS[type] || 'BUFF';
 
@@ -7903,25 +7612,6 @@ const _jpApp = Vue.createApp({
 
 
 
-        const pickOne = (arr) => arr && arr.length > 0 ? arr[Math.floor(Math.random() * arr.length)] : null;
-
-        const pickMany = (arr, n, exclude) => {
-
-            const result = [];
-
-            const pool = [...(arr || [])].filter(x => !exclude || exclude !== x);
-
-            while (result.length < n && pool.length > 0) {
-
-                const idx = Math.floor(Math.random() * pool.length);
-
-                result.push(pool.splice(idx, 1)[0]);
-
-            }
-
-            return result;
-
-        };
 
 
 
@@ -9202,17 +8892,9 @@ const _jpApp = Vue.createApp({
 
 
 
-        const parseAcceptableAnswers = (ans) => {
-
-            if (typeof ans === 'string') return ans.split(/[/、,]/g).map(s => s.trim()).filter(s => s);
-
-            return Array.isArray(ans) ? ans : [ans];
-
-        };
 
 
 
-        const ONEESAN_PRAISES = ['せいかい！', 'ナイス！', 'いいね！', 'すごい！', 'かっこいい！', 'まじか！', 'さいこう！'];
 
 
 
@@ -9222,28 +8904,10 @@ const _jpApp = Vue.createApp({
 
         const FEEDBACK_VOICE_BASE = 'assets/audio/feedback_m4a/';
 
-        const FEEDBACK_VOICE_PATHS = {
-            'combo-good': ['combo-good-01.m4a', 'combo-good-02.m4a'],
-            'combo-great': ['combo-great-01.m4a', 'combo-great-02.m4a'],
-            'combo-amazing': ['combo-amazing-01.m4a', 'combo-amazing-02.m4a'],
-            'combo-max': ['combo-max-01.m4a', 'combo-max-02.m4a'],
-            'combo-perfect': ['combo-perfect-01.m4a', 'combo-perfect-02.m4a'],
-            correct: ['correct-01.m4a', 'correct-02.m4a'],
-            wrong: ['wrong-01.m4a'],
-            'low-hp': ['low-hp-01.m4a'],
-            victory: ['victory-01.m4a']
-        };
 
         const feedbackVoiceWarnedPaths = new Set();
 
         /** Combo 語音僅在剛達門檻當下播放一次；非門檻不播（16+ 暫無）。 */
-        const COMBO_FEEDBACK_MILESTONES = {
-            3: 'combo-good',
-            6: 'combo-great',
-            9: 'combo-amazing',
-            12: 'combo-max',
-            15: 'combo-perfect',
-        };
 
         const pickComboTierFeedbackKey = (comboCount) => COMBO_FEEDBACK_MILESTONES[comboCount] || null;
 
@@ -9857,7 +9521,6 @@ const _jpApp = Vue.createApp({
 
                 const oldG = bestGrades.value[currentLevel.value];
 
-                const GRADE_RANK = { 'S': 6, 'A': 5, 'B': 4, 'C': 3, 'D': 2, 'E': 1, '-': 0 };
 
                 const isGradeBetter = (newG, oldG) => (GRADE_RANK[newG] || 0) > (GRADE_RANK[oldG] || 0);
 
@@ -10318,12 +9981,6 @@ const _jpApp = Vue.createApp({
 
         });
 
-        const formatStageClearTime = (seconds) => {
-            const safeSeconds = Number(seconds);
-            if (!Number.isFinite(safeSeconds) || safeSeconds < 0) return '--.-- 秒';
-
-            return `${safeSeconds.toFixed(2)} 秒`;
-        };
 
         const stageClearTimeText = computed(() => {
             if (stageClearElapsedSeconds.value === null) return '--.-- 秒';
@@ -10396,23 +10053,6 @@ const _jpApp = Vue.createApp({
             };
         };
 
-        const getStageRecordTimeMs = (record) => {
-            const rawTimeMs = Number(record?.bestTimeMs);
-            if (Number.isFinite(rawTimeMs)) return Math.max(0, rawTimeMs);
-
-            const rawTimeSeconds = Number(record?.bestTimeSeconds);
-            return Number.isFinite(rawTimeSeconds) ? Math.max(0, rawTimeSeconds * 1000) : Infinity;
-        };
-
-        const isStageRecordBetter = (nextRecord, currentRecord) => {
-            if (!currentRecord) return true;
-            if ((nextRecord.bestStars || 0) > (currentRecord.bestStars || 0)) return true;
-            if ((nextRecord.bestStars || 0) < (currentRecord.bestStars || 0)) return false;
-
-            const nextTime = getStageRecordTimeMs(nextRecord);
-            const currentTime = getStageRecordTimeMs(currentRecord);
-            return nextTime < currentTime;
-        };
 
         const updateStageBestRecord = () => {
             if (!monsterDead.value || playerDead.value) {
@@ -10478,29 +10118,6 @@ const _jpApp = Vue.createApp({
 
 
 
-        const getGradeColor = (grade) => {
-
-            const colors = {
-
-                'S': 'text-purple-400 drop-shadow-[0_0_8px_rgba(192,132,252,0.8)] [text-shadow:0_0_2px_#000,0_0_4px_#000]',
-
-                'A': 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]',
-
-                'B': 'text-slate-300 drop-shadow-[0_0_6px_rgba(148,163,184,0.7)] [text-shadow:0_0_2px_#000,0_0_4px_rgba(0,0,0,0.7)]',
-
-                'C': 'text-amber-400',
-
-                'D': 'text-orange-400',
-
-                'E': 'text-rose-500',
-
-                '-': 'text-slate-500'
-
-            };
-
-            return colors[grade] || 'text-slate-400';
-
-        };
 
 
 

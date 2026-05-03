@@ -141,7 +141,7 @@
 
         SCENE_IMAGE_PATHS: {
             prologueBg: '',
-            prologueFallbackBg: 'assets/images/bg_home_painterly.png',
+            prologueFallbackBg: 'assets/images/bg_home_painterly.webp',
             mainEndingBg: 'assets/images/levels/bg_lv1.webp'
         },
 
@@ -149,6 +149,39 @@
             battleBg: 'assets/images/bg_01.jpg',
             mapFallback: 'assets/images/maps/chapter1.png',
             monsterSprite: 'assets/images/monsters/slime.png'
-        }
+        },
+
+        SKILL_TYPE_LABELS: {
+            debuff: '弱化敵方',
+            buff: '強化自身',
+            heal: '恢復狀態',
+            attackBuff: '攻擊強化'
+        },
+
+        VALID_TTS_VOICES: ['ja-JP-Standard-A', 'ja-JP-Wavenet-A', 'ja-JP-Neural2-B', 'ja-JP-Wavenet-D'],
+
+        ONEESAN_PRAISES: ['せいかい！', 'ナイス！', 'いいね！', 'すごい！', 'かっこいい！', 'まじか！', 'さいこう！'],
+
+        COMBO_FEEDBACK_MILESTONES: {
+            3: 'combo-good',
+            6: 'combo-great',
+            9: 'combo-amazing',
+            12: 'combo-max',
+            15: 'combo-perfect',
+        },
+
+        FEEDBACK_VOICE_PATHS: {
+            'combo-good': ['combo-good-01.m4a', 'combo-good-02.m4a'],
+            'combo-great': ['combo-great-01.m4a', 'combo-great-02.m4a'],
+            'combo-amazing': ['combo-amazing-01.m4a', 'combo-amazing-02.m4a'],
+            'combo-max': ['combo-max-01.m4a', 'combo-max-02.m4a'],
+            'combo-perfect': ['combo-perfect-01.m4a', 'combo-perfect-02.m4a'],
+            correct: ['correct-01.m4a', 'correct-02.m4a'],
+            wrong: ['wrong-01.m4a'],
+            'low-hp': ['low-hp-01.m4a'],
+            victory: ['victory-01.m4a']
+        },
+
+        GRADE_RANK: { 'S': 6, 'A': 5, 'B': 4, 'C': 3, 'D': 2, 'E': 1, '-': 0 }
     });
 })();
