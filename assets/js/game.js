@@ -9,6 +9,8 @@ window.spawnFloatingDamage = spawnFloatingDamage;
 
 const spawnGiraGiraHitVfx = window.__JPAPP_VFX?.spawnGiraGiraHitVfx || function () {};
 window.spawnGiraGiraHitVfx = spawnGiraGiraHitVfx;
+const spawnGiraGiraBurstVfx = window.__JPAPP_VFX?.spawnGiraGiraBurstVfx || function () {};
+window.spawnGiraGiraBurstVfx = spawnGiraGiraBurstVfx;
 
 window.updateSpUI = function () {
 
@@ -905,7 +907,15 @@ const _jpApp = Vue.createApp({
 
             capturedEl: null,
 
-            pendingDirectionalMiss: false
+            pendingDirectionalMiss: false,
+
+            /** 最近一次彈道的單位方向（checkAnswer GIRAGIRA knockback 取用後清除） */
+
+            lastShotDirNx: 0,
+
+            lastShotDirNy: -1,
+
+            lastShotDirStored: false
 
         });
 
@@ -2348,7 +2358,27 @@ const _jpApp = Vue.createApp({
         };
 
         const monsterHit = ref(false);
+        const monsterHitGiragira = ref(false);
+        const monsterGiraKnockActive = ref(false);
+        const monsterGiraKnockStyle = ref({});
+        let giraKnockReleaseTimeoutId = null;
         const monsterDodge = ref(false);
+
+        const cancelMonsterGiraKnockbackTimers = () => {
+
+            if (giraKnockReleaseTimeoutId) {
+
+                clearTimeout(giraKnockReleaseTimeoutId);
+
+                giraKnockReleaseTimeoutId = null;
+
+            }
+
+            monsterGiraKnockActive.value = false;
+
+            monsterGiraKnockStyle.value = {};
+
+        };
         const monsterAttackLunge = ref(false);
 
         const monsterStunSeconds = ref(0); // 怪物處於受擊僵直的時間 (秒)
@@ -2388,6 +2418,8 @@ const _jpApp = Vue.createApp({
         const clearBattleFlowTimeouts = () => {
             battleFlowTimeouts.forEach(clearTimeout);
             battleFlowTimeouts.clear();
+            monsterHitGiragira.value = false;
+            cancelMonsterGiraKnockbackTimers();
         };
 
         const MONSTER_DEATH_CRY_SFX_PATH = 'assets/audio/sfx/monster_death_cry.mp3';
@@ -2492,7 +2524,9 @@ const _jpApp = Vue.createApp({
             const burst = document.createElement('div');
             const size = profile.sizeMin + Math.random() * (profile.sizeMax - profile.sizeMin);
 
-            burst.className = 'boss-death-burst';
+            burst.className = currentLevel.value === 36
+                ? 'boss-death-burst boss-death-burst--hidden'
+                : 'boss-death-burst';
             burst.dataset.bossDeathVfx = '1';
             burst.style.left = `${x}px`;
             burst.style.top = `${y}px`;
@@ -5058,6 +5092,18 @@ const _jpApp = Vue.createApp({
                     if (e.cancelable) e.preventDefault();
 
                     flickState.pendingDirectionalMiss = !shot.hitsMonster;
+                    const vx = shot.targetX - startPoint.x;
+
+                    const vy = shot.targetY - startPoint.y;
+
+                    const vlen = Math.hypot(vx, vy) || 1;
+
+                    flickState.lastShotDirNx = vx / vlen;
+
+                    flickState.lastShotDirNy = vy / vlen;
+
+                    flickState.lastShotDirStored = true;
+
                     spawnProjectile(startPoint.x, startPoint.y, shot.targetX, shot.targetY, opt);
 
                     handleRuneClick(opt, true);
@@ -7373,6 +7419,9 @@ const _jpApp = Vue.createApp({
             flickState.activeOpt = null;
             flickState.successOpt = null;
             flickState.pendingDirectionalMiss = false;
+            flickState.lastShotDirStored = false;
+            flickState.lastShotDirNx = 0;
+            flickState.lastShotDirNy = -1;
             if (flickState.capturedEl) {
                 try { flickState.capturedEl.releasePointerCapture?.(1); } catch (e) { }
                 flickState.capturedEl = null;
@@ -8269,6 +8318,180 @@ const _jpApp = Vue.createApp({
             saveProgression();
         };
 
+        const KB_GIRA_RETURN_MS = 2080;
+
+        const clampGiraKb = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+        const computeStrikeGiraKnockVector = (isFlickMode) => {
+
+            let nx = 0;
+
+            let ny = -1;
+
+            const cq = currentQuestion.value;
+
+            const choices = Array.isArray(cq?.choices) ? cq.choices : [];
+
+            const ua = userAnswers.value[0];
+
+            let idx = choices.indexOf(ua);
+
+            const nChoose = choices.length;
+
+            const isBossFight = currentLevel.value % 5 === 0;
+
+            const tierMagBase = isBossFight ? 36 : 66;
+
+            const wMag = (((comboCount.value * 31) + (idx >= 0 ? idx * 17 : comboCount.value * 5)) % 17) - 8;
+
+            const magPx = clampGiraKb(
+
+                tierMagBase + (isBossFight ? wMag * 0.7 : wMag * 1.7),
+
+                isBossFight ? 24 : 48,
+
+                isBossFight ? 48 : 84
+
+            );
+
+            if (isFlickMode && flickState.lastShotDirStored) {
+
+                nx = flickState.lastShotDirNx;
+
+                ny = flickState.lastShotDirNy;
+
+                flickState.lastShotDirStored = false;
+
+            } else {
+
+                flickState.lastShotDirStored = false;
+
+                const slotEl = document.querySelector('.resonance-wheel.tap-mode .resonance-slot.is-correct')
+
+                    || document.querySelector('.tap-mode .resonance-slot.is-selected');
+
+                const monstEl = document.querySelector('img[alt="monster"]');
+
+                const sr = slotEl?.getBoundingClientRect?.();
+
+                const mr = monstEl?.getBoundingClientRect?.();
+
+                if (sr && mr) {
+
+                    const mx = mr.left + mr.width / 2;
+
+                    const my = mr.top + mr.height * 0.52;
+
+                    const sx = sr.left + sr.width / 2;
+
+                    const sy = sr.top + sr.height / 2;
+
+                    const dx = mx - sx;
+
+                    const dy = my - sy;
+
+                    const h = Math.hypot(dx, dy) || 1;
+
+                    nx = dx / h;
+
+                    ny = dy / h;
+
+                } else {
+
+                    const maxI = Math.max(nChoose - 1, 0);
+
+                    const safeIdx = idx >= 0 ? idx : clampGiraKb(Math.floor(maxI / 2), 0, maxI);
+
+                    const leftPick = safeIdx === 0;
+
+                    const rightPick = safeIdx >= maxI || (nChoose === 4 && safeIdx >= 3);
+
+                    if (leftPick && nChoose >= 2) {
+
+                        nx = 0.55;
+
+                        ny = -0.84;
+
+                    } else if (rightPick && nChoose >= 2) {
+
+                        nx = -0.55;
+
+                        ny = -0.84;
+
+                    } else if (safeIdx === 1 && nChoose >= 3) {
+
+                        nx = 0.08;
+
+                        ny = -0.887;
+
+                    } else {
+
+                        const midBump = (((safeIdx % 3) === 1) ? 0.07 : -0.06);
+
+                        nx = midBump;
+
+                        ny = -0.88;
+
+                    }
+
+                    const nh = Math.hypot(nx, ny) || 1;
+
+                    nx /= nh;
+
+                    ny /= nh;
+
+                }
+
+            }
+
+            const seed = (((idx >= 0 ? idx : comboCount.value) + comboCount.value * 2) % 9) - 4;
+
+            const rotDeg = clampGiraKb(seed * 1.05, -5.25, 5.25);
+
+            return { nx, ny, magPx, rotDeg };
+
+        };
+
+        const armStrikeGiraKnockbackMotion = (plan) => {
+
+            if (!plan || !Number.isFinite(plan.nx) || !Number.isFinite(plan.ny)) return;
+
+            cancelMonsterGiraKnockbackTimers();
+
+            monsterGiraKnockActive.value = false;
+
+            const vars = {
+
+                '--giragira-knock-max-x': `${plan.nx * plan.magPx}px`,
+
+                '--giragira-knock-max-y': `${plan.ny * plan.magPx}px`,
+
+                '--giragira-knock-rot': `${plan.rotDeg}deg`
+
+            };
+
+            monsterGiraKnockStyle.value = {};
+
+            nextTick(() => {
+
+                monsterGiraKnockStyle.value = vars;
+
+                monsterGiraKnockActive.value = true;
+
+                giraKnockReleaseTimeoutId = setTimeout(() => {
+
+                    monsterGiraKnockActive.value = false;
+
+                    monsterGiraKnockStyle.value = {};
+
+                    giraKnockReleaseTimeoutId = null;
+
+                }, KB_GIRA_RETURN_MS);
+
+            });
+
+        };
+
         /** 答案判定入口：計算是否正確、處理傘害 / combo 計數、觸發自動推進郏輯。 */
         const checkAnswer = () => {
 
@@ -8334,6 +8557,12 @@ const _jpApp = Vue.createApp({
 
             setTimeout(() => {
 
+                if (!isCurrentCorrect.value) {
+
+                    flickState.lastShotDirStored = false;
+
+                }
+
                 if (isCurrentCorrect.value) {
 
                     correctAnswersAmount.value++;
@@ -8358,9 +8587,16 @@ const _jpApp = Vue.createApp({
 
                     } else {
 
+                        const strikeIsGira = heroBuffs.giragiraTurns > 0;
+
                         monsterHit.value = true;
 
                         setTimeout(() => { monsterHit.value = false; }, 500); // 延長至 0.5s
+
+                        if (strikeIsGira) {
+                            monsterHitGiragira.value = true;
+                            scheduleBattleFlowTimeout(() => { monsterHitGiragira.value = false; }, 430);
+                        }
 
                         // 正式版：只有怪物將在 2 秒內出手時，命中才追加 1 秒硬直
 
@@ -8382,9 +8618,9 @@ const _jpApp = Vue.createApp({
                         const currentHitSfx = (heroBuffs.giragiraTurns > 0) ? 'hit2' : 'hit';
                         if (_isMobileSfx) playUiSfx(currentHitSfx); else playSfx(currentHitSfx);
 
-                        // 💡 點選(Tap)模式原本沒有子彈，這裡幫它補上命中爆炸特效
+                        // 💡 點選(Tap)模式：一般攻擊補命中爆炸；GIRAGIRA 改由專用斬擊 VFX 主導，避免與黃圈疊成「普通感」
 
-                        if (!isFlick) {
+                        if (!isFlick && !strikeIsGira) {
 
                             const monsterEl = document.querySelector('img[alt="monster"]') || document.querySelector('.w-28.h-28.rounded-full');
 
@@ -8394,17 +8630,22 @@ const _jpApp = Vue.createApp({
 
                         }
 
-                        // GIRAGIRA 強化命中特效
-                        if (heroBuffs.giragiraTurns > 0 && typeof window.spawnGiraGiraHitVfx === 'function') {
+                        // GIRAGIRA 強化命中特效（斬光 + 爆裂層）
+                        if (strikeIsGira && typeof window.spawnGiraGiraHitVfx === 'function') {
                             const giraEl = document.querySelector('img[alt="monster"]') || document.querySelector('.w-28.h-28.rounded-full');
                             const giraCenter = rectCenter(giraEl);
                             if (giraCenter) {
                                 const giraDelay = isFlick ? 380 : 0;
-                                setTimeout(() => { if (typeof window.spawnGiraGiraHitVfx === 'function') window.spawnGiraGiraHitVfx(giraCenter.x, giraCenter.y); }, giraDelay);
+                                setTimeout(() => {
+                                    if (typeof window.spawnGiraGiraHitVfx === 'function') window.spawnGiraGiraHitVfx(giraCenter.x, giraCenter.y);
+                                    if (typeof window.spawnGiraGiraBurstVfx === 'function') window.spawnGiraGiraBurstVfx(giraCenter.x, giraCenter.y);
+                                }, giraDelay);
                             }
                         }
 
                         comboCount.value++;
+
+                        const giraKbPlan = strikeIsGira ? computeStrikeGiraKnockVector(isFlick) : null;
 
                         playComboTierFeedbackVoice(comboCount.value);
 
@@ -8457,7 +8698,13 @@ const _jpApp = Vue.createApp({
                         monsterStunSeconds.value = 0.8; // 0.8s hit-stun
                         setTimeout(() => { monsterHit.value = false; }, 400);
 
-                        window.spawnFloatingDamage('monster', dmg);
+                        window.spawnFloatingDamage('monster', dmg, 'hp', strikeIsGira ? { giraStrike: true } : null);
+
+                        if (giraKbPlan && monster.value.hp > 0 && !monsterIsDying.value && !bossDeathVfxActive.value) {
+
+                            armStrikeGiraKnockbackMotion(giraKbPlan);
+
+                        }
 
                         if (monster.value.hp <= 0) {
                             if (window.__AUTO_ADVANCE_TIMEOUT) { clearTimeout(window.__AUTO_ADVANCE_TIMEOUT); window.__AUTO_ADVANCE_TIMEOUT = null; }
@@ -8625,8 +8872,9 @@ const _jpApp = Vue.createApp({
 
             clearTimer();
 
-            const isBoss = currentLevel.value % 5 === 0;
-            if (isBoss) {
+            const isBossStandard = currentLevel.value % 5 === 0;
+            const useBossDeathPresentation = isBossStandard || currentLevel.value === 36;
+            if (isBossStandard) {
                 playBossDeathCrySfx();
             } else {
                 playMonsterDeathCrySfx();
@@ -8683,7 +8931,7 @@ const _jpApp = Vue.createApp({
 
                 stopAllAudio();
 
-                if (isBoss) {
+                if (isBossStandard) {
 
                     playSfx('bossClear');
 
@@ -8715,7 +8963,7 @@ const _jpApp = Vue.createApp({
 
             };
 
-            if (isBoss) {
+            if (useBossDeathPresentation) {
                 startBossDeathSequence(finalizeVictoryFlow);
             } else {
                 scheduleBattleFlowTimeout(finalizeVictoryFlow, 2000);
@@ -9208,21 +9456,22 @@ const _jpApp = Vue.createApp({
         window.__attachDebugTools?.({
             maxLevel, currentLevel, questions, userAnswers,
             hasSubmitted,
-            showLevelSelect, isFinished, levelConfig, LEVEL_CONFIG,
+            showLevelSelect, showMap, isFinished, levelConfig, LEVEL_CONFIG,
             levelTitle, player, monster, currentQuestion,
             startLevel, retryLevel, initGame, generateQuestionBySkill,
             mentorTutorialSeen, saveMentorState, skillsAll, setupMentorDialogue,
             pauseBattle, startBossQueue, unlockedSkillIds,
             playPrologueOpening, playMainEndingFinale,
             mapChapters, activeChapter, selectedSegmentIdx, getMapNodeStyle,
-            MENTOR_AUDIO_MAP
+            MENTOR_AUDIO_MAP,
+            grantRewards, playerDead, monsterIsDying, monsterTrulyDead, monsterResultShown
         });
 
         return {
             isNextBtnVisible,
             animatedExp,
             isAudioDebugEnabled, isAudioDebugOpen, isAudioDebugDragging, audioDebugOverlayStyle, audioDebugSections, refreshAudioDebugState, startAudioDebugDrag, debugResumeAudioContext, debugTestSfx, debugTestBgmPlay, debugPauseBgm, debugTestRawAudio, debugEnableHtmlAudioFallback, debugDisableHtmlAudioFallback, debugEnableFallbackAudioContextV2, debugDisableFallbackAudioContextV2, debugResumeFallbackAudioContext, debugTestFallbackContextBgm, debugTestFallbackBgm, debugTestFallbackSfx, debugShowAudioState,
-            answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
+            answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, monsterHitGiragira, monsterGiraKnockActive, monsterGiraKnockStyle, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             handleEscapeToMap, escapeOverlayVisible, escapeOverlayOpacity, isEscaping,
             heroBuffs,
             skillList, castAbility, spState, settings, shouldShowNextButton, praiseToast, comboPopup, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG, getSkillTypeLabel,

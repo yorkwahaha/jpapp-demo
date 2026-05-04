@@ -3320,14 +3320,21 @@
                         <div v-if="!monsterTrulyDead"
                             class="flex flex-col items-center relative transition-all duration-300 pointer-events-auto"
                             :style="monsterPositionStyle" :class="{ 
-                                'monster-death-anim': monsterIsDying && currentLevel % 5 !== 0,
-                                'boss-death-anim': monsterIsDying && currentLevel % 5 === 0
+                                'monster-death-anim': monsterIsDying && currentLevel % 5 !== 0 && currentLevel !== 36,
+                                'boss-death-anim': monsterIsDying && (currentLevel % 5 === 0 || currentLevel === 36),
+                                'boss-death-anim--hidden': monsterIsDying && currentLevel === 36
                             }">
+
+                            <div class="monster-gira-knockback-shell flex flex-col items-center"
+                                :class="{ 'monster-giragira-knockback': monsterGiraKnockActive }"
+                                :style="monsterGiraKnockStyle">
 
                             <!-- Hit Animation Wrapper: Isolates hit/shake from base position transform to prevent jumping -->
                             <div class="flex flex-col items-center" :class="{ 
-                                    hit: monsterHit,
-                                    'hit-boss': monsterHit && currentLevel % 5 === 0,
+                                    hit: monsterHit && !monsterHitGiragira,
+                                    'hit-boss': monsterHit && !monsterHitGiragira && currentLevel % 5 === 0,
+                                    'gira-hit-impact': monsterHitGiragira && currentLevel % 5 !== 0,
+                                    'gira-hit-impact-boss': monsterHitGiragira && currentLevel % 5 === 0,
                                     'monster-dodge': monsterDodge,
                                     'monster-attack-lunge': monsterAttackLunge
                                 }">
@@ -3353,21 +3360,22 @@
                                 }"
                                     :class="[currentLevel % 5 === 0 ? 'monster-container-boss' : 'monster-container-normal', { 'monster-entrance': monsterIsEntering }]">
 
-                                    <div v-if="bossDeathVfxActive && currentLevel % 5 === 0"
+                                    <div v-if="bossDeathVfxActive && (currentLevel % 5 === 0 || currentLevel === 36)"
                                         class="boss-death-overlay-wrap">
-                                        <div class="boss-death-overlay" :class="`boss-death-stage-${bossDeathStage}`">
+                                        <div class="boss-death-overlay" :class="[`boss-death-stage-${bossDeathStage}`, { 'boss-death--hidden': currentLevel === 36 }]">
                                             <div class="boss-death-vignette"></div>
                                             <div class="boss-death-aura"></div>
                                             <div class="boss-death-core"></div>
                                             <div class="boss-death-ring boss-death-ring-a"></div>
                                             <div class="boss-death-ring boss-death-ring-b"></div>
                                             <div class="boss-death-afterglow"></div>
+                                            <!-- leak 順序打散：批次仍 +2／delay 不變，但角度改為交錯圓周索引，避免順時針視感 -->
                                             <div class="boss-death-leak-field">
                                                 <span v-for="n in 10" :key="'boss-death-leak-' + n" class="boss-death-leak"
                                                     :style="{
-                                                        '--angle': (((n - 1) * 36) - 162) + 'deg',
-                                                        '--radius': (52 + (n % 3) * 14) + 'px',
-                                                        '--delay': ((n - 1) * 0.16) + 's'
+                                                        '--angle': ((([3, 7, 1, 9, 2, 6, 0, 8, 4, 5][n - 1]) * 36) - 162) + 'deg',
+                                                        '--radius': (54 + (([3, 7, 1, 9, 2, 6, 0, 8, 4, 5][n - 1]) % 4) * 11) + 'px',
+                                                        '--reveal-delay': ([0.8, 0.8, 2.4, 2.4, 4.0, 4.0, 5.6, 5.6, 6.4, 6.4][n - 1]) + 's'
                                                     }"></span>
                                             </div>
                                             <div class="boss-death-fragment-field">
@@ -3381,9 +3389,9 @@
                                         </div>
                                     </div>
 
-                                    <div v-if="bossDeathVfxActive && currentLevel % 5 === 0"
+                                    <div v-if="bossDeathVfxActive && (currentLevel % 5 === 0 || currentLevel === 36)"
                                         class="boss-death-body-vfx"
-                                        :class="`boss-death-stage-${bossDeathStage}`">
+                                        :class="[`boss-death-stage-${bossDeathStage}`, { 'boss-death--hidden': currentLevel === 36 }]">
                                         <div class="boss-death-body-core"></div>
                                         <div class="boss-death-body-glow"></div>
                                         <div class="boss-death-body-distortion"></div>
@@ -3412,9 +3420,10 @@
                                         :class="[
                                             {
                                                 'odoodo-jitter-root': heroBuffs.odoodoTurns > 0,
-                                                'boss-death-sync-shell': bossDeathVfxActive && currentLevel % 5 === 0
+                                                'boss-death-sync-shell': bossDeathVfxActive && (currentLevel % 5 === 0 || currentLevel === 36),
+                                                'boss-death--hidden': bossDeathVfxActive && currentLevel === 36
                                             },
-                                            bossDeathVfxActive && currentLevel % 5 === 0 ? `boss-death-stage-${bossDeathStage}` : ''
+                                            bossDeathVfxActive && (currentLevel % 5 === 0 || currentLevel === 36) ? `boss-death-stage-${bossDeathStage}` : ''
                                         ]">
                                         <template v-if="heroBuffs.odoodoTurns > 0">
                                             <div class="odoodo-echo odoodo-echo--back" aria-hidden="true"></div>
@@ -3480,6 +3489,7 @@
                                     </div>
 
                                 </div>
+                            </div>
                             </div>
                         </div>
 

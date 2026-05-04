@@ -4,14 +4,15 @@ window.__attachDebugTools = function (refs) {
     const {
         maxLevel, currentLevel, questions, userAnswers, selectedAnswers,
         currentQuestionIndex, questionIndex, hasSubmitted, isCorrect, showResult,
-        showLevelSelect, showHome, isFinished, levelConfig, LEVEL_CONFIG,
+        showLevelSelect, showMap, showHome, isFinished, levelConfig, LEVEL_CONFIG,
         levelTitle, player, monster, currentQuestion,
         startLevel, retryLevel, initGame, goHome, generateQuestionBySkill,
         mentorTutorialSeen, saveMentorState, skillsAll, setupMentorDialogue,
         pauseBattle, unlockedSkillIds, startBossQueue,
         playPrologueOpening, playMainEndingFinale,
         mapChapters, activeChapter, selectedSegmentIdx, getMapNodeStyle,
-        MENTOR_AUDIO_MAP
+        MENTOR_AUDIO_MAP,
+        grantRewards, playerDead, monsterIsDying, monsterTrulyDead, monsterResultShown
     } = refs || {};
 
     // --- Audit State ---
@@ -512,6 +513,30 @@ window.__attachDebugTools = function (refs) {
 
 
 
+            function isJpDebugDevHost() {
+
+                try {
+
+                    if (typeof location === "undefined") return false;
+
+                    const h = String(location.hostname || "");
+
+                    if (h === "localhost" || h === "127.0.0.1") return true;
+
+                    if (String(location.protocol || "") === "file:") return true;
+
+                    return false;
+
+                } catch (err) {
+
+                    return false;
+
+                }
+
+            }
+
+
+
             function getState() {
 
                 return {
@@ -533,6 +558,10 @@ window.__attachDebugTools = function (refs) {
                             ? showLevelSelect.value
 
                             : undefined,
+
+                    showMap:
+
+                        typeof showMap !== "undefined" ? showMap.value : undefined,
 
                     isFinished:
 
@@ -1297,6 +1326,7 @@ jpDebug commands:
 - jpDebug.retry() / next() / prev()
 - jpDebug.skill('MO_ALSO_BASIC')
 - jpDebug.skillLines('NI_TIME', 20)
+- jpDebug.killCurrentMonster() (dev only: localhost / 127.0.0.1 / file:) — instant win, uses grantRewards
 - jpDebug.state() / home() / levels()
 - jpDebug.mapNodes() : Console-table current map marker data.
 - jpDebug.mapNodes({ labels: true }) : Add temporary labels above visible markers.
@@ -1322,6 +1352,104 @@ Mentor/Tutorial:
                 }
 
             };
+
+
+
+            if (isJpDebugDevHost() && typeof grantRewards === "function") {
+
+                debugApi.killCurrentMonster = function killCurrentMonster() {
+
+                    if (!isJpDebugDevHost()) {
+
+                        console.warn("[jpDebug.killCurrentMonster] only available in development.");
+
+                        return false;
+
+                    }
+
+                    const sls = typeof showLevelSelect !== "undefined" ? !!showLevelSelect.value : true;
+
+                    const sm = typeof showMap !== "undefined" ? !!showMap.value : false;
+
+                    const fin = typeof isFinished !== "undefined" ? !!isFinished.value : false;
+
+                    const lv = typeof currentLevel !== "undefined" ? Number(currentLevel.value) : 0;
+
+                    const pd = typeof playerDead !== "undefined" ? !!playerDead.value : false;
+
+                    if (sls || sm || fin || !Number.isFinite(lv) || lv <= 0 || pd) {
+
+                        console.warn("[jpDebug.killCurrentMonster] not in an active battle.", { showLevelSelect: sls, showMap: sm, isFinished: fin, currentLevel: lv, playerDead: pd });
+
+                        return false;
+
+                    }
+
+                    if (typeof monster === "undefined" || !monster?.value) {
+
+                        console.warn("[jpDebug.killCurrentMonster] no active monster.");
+
+                        return false;
+
+                    }
+
+                    const m = monster.value;
+
+                    if (typeof m.hp !== "number") {
+
+                        console.warn("[jpDebug.killCurrentMonster] invalid monster state.");
+
+                        return false;
+
+                    }
+
+                    const mid = typeof monsterIsDying !== "undefined" ? !!monsterIsDying.value : false;
+
+                    const mtd = typeof monsterTrulyDead !== "undefined" ? !!monsterTrulyDead.value : false;
+
+                    const mrs = typeof monsterResultShown !== "undefined" ? !!monsterResultShown.value : false;
+
+                    if (mid || mtd || mrs) {
+
+                        console.warn("[jpDebug.killCurrentMonster] monster already defeated or resolution in progress.");
+
+                        return false;
+
+                    }
+
+                    if (m.hp <= 0) {
+
+                        console.warn("[jpDebug.killCurrentMonster] monster HP already 0.");
+
+                        return false;
+
+                    }
+
+                    try {
+
+                        if (window.__AUTO_ADVANCE_TIMEOUT) {
+
+                            clearTimeout(window.__AUTO_ADVANCE_TIMEOUT);
+
+                            window.__AUTO_ADVANCE_TIMEOUT = null;
+
+                        }
+
+                    } catch (err) {
+
+                        /* ignore */
+
+                    }
+
+                    m.hp = 0;
+
+                    grantRewards();
+
+                    return true;
+
+                };
+
+            }
 
 
 

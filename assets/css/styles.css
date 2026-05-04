@@ -268,6 +268,84 @@ rt {
     animation: hit 0.25s ease-in-out;
 }
 
+@keyframes gira-monster-impact {
+    0% {
+        transform: scale(1) translateY(0);
+        filter: brightness(1) saturate(1);
+    }
+
+    16% {
+        transform: scale(1.13) translateY(-7px) rotate(-1.4deg);
+        filter: brightness(2.65) saturate(1.38) contrast(1.18) drop-shadow(0 0 16px rgba(254, 249, 195, 0.95)) drop-shadow(0 0 34px rgba(251, 191, 36, 0.65));
+    }
+
+    100% {
+        transform: scale(1) translateY(0) rotate(0);
+        filter: brightness(1) saturate(1) contrast(1);
+    }
+}
+
+@keyframes gira-monster-impact-boss {
+    0% {
+        transform: scale(1) translateY(0);
+        filter: brightness(1) saturate(1);
+    }
+
+    16% {
+        transform: scale(1.07) translateY(-4px) rotate(-0.6deg);
+        filter: brightness(2.15) saturate(1.28) contrast(1.12) drop-shadow(0 0 14px rgba(254, 249, 195, 0.88)) drop-shadow(0 0 28px rgba(251, 191, 36, 0.52));
+    }
+
+    100% {
+        transform: scale(1) translateY(0) rotate(0);
+        filter: brightness(1) saturate(1) contrast(1);
+    }
+}
+
+.gira-hit-impact {
+    animation: gira-monster-impact 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.gira-hit-impact-boss {
+    animation: gira-monster-impact-boss 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* GIRAGIRA 命中擊退：與 monsterPositionStyle 分層，僅內層位移 */
+.monster-gira-knockback-shell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    will-change: transform;
+    --giragira-knock-max-x: 0px;
+    --giragira-knock-max-y: 0px;
+    --giragira-knock-rot: 0deg;
+}
+
+@keyframes monster-gira-knock-return {
+    0% {
+        transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+
+    /* 約 140ms：快速撞到最大位移 */
+    8% {
+        transform: translate3d(var(--giragira-knock-max-x), var(--giragira-knock-max-y), 0) rotate(var(--giragira-knock-rot));
+    }
+
+    /* 約 1180ms～：維持擊退＋ tilt，停住体感 ~1s */
+    61% {
+        transform: translate3d(var(--giragira-knock-max-x), var(--giragira-knock-max-y), 0) rotate(var(--giragira-knock-rot));
+    }
+
+    /* 緩回原位並歸零旋轉 */
+    100% {
+        transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+}
+
+.monster-gira-knockback-shell.monster-giragira-knockback {
+    animation: monster-gira-knock-return 2.08s cubic-bezier(0.5, 0, 0.14, 1) forwards;
+}
+
 .flash-overlay {
     position: fixed;
     inset: 0;
@@ -3326,6 +3404,47 @@ body.lock-scroll {
     }
 }
 
+/* L36 隱藏魔王：容器死亡動畫 — 較少全白閃、偏虛無收束 */
+.boss-death-anim.boss-death-anim--hidden {
+    animation: boss-die-container-fade-hidden 10s linear forwards !important;
+}
+
+@keyframes boss-die-container-fade-hidden {
+    0% {
+        filter: brightness(1) saturate(1) contrast(1);
+        opacity: 1;
+    }
+
+    8% {
+        filter: brightness(1.35) saturate(0.85) contrast(1.08) drop-shadow(0 0 14px rgba(88, 28, 135, 0.55));
+    }
+
+    22% {
+        filter: brightness(1.15) saturate(0.72) contrast(1.12) drop-shadow(0 0 18px rgba(30, 27, 75, 0.65));
+        opacity: 0.94;
+    }
+
+    48% {
+        filter: brightness(0.95) saturate(0.55) contrast(1.18) blur(0.5px) drop-shadow(0 0 22px rgba(49, 46, 129, 0.5));
+        opacity: 0.82;
+    }
+
+    72% {
+        filter: brightness(0.72) saturate(0.35) contrast(1.22) blur(1.6px) drop-shadow(0 0 12px rgba(12, 10, 40, 0.7));
+        opacity: 0.58;
+    }
+
+    88% {
+        filter: brightness(0.42) saturate(0.12) contrast(1.08) blur(5px) drop-shadow(0 0 28px rgba(76, 29, 149, 0.45));
+        opacity: 0.22;
+    }
+
+    100% {
+        filter: brightness(0.18) saturate(0) contrast(0.95) blur(14px) grayscale(0.92);
+        opacity: 0;
+    }
+}
+
 .boss-death-overlay-wrap {
     position: absolute;
     left: 50%;
@@ -3370,11 +3489,11 @@ body.lock-scroll {
             rgba(91, 33, 182, 0.22) 48%,
             rgba(15, 23, 42, 0.36) 72%,
             transparent 100%);
-    filter: blur(16px);
+    filter: blur(12px);
 }
 
 .boss-death-aura {
-    inset: 16%;
+    inset: 23%;
     border-radius: 50%;
     background:
         radial-gradient(circle at center,
@@ -3382,12 +3501,12 @@ body.lock-scroll {
             rgba(244, 239, 255, 0.5) 18%,
             rgba(196, 181, 253, 0.3) 34%,
             rgba(168, 85, 247, 0.18) 56%,
-            transparent 74%);
-    filter: blur(10px);
+            transparent 71%);
+    filter: blur(8px);
 }
 
 .boss-death-core {
-    inset: 34%;
+    inset: 39%;
     border-radius: 50%;
     background:
         radial-gradient(circle at center,
@@ -3395,25 +3514,25 @@ body.lock-scroll {
             rgba(250, 245, 255, 0.98) 18%,
             rgba(221, 214, 254, 0.74) 42%,
             rgba(168, 85, 247, 0.22) 64%,
-            rgba(255, 255, 255, 0) 84%);
+            rgba(255, 255, 255, 0) 81%);
     mix-blend-mode: screen;
     filter: blur(2px);
 }
 
 .boss-death-ring {
-    inset: 20%;
+    inset: 25%;
     border-radius: 50%;
     border: 2px solid rgba(255, 248, 220, 0.65);
     opacity: 0;
 }
 
 .boss-death-ring-b {
-    inset: 10%;
+    inset: 15%;
     border-color: rgba(196, 181, 253, 0.4);
 }
 
 .boss-death-afterglow {
-    inset: -6%;
+    inset: -4%;
     border-radius: 50%;
     background:
         radial-gradient(circle at center,
@@ -3421,8 +3540,8 @@ body.lock-scroll {
             rgba(221, 214, 254, 0.18) 24%,
             rgba(168, 85, 247, 0.14) 46%,
             rgba(30, 41, 59, 0.06) 62%,
-            transparent 76%);
-    filter: blur(15px);
+            transparent 74%);
+    filter: blur(11px);
     opacity: 0;
 }
 
@@ -3469,8 +3588,8 @@ body.lock-scroll {
             rgba(248, 245, 255, 0.9) 16%,
             rgba(221, 214, 254, 0.46) 34%,
             rgba(168, 85, 247, 0.08) 56%,
-            rgba(255, 255, 255, 0) 70%);
-    filter: blur(6px);
+            rgba(255, 255, 255, 0) 66%);
+    filter: blur(4.5px);
     opacity: 0;
 }
 
@@ -3483,8 +3602,8 @@ body.lock-scroll {
             rgba(221, 214, 254, 0.22) 26%,
             rgba(168, 85, 247, 0.18) 44%,
             rgba(91, 33, 182, 0.14) 60%,
-            rgba(15, 23, 42, 0) 78%);
-    filter: blur(7px);
+            rgba(15, 23, 42, 0) 73%);
+    filter: blur(5px);
 }
 
 .boss-death-body-distortion {
@@ -3495,7 +3614,7 @@ body.lock-scroll {
         radial-gradient(circle at 64% 64%, rgba(168, 85, 247, 0.16) 0%, transparent 22%),
         linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 44%, rgba(167, 139, 250, 0.16) 70%, transparent 100%);
     mix-blend-mode: plus-lighter;
-    filter: blur(5px);
+    filter: blur(4px);
 }
 
 .boss-death-body-crack {
@@ -3529,7 +3648,7 @@ body.lock-scroll {
         radial-gradient(circle at 64% 34%, rgba(221, 214, 254, 0.16) 0%, transparent 14%),
         radial-gradient(circle at 50% 68%, rgba(168, 85, 247, 0.16) 0%, transparent 18%);
     opacity: 0;
-    filter: blur(4px);
+    filter: blur(3px);
 }
 
 .boss-death-body-fragment {
@@ -3580,9 +3699,10 @@ body.lock-scroll {
     transform:
         rotate(var(--angle, 0deg))
         translateY(calc(var(--radius, 72px) * -1))
-        scaleY(0.25);
-    animation: boss-death-leak-pulse 1.35s ease-out infinite;
-    animation-delay: var(--delay, 0s);
+        scaleY(1);
+    filter: brightness(1.05);
+    animation: boss-death-leak-reveal 0.52s cubic-bezier(0.22, 0.82, 0.24, 1) both;
+    animation-delay: var(--reveal-delay, 0s);
 }
 
 .boss-death-fragment {
@@ -3659,10 +3779,6 @@ body.lock-scroll {
     animation: boss-death-ring-ripple 1.7s ease-out infinite 0.45s;
 }
 
-.boss-death-stage-2 .boss-death-leak {
-    opacity: 1;
-}
-
 .boss-death-body-vfx.boss-death-stage-2 .boss-death-body-glow {
     animation: boss-body-stage-2-glow 1.4s ease-in-out infinite;
 }
@@ -3707,7 +3823,6 @@ body.lock-scroll {
     animation: boss-death-ring-ripple 0.58s ease-out infinite 0.12s;
 }
 
-.boss-death-stage-3 .boss-death-leak,
 .boss-death-stage-3 .boss-death-fragment {
     opacity: 1;
 }
@@ -3797,16 +3912,388 @@ body.lock-scroll {
     animation: boss-body-fragment-fade 1.25s ease-out forwards;
 }
 
-@keyframes boss-death-stage-1-pulse {
+/* ---- L36 隱藏魔王專用：黑紫核心、裂縫、收束爆發（不影響無 .boss-death--hidden 的一般 boss）---- */
+.boss-death-overlay.boss-death--hidden {
+    overflow: visible;
+}
+
+.boss-death-overlay.boss-death--hidden::before {
+    content: "";
+    position: absolute;
+    inset: -18%;
+    border-radius: 50%;
+    pointer-events: none;
+    background:
+        conic-gradient(from 0deg at 50% 50%,
+            rgba(12, 10, 28, 0.55) 0deg,
+            rgba(49, 46, 129, 0.22) 52deg,
+            rgba(12, 10, 28, 0.62) 104deg,
+            rgba(76, 29, 149, 0.28) 168deg,
+            rgba(15, 23, 42, 0.58) 220deg,
+            rgba(88, 28, 135, 0.26) 286deg,
+            rgba(12, 10, 28, 0.55) 360deg);
+    opacity: 0.42;
+    mix-blend-mode: multiply;
+    filter: blur(1px);
+    animation: boss-hidden-void-spin 14s linear infinite;
+    z-index: 0;
+}
+
+.boss-death-overlay.boss-death--hidden::after {
+    content: "";
+    position: absolute;
+    inset: 8%;
+    border-radius: 50%;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 120% 42% at 50% 50%,
+            rgba(0, 0, 0, 0) 38%,
+            rgba(30, 27, 75, 0.35) 62%,
+            rgba(12, 10, 24, 0.55) 78%,
+            rgba(0, 0, 0, 0) 100%);
+    opacity: 0.55;
+    mix-blend-mode: multiply;
+    z-index: 1;
+}
+
+.boss-death-overlay.boss-death--hidden .boss-death-vignette {
+    background:
+        radial-gradient(circle at center,
+            rgba(30, 27, 75, 0.12) 0%,
+            rgba(49, 46, 129, 0.22) 28%,
+            rgba(12, 10, 28, 0.48) 58%,
+            rgba(0, 0, 0, 0.42) 82%,
+            transparent 100%);
+    filter: blur(14px);
+}
+
+.boss-death-overlay.boss-death--hidden .boss-death-aura {
+    background:
+        radial-gradient(circle at center,
+            rgba(76, 29, 149, 0.35) 0%,
+            rgba(49, 46, 129, 0.28) 22%,
+            rgba(30, 27, 75, 0.22) 44%,
+            rgba(12, 10, 24, 0.12) 68%,
+            transparent 82%);
+    filter: blur(10px);
+}
+
+.boss-death-overlay.boss-death--hidden .boss-death-core {
+    inset: 36%;
+    background:
+        radial-gradient(circle at center,
+            rgba(167, 139, 250, 0.55) 0%,
+            rgba(76, 29, 149, 0.72) 28%,
+            rgba(12, 10, 28, 0.88) 52%,
+            rgba(0, 0, 0, 0.75) 72%,
+            rgba(255, 255, 255, 0) 88%);
+    mix-blend-mode: normal;
+    filter: blur(2.5px);
+    box-shadow:
+        0 0 28px rgba(76, 29, 149, 0.35),
+        0 0 48px rgba(12, 10, 28, 0.4);
+}
+
+.boss-death-overlay.boss-death--hidden .boss-death-ring-a {
+    border-color: rgba(49, 46, 129, 0.55);
+    box-shadow: 0 0 14px rgba(76, 29, 149, 0.28);
+}
+
+.boss-death-overlay.boss-death--hidden .boss-death-ring-b {
+    border-color: rgba(12, 10, 28, 0.45);
+}
+
+.boss-death-overlay.boss-death--hidden .boss-death-afterglow {
+    background:
+        radial-gradient(circle at center,
+            rgba(76, 29, 149, 0.12) 0%,
+            rgba(30, 27, 75, 0.2) 36%,
+            rgba(0, 0, 0, 0.18) 58%,
+            transparent 76%);
+    filter: blur(14px);
+}
+
+.boss-death-overlay.boss-death--hidden.boss-death-stage-1 .boss-death-core,
+.boss-death-overlay.boss-death--hidden.boss-death-stage-1 .boss-death-aura {
+    animation: boss-hidden-stage-1-pulse 1.2s ease-in-out infinite;
+}
+
+.boss-death-overlay.boss-death--hidden.boss-death-stage-2 .boss-death-aura {
+    animation: boss-hidden-stage-2-aura 1.8s ease-in-out infinite;
+}
+
+.boss-death-overlay.boss-death--hidden.boss-death-stage-2 .boss-death-core {
+    animation: boss-hidden-stage-2-core 1.15s steps(2, end) infinite;
+}
+
+.boss-death-overlay.boss-death--hidden.boss-death-stage-3 .boss-death-core {
+    animation: boss-hidden-stage-3-core 0.52s cubic-bezier(0.32, 0.02, 0.14, 1) infinite;
+}
+
+.boss-death-overlay.boss-death--hidden .boss-death-leak {
+    background: linear-gradient(180deg,
+            rgba(12, 10, 28, 0) 0%,
+            rgba(76, 29, 149, 0.75) 22%,
+            rgba(49, 46, 129, 0.88) 52%,
+            rgba(12, 10, 28, 0.72) 82%,
+            rgba(12, 10, 28, 0) 100%);
+    box-shadow:
+        0 0 12px rgba(76, 29, 149, 0.35),
+        0 0 22px rgba(12, 10, 28, 0.45);
+    filter: brightness(0.92);
+}
+
+.boss-death-overlay.boss-death--hidden .boss-death-fragment {
+    background:
+        radial-gradient(circle at 32% 32%,
+            rgba(167, 139, 250, 0.55) 0%,
+            rgba(49, 46, 129, 0.72) 42%,
+            rgba(12, 10, 28, 0.9) 100%);
+    box-shadow:
+        0 0 10px rgba(76, 29, 149, 0.32),
+        0 0 18px rgba(12, 10, 28, 0.4);
+}
+
+.boss-death-overlay.boss-death--hidden.boss-death-stage-4 {
+    animation: boss-death-overlay-fadeout-hidden 3s cubic-bezier(0.18, 0.82, 0.12, 1) forwards;
+}
+
+.boss-death-overlay.boss-death--hidden.boss-death-stage-4 .boss-death-core {
+    animation: boss-hidden-core-collapse-burst 2.35s cubic-bezier(0.12, 0.9, 0.2, 1) forwards;
+}
+
+.boss-death-overlay.boss-death--hidden.boss-death-stage-4 .boss-death-aura,
+.boss-death-overlay.boss-death--hidden.boss-death-stage-4 .boss-death-vignette {
+    animation: boss-hidden-stage-4-fade 2.35s cubic-bezier(0.2, 0.78, 0.14, 1) forwards;
+}
+
+.boss-death-body-vfx.boss-death--hidden {
+    mix-blend-mode: normal;
+}
+
+.boss-death-body-vfx.boss-death--hidden .boss-death-body-core {
+    background:
+        radial-gradient(circle at 50% 50%,
+            rgba(76, 29, 149, 0.42) 0%,
+            rgba(30, 27, 75, 0.55) 22%,
+            rgba(12, 10, 28, 0.72) 48%,
+            rgba(0, 0, 0, 0.5) 68%,
+            rgba(255, 255, 255, 0) 82%);
+    filter: blur(5px);
+}
+
+.boss-death-body-vfx.boss-death--hidden .boss-death-body-glow {
+    background:
+        radial-gradient(circle at 50% 48%,
+            rgba(76, 29, 149, 0.22) 0%,
+            rgba(49, 46, 129, 0.28) 28%,
+            rgba(12, 10, 28, 0.38) 56%,
+            rgba(15, 23, 42, 0) 76%);
+    filter: blur(6px);
+}
+
+.boss-death-body-vfx.boss-death--hidden .boss-death-body-distortion {
+    background:
+        radial-gradient(circle at 50% 50%, rgba(12, 10, 28, 0.22) 0%, transparent 20%),
+        radial-gradient(circle at 40% 36%, rgba(76, 29, 149, 0.2) 0%, transparent 22%),
+        radial-gradient(circle at 66% 62%, rgba(49, 46, 129, 0.22) 0%, transparent 24%),
+        linear-gradient(128deg, rgba(12, 10, 28, 0.14), transparent 46%, rgba(76, 29, 149, 0.12) 72%, transparent 100%);
+    mix-blend-mode: multiply;
+    filter: blur(4.5px);
+}
+
+.boss-death-body-vfx.boss-death--hidden .boss-death-body-crack {
+    background:
+        linear-gradient(180deg,
+            rgba(12, 10, 28, 0) 0%,
+            rgba(49, 46, 129, 0.55) 16%,
+            rgba(76, 29, 149, 0.72) 42%,
+            rgba(12, 10, 28, 0.82) 74%,
+            rgba(12, 10, 28, 0) 100%);
+    box-shadow:
+        0 0 10px rgba(76, 29, 149, 0.32),
+        0 0 22px rgba(12, 10, 28, 0.45);
+}
+
+.boss-death-body-vfx.boss-death--hidden .boss-death-body-erosion {
+    background:
+        radial-gradient(circle at 50% 50%, rgba(12, 10, 28, 0.22) 0%, transparent 18%),
+        radial-gradient(circle at 36% 32%, rgba(76, 29, 149, 0.18) 0%, transparent 16%),
+        radial-gradient(circle at 64% 36%, rgba(49, 46, 129, 0.18) 0%, transparent 16%),
+        radial-gradient(circle at 50% 70%, rgba(12, 10, 28, 0.22) 0%, transparent 20%);
+}
+
+.boss-death-body-vfx.boss-death--hidden .boss-death-body-fragment {
+    background:
+        linear-gradient(145deg,
+            rgba(76, 29, 149, 0.55) 0%,
+            rgba(30, 27, 75, 0.62) 42%,
+            rgba(12, 10, 28, 0.78) 100%);
+    box-shadow:
+        0 0 10px rgba(76, 29, 149, 0.28),
+        0 0 16px rgba(12, 10, 28, 0.38);
+}
+
+.boss-death-sync-shell.boss-death--hidden.boss-death-stage-4 {
+    animation: boss-shell-final-sync-hidden 2.35s cubic-bezier(0.12, 0.88, 0.16, 1) forwards;
+}
+
+@keyframes boss-hidden-void-spin {
+    0% {
+        transform: rotate(0deg) scale(1);
+    }
+
+    100% {
+        transform: rotate(360deg) scale(1.02);
+    }
+}
+
+@keyframes boss-hidden-stage-1-pulse {
+
+    0%,
+    100% {
+        transform: scale(0.97);
+        filter: brightness(0.88) saturate(0.85);
+    }
+
+    50% {
+        transform: scale(1.04);
+        filter: brightness(1.12) saturate(0.95);
+    }
+}
+
+@keyframes boss-hidden-stage-2-aura {
+
+    0%,
+    100% {
+        transform: scale(0.98);
+        filter: brightness(0.82) blur(10px);
+    }
+
+    50% {
+        transform: scale(1.03);
+        filter: brightness(1.05) blur(9px);
+    }
+}
+
+@keyframes boss-hidden-stage-2-core {
+
     0%,
     100% {
         transform: scale(0.96);
-        filter: brightness(1.05);
+        filter: brightness(0.75) contrast(1.05);
     }
 
     50% {
         transform: scale(1.06);
-        filter: brightness(1.8);
+        filter: brightness(1.08) contrast(1.1);
+    }
+}
+
+@keyframes boss-hidden-stage-3-core {
+
+    0%,
+    100% {
+        transform: scale(0.94);
+        filter: brightness(0.72) blur(2.5px);
+    }
+
+    50% {
+        transform: scale(1.08);
+        filter: brightness(1.02) blur(2px);
+    }
+}
+
+@keyframes boss-death-overlay-fadeout-hidden {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    55% {
+        opacity: 1;
+        transform: scale(0.94);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(0.62);
+    }
+}
+
+@keyframes boss-hidden-core-collapse-burst {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+        filter: brightness(1) blur(2.5px);
+    }
+
+    35% {
+        opacity: 1;
+        transform: scale(1.12);
+        filter: brightness(1.15) blur(2px);
+        box-shadow:
+            0 0 36px rgba(167, 139, 250, 0.42),
+            0 0 64px rgba(12, 10, 28, 0.55);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(0.18);
+        filter: brightness(0.35) blur(8px);
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+
+@keyframes boss-hidden-stage-4-fade {
+    0% {
+        opacity: 1;
+        filter: brightness(1);
+    }
+
+    100% {
+        opacity: 0;
+        filter: brightness(0.25) blur(12px);
+    }
+}
+
+@keyframes boss-shell-final-sync-hidden {
+    0% {
+        transform: translate3d(0, 0, 0) scale(1);
+        filter: brightness(1) saturate(0.85);
+    }
+
+    28% {
+        transform: translate3d(-6px, 4px, 0) scale(1.06, 0.92);
+        filter: brightness(1.12) saturate(0.72);
+    }
+
+    52% {
+        transform: translate3d(8px, -6px, 0) scale(1.1, 0.88);
+        filter: brightness(0.95) saturate(0.5) contrast(1.08);
+    }
+
+    78% {
+        transform: translate3d(0, -10px, 0) scale(0.72);
+        filter: brightness(0.55) saturate(0.22) grayscale(0.55);
+    }
+
+    100% {
+        transform: translate3d(0, -16px, 0) scale(0.38);
+        filter: brightness(0.22) saturate(0) grayscale(0.95);
+    }
+}
+
+@keyframes boss-death-stage-1-pulse {
+    0%,
+    100% {
+        transform: scale(0.967);
+        filter: brightness(1.05);
+    }
+
+    50% {
+        transform: scale(1.045);
+        filter: brightness(1.74);
     }
 }
 
@@ -3815,13 +4302,13 @@ body.lock-scroll {
     100% {
         transform: scale(0.98);
         opacity: 0.36;
-        filter: blur(4px) brightness(1.05) saturate(0.92);
+        filter: blur(3px) brightness(1.05) saturate(0.92);
     }
 
     50% {
-        transform: scale(1.06);
+        transform: scale(1.047);
         opacity: 0.88;
-        filter: blur(7px) brightness(1.72) saturate(1.08);
+        filter: blur(5.5px) brightness(1.66) saturate(1.08);
     }
 }
 
@@ -3830,19 +4317,19 @@ body.lock-scroll {
     100% {
         transform: scale(0.96);
         opacity: 0.52;
-        filter: blur(6px) brightness(1.14) saturate(1);
+        filter: blur(5px) brightness(1.14) saturate(1);
     }
 
     40% {
-        transform: scale(1.08);
+        transform: scale(1.062);
         opacity: 0.96;
-        filter: blur(10px) brightness(1.95) saturate(1.15);
+        filter: blur(7.5px) brightness(1.9) saturate(1.15);
     }
 
     75% {
         transform: scale(1.01);
         opacity: 0.64;
-        filter: blur(7px) brightness(1.42) saturate(1.05);
+        filter: blur(5.5px) brightness(1.38) saturate(1.05);
     }
 }
 
@@ -3851,19 +4338,19 @@ body.lock-scroll {
     100% {
         transform: scale(0.72);
         opacity: 0.44;
-        filter: blur(7px) brightness(1.2);
+        filter: blur(5.5px) brightness(1.2);
     }
 
     48% {
-        transform: scale(1.16);
+        transform: scale(1.125);
         opacity: 1;
-        filter: blur(12px) brightness(2.15);
+        filter: blur(9px) brightness(2.08);
     }
 
     78% {
         transform: scale(0.92);
         opacity: 0.62;
-        filter: blur(8px) brightness(1.45);
+        filter: blur(6px) brightness(1.42);
     }
 }
 
@@ -3872,25 +4359,25 @@ body.lock-scroll {
     100% {
         transform: scale(0.94);
         opacity: 0.46;
-        filter: blur(7px) brightness(1.1);
+        filter: blur(5.5px) brightness(1.1);
     }
 
     24% {
-        transform: scale(1.16);
+        transform: scale(1.125);
         opacity: 1;
-        filter: blur(13px) brightness(2.55);
+        filter: blur(10px) brightness(2.45);
     }
 
     52% {
-        transform: scale(1.1, 0.94);
+        transform: scale(1.078, 0.943);
         opacity: 0.9;
-        filter: blur(10px) brightness(2.1);
+        filter: blur(7.5px) brightness(2.02);
     }
 
     76% {
-        transform: scale(1.26, 0.78);
+        transform: scale(1.203, 0.827);
         opacity: 1;
-        filter: blur(16px) brightness(3.25);
+        filter: blur(12px) brightness(3.05);
     }
 }
 
@@ -3899,25 +4386,25 @@ body.lock-scroll {
     100% {
         transform: scale(0.82);
         opacity: 0.58;
-        filter: blur(8px) brightness(1.3);
+        filter: blur(6px) brightness(1.3);
     }
 
     24% {
-        transform: scale(1.14);
+        transform: scale(1.109);
         opacity: 0.94;
-        filter: blur(11px) brightness(2.2);
+        filter: blur(8.5px) brightness(2.1);
     }
 
     52% {
-        transform: scale(1.42);
+        transform: scale(1.327);
         opacity: 1;
-        filter: blur(15px) brightness(2.9);
+        filter: blur(11.5px) brightness(2.75);
     }
 
     76% {
-        transform: scale(1.36);
+        transform: scale(1.28);
         opacity: 1;
-        filter: blur(17px) brightness(3.45);
+        filter: blur(13px) brightness(3.25);
     }
 }
 
@@ -4327,18 +4814,18 @@ body.lock-scroll {
 @keyframes boss-death-stage-2-flare {
     0%,
     100% {
-        transform: scale(0.94);
+        transform: scale(0.953);
         filter: brightness(1.1);
     }
 
     35% {
-        transform: scale(1.08);
-        filter: brightness(1.9);
+        transform: scale(1.062);
+        filter: brightness(1.82);
     }
 
     60% {
-        transform: scale(1.02);
-        filter: brightness(1.25);
+        transform: scale(1.016);
+        filter: brightness(1.23);
     }
 }
 
@@ -4346,12 +4833,12 @@ body.lock-scroll {
     0%,
     100% {
         opacity: 0.8;
-        transform: scale(0.86);
+        transform: scale(0.889);
     }
 
     50% {
         opacity: 1;
-        transform: scale(1.08);
+        transform: scale(1.062);
     }
 }
 
@@ -4359,26 +4846,26 @@ body.lock-scroll {
     0%,
     100% {
         opacity: 0.46;
-        transform: scale(0.72);
+        transform: scale(0.758);
         filter: brightness(1.2);
     }
 
     24% {
         opacity: 0.82;
-        transform: scale(1.02);
-        filter: brightness(2);
+        transform: scale(1.016);
+        filter: brightness(1.95);
     }
 
     52% {
         opacity: 1;
-        transform: scale(1.24);
-        filter: brightness(2.8);
+        transform: scale(1.187);
+        filter: brightness(2.55);
     }
 
     76% {
         opacity: 1;
-        transform: scale(1.34);
-        filter: brightness(3.35);
+        transform: scale(1.285);
+        filter: brightness(3.08);
     }
 }
 
@@ -4390,33 +4877,27 @@ body.lock-scroll {
 
     100% {
         opacity: 0;
-        transform: scale(1.22);
+        transform: scale(1.157);
     }
 }
 
-@keyframes boss-death-leak-pulse {
+@keyframes boss-death-leak-reveal {
     0% {
         opacity: 0;
+        filter: brightness(1.45);
         transform:
             rotate(var(--angle, 0deg))
-            translateY(calc(var(--radius, 96px) * -0.22))
-            scaleY(0.2);
-    }
-
-    28% {
-        opacity: 0.95;
-        transform:
-            rotate(var(--angle, 0deg))
-            translateY(calc(var(--radius, 96px) * -1.2))
-            scaleY(1);
+            translateY(calc(var(--radius, 96px) * -0.88))
+            scaleY(0.38);
     }
 
     100% {
-        opacity: 0;
+        opacity: 0.94;
+        filter: brightness(1.05);
         transform:
             rotate(var(--angle, 0deg))
-            translateY(calc(var(--radius, 96px) * -1.7))
-            scaleY(0.28);
+            translateY(calc(var(--radius, 96px) * -1))
+            scaleY(1);
     }
 }
 
@@ -4568,6 +5049,39 @@ body.lock-scroll {
         scale(var(--burst-spark-scale, 1));
     animation: boss-death-burst-spark-fly calc(var(--burst-life, 1000ms) * 0.82) ease-out forwards;
     animation-delay: var(--spark-delay, 0ms);
+}
+
+.boss-death-burst--hidden {
+    --burst-circle-scale: 0.68;
+}
+
+.boss-death-burst--hidden .boss-death-burst-ring {
+    border-color: rgba(49, 46, 129, 0.72);
+    box-shadow:
+        0 0 16px rgba(76, 29, 149, 0.38),
+        0 0 28px rgba(12, 10, 28, 0.42);
+}
+
+.boss-death-burst--hidden .boss-death-burst-core {
+    background:
+        radial-gradient(circle,
+            rgba(167, 139, 250, 0.88) 0%,
+            rgba(76, 29, 149, 0.72) 32%,
+            rgba(12, 10, 28, 0.82) 58%,
+            rgba(0, 0, 0, 0) 100%);
+    box-shadow:
+        0 0 20px rgba(76, 29, 149, 0.45),
+        0 0 40px rgba(12, 10, 28, 0.38);
+}
+
+.boss-death-burst--hidden .boss-death-burst-spark {
+    background: linear-gradient(180deg,
+            rgba(167, 139, 250, 0.95) 0%,
+            rgba(49, 46, 129, 0.72) 46%,
+            rgba(239, 68, 68, 0) 100%);
+    box-shadow:
+        0 0 8px rgba(76, 29, 149, 0.4),
+        0 0 14px rgba(12, 10, 28, 0.35);
 }
 
 @keyframes boss-death-ring-fadeout {
@@ -9104,6 +9618,27 @@ body.lock-scroll {
 }
 
 /* ---- Floating Damage UI ---- */
+@keyframes floating-dmg-gira-punch {
+    0% {
+        filter: brightness(1) saturate(1) contrast(1);
+    }
+
+    9% {
+        filter: brightness(1.78) saturate(1.42) contrast(1.08);
+        letter-spacing: 0.08em;
+    }
+
+    28% {
+        filter: brightness(1.35) saturate(1.28) contrast(1.04);
+        letter-spacing: 0.04em;
+    }
+
+    100% {
+        filter: brightness(1) saturate(1) contrast(1);
+        letter-spacing: 0;
+    }
+}
+
 @keyframes float-dmg-bounce {
     0% {
         opacity: 1;
@@ -9149,6 +9684,19 @@ body.lock-scroll {
 .floating-dmg-monster {
     color: #fff;
     text-shadow: 2px 2px 0 #b91c1c, -2px -2px 0 #b91c1c, 2px -2px 0 #b91c1c, -2px 2px 0 #b91c1c, 0 2px 0 #b91c1c, 0 -2px 0 #b91c1c, 2px 0 0 #b91c1c, -2px 0 0 #b91c1c;
+}
+
+.floating-dmg-monster.floating-dmg-giragira-strike {
+    animation: float-dmg-bounce 0.9s ease-out forwards, floating-dmg-gira-punch 0.62s cubic-bezier(0.12, 1, 0.32, 1) forwards;
+    color: #fffef5;
+    text-shadow:
+        2px 2px 0 #b45309,
+        -2px -2px 0 #b45309,
+        2px -2px 0 #b45309,
+        -2px 2px 0 #b45309,
+        0 0 12px rgba(254, 249, 195, 0.95),
+        0 0 22px rgba(251, 191, 36, 0.75),
+        0 0 34px rgba(254, 240, 138, 0.45);
 }
 
 .floating-dmg-player {
