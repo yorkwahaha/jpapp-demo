@@ -138,6 +138,7 @@ const _jpApp = Vue.createApp({
         const PROGRESSION_KEY = 'jpapp_progression_v1';
 
         const showMap = ref(false);
+        const isForegroundSettling = ref(false);
 
         const unlockedLevels = ref([1]);
 
@@ -779,7 +780,68 @@ const _jpApp = Vue.createApp({
             checkGlobalEndingTriggers();
         };
 
+        const RESULT_FANFARE_PATH = 'assets/audio/sfx/fanfare.mp3';
+        let activeResultFanfareAudio = null;
+        let returnToMapAudioToken = 0;
+
+        const stopResultFanfare = ({ fadeMs = 0 } = {}) => {
+            const audio = activeResultFanfareAudio;
+            if (!audio) return;
+
+            const stopNow = () => {
+                try {
+                    audio.pause();
+                    audio.currentTime = 0;
+                } catch (_) { }
+                if (activeResultFanfareAudio === audio) activeResultFanfareAudio = null;
+            };
+
+            if (!fadeMs || fadeMs <= 0) {
+                stopNow();
+                return;
+            }
+
+            try {
+                const startVolume = Number.isFinite(audio.volume) ? audio.volume : 0;
+                const startedAt = Date.now();
+                const fadeStep = () => {
+                    if (activeResultFanfareAudio !== audio) return;
+                    const progress = Math.min(1, (Date.now() - startedAt) / fadeMs);
+                    audio.volume = Math.max(0, startVolume * (1 - progress));
+                    if (progress >= 1) stopNow();
+                    else requestAnimationFrame(fadeStep);
+                };
+                requestAnimationFrame(fadeStep);
+            } catch (_) {
+                stopNow();
+            }
+        };
+
+        const playResultFanfare = () => {
+            stopResultFanfare();
+            if (isMuted.value || sfxVolume.value <= 0 || masterVolume.value <= 0) return;
+            try {
+                const audio = new Audio(RESULT_FANFARE_PATH);
+                audio.preload = 'auto';
+                audio.volume = Math.max(0, Math.min(1, 0.6 * sfxVolume.value * masterVolume.value));
+                activeResultFanfareAudio = audio;
+                audio.addEventListener('ended', () => {
+                    if (activeResultFanfareAudio === audio) activeResultFanfareAudio = null;
+                }, { once: true });
+                audio.play().catch(() => {
+                    if (activeResultFanfareAudio !== audio) return;
+                    activeResultFanfareAudio = null;
+                    playSfx('fanfare');
+                });
+            } catch (_) {
+                playSfx('fanfare');
+            }
+        };
+
         const returnToMap = () => {
+            const shouldDelayMapAudio = monsterResultShown.value && !!activeResultFanfareAudio;
+            const returnAudioToken = ++returnToMapAudioToken;
+
             resetBattleOutcomePresentation();
             resetStageClearMetrics();
             isFinished.value = true;
@@ -810,6 +872,19 @@ const _jpApp = Vue.createApp({
             const target = newUnlockLv.value || lastClearedLevel.value || 1;
             scrollToStage(target);
             stopAllAudio();
+            if (shouldDelayMapAudio) {
+                stopResultFanfare({ fadeMs: 250 });
+                setTimeout(() => {
+                    if (returnAudioToken !== returnToMapAudioToken) return;
+                    playBgm();
+                    checkGlobalEndingTriggers();
+                    if (typeof MapAmbient !== 'undefined') {
+                        Vue.nextTick(() => MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value, activeSegment.value?.themeKey));
+                    }
+                }, 500);
+                return;
+            }
+
             playBgm();
             checkGlobalEndingTriggers();
 
@@ -857,7 +932,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26050306";
+        const APP_VERSION = window.APP_VERSION || "26050701";
 
         const appVersion = ref(APP_VERSION);
 
@@ -871,6 +946,17 @@ const _jpApp = Vue.createApp({
         loadSettings();
 
         watch(settings, saveSettings, { deep: true });
+
+        const showFpsDebug = ref(localStorage.getItem('jpapp_show_fps_debug') === 'true');
+        const toggleFpsDebug = () => {
+            const newVal = !showFpsDebug.value;
+            showFpsDebug.value = newVal;
+            localStorage.setItem('jpapp_show_fps_debug', newVal);
+            if (newVal && typeof window.__startFpsLoop === 'function') {
+                window.__startFpsLoop();
+            }
+        };
+
 
         window.__initVfxHelpers?.(settings);
 
@@ -2635,6 +2721,30 @@ const _jpApp = Vue.createApp({
 
         const bufferPool = new Map();
 
+        const SIMPLE_AUDIO_V2_STORAGE_KEY = 'jpapp_simple_audio_v2';
+        const readSimpleAudioV2Flag = () => {
+            try {
+                const raw = localStorage.getItem(SIMPLE_AUDIO_V2_STORAGE_KEY);
+                return raw === '1' || raw === 'true';
+            } catch (_) {
+                return false;
+            }
+        };
+        const simpleAudioV2Enabled = ref(readSimpleAudioV2Flag());
+        const toggleSimpleAudioV2 = () => {
+            if (simpleAudioV2Enabled.value) {
+                localStorage.removeItem(SIMPLE_AUDIO_V2_STORAGE_KEY);
+            } else {
+                localStorage.setItem(SIMPLE_AUDIO_V2_STORAGE_KEY, '1');
+            }
+            location.reload();
+        };
+        const isIphoneHtmlAudioDevice = () => /iPhone|iPod/i.test(navigator.userAgent);
+        const isHtmlAudioVolumeControlLikelySupported = () => !isIphoneHtmlAudioDevice();
+        const shouldShowSimpleAudioV2SystemVolumeNotice = computed(() =>
+            simpleAudioV2Enabled.value && !isHtmlAudioVolumeControlLikelySupported()
+        );
+
         const needsUserGestureToResumeBgm = ref(false);
         const isBgmSuppressed = ref(false);
         let _sfxNeedsGestureRecovery = false;
@@ -2647,7 +2757,6 @@ const _jpApp = Vue.createApp({
         let audioDebugCoreActions = {};
         const audioDebugTick = ref(0);
         const lastAudioLifecycleEvent = ref('none');
-        const lastAudioGestureEvent = ref('none');
         const lastAudioContextResumeResult = ref('not run');
         const lastAudioContextResumeError = ref('');
         const lastBgmPlayResult = ref('not run');
@@ -2753,7 +2862,6 @@ const _jpApp = Vue.createApp({
             useFallbackGain.value ? 'fallback-audioctx-v2' :
                 (useHtmlAudioBgmFallback.value || useHtmlAudioSfxFallback.value ? 'html-audio' : 'none')
         ));
-
         let timerId = null;
 
         let pauseTimerId = null;
@@ -4193,13 +4301,127 @@ const _jpApp = Vue.createApp({
         let pageAudioResumeTimer = null;
         let pageLoopAudioWasInterrupted = false;
         let pageLoopAudioResumeGeneration = 0;
+        let pageAudioGestureResumeTimer = null;
+        let pageAudioGestureResumeInFlight = false;
+        let pageAudioGestureResumeCompletedGeneration = -1;
+        let lastPageAudioGestureResumeScheduledAt = 0;
+        let lastPageBackgroundedAt = 0;
+        let lastPageForegroundedAt = 0;
+        let pageBattleTimerWasRunning = false;
+        let pagePauseTimerWasRunning = false;
+        let foregroundSettlingTimer = null;
+        const PAGE_RENDERING_RESUME_SETTLE_MS = 800;
+        const FOREGROUND_SETTLING_MESSAGE = '正在恢復遊戲...';
+        const PAGE_AUDIO_GESTURE_RESUME_DELAY_MS = 400;
+        const PAGE_AUDIO_GESTURE_RESUME_DEDUPE_MS = 350;
+
+        const hasPendingPageAudioGestureWork = () => {
+            const ctxNeedsResume = audioCtx.value &&
+                (audioCtx.value.state === 'suspended' || audioCtx.value.state === 'interrupted');
+            return !!(
+                fallbackCtxNeedsGestureResume.value ||
+                iosReturnedFromBackground.value ||
+                needsUserGestureToResumeBgm.value ||
+                pageLoopAudioWasInterrupted ||
+                ctxNeedsResume
+            );
+        };
+
+        const setPageRenderingHiddenState = () => {
+            if (foregroundSettlingTimer) {
+                clearTimeout(foregroundSettlingTimer);
+                foregroundSettlingTimer = null;
+            }
+            isForegroundSettling.value = false;
+        };
+
+        const setPageRenderingForegroundState = () => {
+            isForegroundSettling.value = true;
+
+            if (foregroundSettlingTimer) clearTimeout(foregroundSettlingTimer);
+            foregroundSettlingTimer = setTimeout(() => {
+                isForegroundSettling.value = false;
+                if (battleMessage.value === FOREGROUND_SETTLING_MESSAGE) battleMessage.value = '';
+                foregroundSettlingTimer = null;
+            }, PAGE_RENDERING_RESUME_SETTLE_MS);
+        };
+
+        const isBattleRuntimeActive = () => !showLevelSelect.value &&
+            !showMap.value &&
+            !isFinished.value &&
+            currentLevel.value > 0 &&
+            !playerDead.value &&
+            !monsterDead.value;
+
+        const pauseBattleRuntimeForPageBackground = () => {
+            lastPageBackgroundedAt = Date.now();
+            pageBattleTimerWasRunning = pageBattleTimerWasRunning || !!timerId;
+            pagePauseTimerWasRunning = pagePauseTimerWasRunning || !!pauseTimerId;
+
+            if (timerId) { clearInterval(timerId); timerId = null; }
+            if (pauseTimerId) { clearInterval(pauseTimerId); pauseTimerId = null; }
+        };
+
+        const resumeBattleRuntimeAfterPageForeground = () => {
+            lastPageForegroundedAt = Date.now();
+
+            if (!isBattleRuntimeActive()) {
+                pageBattleTimerWasRunning = false;
+                pagePauseTimerWasRunning = false;
+                return;
+            }
+
+            if (pageBattleTimerWasRunning && !timerId && !wrongAnswerPause.value) {
+                timerId = setInterval(runTimerLogic, 100);
+            }
+
+            if (pagePauseTimerWasRunning && wrongAnswerPause.value && !pauseTimerId) {
+                pauseTimerId = setInterval(runPauseTimerLogic, 1000);
+            }
+
+            questionStartTime = Date.now();
+            pageBattleTimerWasRunning = false;
+            pagePauseTimerWasRunning = false;
+        };
+
+        const isBattleAttackSettlingBlocked = () => isForegroundSettling.value &&
+            !showLevelSelect.value &&
+            !showMap.value &&
+            !isFinished.value &&
+            currentLevel.value > 0 &&
+            !monsterDead.value &&
+            !playerDead.value;
+
+        const showForegroundSettlingBattleMessage = () => {
+            if (!isBattleAttackSettlingBlocked()) return false;
+            battleMessage.value = FOREGROUND_SETTLING_MESSAGE;
+            return true;
+        };
+
+        const resetFlickAfterSettlingBlock = (e) => {
+            flickState.isArmed = false;
+            flickState.activeOpt = null;
+            flickState.pendingDirectionalMiss = false;
+            flickState.lastShotDirStored = false;
+            if (flickState.capturedEl) {
+                try { flickState.capturedEl.releasePointerCapture?.(e?.pointerId); } catch (_) { }
+                flickState.capturedEl = null;
+            }
+        };
 
         const pausePageLoopAudio = () => {
+            setPageRenderingHiddenState();
             pageLoopAudioResumeGeneration += 1;
+            pauseBattleRuntimeForPageBackground();
 
             if (pageAudioResumeTimer) {
                 clearTimeout(pageAudioResumeTimer);
                 pageAudioResumeTimer = null;
+            }
+
+            if (pageAudioGestureResumeTimer) {
+                clearTimeout(pageAudioGestureResumeTimer);
+                pageAudioGestureResumeTimer = null;
             }
 
             if (bgmAudio.value && !bgmAudio.value.paused) {
@@ -4253,6 +4475,8 @@ const _jpApp = Vue.createApp({
             pageAudioResumeTimer = null;
             pageLoopAudioResumeGeneration += 1;
             markAudioDebugEvent(lastAudioLifecycleEvent, `${reason}:foreground`);
+            setPageRenderingForegroundState();
+            resumeBattleRuntimeAfterPageForeground();
 
             if (isIosDevice()) {
                 iosReturnedFromBackground.value = true;
@@ -5017,11 +5241,10 @@ const _jpApp = Vue.createApp({
 
             if (answerMode.value !== 'flick' || monsterDead.value || playerDead.value || isFinished.value || hasSubmitted.value) return;
 
-            initAudioCtx();
-
-            if (!audioInited.value) initAudio();
-
-            resumePageAudioOnGesture();
+            if (showForegroundSettlingBattleMessage()) {
+                resetFlickAfterSettlingBlock(e);
+                return;
+            }
 
             const startPoint = getFlickClientPoint(e);
             if (!startPoint) return;
@@ -5050,6 +5273,10 @@ const _jpApp = Vue.createApp({
 
             flickState.capturedEl = el;
 
+            primeFeedbackVoiceOnGesture();
+
+            schedulePageAudioGestureResume('flick-start');
+
         };
 
         const moveFlick = (e) => {
@@ -5065,6 +5292,7 @@ const _jpApp = Vue.createApp({
             if (!flickState.isArmed) return;
 
             if (window.primeVoiceOnGesture) window.primeVoiceOnGesture();
+            primeFeedbackVoiceOnGesture();
 
             let shot = null;
 
@@ -6281,7 +6509,6 @@ const _jpApp = Vue.createApp({
                     visibilityState: document.visibilityState,
                     hasFocus: typeof document.hasFocus === 'function' ? document.hasFocus() : 'n/a',
                     lastLifecycle: lastAudioLifecycleEvent.value,
-                    lastGesture: lastAudioGestureEvent.value,
                     needsUserGestureToResumeBgm: needsUserGestureToResumeBgm.value,
                     pageLoopAudioWasInterrupted,
                     expectedLoopBgm: expectedBgm || 'none'
@@ -6560,6 +6787,8 @@ const _jpApp = Vue.createApp({
             // Never auto-play if page is still in background
             if (!isPageAudioAllowed()) return;
 
+            if (!hasPendingPageAudioGestureWork()) return;
+
             if (useFallbackGain.value && fallbackCtxNeedsGestureResume.value) {
                 await resumeFallbackCtxOnGesture(`${reason}:fallback-v2-gesture-resume`);
                 // Also resume primary AudioContext for SFX
@@ -6632,12 +6861,35 @@ const _jpApp = Vue.createApp({
 
         };
 
+        const schedulePageAudioGestureResume = (reason = 'gesture') => {
+
+            if (!isPageAudioAllowed() || !hasPendingPageAudioGestureWork()) return;
+
+            const now = performance.now();
+            if (pageAudioGestureResumeTimer || pageAudioGestureResumeInFlight) return;
+            if (pageAudioGestureResumeCompletedGeneration === pageLoopAudioResumeGeneration) return;
+            if (now - lastPageAudioGestureResumeScheduledAt < PAGE_AUDIO_GESTURE_RESUME_DEDUPE_MS) return;
+
+            lastPageAudioGestureResumeScheduledAt = now;
+            pageAudioGestureResumeTimer = setTimeout(async () => {
+                pageAudioGestureResumeTimer = null;
+                if (!isPageAudioAllowed() || !hasPendingPageAudioGestureWork()) return;
+
+                pageAudioGestureResumeInFlight = true;
+                try {
+                    await resumePageAudioOnGesture(reason);
+                } finally {
+                    pageAudioGestureResumeInFlight = false;
+                    pageAudioGestureResumeCompletedGeneration = pageLoopAudioResumeGeneration;
+                }
+            }, PAGE_AUDIO_GESTURE_RESUME_DELAY_MS);
+        };
+
         const handlePageAudioGesture = (event) => {
 
             if (!isPageAudioAllowed()) return;
 
-            markAudioDebugEvent(lastAudioGestureEvent, event.type);
-            resumePageAudioOnGesture(`global-${event.type}`);
+            schedulePageAudioGestureResume(`global-${event.type}`);
 
         };
 
@@ -6650,7 +6902,7 @@ const _jpApp = Vue.createApp({
             unlockAudioOnce();
 
             // Re-resume AudioContext + BGM on every gesture (handles iOS Safari post-background silence)
-            resumePageAudioOnGesture();
+            schedulePageAudioGestureResume();
 
             if (!audioInited.value) initAudio();
 
@@ -6791,7 +7043,7 @@ const _jpApp = Vue.createApp({
 
             if (!audioInited.value) initAudio();
 
-            resumePageAudioOnGesture();
+            schedulePageAudioGestureResume();
 
             if (inventory.value.potions <= 0 || player.value.hp >= player.value.maxHp) return;
 
@@ -7478,6 +7730,10 @@ const _jpApp = Vue.createApp({
             wasPauseTimerRunning = false;
 
             _voiceLockUntil = 0;
+
+            comboFeedbackPlayToken++;
+            if (window.__TTS_ON_WRONG_TIMEOUT) { clearTimeout(window.__TTS_ON_WRONG_TIMEOUT); window.__TTS_ON_WRONG_TIMEOUT = null; }
+            if (typeof window.resetTtsSessionForBattle === 'function') window.resetTtsSessionForBattle();
 
             if (timerId) { clearInterval(timerId); timerId = null; }
 
@@ -8168,33 +8424,117 @@ const _jpApp = Vue.createApp({
 
         const feedbackVoiceWarnedPaths = new Set();
 
+        let activeFeedbackVoiceAudio = null;
+        let feedbackVoiceAudio = null;
+        let feedbackVoicePrimed = false;
+
+        const traceFeedbackDebug = (event, payload = {}) => {
+            if (window.JPAPP_DEBUG_FEEDBACK) console.debug('[feedback]', event, payload);
+        };
+
+        const getFeedbackVoiceAudio = () => {
+            if (!feedbackVoiceAudio) {
+                feedbackVoiceAudio = new Audio();
+                feedbackVoiceAudio.preload = 'auto';
+            }
+            return feedbackVoiceAudio;
+        };
+
+        const primeFeedbackVoiceOnGesture = () => {
+            if (feedbackVoicePrimed) return;
+            try {
+                const audio = getFeedbackVoiceAudio();
+                if (!audio.src || audio.src === window.location.href) {
+                    audio.src = 'data:audio/mp3;base64,//OlkAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAFAAAH8AADBQQOExUaHh8lJygqMTIzNzo9P0JFREQv';
+                }
+                audio.volume = 0;
+                const playPromise = audio.play();
+                if (playPromise?.then) {
+                    playPromise.then(() => {
+                        try {
+                            audio.pause();
+                            audio.currentTime = 0;
+                        } catch (_) { }
+                        audio.volume = 1;
+                        feedbackVoicePrimed = true;
+                        traceFeedbackDebug('feedback-prime-ok');
+                    }).catch((err) => {
+                        traceFeedbackDebug('feedback-prime-failed', { error: err?.name || err?.message || String(err) });
+                    });
+                } else {
+                    feedbackVoicePrimed = true;
+                    traceFeedbackDebug('feedback-prime-sync');
+                }
+            } catch (err) {
+                traceFeedbackDebug('feedback-prime-error', { error: err?.name || err?.message || String(err) });
+            }
+        };
+
         /** Combo 語音僅在剛達門檻當下播放一次；非門檻不播（16+ 暫無）。 */
 
         const pickComboTierFeedbackKey = (comboCount) => COMBO_FEEDBACK_MILESTONES[comboCount] || null;
 
         const playOptionalAudio = (path, options = {}) => {
-            if (!path || isMuted.value || sfxVolume.value <= 0 || masterVolume.value <= 0) return;
+            if (!path) {
+                traceFeedbackDebug('optional-audio-skip', { reason: 'missing-path' });
+                return false;
+            }
+            if (isMuted.value || sfxVolume.value <= 0 || masterVolume.value <= 0) {
+                traceFeedbackDebug('optional-audio-skip', {
+                    reason: isMuted.value ? 'muted' : 'zero-volume',
+                    sfxVolume: sfxVolume.value,
+                    masterVolume: masterVolume.value
+                });
+                return false;
+            }
             try {
-                const audio = new Audio(path);
+                const audio = getFeedbackVoiceAudio();
+                try {
+                    audio.pause();
+                    audio.currentTime = 0;
+                } catch (_) { }
+                audio.src = path;
                 audio.preload = 'auto';
                 audio.volume = Math.max(0, Math.min(1, (options.volume ?? 0.9) * sfxVolume.value * masterVolume.value));
+                activeFeedbackVoiceAudio = audio;
+                const releaseAudio = () => {
+                    if (activeFeedbackVoiceAudio === audio) activeFeedbackVoiceAudio = null;
+                };
                 const warnOnce = (err) => {
+                    releaseAudio();
+                    traceFeedbackDebug('optional-audio-failed', { path, error: err?.name || err?.message || err || '' });
                     if (feedbackVoiceWarnedPaths.has(path)) return;
                     feedbackVoiceWarnedPaths.add(path);
                     console.warn('[feedback-voice] optional local file unavailable; skipped', path, err?.name || err?.message || err || '');
                 };
-                audio.addEventListener('error', () => warnOnce('error'), { once: true });
+                audio.onerror = () => warnOnce('error');
+                audio.onended = releaseAudio;
+                traceFeedbackDebug('optional-audio-attempt', { path, primed: feedbackVoicePrimed });
                 const playPromise = audio.play();
-                if (playPromise?.catch) playPromise.catch(warnOnce);
+                if (playPromise?.then) {
+                    playPromise.then(() => traceFeedbackDebug('optional-audio-started', { path }))
+                        .catch(warnOnce);
+                }
+                return true;
             } catch (err) {
+                traceFeedbackDebug('optional-audio-error', { path, error: err?.name || err?.message || String(err) });
                 if (!feedbackVoiceWarnedPaths.has(path)) {
                     feedbackVoiceWarnedPaths.add(path);
                     console.warn('[feedback-voice] optional local file unavailable; skipped', path, err?.name || err?.message || err || '');
                 }
+                return false;
             }
         };
 
-        const playFeedbackVoice = (categoryOrId) => {
+        const playFeedbackVoice = (categoryOrId, options = {}) => {
+            if (isMuted.value || sfxVolume.value <= 0 || masterVolume.value <= 0) return;
+            if (categoryOrId === 'correct') {
+                const fallbackText = options.fallbackText || 'せいかい！';
+                if (typeof window.playTtsKey === 'function') {
+                    window.playTtsKey('ui.correct', fallbackText).catch(() => { });
+                }
+                return;
+            }
             const files = FEEDBACK_VOICE_PATHS[categoryOrId];
             if (!files || files.length === 0) return;
             const file = files[Math.floor(Math.random() * files.length)];
@@ -8203,26 +8543,59 @@ const _jpApp = Vue.createApp({
 
         let comboFeedbackPlayToken = 0;
 
-        const playComboTierFeedbackVoice = (combo) => {
+        const playComboTierFeedbackVoice = (combo, options = {}) => {
+            const mode = settings.feedbackVoiceMode || 'combo';
+            if (mode !== 'combo') {
+                traceFeedbackDebug('combo-voice-skip', { reason: 'mode', mode, combo, answerMode: answerMode.value });
+                return;
+            }
+
             const key = pickComboTierFeedbackKey(combo);
-            if (!key) return;
+            if (!key) {
+                traceFeedbackDebug('combo-voice-skip', { reason: 'not-milestone', combo, answerMode: answerMode.value });
+                return;
+            }
 
             const expectedLevel = currentLevel.value;
             const currentToken = ++comboFeedbackPlayToken;
+            const delayMs = Number.isFinite(options.delayMs) ? Math.max(0, options.delayMs) : 1000;
+            traceFeedbackDebug('combo-voice-scheduled', { combo, key, delayMs, token: currentToken, answerMode: answerMode.value });
 
             setTimeout(() => {
                 // 若被新語音蓋過，舊的不播
-                if (currentToken !== comboFeedbackPlayToken) return;
+                if (currentToken !== comboFeedbackPlayToken) {
+                    traceFeedbackDebug('combo-voice-skip', { reason: 'stale-token', combo, key, token: currentToken, activeToken: comboFeedbackPlayToken });
+                    return;
+                }
 
                 // 檢查是否仍在戰鬥狀態 (同關卡且未結算)
                 const inBattle = !showLevelSelect.value && !isFinished.value && currentLevel.value > 0;
-                if (!inBattle || currentLevel.value !== expectedLevel) return;
+                if (!inBattle || currentLevel.value !== expectedLevel) {
+                    traceFeedbackDebug('combo-voice-skip', {
+                        reason: 'not-in-battle',
+                        combo,
+                        key,
+                        inBattle,
+                        expectedLevel,
+                        currentLevel: currentLevel.value
+                    });
+                    return;
+                }
 
                 // 檢查 combo 是否中斷 (允許 combo 繼續增加)
-                if (comboCount.value < combo) return;
+                if (comboCount.value < combo) {
+                    traceFeedbackDebug('combo-voice-skip', { reason: 'combo-dropped', combo, currentCombo: comboCount.value, key });
+                    return;
+                }
 
+                traceFeedbackDebug('combo-voice-play-attempt', { combo, key, answerMode: answerMode.value });
                 playFeedbackVoice(key);
-            }, 1000);
+            }, delayMs);
+        };
+
+        const triggerCommittedComboFeedbackVoice = (combo) => {
+            traceFeedbackDebug('committed-combo', { combo, mode: settings.feedbackVoiceMode || 'combo', answerMode: answerMode.value });
+            playComboTierFeedbackVoice(combo, { delayMs: 120 });
         };
 
         const showPraiseToast = (text, ms = 900) => {
@@ -8242,6 +8615,7 @@ const _jpApp = Vue.createApp({
             initAudio();
 
             const style = settings.feedbackStyle || 'oneesan';
+            traceFeedbackDebug('correct-feedback', { combo, mode: settings.feedbackVoiceMode || 'combo', answerMode: answerMode.value });
 
             // ⚠️ 移除了這裡過早觸發的 playSfx('hit')，將它移到 checkAnswer 裡的延遲區塊中
 
@@ -8270,6 +8644,9 @@ const _jpApp = Vue.createApp({
                 const text = ONEESAN_PRAISES[praiseIndex];
 
                 showPraiseToast(text);
+                if ((settings.feedbackVoiceMode || 'combo') === 'correct') {
+                    playFeedbackVoice('correct', { fallbackText: text });
+                }
 
             }
 
@@ -8497,6 +8874,8 @@ const _jpApp = Vue.createApp({
 
             if (hasSubmitted.value) return;
 
+            if (showForegroundSettlingBattleMessage()) return;
+
             hasSubmitted.value = true;
 
             if (heroBuffs.monsterSleep) {
@@ -8546,6 +8925,12 @@ const _jpApp = Vue.createApp({
             flickState.pendingDirectionalMiss = false;
 
             isCurrentCorrect.value = allCorrect;
+            traceFeedbackDebug('check-answer-resolved', {
+                correct: allCorrect,
+                answerMode: answerMode.value,
+                nextCombo: allCorrect ? comboCount.value + 1 : 0,
+                flickDirectionalMiss
+            });
 
             logStageQuestion(allCorrect);
 
@@ -8644,10 +9029,11 @@ const _jpApp = Vue.createApp({
                         }
 
                         comboCount.value++;
+                        traceFeedbackDebug('combo-committed', { combo: comboCount.value, answerMode: answerMode.value });
 
                         const giraKbPlan = strikeIsGira ? computeStrikeGiraKnockVector(isFlick) : null;
 
-                        playComboTierFeedbackVoice(comboCount.value);
+                        triggerCommittedComboFeedbackVoice(comboCount.value);
 
                         showComboPopup(comboCount.value);
 
@@ -8722,8 +9108,6 @@ const _jpApp = Vue.createApp({
                     initAudio();
 
                     if (_isMobileSfx) playUiSfx('miss'); else playSfx('miss');
-
-                    playFeedbackVoice('wrong');
 
                     pushBattleLog(`攻擊失敗！`, 'info');
 
@@ -8813,7 +9197,7 @@ const _jpApp = Vue.createApp({
 
             initAudio();
 
-            resumePageAudioOnGesture();
+            schedulePageAudioGestureResume();
 
             playSfx('click');
 
@@ -8948,7 +9332,7 @@ const _jpApp = Vue.createApp({
                 scheduleBattleFlowTimeout(() => {
 
                     const proceedToTally = () => {
-                        playSfx('fanfare');
+                        playResultFanfare();
                         startTallySequence();
                     };
 
@@ -9123,11 +9507,13 @@ const _jpApp = Vue.createApp({
 
         const selectChoice = (opt) => {
 
+            if (showForegroundSettlingBattleMessage()) return;
+
             initAudioCtx();
 
             if (!audioInited.value) initAudio();
 
-            resumePageAudioOnGesture();
+            schedulePageAudioGestureResume();
 
             playSfx('click');
 
@@ -9503,6 +9889,9 @@ const _jpApp = Vue.createApp({
             pendingKnowledgeCards, activeKnowledgeCard, isKnowledgeCardShowing, isKnowledgeCardAbsorbing, triggerNextKnowledgeCard, closeKnowledgeCard,
             getSpiritForSkill, getSpiritForKnowledgeCard, getSpiritImageSrc, handleSpiritImageError,
             isSpecialSceneActive, specialSceneBg,
+            isForegroundSettling,
+            simpleAudioV2Enabled, toggleSimpleAudioV2, shouldShowSimpleAudioV2SystemVolumeNotice,
+            showFpsDebug, toggleFpsDebug
         };
 
     }

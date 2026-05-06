@@ -121,6 +121,18 @@ function stopWebSpeech() {
 
 }
 
+window.resetTtsSessionForBattle = () => {
+    stopTtsAudio();
+    stopWebSpeech();
+    try {
+        sharedTtsAudio.onended = null;
+        sharedTtsAudio.onerror = null;
+        sharedTtsAudio.removeAttribute('src');
+        sharedTtsAudio.load();
+    } catch { }
+    currentTtsAudio = null;
+};
+
 
 
 const GOOGLE_TTS_WHITELIST = [
@@ -205,6 +217,7 @@ async function playTtsKey(key, fallbackText, ttsVoiceName = null) {
         } catch (e) {
 
             console.warn(`[FALLBACK] audio play error:`, e?.message || e);
+            if (currentTtsAudio === a) currentTtsAudio = null;
 
         }
 
@@ -263,6 +276,8 @@ async function playTtsKey(key, fallbackText, ttsVoiceName = null) {
     return { used: "none", key };
 
 }
+
+window.playTtsKey = playTtsKey;
 
 
 
@@ -463,6 +478,7 @@ async function speakCloudTts(text, voiceShortName = null) {
     } catch (e) {
 
         try { URL.revokeObjectURL(url); } catch { }
+        if (currentTtsAudio === a) currentTtsAudio = null;
 
         return false;
 

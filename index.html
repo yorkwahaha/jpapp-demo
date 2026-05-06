@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26050306'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26050701'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -58,8 +58,8 @@
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/styles.css?v=26050306">
-    <link rel="stylesheet" href="assets/css/escape.css?v=26050306">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26050701">
+    <link rel="stylesheet" href="assets/css/escape.css?v=26050701">
 
 
 
@@ -69,7 +69,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26050306';
+            const v = window.APP_VERSION || '26050701';
 
 
 
@@ -101,6 +101,12 @@
                 s3.src = 'assets/js/debug.js?v=' + v;
                 s3.async = false;
                 document.head.appendChild(s3);
+
+                // 3b. 載入 FPS Debug Overlay
+                const s3b = document.createElement('script');
+                s3b.src = 'assets/js/fps-debug.js?v=' + v;
+                s3b.async = false;
+                document.head.appendChild(s3b);
             }
 
 
@@ -2063,6 +2069,16 @@
 
                 </div>
 
+                <!-- Simple Audio V2 Debug Toggle (Floating for Home Screen) -->
+                <div class="fixed bottom-6 right-6 z-[6000]">
+                    <button @click="toggleSimpleAudioV2"
+                        class="px-4 py-3 rounded-2xl bg-slate-900/90 backdrop-blur-xl border-2 shadow-[0_8px_32px_rgba(0,0,0,0.5)] active:scale-95 transition-all flex items-center gap-3"
+                        :class="simpleAudioV2Enabled ? 'border-emerald-500/50' : 'border-white/10'">
+                        <div class="w-2.5 h-2.5 rounded-full" :class="simpleAudioV2Enabled ? 'bg-emerald-400 animate-pulse' : 'bg-slate-600'"></div>
+                        <span class="text-xs font-black text-slate-100 uppercase tracking-tighter">Simple Audio V2: {{ simpleAudioV2Enabled ? 'ON' : 'OFF' }}</span>
+                    </button>
+                </div>
+
             </div>
 
         </div>
@@ -3064,6 +3080,32 @@
 
                             <div>
 
+                                <span class="settings-section-label">回饋語音</span>
+
+                                <div class="grid grid-cols-2 gap-2">
+
+                                    <button @click="settings.feedbackVoiceMode = 'combo'"
+                                        class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
+                                        :class="settings.feedbackVoiceMode === 'combo' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+
+                                        Combo 回饋
+
+                                    </button>
+
+                                    <button @click="settings.feedbackVoiceMode = 'correct'"
+                                        class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
+                                        :class="settings.feedbackVoiceMode === 'correct' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+
+                                        正解回饋
+
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                            <div>
+
                                 <span class="settings-section-label">戰鬥節奏</span>
                                 <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">選擇戰鬥時敵我行動的節奏。回合制仍在準備中。</p>
 
@@ -3146,6 +3188,8 @@
 
                                     <input type="range" min="0" max="1" step="0.01" v-model.number="bgmVolume"
                                         @input="playBgm(); saveAudioSettings()"
+                                        :disabled="shouldShowSimpleAudioV2SystemVolumeNotice"
+                                        :class="{ 'opacity-45 cursor-not-allowed': shouldShowSimpleAudioV2SystemVolumeNotice }"
                                         class="flex-1 accent-amber-500 h-1.5 bg-black/30 rounded-full appearance-none">
 
                                 </label>
@@ -3156,15 +3200,48 @@
 
                                     <input type="range" min="0" max="1" step="0.01" v-model.number="sfxVolume"
                                         @input="saveAudioSettings()"
+                                        :disabled="shouldShowSimpleAudioV2SystemVolumeNotice"
+                                        :class="{ 'opacity-45 cursor-not-allowed': shouldShowSimpleAudioV2SystemVolumeNotice }"
                                         class="flex-1 accent-amber-500 h-1.5 bg-black/30 rounded-full appearance-none">
 
                                 </label>
+
+                                <p v-if="shouldShowSimpleAudioV2SystemVolumeNotice"
+                                    class="text-[11px] leading-snug text-amber-200/90 bg-amber-500/10 border border-amber-400/20 rounded-lg px-3 py-2">
+                                    iPhone Safari 使用 Simple Audio V2 時，請用系統音量鍵調整音量。
+                                </p>
 
                             </div>
 
                         </div>
 
+                        <!-- Simple Audio V2 Debug Toggle (Map Menu) -->
+                        <button @click="toggleSimpleAudioV2"
+                            class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-slate-900/60 hover:bg-slate-800 border transition-all active:scale-95"
+                            :class="simpleAudioV2Enabled ? 'border-emerald-500/50' : 'border-white/10'">
+                            <span class="text-xs font-black text-slate-300 uppercase tracking-wider">Simple Audio V2</span>
+                            <span class="text-[10px] font-black px-2 py-0.5 rounded-md"
+                                :class="simpleAudioV2Enabled ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'">
+                                {{ simpleAudioV2Enabled ? 'ON' : 'OFF' }}
+                            </span>
+                        </button>
+
+                                                <!-- FPS Debug Toggle -->
+                        <button @click="toggleFpsDebug"
+                            class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-slate-900/60 hover:bg-slate-800 border transition-all active:scale-95 mb-4"
+                            :class="showFpsDebug ? 'border-amber-500/50' : 'border-white/10'">
+                            <div class="flex flex-col items-start text-left">
+                                <span class="text-xs font-black text-slate-300 uppercase tracking-wider">Performance Overlay</span>
+                                <span class="text-[9px] text-slate-500 font-bold">顯示實時 FPS / 效能統計</span>
+                            </div>
+                            <span class="text-[10px] font-black px-2 py-0.5 rounded-md"
+                                :class="showFpsDebug ? 'bg-amber-500 text-white' : 'bg-slate-700 text-slate-400'">
+                                {{ showFpsDebug ? 'ON' : 'OFF' }}
+                            </span>
+                        </button>
+
                         <button @click="isAdvancedSettingsOpen = true; isMenuOpen = false; playSfx('uiPop');"
+
                             class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 hover:bg-indigo-500/20 border border-white/10 text-slate-200 text-sm font-bold shadow transition-all group">
 
                             <span class="group-hover:rotate-45 transition-transform duration-500">⚙️</span> 進階設定
@@ -3279,6 +3356,11 @@
         <div v-else-if="!isFinished" id="stageWrap"
             class="fixed inset-0 bg-slate-900 overflow-hidden font-sans select-none"
             :class="{ 'boss-vfx-shake': bossScreenShake }">
+
+            <div v-if="isForegroundSettling"
+                class="fixed top-3 left-1/2 -translate-x-1/2 z-[120] rounded-full border border-white/15 bg-slate-950/75 px-3 py-1 text-[11px] font-bold text-slate-100 shadow-lg pointer-events-none">
+                正在恢復遊戲...
+            </div>
 
 
 
@@ -4614,6 +4696,8 @@
 
                                     <input type="range" min="0" max="1" step="0.01" v-model.number="bgmVolume"
                                         @input="playBgm(); saveAudioSettings()"
+                                        :disabled="shouldShowSimpleAudioV2SystemVolumeNotice"
+                                        :class="{ 'opacity-45 cursor-not-allowed': shouldShowSimpleAudioV2SystemVolumeNotice }"
                                         class="flex-1 accent-amber-500 h-1.5 bg-black/30 rounded-full appearance-none">
 
                                 </label>
@@ -4624,9 +4708,16 @@
 
                                     <input type="range" min="0" max="1" step="0.01" v-model.number="sfxVolume"
                                         @input="saveAudioSettings()"
+                                        :disabled="shouldShowSimpleAudioV2SystemVolumeNotice"
+                                        :class="{ 'opacity-45 cursor-not-allowed': shouldShowSimpleAudioV2SystemVolumeNotice }"
                                         class="flex-1 accent-amber-500 h-1.5 bg-black/30 rounded-full appearance-none">
 
                                 </label>
+
+                                <p v-if="shouldShowSimpleAudioV2SystemVolumeNotice"
+                                    class="text-[11px] leading-snug text-amber-200/90 bg-amber-500/10 border border-amber-400/20 rounded-lg px-3 py-2">
+                                    iPhone Safari 使用 Simple Audio V2 時，請用系統音量鍵調整音量。
+                                </p>
 
                             </div>
 
@@ -4637,6 +4728,17 @@
                         <!-- System Actions -->
 
                         <div class="grid grid-cols-1 gap-2.5">
+
+                            <!-- Simple Audio V2 Debug Toggle (Battle Menu) -->
+                            <button @click="toggleSimpleAudioV2"
+                                class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-slate-900/60 hover:bg-slate-800 border transition-all active:scale-95"
+                                :class="simpleAudioV2Enabled ? 'border-emerald-500/50' : 'border-white/10'">
+                                <span class="text-xs font-black text-slate-300 uppercase tracking-wider">Simple Audio V2</span>
+                                <span class="text-[10px] font-black px-2 py-0.5 rounded-md"
+                                    :class="simpleAudioV2Enabled ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'">
+                                    {{ simpleAudioV2Enabled ? 'ON' : 'OFF' }}
+                                </span>
+                            </button>
 
                             <button
                                 @click="isAdvancedSettingsOpen = true; isMenuOpen = false; isLevelJumpOpen = false; isMistakesOpen = false;"

@@ -105,6 +105,7 @@
                 wrongAdvanceDelayMs: null,
                 enemyAttackMode: 'atb',
                 feedbackStyle: 'oneesan',
+                feedbackVoiceMode: 'combo',
                 defaultAttackMode: 'tap',
                 ttsVoice: deps.DEFAULT_TTS_VOICE
             };
@@ -128,6 +129,9 @@
                     }
                     if (settings.enemyAttackMode !== 'atb') {
                         settings.enemyAttackMode = 'atb';
+                    }
+                    if (!['combo', 'correct'].includes(settings.feedbackVoiceMode)) {
+                        settings.feedbackVoiceMode = 'combo';
                     }
                 } catch (e) { console.warn('[Settings] load error', e); }
             };
@@ -244,7 +248,7 @@
                 }
             };
             var tapChoicesObserver = new MutationObserver(injectTapChoicesClass);
-            tapChoicesObserver.observe(document.body, { childList: true, subtree: true });
+            tapChoicesObserver.observe(document.getElementById('app') || document.body, { childList: true, subtree: true });
             watch([answerMode, hasSubmitted], function() {
                 nextTick(injectTapChoicesClass);
             });
