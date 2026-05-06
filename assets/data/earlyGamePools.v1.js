@@ -513,7 +513,7 @@ window.EARLY_GAME_POOLS = {
                     "left": "ドア",
                     "leftRuby": "どあ",
                     "right": "開く",
-                    "rightRuby": "あく"
+                    "rightRuby": "ひらく"
                 },
                 {
                     "j": "窓が閉まる",

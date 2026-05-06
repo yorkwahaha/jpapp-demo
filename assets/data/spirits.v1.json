@@ -6,10 +6,17 @@
     "nameZh": "主題之子",
     "nameJa": "は・主題の子",
     "flavorText": "總是輕輕站在話題的最前方，幫助喚語者知道接下來要談的是什麼。",
-    "unlockText": "你聽見了「は・主題之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "unlockText": "你聽見了「は・主題之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-wa-topic",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "はの呼び手",
+    "trueResonanceTitleJa": "はの呼び手",
+    "trueResonanceBadge": "主題の灯",
+    "trueResonanceLines": [
+      "いつも文のはじめにいてくれてありがとう。主題は、私に任せて。",
+      "謝謝你把我放在每個句子的開頭，主題就交給祂一起守著。"
+    ]
   },
   {
     "skillId": "NO_POSSESSIVE",
@@ -18,10 +25,17 @@
     "nameZh": "所屬之子",
     "nameJa": "の・所屬の子",
     "flavorText": "喜歡把兩個名詞溫柔地牽在一起，告訴喚語者「誰的什麼」。",
-    "unlockText": "你聽見了「の・所屬之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "unlockText": "你聽見了「の・所屬之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-no-possessive",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "のを知る者",
+    "trueResonanceTitleJa": "のを知る者",
+    "trueResonanceBadge": "連結の証",
+    "trueResonanceLines": [
+      "「だれのなに」を、そっと結んでいくね。",
+      "「誰的什麼」這條線，祂會溫柔地替你牽好。"
+    ]
   },
   {
     "skillId": "GA_INTRANSITIVE",
@@ -29,11 +43,18 @@
     "spiritId": "spirit-ga-intransitive",
     "nameZh": "自然發生之子",
     "nameJa": "が・自然發生の子",
-    "flavorText": "當事情自然發生時，牠會第一個跳出來，指出那個自己出現的狀態或動作。",
-    "unlockText": "你聽見了「が・自然發生之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "flavorText": "當事情自然發生時，祂會第一個跳出來，指出那個自己出現的狀態或動作。",
+    "unlockText": "你聽見了「が・自然發生之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-ga-intransitive",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "が的感應者",
+    "trueResonanceTitleJa": "がを感じる者",
+    "trueResonanceBadge": "芽生えの印",
+    "trueResonanceLines": [
+      "ふっと起こる変化、いちばん先に私が気づくよ。",
+      "那些自然發生的變化，祂會先一步替你感應到。"
+    ]
   },
   {
     "skillId": "WO_OBJECT_BASIC",
@@ -42,10 +63,17 @@
     "nameZh": "對象之子",
     "nameJa": "を・對象の子",
     "flavorText": "總是站在動作前方，幫助喚語者看見「動作碰到的是什麼」。",
-    "unlockText": "你聽見了「を・對象之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "unlockText": "你聽見了「を・對象之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-wo-object",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "をの共鳴者",
+    "trueResonanceTitleJa": "をの共鳴者",
+    "trueResonanceBadge": "共鳴のしるし",
+    "trueResonanceLines": [
+      "動きの先にあるものを、一緒に見つけていこう。",
+      "動作要指向的對象，祂會陪你一起找清楚。"
+    ]
   },
   {
     "skillId": "HE_DIRECTION",
@@ -54,10 +82,17 @@
     "nameZh": "方向之子",
     "nameJa": "へ・方向の子",
     "flavorText": "像小小指南針一樣，總是朝著前方，指引喚語者要往哪裡去。",
-    "unlockText": "你聽見了「へ・方向之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "unlockText": "你聽見了「へ・方向之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-he-direction",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "へ的導引者",
+    "trueResonanceTitleJa": "へを導く者",
+    "trueResonanceBadge": "導きの月印",
+    "trueResonanceLines": [
+      "行き先が揺れても、へ の矢印は私が整えるね。",
+      "就算方向有些搖晃，祂也會幫你把前行的箭頭扶正。"
+    ]
   },
   {
     "skillId": "MO_ALSO_BASIC",
@@ -66,10 +101,17 @@
     "nameZh": "也之子",
     "nameJa": "も・也の子",
     "flavorText": "最喜歡把同伴一起拉進話題裡，提醒喚語者「這個也是」。",
-    "unlockText": "你聽見了「も・也之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "unlockText": "你聽見了「も・也之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-mo-also",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "も的連結者",
+    "trueResonanceTitleJa": "もを結ぶ者",
+    "trueResonanceBadge": "連結の証",
+    "trueResonanceLines": [
+      "これも、あれも。仲間にそっと席を作るよ。",
+      "「這個也、那個也」祂會替同伴留好位置。"
+    ]
   },
   {
     "skillId": "NI_TIME",
@@ -78,10 +120,17 @@
     "nameZh": "時間之子",
     "nameJa": "に・時間の子",
     "flavorText": "總是在時間的水流中漂浮，會替喚語者指出「什麼時候」該行動。",
-    "unlockText": "你聽見了「に・時間之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "unlockText": "你聽見了「に・時間之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-ni-time",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "にを導く者",
+    "trueResonanceTitleJa": "にを導く者",
+    "trueResonanceBadge": "刻のしるし",
+    "trueResonanceLines": [
+      "「いつ」を一緒に、静かに決めていこう。",
+      "在時間的縫隙裡，祂會陪你慢慢找到那一刻。"
+    ]
   },
   {
     "skillId": "TO_AND",
@@ -90,10 +139,17 @@
     "nameZh": "並列之子",
     "nameJa": "と・並列の子",
     "flavorText": "喜歡把事物一個一個完整排好，讓喚語者清楚知道「A 和 B」都在其中。",
-    "unlockText": "你聽見了「と・並列之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "unlockText": "你聽見了「と・並列之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-to-and",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "と共に歩む者",
+    "trueResonanceTitleJa": "と共に歩む者",
+    "trueResonanceBadge": "並びの輪",
+    "trueResonanceLines": [
+      "仲間と並んで歩く感じ、一緒に言葉にしよう。",
+      "並排前進的步伐，祂會幫你一一安放進句子裡。"
+    ]
   },
   {
     "skillId": "DE_ACTION_PLACE",
@@ -102,10 +158,17 @@
     "nameZh": "場所之子",
     "nameJa": "で・場所の子",
     "flavorText": "喜歡待在熱鬧的行動現場，提醒喚語者「動作是在哪裡發生」。",
-    "unlockText": "你聽見了「で・場所之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "unlockText": "你聽見了「で・場所之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-de-place",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "でを操る者",
+    "trueResonanceTitleJa": "でを操る者",
+    "trueResonanceBadge": "場の灯",
+    "trueResonanceLines": [
+      "どこで起きるか、そっと場所を照らすね。",
+      "行動發生的地方，祂會替你留一盞不刺眼的小燈。"
+    ]
   },
   {
     "skillId": "NI_EXIST_PLACE",
@@ -114,10 +177,17 @@
     "nameZh": "存在地點之子",
     "nameJa": "に・存在地點の子",
     "flavorText": "靜靜守在某個地方，幫助喚語者說出「人或事物在哪裡」。",
-    "unlockText": "你聽見了「に・存在地點之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "unlockText": "你聽見了「に・存在地點之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-ni-exist-place",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "に的安住者",
+    "trueResonanceTitleJa": "にを宿す者",
+    "trueResonanceBadge": "在処の灯",
+    "trueResonanceLines": [
+      "ここにいるよ、って言える場所を守るね。",
+      "祂會替你守住那個能說出「就在這裡」的位置。"
+    ]
   },
   {
     "skillId": "GA_EXIST_SUBJECT",
@@ -126,10 +196,17 @@
     "nameZh": "主體之子",
     "nameJa": "が・主體の子",
     "flavorText": "會在語意的中心發出光芒，幫助喚語者辨認「是誰」成為句子的主角。",
-    "unlockText": "你聽見了「が・主體之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "unlockText": "你聽見了「が・主體之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-ga-subject",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "が的立心者",
+    "trueResonanceTitleJa": "がを立てる者",
+    "trueResonanceBadge": "主のしるし",
+    "trueResonanceLines": [
+      "だれが中心か、言ノ理の輪で静かに示すよ。",
+      "句子的主角是誰，祂會在言ノ理的圓環裡輕輕點亮。"
+    ]
   },
   {
     "skillId": "TO_WITH",
@@ -138,10 +215,17 @@
     "nameZh": "共同之子",
     "nameJa": "と・共同の子",
     "flavorText": "總喜歡靠近同伴，最擅長提醒喚語者「和誰一起」展開行動。",
-    "unlockText": "你聽見了「と・共同之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "unlockText": "你聽見了「と・共同之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-to-together",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "と的同行者",
+    "trueResonanceTitleJa": "とを紡ぐ者",
+    "trueResonanceBadge": "寄り添い印",
+    "trueResonanceLines": [
+      "だれと一緒か、呼び手の歩幅に合わせて紡ぐね。",
+      "「和誰一起」這份同行感，祂會貼著你的步伐編好。"
+    ]
   },
   {
     "skillId": "KARA_SOURCE_START",
@@ -149,11 +233,18 @@
     "spiritId": "spirit-kara-source",
     "nameZh": "起點之子",
     "nameJa": "から・起點の子",
-    "flavorText": "牠總是站在故事開始的地方，提醒喚語者一切是「從哪裡」出發。",
-    "unlockText": "你聽見了「から・起點之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "flavorText": "祂總是站在故事開始的地方，提醒喚語者一切是「從哪裡」出發。",
+    "unlockText": "你聽見了「から・起點之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-kara-source",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "から的起點者",
+    "trueResonanceTitleJa": "からを起こす者",
+    "trueResonanceBadge": "始まりの灯",
+    "trueResonanceLines": [
+      "どこから始まるか、その最初の息を整えるよ。",
+      "事情從哪裡出發，祂會替你把第一口氣安穩下來。"
+    ]
   },
   {
     "skillId": "MADE_LIMIT_END",
@@ -162,10 +253,17 @@
     "nameZh": "終點之子",
     "nameJa": "まで・終點の子",
     "flavorText": "喜歡在終點揮著小旗，告訴喚語者事情會一直到哪裡為止。",
-    "unlockText": "你聽見了「まで・終點之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "unlockText": "你聽見了「まで・終點之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-made-limit",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "まで的見證者",
+    "trueResonanceTitleJa": "までを見届ける者",
+    "trueResonanceBadge": "終わりの証",
+    "trueResonanceLines": [
+      "ここまで、って言える境目を私が見守るね。",
+      "「到這裡為止」的界線，祂會替你溫柔看守。"
+    ]
   },
   {
     "skillId": "NI_DESTINATION",
@@ -173,11 +271,18 @@
     "spiritId": "spirit-ni-destination",
     "nameZh": "歸著點之子",
     "nameJa": "に・歸著點の子",
-    "flavorText": "牠會守在抵達的那一點，幫助喚語者說出動作最後落到哪裡。",
-    "unlockText": "你聽見了「に・歸著點之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "flavorText": "祂會守在抵達的那一點，幫助喚語者說出動作最後落到哪裡。",
+    "unlockText": "你聽見了「に・歸著點之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-ni-destination",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "に的歸著者",
+    "trueResonanceTitleJa": "にへ届ける者",
+    "trueResonanceBadge": "到達の印",
+    "trueResonanceLines": [
+      "動きの着地点まで、まっすぐ手を添えていくよ。",
+      "動作最後要落到哪裡，祂會把路徑穩穩送到終點。"
+    ]
   },
   {
     "skillId": "DE_TOOL_MEANS",
@@ -186,10 +291,17 @@
     "nameZh": "手段之子",
     "nameJa": "で・手段の子",
     "flavorText": "喜歡把想法變成行動的小助靈，會幫助喚語者理解「用什麼方法」完成事情。",
-    "unlockText": "你聽見了「で・手段之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "unlockText": "你聽見了「で・手段之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-de-means",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "で的運用者",
+    "trueResonanceTitleJa": "でを使いこなす者",
+    "trueResonanceBadge": "手段の輪",
+    "trueResonanceLines": [
+      "なにで叶えるか、Seleneの光で道具を選ぼう。",
+      "要用什麼方式完成，祂會在 Selene 的光下幫你選好。"
+    ]
   },
   {
     "skillId": "NI_TARGET",
@@ -197,11 +309,18 @@
     "spiritId": "spirit-ni-target",
     "nameZh": "目標之子",
     "nameJa": "に・目標の子",
-    "flavorText": "牠會把視線集中到動作指向的對象，幫助喚語者看見「對誰、向誰」。",
-    "unlockText": "你聽見了「に・目標之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "flavorText": "祂會把視線集中到動作指向的對象，幫助喚語者看見「對誰、向誰」。",
+    "unlockText": "你聽見了「に・目標之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-ni-target",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "に的指向者",
+    "trueResonanceTitleJa": "にを向ける者",
+    "trueResonanceBadge": "向きの証",
+    "trueResonanceLines": [
+      "だれに向かう想いか、やさしく焦点を合わせるね。",
+      "這份動作是朝向誰，祂會替你把焦點慢慢對準。"
+    ]
   },
   {
     "skillId": "GA_BUT",
@@ -210,10 +329,17 @@
     "nameZh": "轉折之子",
     "nameJa": "が・轉折の子",
     "flavorText": "看似順著前一句話前進，卻會在關鍵處轉個彎，提醒喚語者「但是」的存在。",
-    "unlockText": "你聽見了「が・轉折之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "unlockText": "你聽見了「が・轉折之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-ga-but",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "が的轉折者",
+    "trueResonanceTitleJa": "がで結び直す者",
+    "trueResonanceBadge": "転じの印",
+    "trueResonanceLines": [
+      "その先の「でも」を、角を立てずにつなげるよ。",
+      "句子要轉彎的「但是」，祂會幫你柔和地接上。"
+    ]
   },
   {
     "skillId": "MO_COMPLETE_NEGATION",
@@ -222,10 +348,17 @@
     "nameZh": "全否定之子",
     "nameJa": "も・全否定の子",
     "flavorText": "雖然有點固執，卻能幫喚語者一口氣否定全部，連一個也不放過。",
-    "unlockText": "你聽見了「も・全否定之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "unlockText": "你聽見了「も・全否定之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-mo-negation",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "も的封止者",
+    "trueResonanceTitleJa": "もを閉じる者",
+    "trueResonanceBadge": "否定の月印",
+    "trueResonanceLines": [
+      "ひとつも残さない否定、静かにきちんと包むね。",
+      "連一個都不留下的否定，祂會安靜而完整地包好。"
+    ]
   },
   {
     "skillId": "TO_CONDITIONAL",
@@ -233,11 +366,18 @@
     "spiritId": "spirit-to-conditional",
     "nameZh": "條件之子",
     "nameJa": "と・條件の子",
-    "flavorText": "只要前面的事情一發生，牠就會立刻喚醒後面的結果。",
-    "unlockText": "你聽見了「と・條件之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "flavorText": "只要前面的事情一發生，祂就會立刻喚醒後面的結果。",
+    "unlockText": "你聽見了「と・條件之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-to-conditional",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "と的條件結者",
+    "trueResonanceTitleJa": "とを結ぶ者",
+    "trueResonanceBadge": "条件の鍵",
+    "trueResonanceLines": [
+      "これが起きたら次はこう、って順番を結んでいくよ。",
+      "前件與後件的順序，祂會替你穩穩繫在一起。"
+    ]
   },
   {
     "skillId": "YA_AND_OTHERS",
@@ -246,10 +386,17 @@
     "nameZh": "列舉之子",
     "nameJa": "や・列舉の子",
     "flavorText": "喜歡留一點空白給其他同伴，提醒喚語者這只是其中幾個例子。",
-    "unlockText": "你聽見了「や・列舉之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "unlockText": "你聽見了「や・列舉之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-ya-and-others",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "や的展開者",
+    "trueResonanceTitleJa": "やをひらく者",
+    "trueResonanceBadge": "余白の証",
+    "trueResonanceLines": [
+      "いくつか並べて、まだ先がある余白を残そうね。",
+      "列出幾項就好，其餘留白由祂替你溫柔保留。"
+    ]
   },
   {
     "skillId": "DE_SCOPE",
@@ -257,11 +404,18 @@
     "spiritId": "spirit-de-scope",
     "nameZh": "範圍之子",
     "nameJa": "で・範圍の子",
-    "flavorText": "牠會畫出一個柔和的界線，幫助喚語者知道判斷或狀態在哪個範圍內成立。",
-    "unlockText": "你聽見了「で・範圍之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "flavorText": "祂會畫出一個柔和的界線，幫助喚語者知道判斷或狀態在哪個範圍內成立。",
+    "unlockText": "你聽見了「で・範圍之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-de-scope",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "で的界定者",
+    "trueResonanceTitleJa": "でを区切る者",
+    "trueResonanceBadge": "境界の灯",
+    "trueResonanceLines": [
+      "どの範囲で成り立つか、言ノ葉神殿の輪で示すよ。",
+      "判斷適用的範圍，祂會在言ノ葉神殿的圓輪裡標好。"
+    ]
   },
   {
     "skillId": "NI_PURPOSE",
@@ -269,11 +423,18 @@
     "spiritId": "spirit-ni-purpose",
     "nameZh": "目的之子",
     "nameJa": "に・目的の子",
-    "flavorText": "牠總是帶著期待往前飛，提醒喚語者移動是「為了做什麼」。",
-    "unlockText": "你聽見了「に・目的之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "flavorText": "祂總是帶著期待往前飛，提醒喚語者移動是「為了做什麼」。",
+    "unlockText": "你聽見了「に・目的之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-ni-purpose",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "に的志向者",
+    "trueResonanceTitleJa": "にを志す者",
+    "trueResonanceBadge": "願いの印",
+    "trueResonanceLines": [
+      "何をしに行くのか、その願いをそっと前に運ぶね。",
+      "是為了做什麼而前往，祂會把這份目的輕輕托住。"
+    ]
   },
   {
     "skillId": "TO_QUOTE",
@@ -282,10 +443,17 @@
     "nameZh": "引用之子",
     "nameJa": "と・引用の子",
     "flavorText": "會把說出口的話與心裡想的內容小心收起來，再交給喚語者使用。",
-    "unlockText": "你聽見了「と・引用之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "unlockText": "你聽見了「と・引用之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-to-quote",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "と的傳聲者",
+    "trueResonanceTitleJa": "とを伝える者",
+    "trueResonanceBadge": "ことばの封",
+    "trueResonanceLines": [
+      "聞いた声も、心の声も、こぼさずに手渡すよ。",
+      "說出口與心裡想的內容，祂都會好好交到你手上。"
+    ]
   },
   {
     "skillId": "KARA_REASON",
@@ -294,10 +462,17 @@
     "nameZh": "理由之子",
     "nameJa": "から・理由の子",
     "flavorText": "喜歡追著事情背後的原因跑，幫助喚語者說出「為什麼會這樣」。",
-    "unlockText": "你聽見了「から・理由之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "unlockText": "你聽見了「から・理由之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-kara-reason",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "から的溯因者",
+    "trueResonanceTitleJa": "からを辿る者",
+    "trueResonanceBadge": "因のしるし",
+    "trueResonanceLines": [
+      "なぜそうなるか、糸をほどくみたいに辿ろう。",
+      "事情為什麼會這樣，祂會陪你像解線一樣慢慢追溯。"
+    ]
   },
   {
     "skillId": "YORI_COMPARE",
@@ -305,11 +480,18 @@
     "spiritId": "spirit-yori-compare",
     "nameZh": "比較之子",
     "nameJa": "より・比較の子",
-    "flavorText": "牠喜歡把兩邊放在一起看，幫助喚語者找到比較時的基準。",
-    "unlockText": "你聽見了「より・比較之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "flavorText": "祂喜歡把兩邊放在一起看，幫助喚語者找到比較時的基準。",
+    "unlockText": "你聽見了「より・比較之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-yori-compare",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "より的衡量者",
+    "trueResonanceTitleJa": "よりを測る者",
+    "trueResonanceBadge": "比較の証",
+    "trueResonanceLines": [
+      "比べる基準を、ぶれないように隣へ置くね。",
+      "比較時要依據的基準，祂會穩穩放在你身旁。"
+    ]
   },
   {
     "skillId": "NI_FREQUENCY",
@@ -318,10 +500,17 @@
     "nameZh": "頻率之子",
     "nameJa": "に・頻率の子",
     "flavorText": "會把時間與數量排成整齊節奏，幫助喚語者表達「每幾次、每多少」。",
-    "unlockText": "你聽見了「に・頻率之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "unlockText": "你聽見了「に・頻率之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-ni-frequency",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "に的節律者",
+    "trueResonanceTitleJa": "にを刻む者",
+    "trueResonanceBadge": "律の月印",
+    "trueResonanceLines": [
+      "何回に一度か、そのリズムをやさしく刻むよ。",
+      "每幾次一次的節奏，祂會替你輕柔地刻進句子裡。"
+    ]
   },
   {
     "skillId": "DE_MATERIAL",
@@ -330,9 +519,16 @@
     "nameZh": "材料之子",
     "nameJa": "で・材料の子",
     "flavorText": "喜歡抱著各種原料，提醒喚語者一樣東西是「用什麼做成」的。",
-    "unlockText": "你聽見了「で・材料之子」的聲音。\n牠現在願意加入你的共鳴輪。",
+    "unlockText": "你聽見了「で・材料之子」的聲音。\n祂現在願意加入你的共鳴輪。",
     "imageBase": "assets/images/spirits/display/spirit-de-material",
     "implemented": true,
-    "fallbackType": "particle-card"
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "で的成形者",
+    "trueResonanceTitleJa": "でを織る者",
+    "trueResonanceBadge": "素材の灯",
+    "trueResonanceLines": [
+      "何でできているか、手ざわりまで言葉にするね。",
+      "由什麼構成的質地，祂會連觸感都替你說清楚。"
+    ]
   }
 ]

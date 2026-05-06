@@ -3760,7 +3760,7 @@
                                     class="resonance-wheel tap-mode pt-1">
 
                                     <button v-for="(opt, i) in currentQuestion.choices"
-                                        :key="'tap_' + opt + '_' + i" @click="selectChoice(opt)"
+                                        :key="'tap_' + opt + '_' + i" @click="selectChoice(opt, $event)"
                                         class="resonance-slot group" :class="getChoiceBtnClass(opt)"
                                         type="button" :aria-label="'選項 ' + opt">
 

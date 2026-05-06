@@ -1711,6 +1711,15 @@ const _jpApp = Vue.createApp({
             return Number.isFinite(value) ? Math.min(100, Math.max(0, Math.floor(value))) : 0;
         };
 
+        const isBondMaxSkill = (skillId) => getSkillMastery(skillId) >= 100;
+
+        const getCurrentQuestionSkillId = () => {
+            const skillId = currentQuestion.value?.skillId;
+            return (skillId && typeof skillId === 'string') ? skillId : '';
+        };
+
+        const isCurrentQuestionBondMax = () => isBondMaxSkill(getCurrentQuestionSkillId());
+
         const getSkillMasteryStyle = (skillId) => ({
             width: `${getSkillMastery(skillId)}%`
         });
@@ -5201,6 +5210,40 @@ const _jpApp = Vue.createApp({
             };
         };
 
+        const isCorrectAnswerOption = (opt, blankIndex = 0) => {
+            const ans = currentQuestion.value?.answers?.[blankIndex];
+            if (ans == null) return false;
+            return parseAcceptableAnswers(ans).includes(String(opt || '').trim());
+        };
+
+        const getTapAttackOriginCenter = () => {
+            if (tapAttackOrigin.questionIndex === currentIndex.value && Number.isFinite(tapAttackOrigin.x) && Number.isFinite(tapAttackOrigin.y)) {
+                return { x: tapAttackOrigin.x, y: tapAttackOrigin.y };
+            }
+            const slotEl = document.querySelector('.resonance-wheel.tap-mode .resonance-slot.is-correct')
+                || document.querySelector('.resonance-wheel.tap-mode .resonance-slot.is-selected')
+                || document.querySelector('.tap-mode .resonance-slot.is-selected');
+            return rectCenter(slotEl);
+        };
+
+        const getTapBondMaxCurveLead = (origin, target) => {
+            const dx = target.x - origin.x;
+            const dy = target.y - origin.y;
+            const dist = Math.hypot(dx, dy) || 1;
+            const dirX = dx / dist;
+            const dirY = dy / dist;
+            const perpX = -dirY;
+            const perpY = dirX;
+            const side = Math.random() < 0.5 ? -1 : 1;
+            const lateral = 0.42 + Math.random() * 0.22;
+            const lift = 0.18 + Math.random() * 0.14;
+            let leadX = dirX + perpX * side * lateral;
+            let leadY = dirY + perpY * side * lateral - lift;
+            if (leadY > -0.18) leadY = -0.18;
+            const h = Math.hypot(leadX, leadY) || 1;
+            return { x: leadX / h, y: leadY / h };
+        };
+
         const resolveFlickShot = (startPoint, dx, dy) => {
             const distance = Math.hypot(dx, dy);
             if (distance < FLICK_MIN_DISTANCE) return null;
@@ -5319,6 +5362,19 @@ const _jpApp = Vue.createApp({
 
                     if (e.cancelable) e.preventDefault();
 
+                    const isBondMaxGuidedHit = isCurrentQuestionBondMax() && isCorrectAnswerOption(opt);
+                    if (isBondMaxGuidedHit) {
+                        const monsterTarget = getFlickMonsterTarget();
+                        if (monsterTarget?.center) {
+                            shot = {
+                                ...shot,
+                                targetX: monsterTarget.center.x,
+                                targetY: monsterTarget.center.y,
+                                hitsMonster: true
+                            };
+                        }
+                    }
+
                     flickState.pendingDirectionalMiss = !shot.hitsMonster;
                     const vx = shot.targetX - startPoint.x;
 
@@ -5332,7 +5388,12 @@ const _jpApp = Vue.createApp({
 
                     flickState.lastShotDirStored = true;
 
-                    spawnProjectile(startPoint.x, startPoint.y, shot.targetX, shot.targetY, opt);
+                    spawnProjectile(startPoint.x, startPoint.y, shot.targetX, shot.targetY, opt, {
+                        trueResonance: isBondMaxGuidedHit,
+                        bondMaxAttack: isBondMaxGuidedHit,
+                        curveLeadX: dx,
+                        curveLeadY: dy
+                    });
 
                     handleRuneClick(opt, true);
 
@@ -8952,6 +9013,8 @@ const _jpApp = Vue.createApp({
 
                     correctAnswersAmount.value++;
 
+                    const isBondMaxAttack = isCurrentQuestionBondMax();
+
                     addSkillMasteryProgress();
 
                     playCorrectFeedback(comboCount.value + 1);
@@ -8959,7 +9022,9 @@ const _jpApp = Vue.createApp({
                     // 🔋 SP Reward: +1 on correct answer
                     regenSP();
 
-                    const isPlayerMiss = (heroBuffs.giragiraTurns > 0 || heroBuffs.monsterSleep) ? false : (Math.random() < (monster.value?.evasionRate ?? 0.05));
+                    const baseEvasionRate = monster.value?.evasionRate ?? 0.05;
+                    const effectiveEvasionRate = isBondMaxAttack ? Math.max(0, baseEvasionRate - 0.03) : baseEvasionRate;
+                    const isPlayerMiss = (heroBuffs.giragiraTurns > 0 || heroBuffs.monsterSleep) ? false : (Math.random() < effectiveEvasionRate);
 
                     if (isPlayerMiss) {
 
@@ -8973,10 +9038,26 @@ const _jpApp = Vue.createApp({
                     } else {
 
                         const strikeIsGira = heroBuffs.giragiraTurns > 0;
+                        const shouldDeferTapHitPresentation = !isFlick;
+                        const currentHitSfx = (heroBuffs.giragiraTurns > 0) ? 'hit2' : 'hit';
+                        const playCurrentHitSfx = () => {
+                            if (_isMobileSfx) playUiSfx(currentHitSfx); else playSfx(currentHitSfx);
+                        };
+                        const triggerGiraImpactVfx = (delay = 0) => {
+                            if (typeof window.spawnGiraGiraHitVfx !== 'function') return;
+                            const giraEl = document.querySelector('img[alt="monster"]') || document.querySelector('.w-28.h-28.rounded-full');
+                            const giraCenter = rectCenter(giraEl);
+                            if (!giraCenter) return;
+                            setTimeout(() => {
+                                if (typeof window.spawnGiraGiraHitVfx === 'function') window.spawnGiraGiraHitVfx(giraCenter.x, giraCenter.y);
+                                if (typeof window.spawnGiraGiraBurstVfx === 'function') window.spawnGiraGiraBurstVfx(giraCenter.x, giraCenter.y);
+                            }, delay);
+                        };
 
-                        monsterHit.value = true;
-
-                        setTimeout(() => { monsterHit.value = false; }, 500); // 延長至 0.5s
+                        if (!shouldDeferTapHitPresentation) {
+                            monsterHit.value = true;
+                            setTimeout(() => { monsterHit.value = false; }, 500); // 延長至 0.5s
+                        }
 
                         if (strikeIsGira) {
                             monsterHitGiragira.value = true;
@@ -9000,32 +9081,11 @@ const _jpApp = Vue.createApp({
                         }
 
                         // 🌟 子彈抵達瞬間！完美同步播放打擊音效
-                        const currentHitSfx = (heroBuffs.giragiraTurns > 0) ? 'hit2' : 'hit';
-                        if (_isMobileSfx) playUiSfx(currentHitSfx); else playSfx(currentHitSfx);
-
-                        // 💡 點選(Tap)模式：一般攻擊補命中爆炸；GIRAGIRA 改由專用斬擊 VFX 主導，避免與黃圈疊成「普通感」
-
-                        if (!isFlick && !strikeIsGira) {
-
-                            const monsterEl = document.querySelector('img[alt="monster"]') || document.querySelector('.w-28.h-28.rounded-full');
-
-                            const center = rectCenter(monsterEl);
-
-                            if (center) spawnHitVfx(center.x, center.y);
-
-                        }
+                        if (!shouldDeferTapHitPresentation) playCurrentHitSfx();
 
                         // GIRAGIRA 強化命中特效（斬光 + 爆裂層）
-                        if (strikeIsGira && typeof window.spawnGiraGiraHitVfx === 'function') {
-                            const giraEl = document.querySelector('img[alt="monster"]') || document.querySelector('.w-28.h-28.rounded-full');
-                            const giraCenter = rectCenter(giraEl);
-                            if (giraCenter) {
-                                const giraDelay = isFlick ? 380 : 0;
-                                setTimeout(() => {
-                                    if (typeof window.spawnGiraGiraHitVfx === 'function') window.spawnGiraGiraHitVfx(giraCenter.x, giraCenter.y);
-                                    if (typeof window.spawnGiraGiraBurstVfx === 'function') window.spawnGiraGiraBurstVfx(giraCenter.x, giraCenter.y);
-                                }, giraDelay);
-                            }
+                        if (strikeIsGira && !shouldDeferTapHitPresentation) {
+                            triggerGiraImpactVfx(isFlick ? 380 : 0);
                         }
 
                         comboCount.value++;
@@ -9076,25 +9136,56 @@ const _jpApp = Vue.createApp({
 
                         }
 
-                        monster.value.hp = Math.max(0, monster.value.hp - dmg);
+                        let hitPresentationFinalized = false;
+                        const finalizeHitPresentation = () => {
+                            if (hitPresentationFinalized) return;
+                            hitPresentationFinalized = true;
 
-                        // Trigger hit feedback: sprite / anim / stun
-                        monsterHit.value = true;
-                        monsterHitImageFailed.value = false;
-                        monsterStunSeconds.value = 0.8; // 0.8s hit-stun
-                        setTimeout(() => { monsterHit.value = false; }, 400);
+                            if (shouldDeferTapHitPresentation) {
+                                playCurrentHitSfx();
+                                if (strikeIsGira) triggerGiraImpactVfx(0);
+                            }
 
-                        window.spawnFloatingDamage('monster', dmg, 'hp', strikeIsGira ? { giraStrike: true } : null);
+                            monster.value.hp = Math.max(0, monster.value.hp - dmg);
 
-                        if (giraKbPlan && monster.value.hp > 0 && !monsterIsDying.value && !bossDeathVfxActive.value) {
+                            // Trigger hit feedback: sprite / anim / stun
+                            monsterHit.value = true;
+                            monsterHitImageFailed.value = false;
+                            monsterStunSeconds.value = 0.8; // 0.8s hit-stun
+                            setTimeout(() => { monsterHit.value = false; }, 400);
 
-                            armStrikeGiraKnockbackMotion(giraKbPlan);
+                            window.spawnFloatingDamage('monster', dmg, 'hp', strikeIsGira ? { giraStrike: true } : null);
 
-                        }
+                            if (giraKbPlan && monster.value.hp > 0 && !monsterIsDying.value && !bossDeathVfxActive.value) {
 
-                        if (monster.value.hp <= 0) {
-                            if (window.__AUTO_ADVANCE_TIMEOUT) { clearTimeout(window.__AUTO_ADVANCE_TIMEOUT); window.__AUTO_ADVANCE_TIMEOUT = null; }
-                            grantRewards();
+                                armStrikeGiraKnockbackMotion(giraKbPlan);
+
+                            }
+
+                            if (monster.value.hp <= 0) {
+                                if (window.__AUTO_ADVANCE_TIMEOUT) { clearTimeout(window.__AUTO_ADVANCE_TIMEOUT); window.__AUTO_ADVANCE_TIMEOUT = null; }
+                                grantRewards();
+                            }
+                        };
+
+                        if (shouldDeferTapHitPresentation) {
+                            const monsterEl = document.querySelector('img[alt="monster"]') || document.querySelector('.w-28.h-28.rounded-full');
+                            const center = rectCenter(monsterEl);
+                            if (center) {
+                                const origin = getTapAttackOriginCenter() || { x: center.x, y: window.innerHeight - 80 };
+                                const tapBondLead = isBondMaxAttack ? getTapBondMaxCurveLead(origin, center) : null;
+                                spawnProjectile(origin.x, origin.y, center.x, center.y, userAnswers.value[0], {
+                                    trueResonance: isBondMaxAttack,
+                                    bondMaxAttack: isBondMaxAttack,
+                                    curveLeadX: tapBondLead?.x,
+                                    curveLeadY: tapBondLead?.y,
+                                    onHit: finalizeHitPresentation
+                                });
+                            } else {
+                                finalizeHitPresentation();
+                            }
+                        } else {
+                            finalizeHitPresentation();
                         }
 
                     }
@@ -9505,7 +9596,13 @@ const _jpApp = Vue.createApp({
 
         });
 
-        const selectChoice = (opt) => {
+        const tapAttackOrigin = {
+            questionIndex: null,
+            x: null,
+            y: null
+        };
+
+        const selectChoice = (opt, event = null) => {
 
             if (showForegroundSettlingBattleMessage()) return;
 
@@ -9520,6 +9617,11 @@ const _jpApp = Vue.createApp({
             if (hasSubmitted.value) return;
 
             userAnswers.value[0] = opt;
+
+            const origin = rectCenter(event?.currentTarget);
+            tapAttackOrigin.questionIndex = currentIndex.value;
+            tapAttackOrigin.x = origin?.x ?? null;
+            tapAttackOrigin.y = origin?.y ?? null;
 
         };
 

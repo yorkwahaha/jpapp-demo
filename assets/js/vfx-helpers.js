@@ -638,10 +638,39 @@ window.__initVfxHelpers = function (settings) {
     // 3. 發射彗星本體
     const spawnProjectile = (fromX, fromY, toX, toY, textOpt, extras = null) => {
         const vfxLayer = getVfxLayer();
-        const isTrueResonance = !!extras?.trueResonance;
-        const ttl = isTrueResonance ? 430 : 400;
+        const isBondMaxAttack = !!extras?.bondMaxAttack;
+        const isTrueResonance = !!extras?.trueResonance || isBondMaxAttack;
+        const onHit = typeof extras?.onHit === 'function' ? extras.onHit : null;
+        const ttl = isBondMaxAttack ? 520 : (isTrueResonance ? 430 : 400);
         const dx = toX - fromX;
         const dy = toY - fromY;
+        const dist = Math.hypot(dx, dy) || 1;
+        const leadMag = Math.hypot(Number(extras?.curveLeadX) || 0, Number(extras?.curveLeadY) || 0);
+        const leadX = leadMag > 0 ? (Number(extras?.curveLeadX) || 0) / leadMag : dx / dist;
+        const leadY = leadMag > 0 ? (Number(extras?.curveLeadY) || 0) / leadMag : dy / dist;
+        const perpX = -dy / dist;
+        const perpY = dx / dist;
+        const curveSide = ((leadX * dy) - (leadY * dx)) >= 0 ? 1 : -1;
+        const hasCurveLead = leadMag > 0;
+        const controlLead = isBondMaxAttack
+            ? (hasCurveLead ? Math.min(460, Math.max(210, dist * 0.86)) : Math.min(240, Math.max(98, dist * 0.46)))
+            : Math.min(148, Math.max(58, dist * 0.28));
+        const controlBend = isBondMaxAttack
+            ? (hasCurveLead ? Math.min(110, Math.max(36, dist * 0.16)) : Math.min(100, Math.max(30, dist * 0.14)))
+            : Math.min(86, Math.max(26, dist * 0.12));
+        const controlX = fromX + leadX * controlLead + perpX * controlBend * curveSide;
+        const controlY = fromY + leadY * controlLead + perpY * controlBend * curveSide;
+        const apexDx = controlX - fromX;
+        const apexDy = controlY - fromY;
+        const apexDist = Math.hypot(apexDx, apexDy) || 1;
+        const apexDirX = apexDx / apexDist;
+        const apexDirY = apexDy / apexDist;
+        const homingStartT = hasCurveLead ? 0.55 : 0.5;
+        const returnLead = isBondMaxAttack
+            ? (hasCurveLead ? Math.min(250, Math.max(86, dist * 0.34)) : Math.min(150, Math.max(56, dist * 0.22)))
+            : 0;
+        const returnControlX = controlX + apexDirX * returnLead;
+        const returnControlY = controlY + apexDirY * returnLead;
         const angle = Math.atan2(dy, dx);
         const projectile = document.createElement('div');
         projectile.style.cssText = `
@@ -649,32 +678,63 @@ window.__initVfxHelpers = function (settings) {
             width: ${isTrueResonance ? 52 : 40}px; height: ${isTrueResonance ? 52 : 40}px; display: flex; justify-content: center; align-items: center;
             pointer-events: none; z-index: 99999;
         `;
+        let tail = null;
         if (isTrueResonance) {
-            const tail = document.createElement('div');
+            tail = document.createElement('div');
             tail.style.cssText = `
-                position: absolute; right: 24px; width: 88px; height: 18px; border-radius: 999px;
-                background: linear-gradient(90deg, transparent 0%, rgba(220,38,38,0.2) 18%, rgba(249,115,22,0.72) 58%, rgba(254,243,199,0.9) 100%);
-                filter: blur(1px); box-shadow: 0 0 18px rgba(249,115,22,0.86), 0 0 34px rgba(220,38,38,0.38);
+                position: absolute; right: 24px; width: ${isBondMaxAttack ? 116 : 88}px; height: ${isBondMaxAttack ? 22 : 18}px; border-radius: 999px;
+                background: ${isBondMaxAttack ? 'linear-gradient(90deg, transparent 0%, rgba(127,29,29,0.1) 10%, rgba(220,38,38,0.72) 48%, rgba(251,191,36,0.76) 78%, rgba(255,247,237,0.95) 100%)' : 'linear-gradient(90deg, transparent 0%, rgba(220,38,38,0.2) 18%, rgba(249,115,22,0.72) 58%, rgba(254,243,199,0.9) 100%)'};
+                filter: blur(${isBondMaxAttack ? 1.4 : 1}px); box-shadow: ${isBondMaxAttack ? '0 0 20px rgba(248,113,113,0.9), 0 0 38px rgba(249,115,22,0.68), 0 0 54px rgba(220,38,38,0.34)' : '0 0 18px rgba(249,115,22,0.86), 0 0 34px rgba(220,38,38,0.38)'};
                 transform: rotate(${angle}rad); transform-origin: 100% 50%; z-index: 6; mix-blend-mode: screen;
             `;
             projectile.appendChild(tail);
         }
         const core = document.createElement('div');
         core.style.cssText = `
-            position: absolute; width: ${isTrueResonance ? 34 : 28}px; height: ${isTrueResonance ? 34 : 28}px; border-radius: 50%;
-            background: ${isTrueResonance ? 'radial-gradient(circle,#fff 0%,#fff7ed 30%,#f97316 62%,#dc2626 100%)' : '#ffffff'};
-            box-shadow: ${isTrueResonance ? '0 0 18px #fff, 0 0 38px #f97316, 0 0 70px rgba(220,38,38,0.86), 0 0 96px rgba(251,191,36,0.42)' : '0 0 20px #ffffff, 0 0 40px #fde047, 0 0 60px #f59e0b'}; z-index: 10;
+            position: absolute; width: ${isBondMaxAttack ? 38 : (isTrueResonance ? 34 : 28)}px; height: ${isBondMaxAttack ? 38 : (isTrueResonance ? 34 : 28)}px; border-radius: 50%;
+            background: ${isBondMaxAttack ? 'radial-gradient(circle,#fff 0%,#fff7ed 24%,#fb7185 48%,#ef4444 70%,#7f1d1d 100%)' : (isTrueResonance ? 'radial-gradient(circle,#fff 0%,#fff7ed 30%,#f97316 62%,#dc2626 100%)' : '#ffffff')};
+            box-shadow: ${isBondMaxAttack ? '0 0 18px #fff, 0 0 38px #fb7185, 0 0 70px rgba(220,38,38,0.88), 0 0 96px rgba(251,191,36,0.44)' : (isTrueResonance ? '0 0 18px #fff, 0 0 38px #f97316, 0 0 70px rgba(220,38,38,0.86), 0 0 96px rgba(251,191,36,0.42)' : '0 0 20px #ffffff, 0 0 40px #fde047, 0 0 60px #f59e0b')}; z-index: 10;
         `;
         projectile.appendChild(core);
         vfxLayer.appendChild(projectile);
+        const getCurvePoint = (t) => {
+            if (!isBondMaxAttack) {
+                const easeProgress = 1 - Math.pow(1 - t, 3);
+                return {
+                    x: fromX + dx * easeProgress,
+                    y: fromY + dy * easeProgress,
+                    angle: Math.atan2(dy, dx)
+                };
+            }
+            if (t < homingStartT) {
+                const leadT = t / homingStartT;
+                return {
+                    x: fromX + (controlX - fromX) * leadT,
+                    y: fromY + (controlY - fromY) * leadT,
+                    angle: Math.atan2(controlY - fromY, controlX - fromX)
+                };
+            }
+            const arcT = (t - homingStartT) / (1 - homingStartT);
+            const curveT = arcT * arcT * (3 - 2 * arcT);
+            const inv = 1 - curveT;
+            const x = inv * inv * controlX + 2 * inv * curveT * returnControlX + curveT * curveT * toX;
+            const y = inv * inv * controlY + 2 * inv * curveT * returnControlY + curveT * curveT * toY;
+            const tx = 2 * inv * (returnControlX - controlX) + 2 * curveT * (toX - returnControlX);
+            const ty = 2 * inv * (returnControlY - controlY) + 2 * curveT * (toY - returnControlY);
+            return { x, y, angle: Math.atan2(ty, tx) };
+        };
         let startTime = null;
         const animateTrail = (timestamp) => {
             if (!startTime) startTime = timestamp;
             const progress = Math.min((timestamp - startTime) / ttl, 1);
             if (progress < 1 && projectile.isConnected) {
-                const easeProgress = 1 - Math.pow(1 - progress, 3);
-                const currentX = fromX + dx * easeProgress;
-                const currentY = fromY + dy * easeProgress;
+                const point = getCurvePoint(progress);
+                const currentX = point.x;
+                const currentY = point.y;
+                if (isBondMaxAttack) {
+                    projectile.style.transform = `translate(${currentX - fromX}px, ${currentY - fromY}px) scale(${1 - progress * 0.28})`;
+                    if (tail) tail.style.transform = `rotate(${point.angle}rad)`;
+                }
                 const particlesThisFrame = isTrueResonance ? (Math.floor(Math.random() * 4) + 5) : (Math.floor(Math.random() * 3) + 3);
                 for (let i = 0; i < particlesThisFrame; i++) {
                     const offsetX = (Math.random() - 0.5) * (isTrueResonance ? 30 : 20);
@@ -684,13 +744,16 @@ window.__initVfxHelpers = function (settings) {
                 requestAnimationFrame(animateTrail);
             } else {
                 spawnHitVfx(toX, toY, { trueResonance: isTrueResonance, dirX: dx, dirY: dy });
+                if (onHit) onHit();
             }
         };
         requestAnimationFrame(animateTrail);
-        projectile.animate([
-            { transform: `translate(0px, 0px) scale(1)`, opacity: 1 },
-            { transform: `translate(${dx}px, ${dy}px) scale(${isTrueResonance ? 0.62 : 0.5})`, opacity: isTrueResonance ? 0.72 : 0.5 }
-        ], { duration: ttl, easing: 'cubic-bezier(.2, .8, .2, 1)', fill: 'forwards' });
+        if (!isBondMaxAttack) {
+            projectile.animate([
+                { transform: `translate(0px, 0px) scale(1)`, opacity: 1 },
+                { transform: `translate(${dx}px, ${dy}px) scale(${isTrueResonance ? 0.62 : 0.5})`, opacity: isTrueResonance ? 0.72 : 0.5 }
+            ], { duration: ttl, easing: 'cubic-bezier(.2, .8, .2, 1)', fill: 'forwards' });
+        }
         setTimeout(() => { if (projectile.isConnected) projectile.remove(); }, ttl + 50);
     };
 

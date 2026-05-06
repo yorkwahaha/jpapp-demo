@@ -271,6 +271,7 @@ function updateHeroStatusBar() {
             if (heroBuffs.gachigachiTurns > 0) {
                 badgesHtml +=
                     '<div style="display:flex;align-items:center;gap:3px;' +
+                    'padding:2px 7px 2px 5px;' +
                     'background:rgba(30,58,138,0.92);border:1.5px solid #60a5fa;border-radius:10px;' +
                     'color:#eff6ff;font-size:13px;font-weight:900;line-height:1;' +
                     'box-shadow:0 2px 8px rgba(0,0,0,0.65);text-shadow:0 1px 3px rgba(0,0,0,0.8);' +

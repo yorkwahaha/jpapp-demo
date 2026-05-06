@@ -12,7 +12,8 @@ window.__attachDebugTools = function (refs) {
         playPrologueOpening, playMainEndingFinale,
         mapChapters, activeChapter, selectedSegmentIdx, getMapNodeStyle,
         MENTOR_AUDIO_MAP,
-        grantRewards, playerDead, monsterIsDying, monsterTrulyDead, monsterResultShown
+        grantRewards, playerDead, monsterIsDying, monsterTrulyDead, monsterResultShown,
+        skillMastery, saveProgression, SPIRITS
     } = refs || {};
 
     // --- Audit State ---
@@ -601,6 +602,54 @@ window.__attachDebugTools = function (refs) {
 
 
 
+            const _jpUndefinedLike = new Set(["undefined", "null", ""]);
+
+            function _collectUndefinedLikePaths(value, basePath = "spirit") {
+                const out = [];
+                if (value === undefined || value === null) {
+                    out.push(basePath);
+                    return out;
+                }
+                if (typeof value === "string") {
+                    if (_jpUndefinedLike.has(value.trim())) out.push(basePath);
+                    return out;
+                }
+                if (Array.isArray(value)) {
+                    value.forEach((v, idx) => {
+                        out.push(..._collectUndefinedLikePaths(v, `${basePath}[${idx}]`));
+                    });
+                    return out;
+                }
+                if (typeof value === "object") {
+                    Object.entries(value).forEach(([k, v]) => {
+                        out.push(..._collectUndefinedLikePaths(v, `${basePath}.${k}`));
+                    });
+                }
+                return out;
+            }
+
+            function _looksJapanese(line) {
+                return /[\u3040-\u309F\u30A0-\u30FF]/.test(String(line || ""));
+            }
+
+            function _looksChineseSecondLine(line) {
+                const text = String(line || "");
+                const kanaCount = (text.match(/[\u3040-\u309F\u30A0-\u30FF]/g) || []).length;
+                const cjkCount = (text.match(/[\u4E00-\u9FFF]/g) || []).length;
+                if (text.trim() === "") return false;
+                if (cjkCount === 0 && kanaCount > 0) return false;
+                if (kanaCount >= 6 && kanaCount > cjkCount) return false;
+                return true;
+            }
+
+            function _pushResonanceIssue(issues, skillId, problemType, suggestion) {
+                issues.push({
+                    skillId: skillId || "(missing skillId)",
+                    problemType,
+                    suggestion
+                });
+            }
+
             function listLevels() {
 
                 try {
@@ -876,6 +925,137 @@ window.__attachDebugTools = function (refs) {
                     auditData.counts = {};
                     auditData.samples = [];
                     console.log("[jpDebug.audit] Audit data reset.");
+                },
+
+                async auditTrueResonanceData(expectedCount = 28) {
+                    const source = `assets/data/spirits.v1.json?t=${Date.now()}`;
+                    const issues = [];
+                    let spirits = [];
+
+                    try {
+                        const res = await fetch(source, { cache: "no-store" });
+                        if (!res.ok) {
+                            console.error(`[jpDebug.auditTrueResonanceData] failed to load ${source}`, res.status);
+                            return {
+                                ok: false,
+                                summary: null,
+                                issues: [{ skillId: "-", problemType: "fetch_failed", suggestion: "確認 spirits.v1.json 可讀取" }]
+                            };
+                        }
+                        spirits = await res.json();
+                    } catch (err) {
+                        console.error("[jpDebug.auditTrueResonanceData] fetch error:", err);
+                        return {
+                            ok: false,
+                            summary: null,
+                            issues: [{ skillId: "-", problemType: "fetch_exception", suggestion: "檢查本機資源與控制台錯誤" }]
+                        };
+                    }
+
+                    if (!Array.isArray(spirits)) {
+                        console.error("[jpDebug.auditTrueResonanceData] spirits data is not an array");
+                        return {
+                            ok: false,
+                            summary: null,
+                            issues: [{ skillId: "-", problemType: "invalid_root", suggestion: "確認 spirits.v1.json 根節點為陣列" }]
+                        };
+                    }
+
+                    const skillIdCountMap = {};
+                    const rows = [];
+
+                    spirits.forEach((spirit, idx) => {
+                        const skillId = String(spirit?.skillId || "").trim();
+                        const lines = Array.isArray(spirit?.trueResonanceLines) ? spirit.trueResonanceLines : null;
+                        const line1 = lines?.[0] ?? "";
+                        const line2 = lines?.[1] ?? "";
+                        const hasTa = JSON.stringify(spirit).includes("牠");
+                        const undefinedLikePaths = _collectUndefinedLikePaths(spirit, "spirit");
+
+                        if (!skillId) {
+                            _pushResonanceIssue(issues, `#${idx}`, "missing_skillId", "補上 skillId");
+                        } else {
+                            skillIdCountMap[skillId] = (skillIdCountMap[skillId] || 0) + 1;
+                        }
+
+                        if (!lines) {
+                            _pushResonanceIssue(issues, skillId, "missing_trueResonanceLines", "補上 trueResonanceLines（至少 2 行）");
+                        } else {
+                            if (lines.length < 2) {
+                                _pushResonanceIssue(issues, skillId, "trueResonanceLines_too_short", "至少提供 2 行（第1日文、第2中文）");
+                            }
+                            if (!_looksJapanese(line1)) {
+                                _pushResonanceIssue(issues, skillId, "line1_not_japanese_like", "第 1 行加入自然日文（含平假名/片假名）");
+                            }
+                            if (!_looksChineseSecondLine(line2)) {
+                                _pushResonanceIssue(issues, skillId, "line2_not_chinese_like", "第 2 行改為中文輔助，避免大量假名");
+                            }
+                        }
+
+                        if (!String(spirit?.trueResonanceTitleZh || "").trim()) {
+                            _pushResonanceIssue(issues, skillId, "missing_trueResonanceTitleZh", "補上 trueResonanceTitleZh");
+                        }
+                        if (!String(spirit?.trueResonanceTitleJa || "").trim()) {
+                            _pushResonanceIssue(issues, skillId, "missing_trueResonanceTitleJa", "補上 trueResonanceTitleJa");
+                        }
+                        if (!String(spirit?.trueResonanceBadge || "").trim()) {
+                            _pushResonanceIssue(issues, skillId, "missing_trueResonanceBadge", "補上 trueResonanceBadge");
+                        }
+                        if (hasTa) {
+                            _pushResonanceIssue(issues, skillId, "contains_牠", "若指小助靈，改為「祂」");
+                        }
+                        if (undefinedLikePaths.length > 0) {
+                            _pushResonanceIssue(
+                                issues,
+                                skillId,
+                                "contains_undefined_null_empty",
+                                `檢查空值欄位：${undefinedLikePaths.slice(0, 3).join(", ")}${undefinedLikePaths.length > 3 ? "..." : ""}`
+                            );
+                        }
+
+                        rows.push({
+                            skillId: skillId || `#${idx}`,
+                            hasLines: !!lines,
+                            lineCount: lines?.length || 0,
+                            line1LooksJa: _looksJapanese(line1),
+                            line2LooksZh: _looksChineseSecondLine(line2),
+                            hasTitleZh: !!String(spirit?.trueResonanceTitleZh || "").trim(),
+                            hasTitleJa: !!String(spirit?.trueResonanceTitleJa || "").trim(),
+                            hasBadge: !!String(spirit?.trueResonanceBadge || "").trim(),
+                            hasTa
+                        });
+                    });
+
+                    Object.entries(skillIdCountMap).forEach(([skillId, count]) => {
+                        if (count > 1) {
+                            _pushResonanceIssue(issues, skillId, "duplicate_skillId", `skillId 重複 ${count} 次，請合併或更正`);
+                        }
+                    });
+
+                    const uniqueSkillIdCount = Object.keys(skillIdCountMap).length;
+                    if (uniqueSkillIdCount !== expectedCount) {
+                        _pushResonanceIssue(issues, "-", "skillId_count_mismatch", `目前 ${uniqueSkillIdCount}，預期 ${expectedCount}`);
+                    }
+
+                    const summary = {
+                        expectedCount,
+                        spiritRows: spirits.length,
+                        uniqueSkillIdCount,
+                        issueCount: issues.length
+                    };
+
+                    console.log("[jpDebug.auditTrueResonanceData] summary");
+                    console.table([summary]);
+                    console.table(rows);
+
+                    if (issues.length === 0) {
+                        console.log(`True resonance data audit passed: ${expectedCount}/${expectedCount}`);
+                    } else {
+                        console.warn("[jpDebug.auditTrueResonanceData] issues found");
+                        console.table(issues);
+                    }
+
+                    return { ok: issues.length === 0, summary, issues };
                 },
 
                 async auditLevelSkills(levelId, sampleCount = 100) {
@@ -1326,6 +1506,9 @@ jpDebug commands:
 - jpDebug.retry() / next() / prev()
 - jpDebug.skill('MO_ALSO_BASIC')
 - jpDebug.skillLines('NI_TIME', 20)
+- jpDebug.setSkillMastery('WA_TOPIC_BASIC', 100) (dev only)
+- jpDebug.setAllSkillMastery(100) (dev only)
+- jpDebug.resetSkillMasteryDebug() (dev only)
 - jpDebug.killCurrentMonster() (dev only: localhost / 127.0.0.1 / file:) — instant win, uses grantRewards
 - jpDebug.state() / home() / levels()
 - jpDebug.mapNodes() : Console-table current map marker data.
@@ -1335,6 +1518,7 @@ jpDebug commands:
 
 Audit Tools (Question Distribution):
 - jpDebug.auditLevelSkills(6, 100) : Simulate Level 6, sample 100 times.
+- jpDebug.auditTrueResonanceData() : Audit spirits true resonance data completeness.
 - jpDebug.auditStart() : Start recording current play sessions.
 - jpDebug.auditReport() : Show stats for current play session.
 - jpDebug.auditStop() : Stop recording and show report.
@@ -1354,6 +1538,108 @@ Mentor/Tutorial:
             };
 
 
+
+            if (isJpDebugDevHost()) {
+
+                const _clampMasteryValue = (value) => {
+                    const n = Number(value);
+                    if (!Number.isFinite(n)) return 0;
+                    return Math.max(0, Math.min(100, Math.floor(n)));
+                };
+
+                const _knownSkillIdsForMasteryDebug = () => {
+                    const ids = new Set();
+                    if (skillsAll?.value && typeof skillsAll.value === "object") {
+                        Object.keys(skillsAll.value).forEach((id) => {
+                            if (id && typeof id === "string") ids.add(id);
+                        });
+                    }
+                    const spirits = Array.isArray(SPIRITS?.value) ? SPIRITS.value : [];
+                    spirits.forEach((spirit) => {
+                        const id = String(spirit?.skillId || "").trim();
+                        if (id) ids.add(id);
+                    });
+                    return Array.from(ids);
+                };
+
+                const _persistMasteryDebug = () => {
+                    if (typeof saveProgression === "function") {
+                        saveProgression();
+                        return true;
+                    }
+                    console.warn("[jpDebug.skillMastery] saveProgression ref not found; change applied in-memory only.");
+                    return false;
+                };
+
+                debugApi.setSkillMastery = function setSkillMastery(skillId, value) {
+                    if (!isJpDebugDevHost()) {
+                        console.warn("[jpDebug.setSkillMastery] only available in development.");
+                        return false;
+                    }
+                    if (!skillMastery || typeof skillMastery !== "object" || !("value" in skillMastery)) {
+                        console.warn("[jpDebug.setSkillMastery] skillMastery ref not available.");
+                        return false;
+                    }
+                    const id = String(skillId || "").trim();
+                    if (!id) {
+                        console.warn("[jpDebug.setSkillMastery] missing skillId.");
+                        return false;
+                    }
+                    const knownIds = _knownSkillIdsForMasteryDebug();
+                    if (!knownIds.includes(id)) {
+                        console.warn(`[jpDebug.setSkillMastery] unknown skillId: "${id}"`);
+                        return false;
+                    }
+                    const nextValue = _clampMasteryValue(value);
+                    skillMastery.value = {
+                        ...(skillMastery.value || {}),
+                        [id]: nextValue
+                    };
+                    _persistMasteryDebug();
+                    console.info(`[jpDebug.setSkillMastery] ${id} => ${nextValue}`);
+                    return true;
+                };
+
+                debugApi.setAllSkillMastery = function setAllSkillMastery(value) {
+                    if (!isJpDebugDevHost()) {
+                        console.warn("[jpDebug.setAllSkillMastery] only available in development.");
+                        return false;
+                    }
+                    if (!skillMastery || typeof skillMastery !== "object" || !("value" in skillMastery)) {
+                        console.warn("[jpDebug.setAllSkillMastery] skillMastery ref not available.");
+                        return false;
+                    }
+                    const knownIds = _knownSkillIdsForMasteryDebug();
+                    if (!knownIds.length) {
+                        console.warn("[jpDebug.setAllSkillMastery] no known skillId found.");
+                        return false;
+                    }
+                    const nextValue = _clampMasteryValue(value);
+                    const nextMap = {};
+                    knownIds.forEach((id) => {
+                        nextMap[id] = nextValue;
+                    });
+                    skillMastery.value = nextMap;
+                    _persistMasteryDebug();
+                    console.info(`[jpDebug.setAllSkillMastery] set ${knownIds.length} skills => ${nextValue}`);
+                    return true;
+                };
+
+                debugApi.resetSkillMasteryDebug = function resetSkillMasteryDebug() {
+                    if (!isJpDebugDevHost()) {
+                        console.warn("[jpDebug.resetSkillMasteryDebug] only available in development.");
+                        return false;
+                    }
+                    if (!skillMastery || typeof skillMastery !== "object" || !("value" in skillMastery)) {
+                        console.warn("[jpDebug.resetSkillMasteryDebug] skillMastery ref not available.");
+                        return false;
+                    }
+                    console.warn("[jpDebug.resetSkillMasteryDebug] This only resets skillMastery for debug; other progression data is untouched.");
+                    skillMastery.value = {};
+                    _persistMasteryDebug();
+                    return true;
+                };
+            }
 
             if (isJpDebugDevHost() && typeof grantRewards === "function") {
 
