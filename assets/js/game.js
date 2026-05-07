@@ -933,7 +933,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26050701";
+        const APP_VERSION = window.APP_VERSION || "26050702";
 
         const appVersion = ref(APP_VERSION);
         const changelogManager = window.JPAPPChangelogManager || {
