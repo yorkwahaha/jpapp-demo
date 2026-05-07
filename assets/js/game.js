@@ -2757,29 +2757,10 @@ const _jpApp = Vue.createApp({
 
         const bufferPool = new Map();
 
-        const SIMPLE_AUDIO_V2_STORAGE_KEY = 'jpapp_simple_audio_v2';
-        const readSimpleAudioV2Flag = () => {
-            try {
-                const raw = localStorage.getItem(SIMPLE_AUDIO_V2_STORAGE_KEY);
-                return raw === '1' || raw === 'true';
-            } catch (_) {
-                return false;
-            }
-        };
-        const simpleAudioV2Enabled = ref(readSimpleAudioV2Flag());
-        const toggleSimpleAudioV2 = () => {
-            if (!isDevToolsVisible.value) return;
-            if (simpleAudioV2Enabled.value) {
-                localStorage.removeItem(SIMPLE_AUDIO_V2_STORAGE_KEY);
-            } else {
-                localStorage.setItem(SIMPLE_AUDIO_V2_STORAGE_KEY, '1');
-            }
-            location.reload();
-        };
         const isIphoneHtmlAudioDevice = () => /iPhone|iPod/i.test(navigator.userAgent);
         const isHtmlAudioVolumeControlLikelySupported = () => !isIphoneHtmlAudioDevice();
         const shouldShowSimpleAudioV2SystemVolumeNotice = computed(() =>
-            isDevToolsVisible.value && simpleAudioV2Enabled.value && !isHtmlAudioVolumeControlLikelySupported()
+            isDevToolsVisible.value && !isHtmlAudioVolumeControlLikelySupported()
         );
 
         const needsUserGestureToResumeBgm = ref(false);
@@ -10026,7 +10007,7 @@ const _jpApp = Vue.createApp({
             getSpiritForSkill, getSpiritForKnowledgeCard, getSpiritImageSrc, handleSpiritImageError,
             isSpecialSceneActive, specialSceneBg,
             isForegroundSettling,
-            simpleAudioV2Enabled, toggleSimpleAudioV2, shouldShowSimpleAudioV2SystemVolumeNotice, isDevToolsVisible,
+            shouldShowSimpleAudioV2SystemVolumeNotice, isDevToolsVisible,
             showFpsDebug, toggleFpsDebug
         };
 
