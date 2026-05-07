@@ -300,6 +300,11 @@
             s10l.async = false;
             document.head.appendChild(s10l);
 
+            const s10o = document.createElement('script');
+            s10o.src = 'assets/js/mentor-dialogue-helpers.js?v=' + v;
+            s10o.async = false;
+            document.head.appendChild(s10o);
+
             const s10k = document.createElement('script');
             s10k.src = 'assets/js/changelog-manager.js?v=' + v;
             s10k.async = false;

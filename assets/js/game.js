@@ -936,6 +936,39 @@ const _jpApp = Vue.createApp({
         const APP_VERSION = window.APP_VERSION || "26050701";
 
         const appVersion = ref(APP_VERSION);
+        const changelogManager = window.JPAPPChangelogManager || {
+            createChangelogState: ({ ref, APP_VERSION, fetch: fetchFn }) => {
+                const isChangelogOpen = ref(false);
+                const changelogData = ref([]);
+                const changelogError = ref(false);
+                const openChangelog = async () => {
+                    isChangelogOpen.value = true;
+                    if (changelogData.value.length > 0 || changelogError.value) return;
+                    if (typeof fetchFn !== 'function') {
+                        changelogError.value = true;
+                        return;
+                    }
+                    try {
+                        const res = await fetchFn('assets/data/changelog.json?v=' + encodeURIComponent(String(APP_VERSION)));
+                        if (!res.ok) {
+                            changelogError.value = true;
+                            return;
+                        }
+                        changelogData.value = await res.json();
+                        changelogError.value = false;
+                    } catch (_) {
+                        changelogError.value = true;
+                    }
+                };
+                return { isChangelogOpen, changelogData, changelogError, openChangelog };
+            },
+            applyVersionStoragePolicy: () => {}
+        };
+        const { isChangelogOpen, changelogData, changelogError, openChangelog } = changelogManager.createChangelogState({
+            ref,
+            APP_VERSION,
+            fetch: typeof window.fetch === 'function' ? window.fetch.bind(window) : null
+        });
 
         const DEFAULT_TTS_VOICE = 'ja-JP-Neural2-B';
 
@@ -954,6 +987,18 @@ const _jpApp = Vue.createApp({
             toggleFpsDebug: () => { }
         })))({ vue: { ref } });
         const { isDevToolsVisible, showFpsDebug, toggleFpsDebug } = devToolsState;
+        const debugControls = (typeof heroBuffs !== 'undefined' && heroBuffs) ? heroBuffs : {
+            enemyAtbMult: 1.0,
+            enemyDmgMult: 1.0,
+            odoodoTurns: 0,
+            gachigachiTurns: 0,
+            giragiraTurns: 0,
+            morimoriTurns: 0,
+            jiwajiwaTurns: 0,
+            wakuwakuTurns: 0,
+            wakuwakuStacks: 0,
+            monsterSleep: false
+        };
 
         const answerMode = ref('tap');
 
@@ -1051,56 +1096,45 @@ const _jpApp = Vue.createApp({
 
         let mentorAudioPlayToken = 0;
 
+        const mentorDialogueHelpers = window.JPAPPMentorDialogueHelpers || {
+            paginateMentorDialogue: (dialogues) => {
+                const pages = [];
+                const emotions = [];
+                if (!Array.isArray(dialogues)) return { pages, emotions };
+                dialogues.forEach(item => {
+                    const text = item.text || "";
+                    const emotion = item.emotion || 'gentle';
+                    const sentences = text.match(/[^。！？]+[。！？]?[」』"']?/g) || [text];
+                    let currentPage = "";
+                    let sentenceCount = 0;
+                    sentences.forEach(s => {
+                        if (sentenceCount >= 3 || (currentPage.length + s.length > 85)) {
+                            if (currentPage) {
+                                pages.push(currentPage.trim());
+                                emotions.push(emotion);
+                            }
+                            currentPage = s;
+                            sentenceCount = 1;
+                        } else {
+                            currentPage += s;
+                            sentenceCount++;
+                        }
+                    });
+                    if (currentPage) {
+                        pages.push(currentPage.trim());
+                        emotions.push(emotion);
+                    }
+                });
+                return { pages, emotions };
+            }
+        };
+
         // 分頁輔助：將多行對話切碎
 
         const fragmentMentorDialogue = (dialogues) => {
-            mentorPageEmotions.value = [];
-            if (!Array.isArray(dialogues)) return [];
-            const pages = [];
-            dialogues.forEach(item => {
-                const text = item.text || "";
-                const emotion = item.emotion || 'gentle';
-
-                // 以標點符號初步斷句
-
-                const sentences = text.match(/[^。！？]+[。！？]?[」』"']?/g) || [text];
-
-                let currentPage = "";
-
-                let sentenceCount = 0;
-
-                sentences.forEach(s => {
-
-                    // 若加進去會超過 2 句，或單句極長，就強迫入下一頁
-
-                    if (sentenceCount >= 3 || (currentPage.length + s.length > 85)) {
-
-                        if (currentPage) {
-                            pages.push(currentPage.trim());
-                            mentorPageEmotions.value.push(emotion);
-                        }
-
-                        currentPage = s;
-
-                        sentenceCount = 1;
-
-                    } else {
-
-                        currentPage += s;
-
-                        sentenceCount++;
-
-                    }
-
-                });
-
-                if (currentPage) {
-                    pages.push(currentPage.trim());
-                    mentorPageEmotions.value.push(emotion);
-                }
-
-            });
-
+            const result = mentorDialogueHelpers.paginateMentorDialogue(dialogues);
+            const pages = Array.isArray(result?.pages) ? result.pages : [];
+            mentorPageEmotions.value = Array.isArray(result?.emotions) ? result.emotions : [];
             return pages;
 
         };
@@ -9772,7 +9806,7 @@ const _jpApp = Vue.createApp({
 
         onMounted(() => {
 
-            window.JPAPPChangelogManager.applyVersionStoragePolicy(APP_VERSION);
+            changelogManager.applyVersionStoragePolicy(APP_VERSION);
 
             const unlockAudioOnce = () => {
                 // Warm up critical SFX
@@ -9910,7 +9944,7 @@ const _jpApp = Vue.createApp({
             isAudioDebugEnabled, isAudioDebugOpen, isAudioDebugDragging, audioDebugOverlayStyle, audioDebugSections, refreshAudioDebugState, startAudioDebugDrag, debugResumeAudioContext, debugTestSfx, debugTestBgmPlay, debugPauseBgm, debugTestRawAudio, debugEnableHtmlAudioFallback, debugDisableHtmlAudioFallback, debugEnableFallbackAudioContextV2, debugDisableFallbackAudioContextV2, debugResumeFallbackAudioContext, debugTestFallbackContextBgm, debugTestFallbackBgm, debugTestFallbackSfx, debugShowAudioState,
             answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, monsterHitGiragira, monsterGiraKnockActive, monsterGiraKnockStyle, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             handleEscapeToMap, escapeOverlayVisible, escapeOverlayOpacity, isEscaping,
-            heroBuffs,
+            heroBuffs, debugControls,
             skillList, castAbility, spState, settings, shouldShowNextButton, praiseToast, comboPopup, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG, getSkillTypeLabel,
             formatParticleBadge, formatSkillSpiritName, formatSkillMeaning, formatSkillRule, formatUnlockLevel,
             particleMastery, particleCorrectCounts, skillMastery, skillCorrectCounts, getParticleMastery, getParticleMasteryStyle, getSkillMastery, getSkillMasteryStyle, isBondMaxSkill,
