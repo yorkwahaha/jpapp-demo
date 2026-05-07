@@ -2070,7 +2070,7 @@
                 </div>
 
                 <!-- Simple Audio V2 Debug Toggle (Floating for Home Screen) -->
-                <div class="fixed bottom-6 right-6 z-[6000]">
+                <div v-if="isDevToolsVisible" class="fixed bottom-6 right-6 z-[6000]">
                     <button @click="toggleSimpleAudioV2"
                         class="px-4 py-3 rounded-2xl bg-slate-900/90 backdrop-blur-xl border-2 shadow-[0_8px_32px_rgba(0,0,0,0.5)] active:scale-95 transition-all flex items-center gap-3"
                         :class="simpleAudioV2Enabled ? 'border-emerald-500/50' : 'border-white/10'">
@@ -2639,10 +2639,13 @@
                                 <div v-if="codexPageSkills[0]" :id="'skill-card-' + codexPageSkills[0].id"
                                     class="codex-card-stack flex flex-col items-center justify-center gap-3 w-full">
                                     <div v-if="unlockedSkillIds.includes(codexPageSkills[0].id) && getSpiritForSkill(codexPageSkills[0])"
-                                        class="codex-spirit-entry">
+                                        class="codex-spirit-entry"
+                                        :class="{ 'codex-spirit--true-resonance': isBondMaxSkill(codexPageSkills[0].id) }">
                                         <div class="codex-spirit-hero">
                                             <div class="codex-spirit-aura"></div>
-                                            <div class="codex-affinity-badge" aria-label="親密度">
+                                            <div class="codex-affinity-badge"
+                                                :class="{ 'codex-affinity-badge--full': isBondMaxSkill(codexPageSkills[0].id) }"
+                                                aria-label="親密度">
                                                 <div class="codex-affinity-heart">
                                                     <div class="codex-affinity-heart-fill"
                                                         :style="{ height: getSkillMastery(codexPageSkills[0].id) + '%' }"></div>
@@ -2664,6 +2667,11 @@
                                                 <span class="codex-label-mini codex-label-mini--tip">小助靈</span>
                                                 <p class="codex-back-tip-text">{{
                                                     getSpiritForSkill(codexPageSkills[0]).flavorText }}</p>
+                                            </div>
+                                            <div v-if="isBondMaxSkill(codexPageSkills[0].id)"
+                                                class="codex-true-resonance-block spirit-detail--true-resonance">
+                                                <span class="codex-label-mini codex-label-mini--true-resonance">滿絆共鳴</span>
+                                                <p class="codex-back-tip-text">攻擊化為紅色彗星，命中更穩定，擊中時爆發更強。</p>
                                             </div>
                                             <div class="codex-back-section">
                                                 <span class="codex-label-mini codex-label-mini--formula">句型</span>
@@ -2779,10 +2787,13 @@
                                 <div v-if="codexNextSkill" :id="'skill-card-r-' + codexNextSkill.id"
                                     class="codex-card-stack flex flex-col items-center justify-center gap-3 w-full">
                                     <div v-if="unlockedSkillIds.includes(codexNextSkill.id) && getSpiritForSkill(codexNextSkill)"
-                                        class="codex-spirit-entry">
+                                        class="codex-spirit-entry"
+                                        :class="{ 'codex-spirit--true-resonance': isBondMaxSkill(codexNextSkill.id) }">
                                         <div class="codex-spirit-hero">
                                             <div class="codex-spirit-aura"></div>
-                                            <div class="codex-affinity-badge" aria-label="親密度">
+                                            <div class="codex-affinity-badge"
+                                                :class="{ 'codex-affinity-badge--full': isBondMaxSkill(codexNextSkill.id) }"
+                                                aria-label="親密度">
                                                 <div class="codex-affinity-heart">
                                                     <div class="codex-affinity-heart-fill"
                                                         :style="{ height: getSkillMastery(codexNextSkill.id) + '%' }"></div>
@@ -2804,6 +2815,11 @@
                                                 <span class="codex-label-mini codex-label-mini--tip">小助靈</span>
                                                 <p class="codex-back-tip-text">{{
                                                     getSpiritForSkill(codexNextSkill).flavorText }}</p>
+                                            </div>
+                                            <div v-if="isBondMaxSkill(codexNextSkill.id)"
+                                                class="codex-true-resonance-block spirit-detail--true-resonance">
+                                                <span class="codex-label-mini codex-label-mini--true-resonance">滿絆共鳴</span>
+                                                <p class="codex-back-tip-text">攻擊化為紅色彗星，命中更穩定，擊中時爆發更強。</p>
                                             </div>
                                             <div class="codex-back-section">
                                                 <span class="codex-label-mini codex-label-mini--formula">句型</span>
@@ -3216,7 +3232,7 @@
                         </div>
 
                         <!-- Simple Audio V2 Debug Toggle (Map Menu) -->
-                        <button @click="toggleSimpleAudioV2"
+                        <button v-if="isDevToolsVisible" @click="toggleSimpleAudioV2"
                             class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-slate-900/60 hover:bg-slate-800 border transition-all active:scale-95"
                             :class="simpleAudioV2Enabled ? 'border-emerald-500/50' : 'border-white/10'">
                             <span class="text-xs font-black text-slate-300 uppercase tracking-wider">Simple Audio V2</span>
@@ -3227,7 +3243,7 @@
                         </button>
 
                                                 <!-- FPS Debug Toggle -->
-                        <button @click="toggleFpsDebug"
+                        <button v-if="isDevToolsVisible" @click="toggleFpsDebug"
                             class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-slate-900/60 hover:bg-slate-800 border transition-all active:scale-95 mb-4"
                             :class="showFpsDebug ? 'border-amber-500/50' : 'border-white/10'">
                             <div class="flex flex-col items-start text-left">
@@ -4360,10 +4376,13 @@
                                 <div v-if="codexPageSkills[0]" :id="'skill-card-' + codexPageSkills[0].id"
                                     class="codex-card-stack flex flex-col items-center justify-center gap-3 w-full">
                                     <div v-if="unlockedSkillIds.includes(codexPageSkills[0].id) && getSpiritForSkill(codexPageSkills[0])"
-                                        class="codex-spirit-entry">
+                                        class="codex-spirit-entry"
+                                        :class="{ 'codex-spirit--true-resonance': isBondMaxSkill(codexPageSkills[0].id) }">
                                         <div class="codex-spirit-hero">
                                             <div class="codex-spirit-aura"></div>
-                                            <div class="codex-affinity-badge" aria-label="親密度">
+                                            <div class="codex-affinity-badge"
+                                                :class="{ 'codex-affinity-badge--full': isBondMaxSkill(codexPageSkills[0].id) }"
+                                                aria-label="親密度">
                                                 <div class="codex-affinity-heart">
                                                     <div class="codex-affinity-heart-fill"
                                                         :style="{ height: getSkillMastery(codexPageSkills[0].id) + '%' }"></div>
@@ -4385,6 +4404,11 @@
                                                 <span class="codex-label-mini codex-label-mini--tip">小助靈</span>
                                                 <p class="codex-back-tip-text">{{
                                                     getSpiritForSkill(codexPageSkills[0]).flavorText }}</p>
+                                            </div>
+                                            <div v-if="isBondMaxSkill(codexPageSkills[0].id)"
+                                                class="codex-true-resonance-block spirit-detail--true-resonance">
+                                                <span class="codex-label-mini codex-label-mini--true-resonance">滿絆共鳴</span>
+                                                <p class="codex-back-tip-text">攻擊化為紅色彗星，命中更穩定，擊中時爆發更強。</p>
                                             </div>
                                             <div class="codex-back-section">
                                                 <span class="codex-label-mini codex-label-mini--formula">句型</span>
@@ -4491,10 +4515,13 @@
                                 <div v-if="codexNextSkill" :id="'skill-card-r-' + codexNextSkill.id"
                                     class="codex-card-stack flex flex-col items-center justify-center gap-3 w-full">
                                     <div v-if="unlockedSkillIds.includes(codexNextSkill.id) && getSpiritForSkill(codexNextSkill)"
-                                        class="codex-spirit-entry">
+                                        class="codex-spirit-entry"
+                                        :class="{ 'codex-spirit--true-resonance': isBondMaxSkill(codexNextSkill.id) }">
                                         <div class="codex-spirit-hero">
                                             <div class="codex-spirit-aura"></div>
-                                            <div class="codex-affinity-badge" aria-label="親密度">
+                                            <div class="codex-affinity-badge"
+                                                :class="{ 'codex-affinity-badge--full': isBondMaxSkill(codexNextSkill.id) }"
+                                                aria-label="親密度">
                                                 <div class="codex-affinity-heart">
                                                     <div class="codex-affinity-heart-fill"
                                                         :style="{ height: getSkillMastery(codexNextSkill.id) + '%' }"></div>
@@ -4516,6 +4543,11 @@
                                                 <span class="codex-label-mini codex-label-mini--tip">小助靈</span>
                                                 <p class="codex-back-tip-text">{{
                                                     getSpiritForSkill(codexNextSkill).flavorText }}</p>
+                                            </div>
+                                            <div v-if="isBondMaxSkill(codexNextSkill.id)"
+                                                class="codex-true-resonance-block spirit-detail--true-resonance">
+                                                <span class="codex-label-mini codex-label-mini--true-resonance">滿絆共鳴</span>
+                                                <p class="codex-back-tip-text">攻擊化為紅色彗星，命中更穩定，擊中時爆發更強。</p>
                                             </div>
                                             <div class="codex-back-section">
                                                 <span class="codex-label-mini codex-label-mini--formula">句型</span>
@@ -4730,7 +4762,7 @@
                         <div class="grid grid-cols-1 gap-2.5">
 
                             <!-- Simple Audio V2 Debug Toggle (Battle Menu) -->
-                            <button @click="toggleSimpleAudioV2"
+                            <button v-if="isDevToolsVisible" @click="toggleSimpleAudioV2"
                                 class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-slate-900/60 hover:bg-slate-800 border transition-all active:scale-95"
                                 :class="simpleAudioV2Enabled ? 'border-emerald-500/50' : 'border-white/10'">
                                 <span class="text-xs font-black text-slate-300 uppercase tracking-wider">Simple Audio V2</span>

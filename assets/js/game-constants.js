@@ -31,6 +31,7 @@
 
         PRELOAD_SFX_PATHS: {
             hit: 'assets/audio/sfx/sfx_hit.mp3',
+            fullBondHit: 'assets/audio/sfx/sfx_hit2.mp3',
             miss: 'assets/audio/sfx/sfx_miss.mp3',
             potion: 'assets/audio/sfx/sfx_potion.mp3',
             click: 'assets/audio/sfx/sfx_click.mp3',
@@ -46,6 +47,7 @@
 
         SHORT_SFX_PATHS: {
             hit: 'assets/audio/sfx/sfx_hit.mp3',
+            fullBondHit: 'assets/audio/sfx/sfx_hit2.mp3',
             miss: 'assets/audio/sfx/sfx_miss.mp3',
             potion: 'assets/audio/sfx/sfx_potion.mp3',
             click: 'assets/audio/sfx/sfx_click.mp3',
@@ -70,7 +72,8 @@
 
         UI_SFX_SRC_MAP: {
             hit: 'assets/audio/sfx/sfx_hit.mp3',
-            hit2: 'assets/audio/sfx/sfx_hit2.mp3',
+            giragiraHit: 'assets/audio/sfx/sfx_hit3.mp3',
+            fullBondHit: 'assets/audio/sfx/sfx_hit2.mp3',
             miss: 'assets/audio/sfx/sfx_miss.mp3',
             potion: 'assets/audio/sfx/sfx_potion.mp3',
             click: 'assets/audio/sfx/sfx_click.mp3',
@@ -109,7 +112,8 @@
             uiPop: 1.0,
             battlePop: 0.9,
             hit: 0.9,
-            hit2: 0.9,
+            giragiraHit: 0.9,
+            fullBondHit: 0.86,
             damage: 0.95
         },
 

@@ -947,8 +947,25 @@ const _jpApp = Vue.createApp({
 
         watch(settings, saveSettings, { deep: true });
 
-        const showFpsDebug = ref(localStorage.getItem('jpapp_show_fps_debug') === 'true');
+        const getDevToolsVisibleDefault = () => {
+            const h = window.location.hostname;
+            const params = new URLSearchParams(window.location.search || '');
+            const isLocalDevHost = window.location.protocol === 'file:'
+                || h === 'localhost'
+                || h === '127.0.0.1'
+                || h === '0.0.0.0';
+            let storedDevFlag = false;
+            try {
+                const raw = localStorage.getItem('jpapp_dev_tools');
+                storedDevFlag = raw === '1' || raw === 'true';
+            } catch (_) { }
+            return isLocalDevHost || params.get('debug') === '1' || params.get('dev') === '1' || storedDevFlag;
+        };
+        const isDevToolsVisible = ref(getDevToolsVisibleDefault());
+
+        const showFpsDebug = ref(isDevToolsVisible.value && localStorage.getItem('jpapp_show_fps_debug') === 'true');
         const toggleFpsDebug = () => {
+            if (!isDevToolsVisible.value) return;
             const newVal = !showFpsDebug.value;
             showFpsDebug.value = newVal;
             localStorage.setItem('jpapp_show_fps_debug', newVal);
@@ -1711,6 +1728,8 @@ const _jpApp = Vue.createApp({
             return Number.isFinite(value) ? Math.min(100, Math.max(0, Math.floor(value))) : 0;
         };
 
+        const FULL_BOND_EVASION_PENALTY = 0.03;
+
         const isBondMaxSkill = (skillId) => getSkillMastery(skillId) >= 100;
 
         const getCurrentQuestionSkillId = () => {
@@ -1719,6 +1738,14 @@ const _jpApp = Vue.createApp({
         };
 
         const isCurrentQuestionBondMax = () => isBondMaxSkill(getCurrentQuestionSkillId());
+
+        const getFullBondModifiedEnemyEvasionRate = (baseEvasionRate, isFullBondAttack) => {
+            const normalizedBaseRate = Number(baseEvasionRate);
+            const safeBaseRate = Number.isFinite(normalizedBaseRate) ? normalizedBaseRate : 0.05;
+            return isFullBondAttack
+                ? Math.max(0, safeBaseRate - FULL_BOND_EVASION_PENALTY)
+                : safeBaseRate;
+        };
 
         const getSkillMasteryStyle = (skillId) => ({
             width: `${getSkillMastery(skillId)}%`
@@ -2741,6 +2768,7 @@ const _jpApp = Vue.createApp({
         };
         const simpleAudioV2Enabled = ref(readSimpleAudioV2Flag());
         const toggleSimpleAudioV2 = () => {
+            if (!isDevToolsVisible.value) return;
             if (simpleAudioV2Enabled.value) {
                 localStorage.removeItem(SIMPLE_AUDIO_V2_STORAGE_KEY);
             } else {
@@ -2751,7 +2779,7 @@ const _jpApp = Vue.createApp({
         const isIphoneHtmlAudioDevice = () => /iPhone|iPod/i.test(navigator.userAgent);
         const isHtmlAudioVolumeControlLikelySupported = () => !isIphoneHtmlAudioDevice();
         const shouldShowSimpleAudioV2SystemVolumeNotice = computed(() =>
-            simpleAudioV2Enabled.value && !isHtmlAudioVolumeControlLikelySupported()
+            isDevToolsVisible.value && simpleAudioV2Enabled.value && !isHtmlAudioVolumeControlLikelySupported()
         );
 
         const needsUserGestureToResumeBgm = ref(false);
@@ -3931,13 +3959,19 @@ const _jpApp = Vue.createApp({
             }, 4000);
         };
 
-        const startRunAwayPress = () => {
+        const startRunAwayPress = (event) => {
 
-            if (hasSubmitted.value) return;
+            event?.preventDefault?.();
+
+            if (runAwayPressTimer.value) clearTimeout(runAwayPressTimer.value);
 
             isRunAwayPressing.value = true;
 
-            runAwayPressTimer.value = setTimeout(() => { playSfx('click'); handleReload(); }, 3000);
+            runAwayPressTimer.value = setTimeout(() => {
+                runAwayPressTimer.value = null;
+                playSfx('click');
+                handleReload();
+            }, 3000);
 
         };
 
@@ -4676,7 +4710,7 @@ const _jpApp = Vue.createApp({
 
         const POOLED_SFX_KEYS = new Set([
             ...WARMUP_SFX_KEYS,
-            'hit2', 'miss', 'potion', 'fanfare', 'monsterDeathCry', 'bossDeathCry',
+            'giragiraHit', 'fullBondHit', 'miss', 'potion', 'fanfare', 'monsterDeathCry', 'bossDeathCry',
             'bossExplosion', 'win', 'gameover', 'escape', 'bossClear',
             'damage2', 'damage3', 'damage4', 'damage5', 'damage6', 'damage7', 'damage8'
         ]);
@@ -4845,7 +4879,7 @@ const _jpApp = Vue.createApp({
 
         };
 
-        const _prewarmUiSfx = () => { _getOrCreatePoly('hit'); _getOrCreatePoly('hit2'); _getOrCreatePoly('miss'); };
+        const _prewarmUiSfx = () => { _getOrCreatePoly('hit'); _getOrCreatePoly('giragiraHit'); _getOrCreatePoly('miss'); };
 
         document.addEventListener('pointerdown', _prewarmUiSfx, { once: true, capture: true });
 
@@ -9023,7 +9057,7 @@ const _jpApp = Vue.createApp({
                     regenSP();
 
                     const baseEvasionRate = monster.value?.evasionRate ?? 0.05;
-                    const effectiveEvasionRate = isBondMaxAttack ? Math.max(0, baseEvasionRate - 0.03) : baseEvasionRate;
+                    const effectiveEvasionRate = getFullBondModifiedEnemyEvasionRate(baseEvasionRate, isBondMaxAttack);
                     const isPlayerMiss = (heroBuffs.giragiraTurns > 0 || heroBuffs.monsterSleep) ? false : (Math.random() < effectiveEvasionRate);
 
                     if (isPlayerMiss) {
@@ -9039,7 +9073,7 @@ const _jpApp = Vue.createApp({
 
                         const strikeIsGira = heroBuffs.giragiraTurns > 0;
                         const shouldDeferTapHitPresentation = !isFlick;
-                        const currentHitSfx = (heroBuffs.giragiraTurns > 0) ? 'hit2' : 'hit';
+                        const currentHitSfx = strikeIsGira ? 'giragiraHit' : (isBondMaxAttack ? 'fullBondHit' : 'hit');
                         const playCurrentHitSfx = () => {
                             if (_isMobileSfx) playUiSfx(currentHitSfx); else playSfx(currentHitSfx);
                         };
@@ -9964,7 +9998,7 @@ const _jpApp = Vue.createApp({
             heroBuffs,
             skillList, castAbility, spState, settings, shouldShowNextButton, praiseToast, comboPopup, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG, getSkillTypeLabel,
             formatParticleBadge, formatSkillSpiritName, formatSkillMeaning, formatSkillRule, formatUnlockLevel,
-            particleMastery, particleCorrectCounts, skillMastery, skillCorrectCounts, getParticleMastery, getParticleMasteryStyle, getSkillMastery, getSkillMasteryStyle,
+            particleMastery, particleCorrectCounts, skillMastery, skillCorrectCounts, getParticleMastery, getParticleMasteryStyle, getSkillMastery, getSkillMasteryStyle, isBondMaxSkill,
             isMonsterCodexOpen, openMonsterCodex, monsterCodexEntries, selectedMonsterCodexEntry, selectMonsterCodexEntry, handleMonsterCodexImageError,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
             isMentorModalOpen, isLevelJumpOpen, isAdvancedSettingsOpen, isStageRecordsOpen, stageRecordRows, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
@@ -9992,7 +10026,7 @@ const _jpApp = Vue.createApp({
             getSpiritForSkill, getSpiritForKnowledgeCard, getSpiritImageSrc, handleSpiritImageError,
             isSpecialSceneActive, specialSceneBg,
             isForegroundSettling,
-            simpleAudioV2Enabled, toggleSimpleAudioV2, shouldShowSimpleAudioV2SystemVolumeNotice,
+            simpleAudioV2Enabled, toggleSimpleAudioV2, shouldShowSimpleAudioV2SystemVolumeNotice, isDevToolsVisible,
             showFpsDebug, toggleFpsDebug
         };
 

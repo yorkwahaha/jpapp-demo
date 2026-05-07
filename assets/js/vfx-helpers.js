@@ -566,6 +566,7 @@ window.__initVfxHelpers = function (settings) {
     const spawnHitVfx = (x, y, extras = null) => {
         const layer = getVfxLayer();
         const isTrueResonance = !!extras?.trueResonance;
+        const isBondMaxAttack = !!extras?.bondMaxAttack;
         const dirX = Number.isFinite(extras?.dirX) ? extras.dirX : 0;
         const dirY = Number.isFinite(extras?.dirY) ? extras.dirY : -1;
         // 螢幕震動
@@ -595,41 +596,59 @@ window.__initVfxHelpers = function (settings) {
         if (isTrueResonance) {
             const core = document.createElement('div');
             core.style.cssText = `
-                position: absolute; width: 78px; height: 28px;
-                left: ${x - 39}px; top: ${y - 14}px;
+                position: absolute; width: ${isBondMaxAttack ? 142 : 78}px; height: ${isBondMaxAttack ? 48 : 28}px;
+                left: ${x - (isBondMaxAttack ? 71 : 39)}px; top: ${y - (isBondMaxAttack ? 24 : 14)}px;
                 border-radius: 999px; pointer-events: none; z-index: 24; mix-blend-mode: screen;
-                background: linear-gradient(90deg, transparent 0%, rgba(254,242,242,0.92) 30%, #fff 50%, rgba(251,146,60,0.9) 70%, transparent 100%);
-                box-shadow: 0 0 18px #fff7ed, 0 0 34px rgba(249,115,22,0.9), 0 0 56px rgba(220,38,38,0.52);
+                background: ${isBondMaxAttack ? 'linear-gradient(90deg, transparent 0%, rgba(255,247,237,0.96) 22%, #fff 46%, #fef3c7 58%, rgba(251,146,60,0.94) 74%, transparent 100%)' : 'linear-gradient(90deg, transparent 0%, rgba(254,242,242,0.92) 30%, #fff 50%, rgba(251,146,60,0.9) 70%, transparent 100%)'};
+                box-shadow: ${isBondMaxAttack ? '0 0 24px #fff7ed, 0 0 48px rgba(251,191,36,0.96), 0 0 78px rgba(220,38,38,0.72)' : '0 0 18px #fff7ed, 0 0 34px rgba(249,115,22,0.9), 0 0 56px rgba(220,38,38,0.52)'};
             `;
             layer.appendChild(core);
             core.animate([
                 { opacity: 0, transform: `rotate(${Math.atan2(dirY, dirX)}rad) scaleX(0.12)` },
-                { opacity: 1, transform: `rotate(${Math.atan2(dirY, dirX)}rad) scaleX(1.08)` },
-                { opacity: 0, transform: `rotate(${Math.atan2(dirY, dirX)}rad) scaleX(0.42) translateX(18px)` }
-            ], { duration: 190, easing: 'cubic-bezier(0.08, 0.9, 0.2, 1)', fill: 'forwards' });
-            setTimeout(() => { if (core.isConnected) core.remove(); }, 220);
+                { opacity: 1, transform: `rotate(${Math.atan2(dirY, dirX)}rad) scaleX(${isBondMaxAttack ? 1.24 : 1.08})` },
+                { opacity: 0, transform: `rotate(${Math.atan2(dirY, dirX)}rad) scaleX(${isBondMaxAttack ? 0.58 : 0.42}) translateX(${isBondMaxAttack ? 28 : 18}px)` }
+            ], { duration: isBondMaxAttack ? 430 : 190, easing: 'cubic-bezier(0.08, 0.9, 0.2, 1)', fill: 'forwards' });
+            setTimeout(() => { if (core.isConnected) core.remove(); }, isBondMaxAttack ? 460 : 220);
+
+            if (isBondMaxAttack) {
+                const shockwave = document.createElement('div');
+                shockwave.style.cssText = `
+                    position: absolute; width: 236px; height: 236px;
+                    left: ${x - 118}px; top: ${y - 118}px;
+                    border-radius: 50%; pointer-events: none; z-index: 18; mix-blend-mode: screen;
+                    border: 3px solid rgba(252,211,77,0.96);
+                    box-shadow: 0 0 34px rgba(255,247,237,0.9), inset 0 0 46px rgba(248,113,113,0.58), 0 0 86px rgba(220,38,38,0.62);
+                `;
+                layer.appendChild(shockwave);
+                shockwave.animate([
+                    { opacity: 0.98, transform: 'scale(0.14)' },
+                    { opacity: 0.42, transform: 'scale(1.08)' },
+                    { opacity: 0, transform: 'scale(1.78)' }
+                ], { duration: 680, easing: 'cubic-bezier(0.12, 0.84, 0.24, 1)', fill: 'forwards' });
+                setTimeout(() => { if (shockwave.isConnected) shockwave.remove(); }, 700);
+            }
         }
 
         // B. 放射狀火花
-        const sparksCount = isTrueResonance ? 24 : 16;
+        const sparksCount = isBondMaxAttack ? 44 : (isTrueResonance ? 24 : 16);
         for (let i = 0; i < sparksCount; i++) {
             const spark = document.createElement('div');
-            const sparkLength = isTrueResonance ? (Math.random() * 18 + 22) : 20;
-            const sparkWidth = isTrueResonance ? (Math.random() * 3 + 4) : 6;
+            const sparkLength = isBondMaxAttack ? (Math.random() * 34 + 36) : (isTrueResonance ? (Math.random() * 18 + 22) : 20);
+            const sparkWidth = isBondMaxAttack ? (Math.random() * 3 + 4) : (isTrueResonance ? (Math.random() * 3 + 4) : 6);
             spark.style.cssText = `
                 position: absolute; width: ${sparkWidth}px; height: ${sparkLength}px;
-                background: ${isTrueResonance ? 'linear-gradient(180deg,#fff,#fed7aa 46%,#ef4444)' : '#ffffff'};
-                box-shadow: ${isTrueResonance ? '0 0 10px #fff7ed, 0 0 20px #f97316, 0 0 34px rgba(220,38,38,0.58)' : '0 0 8px #fde047, 0 0 15px #f59e0b'};
+                background: ${isBondMaxAttack ? 'linear-gradient(180deg,#fff,#fef3c7 38%,#fb923c 66%,#dc2626)' : (isTrueResonance ? 'linear-gradient(180deg,#fff,#fed7aa 46%,#ef4444)' : '#ffffff')};
+                box-shadow: ${isBondMaxAttack ? '0 0 16px #fff7ed, 0 0 32px #fbbf24, 0 0 54px rgba(220,38,38,0.78)' : (isTrueResonance ? '0 0 10px #fff7ed, 0 0 20px #f97316, 0 0 34px rgba(220,38,38,0.58)' : '0 0 8px #fde047, 0 0 15px #f59e0b')};
                 border-radius: 4px; left: ${x - sparkWidth / 2}px; top: ${y - sparkLength / 2}px;
                 pointer-events: none; z-index: 20;
             `;
             layer.appendChild(spark);
             const angle = (Math.PI * 2 / sparksCount) * i + (Math.random() - 0.5);
-            const dist = isTrueResonance ? (Math.random() * 92 + 54) : (Math.random() * 80 + 40);
-            const dur = isTrueResonance ? (Math.random() * 230 + 120) : (Math.random() * 250 + 150);
+            const dist = isBondMaxAttack ? (Math.random() * 158 + 102) : (isTrueResonance ? (Math.random() * 92 + 54) : (Math.random() * 80 + 40));
+            const dur = isBondMaxAttack ? (Math.random() * 310 + 380) : (isTrueResonance ? (Math.random() * 230 + 120) : (Math.random() * 250 + 150));
             spark.animate([
                 { transform: `rotate(${angle + Math.PI / 2}rad) translate(0, 0) scale(1)`, opacity: 1 },
-                { transform: `rotate(${angle + Math.PI / 2}rad) translate(0, -${dist}px) scale(0.2)`, opacity: 0 }
+                { transform: `rotate(${angle + Math.PI / 2}rad) translate(0, -${dist}px) scale(${isBondMaxAttack ? 0.28 : 0.2})`, opacity: 0 }
             ], { duration: dur, easing: 'ease-out', fill: 'forwards' });
             setTimeout(() => { if (spark.isConnected) spark.remove(); }, dur);
         }
@@ -743,7 +762,7 @@ window.__initVfxHelpers = function (settings) {
                 }
                 requestAnimationFrame(animateTrail);
             } else {
-                spawnHitVfx(toX, toY, { trueResonance: isTrueResonance, dirX: dx, dirY: dy });
+                spawnHitVfx(toX, toY, { trueResonance: isTrueResonance, bondMaxAttack: isBondMaxAttack, dirX: dx, dirY: dy });
                 if (onHit) onHit();
             }
         };
