@@ -32,8 +32,35 @@
         };
     }
 
+    function rectCenter(el) {
+        if (!el || !el.getBoundingClientRect) return null;
+        const r = el.getBoundingClientRect();
+        return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    }
+
+    const safeNum = (n, fallback) => Number.isFinite(n) ? n : fallback;
+
+    const getCenterOrFallback = (originEl, fallbackX, fallbackY) => {
+        const center = rectCenter(originEl);
+        if (center) {
+            return { x: safeNum(center.x, fallbackX), y: safeNum(center.y, fallbackY) };
+        }
+        return { x: fallbackX, y: fallbackY };
+    };
+
+    const getVfxLayer = () => {
+        let layer = document.getElementById('global-vfx-layer');
+        if (!layer) {
+            layer = document.createElement('div');
+            layer.id = 'global-vfx-layer';
+            document.body.appendChild(layer);
+        }
+        layer.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; pointer-events:none; z-index:999999; overflow:hidden; margin:0; padding:0;';
+        return layer;
+    };
+
     function spawnFloatingDamage(target, amount, type = 'hp', extras = null) {
-        const vfxLayer = (typeof window.getVfxLayer === 'function') ? window.getVfxLayer() : document.getElementById('global-vfx-layer');
+        const vfxLayer = getVfxLayer();
         if (!vfxLayer) return;
 
         let targetEl;
@@ -74,7 +101,6 @@
             el.style.color = '#4ade80'; // Emerald-400
             el.style.textShadow = '0 0 15px rgba(16, 185, 129, 0.6), 0 2px 4px rgba(0,0,0,0.8)';
         } else if (target === 'player') {
-            // Red color for hero damage
             el.style.color = '#ef4444'; // Red-500
             el.style.textShadow = '0 0 10px rgba(239, 68, 68, 0.5), 0 2px 4px rgba(0,0,0,0.8)';
         }
@@ -103,7 +129,6 @@
         el.style.top = `${y + oy}px`;
         el.style.fontSize = `${fontSize}px`;
 
-        // Display value
         if (type === 'sp') {
             el.innerHTML = `+${Math.abs(amount)}`;
         } else if (amount < 0) {
@@ -117,7 +142,7 @@
     }
 
     function spawnGiraGiraHitVfx(x, y) {
-        const vfxLayer = (typeof window.getVfxLayer === 'function') ? window.getVfxLayer() : document.getElementById('global-vfx-layer');
+        const vfxLayer = getVfxLayer();
         if (!vfxLayer) return;
 
         const vfxShakeSettings = window.__JPAPP_VFX_HELPER_SETTINGS;
@@ -157,7 +182,6 @@
 
         const tImpact = 52;
 
-        // 前搖：聚光收束（縮短、更亮以便與命中核緊咬）
         spawn(
             `position:absolute;width:128px;height:128px;left:${x - 64}px;top:${y - 64}px;z-index:20;pointer-events:none;` +
             `border-radius:50%;` +
@@ -189,7 +213,6 @@
             );
         });
 
-        // 超短白金硬閃（讀取「強化穿刺」第一印象）
         spawn(
             `position:absolute;width:64px;height:64px;left:${x - 32}px;top:${y - 32}px;z-index:31;pointer-events:none;mix-blend-mode:screen;` +
             `border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,1) 0%,rgba(255,250,218,0.55) 45%,transparent 70%);` +
@@ -204,7 +227,6 @@
             tImpact
         );
 
-        // 命中核：金白集中爆閃（更亮更大）
         spawn(
             `position:absolute;width:46px;height:46px;left:${x - 23}px;top:${y - 23}px;z-index:26;pointer-events:none;mix-blend-mode:screen;` +
             `border-radius:50%;` +
@@ -261,7 +283,6 @@
             );
         });
 
-        // 刺入軸 + 極細短促斬線（高光芯、讀成「切進去」而非光團）
         spawn(
             `position:absolute;width:2px;height:108px;left:${x - 1}px;top:${y - 54}px;z-index:29;pointer-events:none;transform-origin:center center;mix-blend-mode:screen;` +
             `background:linear-gradient(to bottom,transparent 6%,rgba(255,255,255,1) 44%,#fff 50%,rgba(255,248,218,1) 56%,transparent 94%);` +
@@ -291,7 +312,6 @@
             );
         });
 
-        // 斬擊刃：兩主兩副交叉（略收體積、刃緣更硬）
         const slashes = [
             [-54, 1, 4.5, 198, 0],
             [54, -1, 4.5, 198, 0],
@@ -317,7 +337,6 @@
             );
         });
 
-        // 星芒火花：貼近命中點的崩裂碎光（非外向煙火）
         for (let i = 0; i < 14; i++) {
             const ang = (Math.PI * 2 / 14) * i + (i % 2 ? 0.07 : -0.05);
             const dist = 26 + Math.random() * 28;
@@ -355,7 +374,6 @@
             );
         }
 
-        // 極短殘光：斬過一瞬熱痕
         spawn(
             `position:absolute;width:112px;height:112px;left:${x - 56}px;top:${y - 56}px;z-index:19;pointer-events:none;` +
             `border-radius:50%;` +
@@ -367,9 +385,8 @@
         );
     }
 
-    /** GIRAGIRA 爆裂衝擊層（白金色放射、shockwave，角度全為索引決定性，不依 random） */
     function spawnGiraGiraBurstVfx(x, y) {
-        const vfxLayer = (typeof window.getVfxLayer === 'function') ? window.getVfxLayer() : document.getElementById('global-vfx-layer');
+        const vfxLayer = getVfxLayer();
         if (!vfxLayer) return;
 
         const spawn = (css, dur, frames, easing, delayMs = 0) => {
@@ -404,7 +421,6 @@
 
         const t0 = 8;
 
-        // 中心強白光閃（更亮更大）
         spawn(
             `position:absolute;width:152px;height:152px;left:${x - 76}px;top:${y - 76}px;z-index:35;pointer-events:none;mix-blend-mode:screen;` +
             `border-radius:50%;background:radial-gradient(circle,#fff 0%,rgba(255,253,246,0.72) 32%,rgba(253,224,71,0.28) 48%,transparent 70%);` +
@@ -433,7 +449,6 @@
             t0 + 10
         );
 
-        // 快速十字斬裂（短促輔助讀取）
         [0, 45].forEach((deg, qi) => {
             spawn(
                 `position:absolute;width:168px;height:4px;left:${x - 84}px;top:${y - 2}px;z-index:37;pointer-events:none;mix-blend-mode:screen;border-radius:2px;transform-origin:center center;` +
@@ -450,7 +465,6 @@
             );
         });
 
-        // Shockwave：多環硬邊衝擊波（半徑 +25%〜30%）
         [0, 22, 48].forEach((lag, wi) => {
             const dia = [108, 165, 216][wi];
             const half = dia / 2;
@@ -470,7 +484,6 @@
             );
         });
 
-        // 放射細碎光線（刀刃感）—數量／長度 +30〜35%
         for (let i = 0; i < 50; i++) {
             const ang = (Math.PI * 2 / 50) * i;
             const len = Math.round((10 + ((i % 5) + 6) * 3) * 1.35);
@@ -492,7 +505,6 @@
             );
         }
 
-        // 快速外擴細圓環
         spawn(
             `position:absolute;width:56px;height:56px;left:${x - 28}px;top:${y - 28}px;z-index:36;pointer-events:none;mix-blend-mode:screen;border-radius:50%;` +
             `border:2px solid rgba(255,251,238,0.95);box-shadow:0 0 12px rgba(255,255,255,0.88),inset 0 0 8px rgba(254,249,195,0.35);`,
@@ -506,7 +518,6 @@
             t0 + 6
         );
 
-        // 外側斜向破片亮光 — 數量／長度加碼
         for (let si = 0; si < 22; si++) {
             const r = (si / 22) * 360;
             spawn(
@@ -525,50 +536,6 @@
         }
     }
 
-    api.spawnFloatingDamage = spawnFloatingDamage;
-    api.spawnGiraGiraHitVfx = spawnGiraGiraHitVfx;
-    api.spawnGiraGiraBurstVfx = spawnGiraGiraBurstVfx;
-    api.getComboTier = getComboTier;
-    api.getRandomComboPopupPosition = getRandomComboPopupPosition;
-    api.createComboPopupState = createComboPopupState;
-    window.__JPAPP_VFX = api;
-    window.JPAPP_VFX = api;
-    window.JPAPPVfxHelpers = api;
-}());
-// ================= [ VFX HELPERS ] =================
-window.__initVfxHelpers = function (settings) {
-    window.__JPAPP_VFX_HELPER_SETTINGS = settings;
-
-    function rectCenter(el) {
-        if (!el || !el.getBoundingClientRect) return null;
-        const r = el.getBoundingClientRect();
-        return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-    }
-
-    const safeNum = (n, fallback) => Number.isFinite(n) ? n : fallback;
-
-    const getCenterOrFallback = (originEl, fallbackX, fallbackY) => {
-        const center = rectCenter(originEl);
-        if (center) {
-            return { x: safeNum(center.x, fallbackX), y: safeNum(center.y, fallbackY) };
-        }
-        return { x: fallbackX, y: fallbackY };
-    };
-
-    // 0. 建立全域特效畫布 (解決炸歪與閃爍問題)
-    const getVfxLayer = () => {
-        let layer = document.getElementById('global-vfx-layer');
-        if (!layer) {
-            layer = document.createElement('div');
-            layer.id = 'global-vfx-layer';
-            document.body.appendChild(layer);
-        }
-        // 強制釘死在螢幕左上角，座標 100% 絕對吻合
-        layer.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; pointer-events:none; z-index:999999; overflow:hidden; margin:0; padding:0;';
-        return layer;
-    };
-
-    // 1. 純 JS 拖尾星屑特效
     const spawnTrailParticle = (layer, x, y, extras = null) => {
         const isTrueResonance = !!extras?.trueResonance;
         const p = document.createElement('div');
@@ -597,22 +564,22 @@ window.__initVfxHelpers = function (settings) {
         setTimeout(() => { if (p.isConnected) p.remove(); }, dur);
     };
 
-    // 2. 擊中爆炸特效 (絕對精準座標)
     const spawnHitVfx = (x, y, extras = null) => {
         const layer = getVfxLayer();
         const isTrueResonance = !!extras?.trueResonance;
         const isBondMaxAttack = !!extras?.bondMaxAttack;
         const dirX = Number.isFinite(extras?.dirX) ? extras.dirX : 0;
         const dirY = Number.isFinite(extras?.dirY) ? extras.dirY : -1;
-        // 螢幕震動
+
         const stage = document.getElementById('stage');
-        if (stage && settings.screenShake !== false) {
+        const vfxShakeSettings = window.__JPAPP_VFX_HELPER_SETTINGS;
+        if (stage && (vfxShakeSettings == null || vfxShakeSettings.screenShake !== false)) {
             stage.style.transform = `translate(${(Math.random() - 0.5) * 15}px, ${(Math.random() - 0.5) * 15}px)`;
             setTimeout(() => { stage.style.transform = ''; }, 50);
             setTimeout(() => { stage.style.transform = `translate(${(Math.random() - 0.5) * 15}px, ${(Math.random() - 0.5) * 15}px)`; }, 100);
             setTimeout(() => { stage.style.transform = ''; }, 150);
         }
-        // A. 擴散爆破光圈
+
         const ring = document.createElement('div');
         ring.style.cssText = `
             position: absolute; width: ${isTrueResonance ? 126 : 100}px; height: ${isTrueResonance ? 86 : 100}px;
@@ -664,7 +631,6 @@ window.__initVfxHelpers = function (settings) {
             }
         }
 
-        // B. 放射狀火花
         const sparksCount = isBondMaxAttack ? 44 : (isTrueResonance ? 24 : 16);
         for (let i = 0; i < sparksCount; i++) {
             const spark = document.createElement('div');
@@ -689,7 +655,6 @@ window.__initVfxHelpers = function (settings) {
         }
     };
 
-    // 3. 發射彗星本體
     const spawnProjectile = (fromX, fromY, toX, toY, textOpt, extras = null) => {
         const vfxLayer = getVfxLayer();
         const isBondMaxAttack = !!extras?.bondMaxAttack;
@@ -811,11 +776,32 @@ window.__initVfxHelpers = function (settings) {
         setTimeout(() => { if (projectile.isConnected) projectile.remove(); }, ttl + 50);
     };
 
+    api.spawnFloatingDamage = spawnFloatingDamage;
+    api.spawnGiraGiraHitVfx = spawnGiraGiraHitVfx;
+    api.spawnGiraGiraBurstVfx = spawnGiraGiraBurstVfx;
+    api.getComboTier = getComboTier;
+    api.getRandomComboPopupPosition = getRandomComboPopupPosition;
+    api.createComboPopupState = createComboPopupState;
+    api.rectCenter = rectCenter;
+    api.getCenterOrFallback = getCenterOrFallback;
+    api.getVfxLayer = getVfxLayer;
+    api.spawnTrailParticle = spawnTrailParticle;
+    api.spawnHitVfx = spawnHitVfx;
+    api.spawnProjectile = spawnProjectile;
+
     window.rectCenter = rectCenter;
-    window.safeNum = safeNum;
     window.getCenterOrFallback = getCenterOrFallback;
     window.getVfxLayer = getVfxLayer;
-    window.spawnTrailParticle = spawnTrailParticle;
-    window.spawnHitVfx = spawnHitVfx;
     window.spawnProjectile = spawnProjectile;
-};
+    window.spawnFloatingDamage = spawnFloatingDamage;
+    window.spawnGiraGiraHitVfx = spawnGiraGiraHitVfx;
+    window.spawnGiraGiraBurstVfx = spawnGiraGiraBurstVfx;
+
+    window.__JPAPP_VFX = api;
+    window.JPAPP_VFX = api;
+    window.JPAPPVfxHelpers = api;
+
+    window.__initVfxHelpers = function (settings) {
+        window.__JPAPP_VFX_HELPER_SETTINGS = settings;
+    };
+}());

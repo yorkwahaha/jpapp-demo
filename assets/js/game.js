@@ -10,8 +10,53 @@ const spawnGiraGiraHitVfx = window.__JPAPP_VFX?.spawnGiraGiraHitVfx || function 
 window.spawnGiraGiraHitVfx = spawnGiraGiraHitVfx;
 const spawnGiraGiraBurstVfx = window.__JPAPP_VFX?.spawnGiraGiraBurstVfx || function () {};
 window.spawnGiraGiraBurstVfx = spawnGiraGiraBurstVfx;
-const spawnProjectile = window.spawnProjectile || function () {};
-window.spawnProjectile = spawnProjectile;
+const rectCenter = (el) => {
+    const helper = window.JPAPPVfxHelpers?.rectCenter;
+    if (typeof helper === 'function' && helper !== rectCenter) return helper(el);
+    const globalFn = window.rectCenter;
+    if (typeof globalFn === 'function' && globalFn !== rectCenter) return globalFn(el);
+    if (!el || !el.getBoundingClientRect) return null;
+    const r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+};
+const getCenterOrFallback = (originEl, fallbackX, fallbackY) => {
+    const helper = window.JPAPPVfxHelpers?.getCenterOrFallback;
+    if (typeof helper === 'function' && helper !== getCenterOrFallback) return helper(originEl, fallbackX, fallbackY);
+    const globalFn = window.getCenterOrFallback;
+    if (typeof globalFn === 'function' && globalFn !== getCenterOrFallback) return globalFn(originEl, fallbackX, fallbackY);
+    const center = rectCenter(originEl);
+    if (center) {
+        return {
+            x: Number.isFinite(center.x) ? center.x : fallbackX,
+            y: Number.isFinite(center.y) ? center.y : fallbackY
+        };
+    }
+    return { x: fallbackX, y: fallbackY };
+};
+const getVfxLayer = () => {
+    const helper = window.JPAPPVfxHelpers?.getVfxLayer;
+    if (typeof helper === 'function' && helper !== getVfxLayer) return helper();
+    const globalFn = window.getVfxLayer;
+    if (typeof globalFn === 'function' && globalFn !== getVfxLayer) return globalFn();
+    let layer = document.getElementById('global-vfx-layer');
+    if (!layer) {
+        layer = document.createElement('div');
+        layer.id = 'global-vfx-layer';
+        document.body.appendChild(layer);
+    }
+    layer.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; pointer-events:none; z-index:999999; overflow:hidden; margin:0; padding:0;';
+    return layer;
+};
+const spawnProjectile = (...args) => {
+    const helper = window.JPAPPVfxHelpers?.spawnProjectile;
+    if (typeof helper === 'function' && helper !== spawnProjectile) return helper(...args);
+    const globalFn = window.spawnProjectile;
+    if (typeof globalFn === 'function' && globalFn !== spawnProjectile) return globalFn(...args);
+};
+window.rectCenter = window.rectCenter || rectCenter;
+window.getCenterOrFallback = window.getCenterOrFallback || getCenterOrFallback;
+window.getVfxLayer = window.getVfxLayer || getVfxLayer;
+window.spawnProjectile = window.spawnProjectile || spawnProjectile;
 
 window.updateSpUI = function () {
 
@@ -981,6 +1026,11 @@ const _jpApp = Vue.createApp({
 
         watch(settings, saveSettings, { deep: true });
 
+        if (typeof window.__initVfxHelpers === 'function' && !window.__JPAPP_VFX_HELPERS_READY) {
+            window.__initVfxHelpers(settings);
+            window.__JPAPP_VFX_HELPERS_READY = true;
+        }
+
         const devToolsState = (window.JPAPPDevToolsManager?.createDevToolsState || (() => ({
             isDevToolsVisible: ref(false),
             showFpsDebug: ref(false),
@@ -1126,6 +1176,20 @@ const _jpApp = Vue.createApp({
                     }
                 });
                 return { pages, emotions };
+            },
+            resolveMentorEmotionImage: (emotion, imagePaths, failedPaths) => {
+                const paths = imagePaths || {};
+                const failed = failedPaths || {};
+                const key = emotion || 'gentle';
+                const gentlePath = paths.gentle;
+                const path = paths[key] || gentlePath;
+                if (!failed[path]) return path;
+                if (path !== gentlePath && !failed[gentlePath]) return gentlePath;
+                return null;
+            },
+            isLastMentorLine: (pageCount, pageIndex) => {
+                if (!Number.isFinite(pageCount) || pageCount <= 0) return true;
+                return pageIndex >= pageCount - 1;
             }
         };
 
@@ -1157,13 +1221,11 @@ const _jpApp = Vue.createApp({
         }));
 
         const getMentorEmotionImage = (emotion) => {
-            const key = emotion || 'gentle';
-            const path = MENTOR_EMOTION_IMAGE_PATHS[key] || MENTOR_EMOTION_IMAGE_PATHS.gentle;
-            if (!failedMentorImagePaths.value[path]) return path;
-            if (path !== MENTOR_EMOTION_IMAGE_PATHS.gentle && !failedMentorImagePaths.value[MENTOR_EMOTION_IMAGE_PATHS.gentle]) {
-                return MENTOR_EMOTION_IMAGE_PATHS.gentle;
-            }
-            return null;
+            return mentorDialogueHelpers.resolveMentorEmotionImage(
+                emotion,
+                MENTOR_EMOTION_IMAGE_PATHS,
+                failedMentorImagePaths.value
+            );
         };
 
         const currentMentorSceneImage = computed(() => getMentorEmotionImage(currentMentorDialogueItem.value.emotion) || MENTOR_FALLBACK_SCENE_IMAGE);
@@ -1189,9 +1251,7 @@ const _jpApp = Vue.createApp({
 
         const isLastMentorLine = computed(() => {
 
-            if (mentorPages.value.length === 0) return true;
-
-            return mentorDialogueIndex.value >= mentorPages.value.length - 1;
+            return mentorDialogueHelpers.isLastMentorLine(mentorPages.value.length, mentorDialogueIndex.value);
 
         });
 
@@ -8639,7 +8699,7 @@ const _jpApp = Vue.createApp({
 
         const triggerCommittedComboFeedbackVoice = (combo) => {
             traceFeedbackDebug('committed-combo', { combo, mode: settings.feedbackVoiceMode || 'combo', answerMode: answerMode.value });
-            playComboTierFeedbackVoice(combo, { delayMs: 120 });
+            playComboTierFeedbackVoice(combo, { delayMs: 1200 });
         };
 
         const showPraiseToast = (text, ms = 900) => {
@@ -9391,7 +9451,7 @@ const _jpApp = Vue.createApp({
 
                 if (isBossStandard) {
 
-                    playSfx('bossClear');
+                    if (_uiSfxSrcMap.bossClear) playSfx('bossClear');
 
                 } else {
 

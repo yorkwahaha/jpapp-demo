@@ -37,5 +37,25 @@
         return { pages, emotions };
     };
 
-    global.JPAPPMentorDialogueHelpers = { paginateMentorDialogue };
+    const resolveMentorEmotionImage = (emotion, imagePaths, failedPaths) => {
+        const paths = imagePaths || {};
+        const failed = failedPaths || {};
+        const key = emotion || 'gentle';
+        const gentlePath = paths.gentle;
+        const path = paths[key] || gentlePath;
+        if (!failed[path]) return path;
+        if (path !== gentlePath && !failed[gentlePath]) return gentlePath;
+        return null;
+    };
+
+    const isLastMentorLine = (pageCount, pageIndex) => {
+        if (!Number.isFinite(pageCount) || pageCount <= 0) return true;
+        return pageIndex >= pageCount - 1;
+    };
+
+    global.JPAPPMentorDialogueHelpers = {
+        paginateMentorDialogue,
+        resolveMentorEmotionImage,
+        isLastMentorLine
+    };
 })(window);

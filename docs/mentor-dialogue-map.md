@@ -5,16 +5,16 @@
 ## 參考基準
 
 - `docs/game-js-map.md` 將 Mentor System 粗略標在 `game.js` L1041-L1620，並將 TTS/Feedback、Audio Core、initGame、Victory Flow 等列為高風險或中高耦合區塊。
-- 目前低風險 helper 外移已完成：`assets/js/dev-tools.js`、`assets/js/spirit-codex-helpers.js`、`assets/js/vfx-helpers.js`。本盤點不還原既有外移。
+- 目前低風險 helper 外移已完成：`assets/js/dev-tools.js`、`assets/js/spirit-codex-helpers.js`、`assets/js/vfx-helpers.js`、`assets/js/mentor-dialogue-helpers.js`。本盤點不還原既有外移。
 
 ## 區塊盤點
 
 | 位置 | 區塊 | 用途 | 類型 | 風險 | 外移判斷 |
 | --- | --- | --- | --- | --- | --- |
 | `game.js` L1014-L1052 | Mentor reactive state | `mentorTutorialSeen`、modal/map overlay 狀態、頁面 index、typing 狀態、portrait/video/audio token 等。 | B/C | 中-高 | 不建議低風險輪外移。這些是 Vue state 與 audio token 的根。 |
-| `game.js` L1056-L1106 | `fragmentMentorDialogue` | 將集中化對話資料切成顯示頁，並同步建立 `mentorPageEmotions`。 | A | 低-中 | 未來可候選外移，但需先拆開「純分頁計算」與「寫入 Vue emotion state」。 |
-| `game.js` L1108-L1154 | current line / emotion image helpers | 取得目前文字、emotion、modal/scene image fallback，處理圖片載入失敗。 | A/B | 低-中 | `getMentorEmotionImage` 可候選外移；computed 與 error handler 綁 Vue state，需留在整合層或謹慎包裝。 |
-| `game.js` L1156-L1162 | `isLastMentorLine` | 判斷目前是否最後一頁。 | A | 低 | 純 computed，未來可隨 paging helper 一起整理。 |
+| `game.js` L1056-L1106 | `fragmentMentorDialogue` | 將集中化對話資料切成顯示頁，並同步建立 `mentorPageEmotions`。 | A | 低-中 | 純分頁計算已外移為 `paginateMentorDialogue`；`game.js` 保留寫入 Vue emotion state 的薄整合層。 |
+| `game.js` L1108-L1154 | current line / emotion image helpers | 取得目前文字、emotion、modal/scene image fallback，處理圖片載入失敗。 | A/B | 低-中 | 純 path lookup 已外移為 `resolveMentorEmotionImage`；computed 與 error handler 仍留在 `game.js`，因為會讀寫 Vue state 與 DOM event target。 |
+| `game.js` L1156-L1162 | `isLastMentorLine` | 判斷目前是否最後一頁。 | A | 低 | 純判斷已外移為 `isLastMentorLine`；Vue computed wrapper 留在 `game.js`。 |
 | `game.js` L1164-L1255 | mentor video helpers | video source 解析、元素取得、播放/停止、錯誤處理，包含 `stopAllAudio()` 與 `masterVolume`。 | C | 高 | 不可在低風險整理輪碰；需等 audio/video lifecycle 專輪。 |
 | `game.js` L1257-L1267 | mentor seen state persistence | 載入與儲存 `mentorTutorialSeen`。 | B | 中 | 綁 `JPAPPStorageManager` 與首次觀看邏輯，暫不外移。 |
 | `game.js` L1270-L1304 | `setupMentorDialogue` | 設定目前導師資料、讀 `MENTOR_AUDIO_MAP` fallback、開 map/modal overlay、啟動 typing、mentor audio、mentor video。 | B/C/D | 高 | 不可在低風險整理輪碰；同時碰 overlay、audio、video、資料 fallback。 |
@@ -43,10 +43,10 @@
 
 低風險候選只限純 lookup 或 format helper，且建議先以小步驗證：
 
-1. 純文字分頁計算：從 `fragmentMentorDialogue` 抽出不寫 Vue state 的 `paginateMentorDialogue(dialogues)`，回傳 `{ pages, emotions }`。
-2. emotion image path lookup：抽出 `resolveMentorEmotionImage(emotion, imagePaths, failedPaths)`，保留 error handler 與 Vue state 寫入在 `game.js`。
-3. `isLastMentorLine` 類似的 paging predicate：可在 pagination helper 穩定後一併整理。
-4. `triggerMentorDialogue` 的純 lookup/check 片段：只可抽「skill 是否存在、是否已 seen」判斷；實際 `setupMentorDialogue` 呼叫仍留在整合層。
+1. 已外移：純文字分頁計算 `paginateMentorDialogue(dialogues)`，回傳 `{ pages, emotions }`。
+2. 已外移：emotion image path lookup `resolveMentorEmotionImage(emotion, imagePaths, failedPaths)`，error handler 與 Vue state 寫入仍在 `game.js`。
+3. 已外移：最後一頁判斷 `isLastMentorLine(pageCount, pageIndex)`，Vue computed wrapper 仍在 `game.js`。
+4. 未來候選：`triggerMentorDialogue` 的純 lookup/check 片段，只可抽「skill 是否存在、是否已 seen」判斷；實際 `setupMentorDialogue` 呼叫仍留在整合層。
 
 ## 不可在低風險整理輪碰
 
@@ -59,4 +59,4 @@
 
 ## 建議下一輪
 
-可以開始外移 mentor 純 lookup helper，但範圍應只限「無播放、無 Vue state 寫入、無 `_resumeAfterMentor`、無 localStorage 寫入」的函式。建議第一步只做 `paginateMentorDialogue(dialogues)`，並保留 `fragmentMentorDialogue` 在 `game.js` 作為薄整合層，避免一次碰到 overlay 或 audio lifecycle。
+下一輪若繼續整理，範圍仍應只限「無播放、無 Vue state 寫入、無 `_resumeAfterMentor`、無 localStorage 寫入」的函式。可評估 `triggerMentorDialogue` 的純 lookup/check 片段，但實際觸發、overlay、audio/video、seen-state 與 lifecycle 仍不應放進低風險整理輪。

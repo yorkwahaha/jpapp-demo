@@ -16,7 +16,7 @@
 | L1 – L52 | **SP System State** | 全域 SP 狀態與 UI 響應定義 | 中 | 是 | `sp-manager.js` |
 | L53 – L777 | **Vue Central State** | Vue `setup()` 的數據核心與響應式定義 | **高** | 否 | N/A |
 | L778 – L1040 | **Vue Lifecycle** | 掛載、計時器重置、全域 Watcher | 中 | 否 | N/A |
-| L1041 – L1620 | **Mentor System** | 導師對話、Typing 效果、影片同步 | **高** | 是 | `mentor-manager.js` |
+| L1041 – L1620 | **Mentor System** | 導師對話、Typing 效果、影片同步；純分頁與部分純 lookup 已外移至 `mentor-dialogue-helpers.js` | **高** | 是 | `mentor-manager.js` |
 | L1621 – L2000 | **Codex & Skills** | 助詞圖鑑、怪物圖鑑、技能列表渲染 | **低** | 是 | `codex-manager.js` |
 | L2001 – L2312 | **Skill Casting** | 技能施放邏輯、Buff 管理 | 中 | 是 | `skill-logic.js` |
 | L2313 – L2546 | **Battle Loop** | ATB 計時器、回合轉換邏輯 | **高** | 是 | `battle-core.js` |
