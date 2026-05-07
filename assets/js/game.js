@@ -1,5 +1,4 @@
 
-
 window.__sp = { cur: 20, max: 20 };
 
 const spawnFloatingDamage = window.__JPAPP_VFX?.spawnFloatingDamage || function () {};
@@ -11,6 +10,8 @@ const spawnGiraGiraHitVfx = window.__JPAPP_VFX?.spawnGiraGiraHitVfx || function 
 window.spawnGiraGiraHitVfx = spawnGiraGiraHitVfx;
 const spawnGiraGiraBurstVfx = window.__JPAPP_VFX?.spawnGiraGiraBurstVfx || function () {};
 window.spawnGiraGiraBurstVfx = spawnGiraGiraBurstVfx;
+const spawnProjectile = window.spawnProjectile || function () {};
+window.spawnProjectile = spawnProjectile;
 
 window.updateSpUI = function () {
 
@@ -184,15 +185,20 @@ const _jpApp = Vue.createApp({
             failedSpiritIcons.value = { ...failedSpiritIcons.value, [opt]: true };
         };
 
-        const spiritCodexHelpers = window.JPAPPSpiritCodexHelpers;
+        const spiritCodexHelpers = window.JPAPPSpiritCodexHelpers || {
+            getSpiritForSkillId: () => null,
+            getSpiritForSkill: () => null,
+            getSpiritForKnowledgeCard: () => null,
+            decorateSkillWithSpirit: (s) => s
+        };
 
-        const getSpiritForSkillId = (skillId) => spiritCodexHelpers.getSpiritForSkillId(spiritsBySkillId.value, skillId);
+        const getSpiritForSkillId = (skillId) => spiritCodexHelpers.getSpiritForSkillId ? spiritCodexHelpers.getSpiritForSkillId(spiritsBySkillId.value, skillId) : null;
 
-        const getSpiritForSkill = (skill) => spiritCodexHelpers.getSpiritForSkill(spiritsBySkillId.value, skill);
+        const getSpiritForSkill = (skill) => spiritCodexHelpers.getSpiritForSkill ? spiritCodexHelpers.getSpiritForSkill(spiritsBySkillId.value, skill) : null;
 
-        const getSpiritForKnowledgeCard = (card) => spiritCodexHelpers.getSpiritForKnowledgeCard(spiritsBySkillId.value, card);
+        const getSpiritForKnowledgeCard = (card) => spiritCodexHelpers.getSpiritForKnowledgeCard ? spiritCodexHelpers.getSpiritForKnowledgeCard(spiritsBySkillId.value, card) : null;
 
-        const decorateSkillWithSpirit = (skill) => spiritCodexHelpers.decorateSkillWithSpirit(spiritsBySkillId.value, skill);
+        const decorateSkillWithSpirit = (skill) => spiritCodexHelpers.decorateSkillWithSpirit ? spiritCodexHelpers.decorateSkillWithSpirit(spiritsBySkillId.value, skill) : skill;
 
         const getSpiritImageSrc = (spirit) => window.JPAPPCodexDisplayUtils.getSpiritImageSrc(spirit);
         const handleSpiritImageError = (event, spirit) => window.JPAPPCodexDisplayUtils.handleSpiritImageError(event, spirit);
@@ -942,17 +948,12 @@ const _jpApp = Vue.createApp({
 
         watch(settings, saveSettings, { deep: true });
 
-        const { isDevToolsVisible, showFpsDebug, toggleFpsDebug } = window.JPAPPDevToolsManager.createDevToolsState({
-            vue: { ref }
-        });
-
-
-        window.__initVfxHelpers?.(settings);
-
-        const { isChangelogOpen, changelogData, changelogError, openChangelog } = window.JPAPPChangelogManager.createChangelogState({
-            ref,
-            APP_VERSION
-        });
+        const devToolsState = (window.JPAPPDevToolsManager?.createDevToolsState || (() => ({
+            isDevToolsVisible: ref(false),
+            showFpsDebug: ref(false),
+            toggleFpsDebug: () => { }
+        })))({ vue: { ref } });
+        const { isDevToolsVisible, showFpsDebug, toggleFpsDebug } = devToolsState;
 
         const answerMode = ref('tap');
 
