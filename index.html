@@ -3137,15 +3137,15 @@
                             <div>
 
                                 <span class="settings-section-label">戰鬥節奏</span>
-                                <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">選擇戰鬥時敵我行動的節奏。回合制仍在準備中。</p>
+                                <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">選擇戰鬥節奏。回合制功能即將開放。</p>
 
                                 <div class="grid grid-cols-2 gap-2">
 
                                     <button @click="settings.enemyAttackMode = 'atb'"
                                         class="flex flex-col items-center py-2.5 px-1 rounded-xl border transition-all"
                                         :class="settings.enemyAttackMode === 'atb' ? 'bg-rose-500/20 border-rose-500 text-rose-100 shadow-[0_0_15px_rgba(244,63,94,0.2)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
-                                        <span class="text-sm font-black">ATB 制</span>
-                                        <span class="text-[9px] opacity-60 font-medium mt-1">即時行動，適合連擊</span>
+                                        <span class="text-sm font-black">即時戰鬥</span>
+                                        <span class="text-[9px] opacity-60 font-medium mt-1">行動不中斷，適合連擊</span>
                                     </button>
 
                                     <button disabled
@@ -3305,7 +3305,7 @@
 
                             </div>
 
-                            <span class="relative z-10 tracking-widest uppercase">🏃 長按 3 秒重新整理最新版</span>
+                            <span class="relative z-10 tracking-widest uppercase">🏃 長按 3 秒重新載入遊戲</span>
 
                         </button>
 
@@ -4803,7 +4803,7 @@
                             <div v-else class="hidden"></div>
 
 
-                            <button @click="isLevelJumpOpen = true; isMenuOpen = false;"
+                            <button v-if="isDevToolsVisible" @click="isLevelJumpOpen = true; isMenuOpen = false;"
                                 class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-400/20 text-purple-100 text-sm font-bold transition-all">
 
                                 ⏭️ 關卡

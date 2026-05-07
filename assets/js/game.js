@@ -640,7 +640,7 @@ const _jpApp = Vue.createApp({
             }
             const segment = mapChapters.value[activeChapter.value]?.segments[idx];
             if (!segment || !segment.background) {
-                if (typeof showStatusToast === 'function') showStatusToast('🚧 區域開發中，敬請期待！', { bg: 'rgba(30,41,59,0.9)', border: '#475569', color: '#f8fafc' });
+                if (typeof showStatusToast === 'function') showStatusToast('🚧 此區域尚未開放，敬請期待！', { bg: 'rgba(30,41,59,0.9)', border: '#475569', color: '#f8fafc' });
                 return;
             }
             selectedSegmentIdx.value = idx;
