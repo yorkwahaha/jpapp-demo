@@ -285,10 +285,20 @@
             s10i.async = false;
             document.head.appendChild(s10i);
 
+            const s10n = document.createElement('script');
+            s10n.src = 'assets/js/spirit-codex-helpers.js?v=' + v;
+            s10n.async = false;
+            document.head.appendChild(s10n);
+
             const s10j = document.createElement('script');
             s10j.src = 'assets/js/audio-debug-manager.js?v=' + v;
             s10j.async = false;
             document.head.appendChild(s10j);
+
+            const s10l = document.createElement('script');
+            s10l.src = 'assets/js/dev-tools.js?v=' + v;
+            s10l.async = false;
+            document.head.appendChild(s10l);
 
             const s10k = document.createElement('script');
             s10k.src = 'assets/js/changelog-manager.js?v=' + v;

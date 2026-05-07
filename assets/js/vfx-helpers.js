@@ -1,6 +1,37 @@
 (function () {
     const api = window.__JPAPP_VFX || window.JPAPP_VFX || {};
 
+    function getComboTier(combo) {
+        if (combo >= 20) return 'max';
+        if (combo >= 10) return 'amazing';
+        if (combo >= 5) return 'great';
+        return 'good';
+    }
+
+    function getRandomComboPopupPosition() {
+        const isPhonePortrait =
+            typeof window !== 'undefined'
+            && window.matchMedia?.('(max-width: 640px) and (orientation: portrait)').matches;
+
+        const leftSide = Math.random() < 0.5;
+        const rnd = (a, b) => a + Math.random() * (b - a);
+        const leftPct = leftSide ? rnd(25, 38) : rnd(62, 75);
+        const topPct = isPhonePortrait ? rnd(44, 62) : rnd(42, 58);
+        return { leftPct, topPct };
+    }
+
+    function createComboPopupState(combo, key = Date.now()) {
+        const { leftPct, topPct } = getRandomComboPopupPosition();
+        return {
+            show: true,
+            value: combo,
+            tier: getComboTier(combo),
+            key,
+            leftPct,
+            topPct,
+        };
+    }
+
     function spawnFloatingDamage(target, amount, type = 'hp', extras = null) {
         const vfxLayer = (typeof window.getVfxLayer === 'function') ? window.getVfxLayer() : document.getElementById('global-vfx-layer');
         if (!vfxLayer) return;
@@ -497,8 +528,12 @@
     api.spawnFloatingDamage = spawnFloatingDamage;
     api.spawnGiraGiraHitVfx = spawnGiraGiraHitVfx;
     api.spawnGiraGiraBurstVfx = spawnGiraGiraBurstVfx;
+    api.getComboTier = getComboTier;
+    api.getRandomComboPopupPosition = getRandomComboPopupPosition;
+    api.createComboPopupState = createComboPopupState;
     window.__JPAPP_VFX = api;
     window.JPAPP_VFX = api;
+    window.JPAPPVfxHelpers = api;
 }());
 // ================= [ VFX HELPERS ] =================
 window.__initVfxHelpers = function (settings) {

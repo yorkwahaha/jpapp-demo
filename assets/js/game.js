@@ -184,20 +184,15 @@ const _jpApp = Vue.createApp({
             failedSpiritIcons.value = { ...failedSpiritIcons.value, [opt]: true };
         };
 
-        const getSpiritForSkillId = (skillId) => {
-            if (!skillId || typeof skillId !== 'string') return null;
-            return spiritsBySkillId.value[skillId] || null;
-        };
+        const spiritCodexHelpers = window.JPAPPSpiritCodexHelpers;
 
-        const getSpiritForSkill = (skill) => getSpiritForSkillId(skill?.id);
+        const getSpiritForSkillId = (skillId) => spiritCodexHelpers.getSpiritForSkillId(spiritsBySkillId.value, skillId);
 
-        const getSpiritForKnowledgeCard = (card) => card?.spirit || getSpiritForSkill(card);
+        const getSpiritForSkill = (skill) => spiritCodexHelpers.getSpiritForSkill(spiritsBySkillId.value, skill);
 
-        const decorateSkillWithSpirit = (skill) => {
-            if (!skill) return null;
-            const spirit = getSpiritForSkillId(skill.id);
-            return spirit ? { ...skill, spirit } : skill;
-        };
+        const getSpiritForKnowledgeCard = (card) => spiritCodexHelpers.getSpiritForKnowledgeCard(spiritsBySkillId.value, card);
+
+        const decorateSkillWithSpirit = (skill) => spiritCodexHelpers.decorateSkillWithSpirit(spiritsBySkillId.value, skill);
 
         const getSpiritImageSrc = (spirit) => window.JPAPPCodexDisplayUtils.getSpiritImageSrc(spirit);
         const handleSpiritImageError = (event, spirit) => window.JPAPPCodexDisplayUtils.handleSpiritImageError(event, spirit);
@@ -947,32 +942,9 @@ const _jpApp = Vue.createApp({
 
         watch(settings, saveSettings, { deep: true });
 
-        const getDevToolsVisibleDefault = () => {
-            const h = window.location.hostname;
-            const params = new URLSearchParams(window.location.search || '');
-            const isLocalDevHost = window.location.protocol === 'file:'
-                || h === 'localhost'
-                || h === '127.0.0.1'
-                || h === '0.0.0.0';
-            let storedDevFlag = false;
-            try {
-                const raw = localStorage.getItem('jpapp_dev_tools');
-                storedDevFlag = raw === '1' || raw === 'true';
-            } catch (_) { }
-            return isLocalDevHost || params.get('debug') === '1' || params.get('dev') === '1' || storedDevFlag;
-        };
-        const isDevToolsVisible = ref(getDevToolsVisibleDefault());
-
-        const showFpsDebug = ref(isDevToolsVisible.value && localStorage.getItem('jpapp_show_fps_debug') === 'true');
-        const toggleFpsDebug = () => {
-            if (!isDevToolsVisible.value) return;
-            const newVal = !showFpsDebug.value;
-            showFpsDebug.value = newVal;
-            localStorage.setItem('jpapp_show_fps_debug', newVal);
-            if (newVal && typeof window.__startFpsLoop === 'function') {
-                window.__startFpsLoop();
-            }
-        };
+        const { isDevToolsVisible, showFpsDebug, toggleFpsDebug } = window.JPAPPDevToolsManager.createDevToolsState({
+            vue: { ref }
+        });
 
 
         window.__initVfxHelpers?.(settings);
@@ -1652,64 +1624,34 @@ const _jpApp = Vue.createApp({
         };
 
         // [ CODEX - COMPUTED ]
-        const skillsWithUnlockLevel = computed(() => {
-            const unlocked = [];
-            const locked = [];
-            SKILLS.value.forEach(s => {
-                if (unlockedSkillIds.value.includes(s.id)) unlocked.push(s);
-                else locked.push(s);
-            });
-            unlocked.sort((a, b) => {
-                if (a.particle !== b.particle) return (a.particle || '').localeCompare(b.particle || '', 'ja');
-                return (a.rank || 0) - (b.rank || 0);
-            });
-            locked.sort((a, b) => {
-                const lA = skillUnlockMap.value[a.id] || 999;
-                const lB = skillUnlockMap.value[b.id] || 999;
-                if (lA !== lB) return lA - lB;
-                if (a.particle !== b.particle) return (a.particle || '').localeCompare(b.particle || '', 'ja');
-                return (a.rank || 0) - (b.rank || 0);
-            });
-            return [...unlocked, ...locked].map(s => ({
-                ...s,
-                unlockLevel: skillUnlockMap.value[s.id]
-            }));
-        });
+        const skillsWithUnlockLevel = computed(() =>
+            spiritCodexHelpers.buildSkillsWithUnlockLevel(SKILLS.value, unlockedSkillIds.value, skillUnlockMap.value)
+        );
 
         const CODEX_PER_PAGE = 1;
 
         const codexBaseSkills = computed(() =>
-            skillsWithUnlockLevel.value.filter(s =>
-                s.particle && !s.particle.startsWith('複習') && s.particle !== '極限' && s.id !== 'TO_COMPANION'
-            )
+            spiritCodexHelpers.getCodexBaseSkills(skillsWithUnlockLevel.value)
         );
 
-        const codexChapterList = computed(() => {
-            const seen = new Set();
-            const list = [{ key: 'all', label: '全部' }];
-            codexBaseSkills.value.forEach(s => {
-                const p = s.particle || '技';
-                if (!seen.has(p)) { seen.add(p); list.push({ key: p, label: p }); }
-            });
-            return list;
-        });
+        const codexChapterList = computed(() =>
+            spiritCodexHelpers.buildCodexChapterList(codexBaseSkills.value)
+        );
 
-        const codexFilteredSkills = computed(() => {
-            if (codexChapter.value === 'all') return codexBaseSkills.value;
-            return codexBaseSkills.value.filter(s => (s.particle || '技') === codexChapter.value);
-        });
+        const codexFilteredSkills = computed(() =>
+            spiritCodexHelpers.filterCodexSkills(codexBaseSkills.value, codexChapter.value)
+        );
 
         const codexTotalPages = computed(() =>
-            Math.max(1, Math.ceil(codexFilteredSkills.value.length / CODEX_PER_PAGE))
+            spiritCodexHelpers.getCodexTotalPages(codexFilteredSkills.value, CODEX_PER_PAGE)
         );
 
-        const codexPageSkills = computed(() => {
-            const start = codexPage.value * CODEX_PER_PAGE;
-            return codexFilteredSkills.value.slice(start, start + CODEX_PER_PAGE);
-        });
+        const codexPageSkills = computed(() =>
+            spiritCodexHelpers.getCodexPageSkills(codexFilteredSkills.value, codexPage.value, CODEX_PER_PAGE)
+        );
 
         const codexNextSkill = computed(() =>
-            codexFilteredSkills.value[codexPage.value + 1] || null
+            spiritCodexHelpers.getCodexNextSkill(codexFilteredSkills.value, codexPage.value)
         );
 
         const getParticleMastery = (particle) => {
@@ -1724,13 +1666,12 @@ const _jpApp = Vue.createApp({
 
         const getSkillMastery = (skillId) => {
             if (!skillId || typeof skillId !== 'string') return 0;
-            const value = Number(skillMastery.value[skillId] ?? 0);
-            return Number.isFinite(value) ? Math.min(100, Math.max(0, Math.floor(value))) : 0;
+            return spiritCodexHelpers.normalizeMasteryPercent(skillMastery.value[skillId]);
         };
 
         const FULL_BOND_EVASION_PENALTY = 0.03;
 
-        const isBondMaxSkill = (skillId) => getSkillMastery(skillId) >= 100;
+        const isBondMaxSkill = (skillId) => spiritCodexHelpers.isMasteryMax(getSkillMastery(skillId));
 
         const getCurrentQuestionSkillId = () => {
             const skillId = currentQuestion.value?.skillId;
@@ -1747,9 +1688,7 @@ const _jpApp = Vue.createApp({
                 : safeBaseRate;
         };
 
-        const getSkillMasteryStyle = (skillId) => ({
-            width: `${getSkillMastery(skillId)}%`
-        });
+        const getSkillMasteryStyle = (skillId) => spiritCodexHelpers.getMasteryStyle(getSkillMastery(skillId));
 
         const formatMonsterCodexValue = (v, s) => window.JPAPPCodexDisplayUtils.formatMonsterCodexValue(v, s);
 
@@ -2381,36 +2320,30 @@ const _jpApp = Vue.createApp({
 
         const COMBO_POPUP_DURATION_MS = 1350;
 
-        const getComboTier = (combo) => {
-            if (combo >= 20) return 'max';
-            if (combo >= 10) return 'amazing';
-            if (combo >= 5) return 'great';
-            return 'good';
-        };
+        const createComboPopupState = (combo) => {
+            const helper = window.JPAPPVfxHelpers || window.JPAPP_VFX || window.__JPAPP_VFX;
+            if (typeof helper?.createComboPopupState === 'function') {
+                return helper.createComboPopupState(combo);
+            }
 
-        const randomComboPopupPosition = () => {
             const isPhonePortrait =
                 typeof window !== 'undefined'
                 && window.matchMedia?.('(max-width: 640px) and (orientation: portrait)').matches;
-
             const leftSide = Math.random() < 0.5;
             const rnd = (a, b) => a + Math.random() * (b - a);
-            const leftPct = leftSide ? rnd(25, 38) : rnd(62, 75);
-            const topPct = isPhonePortrait ? rnd(44, 62) : rnd(42, 58);
-            return { leftPct, topPct };
+            return {
+                show: true,
+                value: combo,
+                tier: combo >= 20 ? 'max' : (combo >= 10 ? 'amazing' : (combo >= 5 ? 'great' : 'good')),
+                key: Date.now(),
+                leftPct: leftSide ? rnd(25, 38) : rnd(62, 75),
+                topPct: isPhonePortrait ? rnd(44, 62) : rnd(42, 58),
+            };
         };
 
         const showComboPopup = (combo) => {
             if (combo < 2) return;
-            const { leftPct, topPct } = randomComboPopupPosition();
-            comboPopup.value = {
-                show: true,
-                value: combo,
-                tier: getComboTier(combo),
-                key: Date.now(),
-                leftPct,
-                topPct,
-            };
+            comboPopup.value = createComboPopupState(combo);
             if (comboPopupTimer) clearTimeout(comboPopupTimer);
             comboPopupTimer = setTimeout(() => {
                 comboPopup.value = { ...comboPopup.value, show: false };
