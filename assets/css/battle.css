@@ -1,0 +1,39 @@
+/* ── Skill UI v2 ── */
+.skill-type-badge {
+    font-size: 0.65rem;
+    font-weight: 900;
+    padding: 1px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.skill-card--buff .skill-type-badge {
+    background: rgba(56, 189, 248, 0.2);
+    color: #7dd3fc;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.skill-card--heal .skill-type-badge {
+    background: rgba(34, 211, 238, 0.2);
+    color: #22d3ee;
+    border: 1px solid rgba(34, 211, 238, 0.3);
+}
+
+.skill-card--attackBuff .skill-type-badge {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.skill-card--debuff .skill-type-badge {
+    background: rgba(244, 63, 94, 0.2);
+    color: #fb7185;
+    border: 1px solid rgba(244, 63, 94, 0.3);
+}
+
+.hero-status-pill.debuff {
+    background: rgba(244, 63, 94, 0.25);
+    border-color: rgba(251, 113, 133, 0.5);
+    color: #fda4af;
+}

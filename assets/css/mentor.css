@@ -1,0 +1,357 @@
+/* Mentor NPC Tutorial Overlay */
+.mentor-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.2);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5000;
+}
+
+.mentor-panel {
+    width: 90%;
+    max-width: 620px;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 2.5rem;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), 0 0 40px rgba(245, 158, 11, 0.1);
+    overflow: hidden;
+    animation: mentorPop 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    position: relative;
+    margin: auto;
+    padding-bottom: 2rem;
+    /* Desktop constraints */
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+
+@keyframes mentorPop {
+    0% {
+        transform: scale(0.9) translateY(40px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+.mentor-header {
+    padding: 1.5rem 2.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(to right, rgba(245, 158, 11, 0.1), transparent);
+}
+
+.mentor-name {
+    color: #fbbf24;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    font-size: 1.15rem;
+    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+}
+
+.mentor-body {
+    padding: 2.5rem 3.5rem;
+    min-height: 240px;
+    display: flex;
+    gap: 3rem;
+    align-items: center;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.mentor-portrait-container {
+    width: 200px;
+    height: 200px;
+    flex-shrink: 0;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.05), transparent);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 2.5rem;
+    overflow: hidden;
+    /* Aggressive Clipping Fix for iOS */
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+    /* Added: Multi-layered clipping */
+    mask-image: radial-gradient(white, black);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        inset 0 0 40px rgba(0, 0, 0, 0.3),
+        0 15px 35px rgba(0, 0, 0, 0.4);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    backdrop-filter: brightness(1.1) contrast(1.1);
+    -webkit-touch-callout: none;
+    /* Prevent context menu */
+    user-select: none;
+    /* Prevent selection */
+}
+
+.mentor-portrait-container::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%, rgba(255, 255, 255, 0.05) 100%);
+    pointer-events: none;
+}
+
+.mentor-panel:hover .mentor-portrait-container {
+    transform: scale(1.02);
+}
+
+.mentor-portrait-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: bottom center;
+    /* Align character to bottom of frame */
+    filter: drop-shadow(0 0 10px rgba(100, 200, 255, 0.1));
+    border-radius: inherit;
+    /* Inherit border radius for safety */
+}
+
+@media (hover: none) and (pointer: coarse) and (max-width: 1024px) {
+    @supports (-webkit-touch-callout: none) {
+        .is-prologue-mentor {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            background:
+                radial-gradient(90% 48% at 50% 100%, rgba(15, 23, 42, 0.18), transparent 62%),
+                rgba(8, 12, 28, 0.08) !important;
+        }
+
+        .is-prologue-mentor .mentor-dialogue-box {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            transform: none !important;
+            transition: none !important;
+            contain: paint;
+        }
+
+        .is-prologue-mentor .mentor-dialogue-text,
+        .is-prologue-mentor-dialogue .mentor-dialogue-text {
+            -webkit-font-smoothing: antialiased;
+            transform: none !important;
+        }
+
+        .is-prologue-mentor .mentor-dialogue-box .animate-pulse,
+        .is-prologue-mentor .mentor-dialogue-box .animate-bounce {
+            animation: none !important;
+        }
+    }
+}
+
+.mentor-portrait-video,
+.mentor-scene-video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: bottom center;
+    border-radius: inherit;
+    filter: saturate(1.02) brightness(0.96) drop-shadow(0 0 10px rgba(100, 200, 255, 0.1));
+    background: transparent;
+}
+
+.mentor-text {
+    font-size: 1.35rem;
+    line-height: 1.85;
+    color: #f8fafc;
+    font-weight: 700;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+    white-space: pre-wrap;
+    text-align: left;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    padding-left: 0.5rem;
+}
+
+.mentor-page-indicator {
+    color: rgba(251, 191, 36, 0.6);
+    font-weight: 700;
+    font-size: 0.75rem;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 3px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    letter-spacing: 0.1em;
+}
+
+.mentor-footer {
+    padding: 1rem 3rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    min-height: 80px;
+    /* Stabilize footer height */
+}
+
+.mentor-btn {
+    padding: 0.85rem 2.5rem;
+    background: linear-gradient(135deg, #92400e 0%, #78350f 100%);
+    color: #fef3c7;
+    font-weight: 900;
+    font-size: 1.15rem;
+    border-radius: 999px;
+    border: none;
+    box-shadow: 0 8px 30px rgba(120, 53, 15, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    /* Prevent text wrapping */
+    min-width: 120px;
+    /* Ensure a consistent minimum width */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mentor-btn:hover {
+    transform: scale(1.05) translateY(-4px);
+    box-shadow: 0 12px 40px rgba(120, 53, 15, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.25);
+    background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+}
+
+.mentor-btn:active {
+    transform: scale(0.98) translateY(2px);
+    box-shadow: 0 4px 15px rgba(180, 83, 9, 0.5);
+}
+
+.mentor-btn.btn-secondary {
+    background: rgba(255, 255, 255, 0.08);
+    color: #cbd5e1;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.mentor-btn.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #f8fafc;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.mentor-skip-btn {
+    position: relative;
+    padding: 0.65rem 1.6rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-right: auto;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    /* Prevent iPhone long-press context menu */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.mentor-skip-progress {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background: rgba(245, 158, 11, 0.4);
+    pointer-events: none;
+    transition: width 0.1s linear;
+}
+
+.mentor-skip-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.mentor-skip-btn.is-pressing {
+    color: #fbbf24;
+    border-color: rgba(251, 191, 36, 0.3);
+    transform: scale(0.95);
+}
+
+.mentor-skip-progress {
+    transition: width 3s linear !important;
+}
+
+@media (max-width: 640px) {
+    .mentor-panel {
+        width: 95%;
+        border-radius: 2.5rem;
+    }
+
+    .mentor-body {
+        flex-direction: column;
+        padding: 2.5rem 1.5rem;
+        align-items: center;
+        gap: 1.5rem;
+        min-height: 220px;
+        /* Reserved space for portrait + 2 lines of text on mobile */
+    }
+
+    .mentor-portrait-container {
+        width: 140px;
+        height: 140px;
+        border-radius: 2rem;
+    }
+
+    .mentor-name {
+        font-size: 1.1rem;
+        letter-spacing: 0.15em;
+    }
+
+    .mentor-text {
+        font-size: 1.2rem;
+        text-align: left;
+        min-height: 5.5rem;
+        /* Reserve ~3 lines of text to prevent bouncing */
+        max-height: 12rem;
+        overflow-y: auto;
+        width: 100%;
+        padding: 0 0.5rem;
+    }
+
+    .mentor-footer {
+        padding: 1.5rem 1.5rem;
+        flex-direction: column-reverse;
+        gap: 1.25rem;
+        align-items: center;
+        min-height: 140px;
+        /* Reserve space for stacked buttons */
+    }
+
+    .mentor-skip-btn {
+        margin-right: 0;
+        width: 100%;
+        text-align: center;
+        background: transparent;
+    }
+
+    .mentor-page-indicator {
+        font-size: 0.7rem;
+    }
+
+    .mentor-btn {
+        width: 100%;
+        padding: 1rem 1.25rem !important;
+        font-size: 1.1rem !important;
+    }
+}
