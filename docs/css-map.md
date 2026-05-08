@@ -42,12 +42,12 @@ Recommended future order:
 | L2044-L2277 | Battle polish package | Battle log, monster entrance/breathing, question stone slots, flick option styling | High | `battle.css` + `battle-vfx.css` | No | Crosses core battle UI and VFX; move only after battle base is isolated. |
 | L2278-L2897 | Mentor overlay and portrait system | Mentor tutorial/dialogue overlay, portrait/video clipping, map mentor portrait responsive rules | Medium | `mentor.css` | Partial: Phase 1-B | Moved pure `.mentor-*`, `.is-prologue-mentor*`, mentor dialogue text, mentor portrait video, and mentor mobile-only selector rules to `mentor.css`. Kept `.map-mentor-portrait-stage` and non-mentor mobile `#hud` / question / TAP rules in `styles.css`. |
 | L2898-L6458 | Boss/battle VFX | Boss attacks, boss death, hidden boss, monster death, aura, special attack effects | Medium | `battle-vfx.css` | Yes, in chunks | Large but selector namespace is mostly `boss-*`, `monster-*`, and VFX classes. Move by sub-block with visual checks. |
-| L6459-L6759 | Result and mistakes UI | Result screen, result stats, mistakes modal responsiveness | Medium | `layout.css` / `battle.css` | Maybe | Result UI is battle flow adjacent but visually self-contained. Mistakes modal may belong with settings/modal. |
-| L6761-L6945 | Stage confirm modal | Stage confirm panel, mentor entry button, stage best record display | Medium | `map.css` / `mentor.css` | No | Bridges map stage selection and mentor entry. Needs second audit. |
+| L6459-L6759 | Result and mistakes UI | Result screen, result stats, mistakes modal responsiveness | Low-Medium | `result-mistakes.css` | Done: Phase 1-D | Moved result modal, result stats, mistakes header, stage log cards, and local mistakes mobile rules. Kept stage confirm in `styles.css`. |
+| L6761-L6945 | Stage confirm modal | Stage confirm panel, mentor entry button, stage best record display | Medium | `map.css` / `mentor.css` | No | Bridges map stage selection and mentor entry. Phase 1-D kept `.stage-confirm-*` in `styles.css`. |
 | L6946-L7290 | Home page and mobile battle leftovers | Home cover, title, CTA, mobile home and battle polish fixes | Medium | `layout.css` / `rwd.css` | No | Home page can move, but the nearby mobile battle fixes should first be separated. |
 | L7293-L7379 | HUD stabilization and desktop layout polish | HUD row stabilization, question card glass, mode toggle, desktop HUD/modal/mentor positioning | High | `layout.css` / `battle.css` / `rwd.css` | No | Crosses HUD, modal, mentor, desktop RWD. Keep until RWD is isolated. |
 | L7380-L8949 | Map screen and map ambience | Map container, map HUD, dropdown, nodes, viewport, chapter ambience and animations | Medium | `map.css` | Yes, in two passes | Good candidate, but split structural map UI from ambient chapter effects to reduce risk. |
-| L8955-L9779 | Knowledge card and spirit unlock | Spirit unlock presentation, knowledge card animation and absorption | Low-Medium | `codex.css` / `battle-vfx.css` | Done: Phase 1-C | Moved knowledge card unlock overlay, spirit unlock presentation, card particles, absorption particles, and related keyframes to `codex.css`. |
+| L8955-L9779 | Knowledge card and spirit unlock / stage records | Spirit unlock presentation, knowledge card animation, absorption, stage records modal | Low-Medium | `codex.css` / `result-mistakes.css` | Done: Phase 1-C / 1-D | Moved knowledge card unlock overlay, spirit unlock presentation, card particles, absorption particles, and related keyframes to `codex.css`. Moved `.stage-records-*` and `.stage-record-*` modal rules to `result-mistakes.css`. |
 | L9781-L11280 | Codex/book UI | Codex book, tabs, pages, cards, monster codex panel and responsive rules | Low-Medium | `codex.css` | Done: Phase 1-C | Moved `.codex-*`, `.monster-codex-*`, spirit reward portrait rules, Codex-local mobile rules, and related Codex keyframes to `codex.css`. Kept later four-mode monster codex overrides in `styles.css`. |
 | L11280-L12020 | Spirit display variants and effects | Spirit-specific display/animation rules such as true resonance and individual spirit VFX | Medium | `codex.css` / `battle-vfx.css` | Maybe | Some rules are display-only, some are battle resonance adjacent. Requires selector grouping. |
 | L12021-L12086 | Modal utilities and settings controls | Extracted modal buttons, section cards, settings labels, volume label | Low | `settings.css` / `layout.css` | Done: Phase 1-A | Moved `.modal-close-btn`, `.modal-header-row`, `.modal-section-card`, `.settings-section-label`, `.volume-control-label` to `settings.css`. Kept `.modal-caption` in `styles.css` because it was outside this pass. |
@@ -104,7 +104,16 @@ Phase 1-C completed as a partial Codex extraction:
 4. Kept `.map-hud-btn--monster-codex` in `styles.css` because it belongs to map HUD controls.
 5. Kept later four-mode `.monster-codex-*` overrides in `styles.css` because they are mixed into the iPhone/iPad/desktop RWD block.
 6. This pass did not move four-mode RWD, battle core, resonance wheel, TAP/Flick/projectile logic, audio, JS, settings schema, question data, or mentor data.
-7. Next recommended extraction: `map.css` or result/mistakes UI; keep `rwd.css` frozen.
+7. Result/mistakes UI is now extracted in Phase 1-D. Next recommended extraction: `map.css`; keep `rwd.css` frozen.
+
+Phase 1-D completed as a result/mistakes extraction:
+
+1. Added `assets/css/result-mistakes.css` after `codex.css` and before `escape.css`.
+2. Moved result screen backdrop, result modal glass, result spirit hero/trophy, star/time/stat rows, `result-spirit-float`, and the landscape tablet result compression rules.
+3. Moved mistakes modal header/voice hint, stage log list/card/text/tip rules, and the local max-width 640px mistakes/stage-log rules.
+4. Moved stage records modal/list/row/score/close rules and the local max-width 420px stage-record rules.
+5. Kept `.stage-confirm-*` in `styles.css` because it is map/stage-confirm ownership and overlaps mentor entry flow.
+6. This pass did not move `rwd.css`, four-mode RWD overrides, battle core, resonance wheel, HUD/TAP/Flick selectors, audio/TTS/BGM/fanfare selectors, or JS behavior.
 
 ### Phase 1 Smoke Check
 
@@ -112,17 +121,24 @@ Smoke check completed after Phase 1-A, 1-B, and 1-C. No new CSS split files or s
 
 Confirmed:
 
-1. `index.html` loads split CSS in the documented order: `styles.css`, `settings.css`, `mentor.css`, `battle.css`, `battle-vfx.css`, `codex.css`, then `escape.css`, all with `v=26050801`.
+1. `index.html` loads split CSS in the documented order: `styles.css`, `settings.css`, `mentor.css`, `battle.css`, `battle-vfx.css`, `codex.css`, `result-mistakes.css`, then `escape.css`, all with `v=26050801`.
 2. High-risk selectors remain in `styles.css`: `#hud`, `.battle-hud-*`, `#heroAvatar`, `.resonance-*`, `#flickLayer`, `.hud-tap-mode`, and the four-mode RWD override blocks.
 3. Split files do not contain the prohibited battle HUD / resonance / flick / TAP selectors.
 4. Extracted selector families are not duplicated as base definitions across split files and `styles.css`. Remaining intersections are intentional retained overrides: `.mentor-overlay` / `.mentor-panel` desktop polish in `styles.css`, and `.monster-codex-*` rules inside the four-mode RWD blocks.
 5. Extracted animation references have matching `@keyframes`; no missing keyframes were found in the CSS set.
 6. `assets/js/game.js` has an empty content diff. `git status --short` may still report it as modified because of stat metadata; `git update-index --refresh assets/js/game.js` can clear that when the environment permits writing Git index/object metadata.
 
+Phase 1-D smoke check:
+
+1. `result-mistakes.css` is loaded after `styles.css` and before `escape.css`, with `v=26050801`.
+2. Result/mistakes/stage-record selector families now resolve only in `result-mistakes.css`.
+3. `.stage-confirm-*` selectors remain in `styles.css`.
+4. No JS files were edited.
+
 Do not continue into `rwd.css` yet. Current next candidates:
 
 1. `map.css`: medium risk; split into map structure first, then map ambience in a separate pass.
-2. Result/mistakes UI: low-medium risk; evaluate selector ownership before moving.
+2. Result/mistakes UI: done in Phase 1-D; revisit only if stage-confirm ownership is decided.
 3. Battle core, resonance, and `rwd.css`: keep frozen for now.
 
 ### Phase 2 - Feature Blocks With Visual QA
