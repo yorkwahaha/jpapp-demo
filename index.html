@@ -3047,7 +3047,7 @@
 
                     <div class="modal-header-row">
 
-                        <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">進階設定 <span
+                        <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">遊戲設定 <span
                                 class="modal-caption">SETTINGS</span></h2>
 
                         <button @click="isAdvancedSettingsOpen = false" class="modal-close-btn">✕</button>
@@ -3083,8 +3083,8 @@
 
                             <div>
 
-                                <span class="settings-section-label">預設攻擊模式</span>
-                                <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">進入戰鬥時預設使用的攻擊操作方式</p>
+                                <span class="settings-section-label">預設操作模式</span>
+                                <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">進入戰鬥時的預設操作方式</p>
 
                                 <div class="grid grid-cols-2 gap-2">
 
@@ -3092,7 +3092,7 @@
                                         class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
                                         :class="settings.defaultAttackMode === 'tap' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
 
-                                        Tap
+                                        點擊（Tap）
 
                                     </button>
 
@@ -3100,7 +3100,7 @@
                                         class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
                                         :class="settings.defaultAttackMode === 'flick' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
 
-                                        Flick
+                                        滑動（Flick）
 
                                     </button>
 
@@ -3118,7 +3118,7 @@
                                         class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
                                         :class="settings.feedbackVoiceMode === 'combo' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
 
-                                        Combo 回饋
+                                        連擊回饋
 
                                     </button>
 
@@ -3137,7 +3137,7 @@
                             <div>
 
                                 <span class="settings-section-label">戰鬥節奏</span>
-                                <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">選擇戰鬥節奏。回合制功能即將開放。</p>
+                                <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">目前提供即時戰鬥；回合制即將開放。</p>
 
                                 <div class="grid grid-cols-2 gap-2">
 
@@ -3151,7 +3151,7 @@
                                     <button disabled
                                         class="flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/5 bg-black/10 text-slate-600 cursor-not-allowed italic">
                                         <span class="text-sm font-black">回合制</span>
-                                        <span class="text-[9px] opacity-60 font-medium mt-1">輪流行動，準備中</span>
+                                        <span class="text-[9px] opacity-60 font-medium mt-1">輪流行動，即將開放</span>
                                     </button>
 
                                 </div>
@@ -3272,7 +3272,7 @@
 
                             class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 hover:bg-indigo-500/20 border border-white/10 text-slate-200 text-sm font-bold shadow transition-all group">
 
-                            <span class="group-hover:rotate-45 transition-transform duration-500">⚙️</span> 進階設定
+                            <span class="group-hover:rotate-45 transition-transform duration-500">⚙️</span> 遊戲設定
 
                         </button>
 
@@ -4786,7 +4786,7 @@
                                 @click="isAdvancedSettingsOpen = true; isMenuOpen = false; isLevelJumpOpen = false; isMistakesOpen = false;"
                                 class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 hover:bg-indigo-500/20 border border-white/10 text-slate-200 text-sm font-bold shadow transition-all group">
 
-                                <span class="group-hover:rotate-45 transition-transform duration-500">⚙️</span> 進階設定
+                                <span class="group-hover:rotate-45 transition-transform duration-500">⚙️</span> 遊戲設定
 
                             </button>
 
@@ -4890,7 +4890,7 @@
 
                     <div class="modal-header-row">
 
-                        <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">進階設定 <span
+                        <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">遊戲設定 <span
                                 class="modal-caption">SETTINGS</span></h2>
 
                         <button @click="isAdvancedSettingsOpen = false; resumeBattle(); playSfx('click');"
