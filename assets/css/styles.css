@@ -14280,12 +14280,12 @@ body.lock-scroll {
     }
 
     .resonance-wheel-shell {
-        min-height: clamp(96px, 14vw, 128px);
+        min-height: clamp(88px, 12vw, 112px);
         width: min(100vw, 760px);
         margin-left: auto;
         margin-right: auto;
-        margin-top: -24px;
-        margin-bottom: 12px;
+        margin-top: -8px;
+        margin-bottom: 8px;
         padding-left: clamp(12px, 2vw, 18px) !important;
         padding-right: clamp(12px, 2vw, 18px) !important;
     }
@@ -14300,14 +14300,14 @@ body.lock-scroll {
     }
 
     .resonance-wheel {
-        min-height: clamp(92px, 13vw, 120px);
-        width: min(720px, 62vw);
-        max-width: 720px;
+        min-height: clamp(86px, 11.5vw, 108px);
+        width: min(700px, 66vw);
+        max-width: 700px;
         margin-inline: auto;
         justify-content: space-between;
         align-items: flex-end;
         gap: clamp(14px, 1.5vw, 22px);
-        padding-bottom: clamp(10px, 1.8vw, 16px);
+        padding-bottom: clamp(4px, 1vw, 8px);
     }
 
     #flickLayer.resonance-wheel:has(> .resonance-slot:nth-child(2):last-child) {
@@ -14316,10 +14316,10 @@ body.lock-scroll {
     }
 
     .resonance-wheel::before {
-        left: 5%;
-        right: 5%;
-        bottom: clamp(20px, 3.4vw, 38px);
-        height: clamp(132px, 16vw, 188px);
+        left: 6%;
+        right: 6%;
+        bottom: clamp(10px, 1.6vw, 18px);
+        height: clamp(96px, 12vw, 132px);
         border-bottom: 2.5px solid rgba(251, 191, 36, 0.46);
         box-shadow:
             0 6px 14px rgba(251, 191, 36, 0.18),
@@ -14331,10 +14331,10 @@ body.lock-scroll {
     .resonance-wheel::after {
         content: '';
         position: absolute;
-        left: 10%;
-        right: 10%;
-        bottom: clamp(25px, 3.8vw, 44px);
-        height: clamp(108px, 13.5vw, 158px);
+        left: 12%;
+        right: 12%;
+        bottom: clamp(15px, 2.1vw, 24px);
+        height: clamp(76px, 9.5vw, 104px);
         border-bottom: 1px solid rgba(255, 237, 180, 0.28);
         border-radius: 0 0 50% 50%;
         pointer-events: none;
@@ -14344,68 +14344,118 @@ body.lock-scroll {
 
     .resonance-wheel>.resonance-slot:nth-child(1):nth-last-child(4),
     .resonance-wheel>.resonance-slot:nth-child(4):nth-last-child(1) {
-        --slot-arc-top: -56px;
+        --slot-arc-top: -38px;
         transform: none !important;
     }
 
     .resonance-wheel>.resonance-slot:nth-child(2):nth-last-child(3),
     .resonance-wheel>.resonance-slot:nth-child(3):nth-last-child(2) {
-        --slot-arc-top: -18px;
+        --slot-arc-top: -10px;
         transform: none !important;
     }
 
     .resonance-wheel>.resonance-slot:nth-child(1):nth-last-child(3),
     .resonance-wheel>.resonance-slot:nth-child(3):nth-last-child(1) {
-        --slot-arc-top: -48px;
+        --slot-arc-top: -34px;
         transform: none !important;
     }
 
     .resonance-wheel>.resonance-slot:nth-child(2):nth-last-child(2) {
-        --slot-arc-top: -12px;
+        --slot-arc-top: -8px;
+        transform: none !important;
+    }
+
+    .resonance-wheel.tap-mode>.resonance-slot:nth-child(1):nth-last-child(2),
+    .resonance-wheel.tap-mode>.resonance-slot:nth-child(2):nth-last-child(1) {
+        --slot-arc-top: -22px;
         transform: none !important;
     }
 
     .resonance-wheel.tap-mode>.resonance-slot:nth-child(1):nth-last-child(3),
     .resonance-wheel.tap-mode>.resonance-slot:nth-child(3):nth-last-child(1) {
-        --slot-arc-top: -62px;
+        --slot-arc-top: -34px;
+        transform: none !important;
     }
 
     .resonance-wheel.tap-mode>.resonance-slot:nth-child(2):nth-last-child(2) {
-        --slot-arc-top: -26px;
+        --slot-arc-top: -8px;
+        transform: none !important;
+    }
+
+    .resonance-wheel.tap-mode>.resonance-slot:nth-child(1):nth-last-child(4),
+    .resonance-wheel.tap-mode>.resonance-slot:nth-child(4):nth-last-child(1) {
+        --slot-arc-top: -38px;
+        transform: none !important;
+    }
+
+    .resonance-wheel.tap-mode>.resonance-slot:nth-child(2):nth-last-child(3),
+    .resonance-wheel.tap-mode>.resonance-slot:nth-child(3):nth-last-child(2) {
+        --slot-arc-top: -10px;
+        transform: none !important;
     }
 
     .resonance-wheel>.resonance-slot:nth-child(1):nth-last-child(2),
     .resonance-wheel>.resonance-slot:nth-child(2):nth-last-child(1) {
-        --slot-arc-top: -30px;
+        --slot-arc-top: -22px;
         transform: none !important;
+    }
+
+    #flickLayer.resonance-wheel {
+        padding-bottom: clamp(4px, 1vw, 8px);
     }
 
     #flickLayer.resonance-wheel>.resonance-slot:nth-child(1):nth-last-child(2),
     #flickLayer.resonance-wheel>.resonance-slot:nth-child(2):nth-last-child(1) {
-        --slot-arc-top: -18px;
+        --slot-arc-top: -22px;
         flex: 0 0 auto !important;
         margin-inline: 0 !important;
+        transform: none !important;
     }
 
-    #flickLayer.resonance-wheel {
-        padding-bottom: clamp(16px, 2.4vw, 24px);
+    #flickLayer.resonance-wheel>.resonance-slot:nth-child(1):nth-last-child(3),
+    #flickLayer.resonance-wheel>.resonance-slot:nth-child(3):nth-last-child(1) {
+        --slot-arc-top: -34px;
+        transform: none !important;
+    }
+
+    #flickLayer.resonance-wheel>.resonance-slot:nth-child(2):nth-last-child(2) {
+        --slot-arc-top: -8px;
+        transform: none !important;
+    }
+
+    #flickLayer.resonance-wheel>.resonance-slot:nth-child(1):nth-last-child(4),
+    #flickLayer.resonance-wheel>.resonance-slot:nth-child(4):nth-last-child(1) {
+        --slot-arc-top: -38px;
+        transform: none !important;
+    }
+
+    #flickLayer.resonance-wheel>.resonance-slot:nth-child(2):nth-last-child(3),
+    #flickLayer.resonance-wheel>.resonance-slot:nth-child(3):nth-last-child(2) {
+        --slot-arc-top: -10px;
+        transform: none !important;
     }
 
     #flickLayer.resonance-wheel .resonance-slot {
-        transform: translateY(-8px) !important;
+        transform: none !important;
     }
 
     .hud-tap-mode .resonance-wheel-shell {
-        margin-bottom: 4px;
+        margin-bottom: 10px;
     }
 
     .battle-tap-attack-row {
         justify-content: center !important;
-        margin-bottom: 4px;
+        min-height: 32px !important;
+        padding-top: 0 !important;
+        padding-bottom: 3px !important;
+        margin-bottom: clamp(16px, 2vw, 24px);
     }
 
     .battle-tap-attack-row button {
         width: clamp(150px, 18vw, 210px) !important;
+        min-height: 28px !important;
+        height: 28px !important;
+        font-size: 11px !important;
     }
 }
 
