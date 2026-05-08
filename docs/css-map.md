@@ -151,7 +151,7 @@ Do not continue into `rwd.css` yet. Current next candidates:
 
 ### Phase 1 Closeout Inventory
 
-`styles.css` still owns these major areas after Phase 1-D:
+`styles.css` still owns these major areas after Phase 1-E:
 
 1. Global/base rules and early battle primitives: body, slots, HP/SP, stage, question area, modal base, hero status, action bar, scrollbars.
 2. Legacy mobile battle overrides: nested `#hud`, question, Flick projectile, TAP/Flick controls, and mobile battle spacing.
@@ -166,12 +166,31 @@ Do not continue into `rwd.css` yet. Current next candidates:
 
 No new CSS module should be split from this inventory until the next task chooses one bounded candidate and defines its smoke checks.
 
-### Phase 2 - Feature Blocks With Visual QA
+### Phase 2 - Candidate Evaluation (Documentation Only)
 
-1. Move mentor overlay/portrait rules to `mentor.css`.
-2. Done partially: move codex/book and monster codex rules to `codex.css`; four-mode overrides remain in `styles.css`.
-3. Move map structural UI to `map.css`; move map ambience after structural map is stable.
-4. Move result/mistakes/stage confirm after deciding whether each belongs to `battle.css`, `map.css`, or `layout.css`.
+Preferred candidates (proposal only, no implementation in this phase):
+
+1. Stage confirm packaging (`.stage-confirm-*`) as a dedicated bounded task:
+   - Candidate target: `map.css` or `layout.css` after ownership decision.
+   - Why plausible: selector family is mostly namespaced and already isolated in the inventory.
+   - Risk to manage: it still bridges map stage selection, best record display, and mentor entry flow.
+2. Dev-tools non-audio-debug micro split:
+   - Candidate target: `dev-tools.css` but strictly non-audio diagnostics only.
+   - Why plausible: low coupling if selector family is truly debug-only and not battle runtime.
+   - Hard boundary: keep `.audio-debug-*` in `styles.css` during audio freeze.
+3. Other clearly isolated utility pockets:
+   - Candidate examples: small modal/changelog utility families such as `.modal-caption` if not cross-domain.
+   - Rule: only move namespaces with no `#hud` / battle core / resonance / RWD coupling.
+
+Not recommended in Phase 2 (keep frozen):
+
+1. `map.css` full extraction (map structure + ambience + map mentor + map RWD intersections).
+2. `rwd.css` and four-mode RWD override blocks.
+3. Battle core surface and shared HUD foundation.
+4. Resonance wheel and resonance-adjacent state styles.
+5. HUD/Flick/TAP selectors and related mobile battle leftovers.
+6. Audio/TTS/BGM/fanfare/iOS resume related styles.
+7. `.audio-debug-*` selector family.
 
 ### Phase 3 - High-Risk Battle and RWD
 
