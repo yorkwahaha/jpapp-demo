@@ -440,7 +440,7 @@ const _jpApp = Vue.createApp({
 
                 // Initialize Scene
                 isSpecialSceneActive.value = true;
-                specialSceneBg.value = bg;
+                specialSceneBg.value = versionImageAsset(bg);
                 showMap.value = true;
                 showLevelSelect.value = false;
 
@@ -979,6 +979,10 @@ const _jpApp = Vue.createApp({
 
         // ---- [ CONSTANTS & SETTINGS ] ----
         const APP_VERSION = window.APP_VERSION || "26050801";
+        const versionImageAsset = (path) => {
+            if (!path || typeof path !== 'string' || /[?&]v=/.test(path)) return path;
+            return `${path}${path.includes('?') ? '&' : '?'}v=${encodeURIComponent(String(APP_VERSION))}`;
+        };
 
         const appVersion = ref(APP_VERSION);
         const changelogManager = window.JPAPPChangelogManager || {
@@ -1211,9 +1215,9 @@ const _jpApp = Vue.createApp({
 
         });
 
-        const MENTOR_FALLBACK_SCENE_IMAGE = 'assets/images/ui/mentor-cover-fullbody.png';
+        const MENTOR_FALLBACK_SCENE_IMAGE = versionImageAsset('assets/images/ui/mentor-cover-fullbody.png');
         const MENTOR_EMOTION_IMAGE_PATHS = Object.freeze(GAME_CONSTANTS.MENTOR_EMOTION_IMAGE_PATHS || {});
-        const MENTOR_DEFAULT_MODAL_IMAGE = MENTOR_EMOTION_IMAGE_PATHS.gentle;
+        const MENTOR_DEFAULT_MODAL_IMAGE = versionImageAsset(MENTOR_EMOTION_IMAGE_PATHS.gentle);
 
         const currentMentorDialogueItem = computed(() => ({
             text: currentMentorLine.value || '',
@@ -1221,11 +1225,11 @@ const _jpApp = Vue.createApp({
         }));
 
         const getMentorEmotionImage = (emotion) => {
-            return mentorDialogueHelpers.resolveMentorEmotionImage(
+            return versionImageAsset(mentorDialogueHelpers.resolveMentorEmotionImage(
                 emotion,
                 MENTOR_EMOTION_IMAGE_PATHS,
                 failedMentorImagePaths.value
-            );
+            ));
         };
 
         const currentMentorSceneImage = computed(() => getMentorEmotionImage(currentMentorDialogueItem.value.emotion) || MENTOR_FALLBACK_SCENE_IMAGE);
@@ -1236,7 +1240,7 @@ const _jpApp = Vue.createApp({
             if (failedPath && failedPath !== fallbackPath) {
                 failedMentorImagePaths.value = { ...failedMentorImagePaths.value, [failedPath]: true };
                 if (event?.target) {
-                    const gentlePath = MENTOR_EMOTION_IMAGE_PATHS.gentle;
+                    const gentlePath = versionImageAsset(MENTOR_EMOTION_IMAGE_PATHS.gentle);
                     event.target.src = failedPath !== gentlePath && !failedMentorImagePaths.value[gentlePath]
                         ? gentlePath
                         : fallbackPath;
@@ -1279,7 +1283,7 @@ const _jpApp = Vue.createApp({
 
         const shouldUseMentorVideo = computed(() => mentorVideoSources.value.length > 0 && !isMentorVideoError.value);
 
-        const mentorVideoPoster = computed(() => mentorPortraitVideo.value?.poster || 'assets/images/ui/mentor-cover-fullbody.png');
+        const mentorVideoPoster = computed(() => versionImageAsset(mentorPortraitVideo.value?.poster || MENTOR_FALLBACK_SCENE_IMAGE));
 
         const shouldMuteMentorVideo = computed(() => currentMentorSkill.value?.id !== 'PROLOGUE_OPENING');
 

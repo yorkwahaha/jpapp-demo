@@ -2042,7 +2042,8 @@
 
         <div v-if="showLevelSelect" class="home-page-container">
 
-            <div class="home-bg-layer" :style="{ backgroundImage: 'url(assets/images/bg_home_painterly.webp)' }"></div>
+            <div class="home-bg-layer"
+                :style="{ backgroundImage: 'url(assets/images/bg_home_painterly.webp?v=' + appVersion + ')' }"></div>
 
 
 
@@ -2050,7 +2051,8 @@
 
                 <div class="home-mentor-shadow"></div>
 
-                <img src="assets/images/ui/mentor-cover-fullbody.png" alt="Mentor" class="home-mentor-keyart">
+                <img :src="'assets/images/ui/mentor-cover-fullbody.png?v=' + appVersion" alt="Mentor"
+                    class="home-mentor-keyart">
 
             </div>
 
@@ -2510,8 +2512,9 @@
 
                                 <span class="stage-confirm-mentor-portrait">
 
-                                    <img src="assets/images/mentor/selene_stage_guide.webp" alt="Mentor"
-                                        onerror="this.onerror=null; this.src='assets/images/mentor/selene_encourage.webp';">
+                                    <img :src="'assets/images/mentor/selene_stage_guide.webp?v=' + appVersion"
+                                        alt="Mentor"
+                                        @error="$event.target.src = 'assets/images/mentor/selene_encourage.webp?v=' + appVersion">
 
                                 </span>
 
