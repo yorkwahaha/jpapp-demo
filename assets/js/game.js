@@ -3066,6 +3066,8 @@ const _jpApp = Vue.createApp({
 
                 const pick = pool[Math.floor(Math.random() * pool.length)];
 
+                currentBattleBgmPick.value = BGM_BASE + pick;
+
                 lastNormalBgm = pick;
 
             }
