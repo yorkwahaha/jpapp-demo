@@ -60,3 +60,61 @@
     text-transform: uppercase;
     letter-spacing: 0.1em;
 }
+
+/* ── Modal Caption / Changelog Text Polish ── */
+.modal-caption {
+    font-size: 10px;
+    font-weight: 700;
+    opacity: 0.3;
+    letter-spacing: 0.3em;
+    margin-left: 0.5rem;
+}
+
+/* ── 更新日誌 (Changelog) 視覺優化 ── */
+/* 1. 主標題稍微放大 (更新日誌) */
+.text-2xl.font-black.text-indigo-300 {
+    font-size: 1.75rem !important;
+    /* 24px -> 28px */
+}
+
+/* 2. 版本號與日期放大 (v1.x.x / Date) */
+.text-indigo-300.font-black.text-xl {
+    font-size: 1.35rem !important;
+    /* 20px -> 21.6px */
+}
+
+.text-\[10px\].font-bold.text-slate-500 {
+    font-size: 0.75rem !important;
+    /* 10px -> 12px */
+    padding: 2px 8px !important;
+}
+
+/* 3. 更新內容放大與行距增加 (Changes) */
+.text-slate-300.text-xs.leading-relaxed {
+    font-size: 0.95rem !important;
+    /* 12px -> 15.2px */
+    line-height: 1.6 !important;
+    /* 增加行距 */
+}
+
+/* 4. 增加條目間的微小間距與點點偏移校正 */
+.space-y-2>li.text-slate-300.text-xs.leading-relaxed {
+    margin-bottom: 0.5rem !important;
+}
+
+.space-y-2>li.text-slate-300.text-xs.leading-relaxed span:first-child {
+    margin-top: 0.55rem !important;
+    /* 隨著字放大學點點也要下移一點 */
+}
+
+/* 5. 手機版容器微調，確保卡片不爆版且內容呼吸空間充足 */
+@media (max-width: 480px) {
+    .modal-panel .p-5 {
+        padding: 1.25rem 1.1rem !important;
+    }
+
+    .text-2xl.font-black.text-indigo-300 {
+        font-size: 1.5rem !important;
+        /* 手機上標題不宜過大以免折行 */
+    }
+}

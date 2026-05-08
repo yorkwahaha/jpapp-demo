@@ -43,7 +43,7 @@ Recommended future order:
 | L942-L1749 | Legacy mobile battle overrides | Mobile/tablet battle question, HUD structure, flick/projectile VFX, damage popups | High | `rwd.css` + `battle-vfx.css` | No | Contains structural Tailwind overrides and nested HUD selectors. Do not move until selector ownership is clearer. |
 | L1751-L1841 | Corner menu mobile | Mobile corner menu and in-battle menu states | Medium | `settings.css` | No for now | Duplicates later forced-hide rules and is tied to battle/menu fallback behavior. Do not move until corner-menu ownership is decided. |
 | L1851-L2038 | Modal/question responsive tweaks | Question text responsive sizing, modal panel text, desktop/mobile adjustments | Medium | `layout.css` / `rwd.css` | No | Crosses battle question and modal primitives. Needs split by selector group. |
-| L2044-L2458 | Battle polish package and audio debug UI | Battle log, monster entrance/breathing, question stone slots, flick option styling, audio debug overlay | High | `battle.css` + `battle-vfx.css` / maybe `dev-tools.css` later | No | Crosses core battle UI, Flick/TAP, VFX, and audio diagnostics. Audio debug selectors are isolated but audio-related, so freeze in Phase 1 closeout. |
+| L2044-L2458 | Battle polish package and audio debug UI | Battle log, monster entrance/breathing, question stone slots, flick option styling, audio debug overlay | High | `battle.css` + `battle-vfx.css`; keep `.audio-debug-*` in `styles.css` for now | No | Crosses core battle UI, Flick/TAP, VFX, and audio diagnostics. In current CSS, dev-tools selectors are effectively `.audio-debug-*`; non-audio dev-tools styles are not isolated in `styles.css`. |
 | L2278-L2897 | Mentor overlay and portrait system | Mentor tutorial/dialogue overlay, portrait/video clipping, map mentor portrait responsive rules | Medium | `mentor.css` | Partial: Phase 1-B | Moved pure `.mentor-*`, `.is-prologue-mentor*`, mentor dialogue text, mentor portrait video, and mentor mobile-only selector rules to `mentor.css`. Kept `.map-mentor-portrait-stage` and non-mentor mobile `#hud` / question / TAP rules in `styles.css`. |
 | L2898-L6458 | Boss/battle VFX | Boss attacks, boss death, hidden boss, monster death, aura, special attack effects | Medium | `battle-vfx.css` | Yes, in chunks | Large but selector namespace is mostly `boss-*`, `monster-*`, and VFX classes. Move by sub-block with visual checks. |
 | L6459-L6759 | Result and mistakes UI | Result screen, result stats, mistakes modal responsiveness | Low-Medium | `result-mistakes.css` | Done: Phase 1-D | Moved result modal, result stats, mistakes header, stage log cards, and local mistakes mobile rules. Kept stage confirm in `styles.css`. |
@@ -54,7 +54,7 @@ Recommended future order:
 | L8955-L9779 | Knowledge card and spirit unlock / stage records | Spirit unlock presentation, knowledge card animation, absorption, stage records modal | Low-Medium | `codex.css` / `result-mistakes.css` | Done: Phase 1-C / 1-D | Moved knowledge card unlock overlay, spirit unlock presentation, card particles, absorption particles, and related keyframes to `codex.css`. Moved `.stage-records-*` and `.stage-record-*` modal rules to `result-mistakes.css`. |
 | L9781-L11280 | Codex/book UI | Codex book, tabs, pages, cards, monster codex panel and responsive rules | Low-Medium | `codex.css` | Done: Phase 1-C | Moved `.codex-*`, `.monster-codex-*`, spirit reward portrait rules, Codex-local mobile rules, and related Codex keyframes to `codex.css`. Kept later four-mode monster codex overrides in `styles.css`. |
 | L11280-L12020 | Spirit display variants and effects | Spirit-specific display/animation rules such as true resonance and individual spirit VFX | Medium | `codex.css` / `battle-vfx.css` | Maybe | Some rules are display-only, some are battle resonance adjacent. Requires selector grouping. |
-| L12021-L12086 | Modal utilities and settings controls | Extracted modal buttons, section cards, settings labels, volume label | Low | `settings.css` / `layout.css` | Done: Phase 1-A | Moved `.modal-close-btn`, `.modal-header-row`, `.modal-section-card`, `.settings-section-label`, `.volume-control-label` to `settings.css`. Kept `.modal-caption` in `styles.css` because it was outside this pass. |
+| L12021-L12086 | Modal utilities and settings controls | Extracted modal buttons, section cards, settings labels, volume label | Low | `settings.css` / `layout.css` | Done: Phase 1-A + 1-F | Moved `.modal-close-btn`, `.modal-header-row`, `.modal-section-card`, `.settings-section-label`, `.volume-control-label` to `settings.css`. Phase 1-F additionally moved `.modal-caption` and changelog text polish selectors to `settings.css`. |
 | L12087-L12790 | L36 abyss debris and background VFX | Hidden boss/L36 debris, rocks, rift glow, motion keyframes | Low-Medium | `battle-vfx.css` | Done: Phase 1-A | Moved `.l36-debris-container`, `.debris`, `.rift-*`, `.rock-*`, and related keyframes to `battle-vfx.css`. |
 | L12854-L13748 | Resonance wheel and battle HUD v2 | Battle HUD root, resonance wheel, true resonance, TAP/Flick options, status/feedback glows | High | `battle.css` + `battle-vfx.css` | No | Central battle surface. Recent RWD work depends on these selectors. Freeze until RWD map is stable. |
 | L13749-L14680 | RWD overrides | iPhone, desktop, iPad landscape, iPad portrait, map/codex/battle responsive overrides | High | `rwd.css` | No for first extraction | High-risk because it intentionally overrides many feature files. Move only after feature files exist and visual checkpoints are defined. |
@@ -161,10 +161,109 @@ Do not continue into `rwd.css` yet. Current next candidates:
 6. Home/title/CTA cover leftovers: only mobile battle leftovers in the former home region remain (`#battleLog`, `#heroAvatar`, `.tap-mode-controls`) because they are battle-owned.
 7. HUD stabilization and desktop layout polish: `.hud-interactive-rows`, `.question-card`, `#hud`, `.modal-overlay`, mentor desktop positioning.
 8. Map screen and map ambience: `.map-*`, `.stage-node-*`, `.node-*`, `.map-ambient-*`, map HUD, dropdown, viewport, and chapter ambience keyframes.
-9. Changelog text polish and `.modal-caption`: modal/changelog utility selectors that may later belong in `settings.css`.
+9. Changelog text polish and `.modal-caption`: moved to `settings.css` in Phase 1-F.
 10. Resonance wheel, battle HUD v2, four-mode RWD overrides, spirit breathing, and Bond MAX resonance state.
 
 No new CSS module should be split from this inventory until the next task chooses one bounded candidate and defines its smoke checks.
+
+## Remaining styles.css classification
+
+Classification key:
+
+- A. Can split directly: clear selector boundary, no battle/map/RWD/audio dependency, no core cascade reliance, mechanical move should be enough.
+- B. Can split after ownership decision: selector family is bounded, but the target module is ambiguous or cross-domain.
+- C. Frozen for now: map, RWD/four-mode overrides, battle core, resonance wheel, HUD/Flick/TAP, audio/TTS/BGM/fanfare/iOS resume, and `.audio-debug-*`.
+- D. Keep in `styles.css`: base reset, shared primitives, typography/base utilities, and generic styles with no clear module ownership.
+
+| Remaining block | Approx. current lines | Classification | Recommended ownership | Notes |
+| --- | --- | --- | --- | --- |
+| Global/base, simple form/card utilities, HP bar fallback | L1-L116 | D | `styles.css` | Body defaults, typography, shared cards, and HP fallback are broad primitives. Keep until a base/layout strategy exists. |
+| Early battle primitives and stage/question/modal base | L117-L748 | C/D mixed | `styles.css` until battle/layout audit | Contains battle VFX keyframes, `#stage`, `#hud`, `#question-area`, `.modal-overlay`, `.modal-panel`, slots, and hero status. Too cross-cutting for a mechanical move. |
+| Legacy mobile battle overrides | L942-L1749 | C | Frozen | Nested `#hud`, battle question, Flick projectile, and mobile battle layout. Do not move before `rwd.css` and battle ownership are defined. |
+| Corner menu fallback | L1751-L1841 | B | keep in `styles.css` for now; future owner likely `settings.css` | Selector family is bounded, but it is battle-state gated (`.is-in-battle`) and depends on `corner-menu.js` fallback behavior. It also conflicts with later force-hide rules, so ownership must be decided together with the hide policy. |
+| `body.lock-scroll` | L1842-L1849 | D | `styles.css` or future `layout.css` | Shared modal/page locking primitive. Keep in main legacy file for now. |
+| Modal/question responsive tweaks and praise/projectile leftovers | L1851-L2038 | C/D mixed | Frozen / `styles.css` | Crosses mobile question typography, modal text, desktop modal positioning, praise animation, and Flick VFX. Needs selector-by-selector split later. |
+| Battle log, rune/Flick option polish | L2043-L2277 | C | Frozen | Battle core/TAP/Flick adjacent; keep with battle audit. |
+| Audio debug overlay | L2278-L2458 | C | Frozen | `.audio-debug-*` is selector-isolated but audio-related; freeze with audio/TTS/BGM/iOS resume work. No separate non-audio dev-tools CSS block was found in this region. |
+| Grade badge visual override | L2419-L2433 | B | likely `result-mistakes.css` after ownership decision | Bounded selector but class is Tailwind utility based, not semantic. Needs usage audit before moving. |
+| Map mentor portrait stage | L2459-L2541 | B | likely `map.css` or `mentor.css` after ownership decision | Crosses map and mentor presentation. Keep until map/mentor boundary is explicit. |
+| Boss/battle VFX leftovers | L2542-L6099 | C | Frozen / later `battle-vfx.css` pass | Large battle VFX surface with boss, monster, death, aura, and shared glass selectors. Move only in bounded VFX batches with visual QA. |
+| `question-card` late override | L6099-L6102 | C/D mixed | `styles.css` until battle/layout audit | Single shared override, but battle question card cascade-sensitive. |
+| Stage confirm modal | L6103-L6287 | B | recommended future owner: `map.css` or dedicated `stage-flow.css`; not `result-mistakes.css` | Triggered from stage selection, contains best record display, and includes mentor entry. It belongs to map/stage flow, not pure result, settings, or mentor. |
+| Disabled rune pointer-events and old corner FAB forced-hide | L6288-L6314 | C/B mixed | keep in `styles.css` until corner-menu policy is finalized | Rune disabled behavior is battle/TAP/Flick adjacent. Corner forced-hide is bounded but directly overrides the earlier corner menu block; the two blocks should be audited and moved (or removed) as one policy unit. |
+| Home leftovers after Phase 1-E | L6315-L6341 | C | Frozen | Phase 1-E moved `.home-*`; remaining local block is mobile battle fixes such as `#battleLog`, `#heroAvatar`, `.tap-mode-controls`. |
+| HUD stabilization and desktop modal/mentor polish | L6342-L6434 | C/B mixed | Frozen / layout audit | Includes `.hud-interactive-rows`, `#hud`, `.modal-overlay`, `.modal-panel`, `.mentor-overlay`, `.mentor-panel`. Cascade-sensitive and cross-domain. |
+| Map structure, map HUD, nodes, ambience | L6435-L7986 | C | Frozen | `map.css` remains deferred. It needs dedicated visual QA for map HUD, dropdown, nodes, mentor overlay, chapter ambience, and later four-mode map overrides. |
+| Battle HUD utility buttons, floating damage, buffs/debuffs/defeat | L7987-L8685 | C | Frozen | Battle HUD and battle state VFX. Keep with battle/HUD audit. |
+| `.modal-caption` and changelog text polish | L8686-L8812 | Done (Phase 1-F) | `settings.css` | Mechanically moved to `settings.css` after ownership decision. No battle/map/RWD/audio selectors were moved with this block. |
+| Resonance wheel, battle HUD v2, TAP/Flick arc positioning | L8813-L9726 | C | Frozen | Central battle surface; depends on exact cascade and RWD. |
+| Four-mode RWD override blocks | L9727-L10658 | C | Frozen | iPhone, desktop, iPad landscape, and iPad portrait overrides intentionally cover battle/map/codex together. |
+| Spirit breathing and Bond MAX resonance state | L10659-end | C | Frozen | Resonance-adjacent visual state. Move only with resonance wheel/battle HUD ownership. |
+
+Current A candidates: none. The remaining obvious small candidates either have ambiguous ownership (B) or fall inside frozen surfaces (C).
+
+`.modal-caption` plus the changelog text polish block has been completed in Phase 1-F and is now owned by `settings.css`.
+
+### Corner Menu Evaluation (Phase 1-F follow-up)
+
+Scope discovered in `styles.css`:
+
+1. Mobile corner menu block around `L1751-L1841`:
+   - `#cornerMenu`, `#cornerMenu.is-in-battle`, `#cornerMenu button`, `#cornerMenuToggle`, `.corner-menu-items`, `.corner-menu-btn`.
+2. Late force-hide block around `L6298-L6305`:
+   - `#cornerMenu`, `#cornerMenu.is-in-battle`, `#cornerMenu.is-in-battle.open`, `#cornerMenuToggle` set to hidden/none.
+
+Boundary and coupling check:
+
+- Map selectors: no direct `.map-*` coupling found.
+- Stage record selectors: no coupling found.
+- Settings modal selectors: no direct `.modal-*`/settings modal coupling found.
+- Dev tools / `.audio-debug-*`: no coupling found.
+- Four-mode RWD override blocks: not inside the four-mode section, but the corner menu block is mobile-only (`@media (max-width: 480px)`).
+- Battle/resonance/HUD/Flick/TAP: coupled to battle state via `.is-in-battle` and to left battle action bar behavior.
+- Audio/TTS/BGM/fanfare/iOS resume: no direct coupling found.
+
+Ownership recommendation:
+
+1. **Current recommendation: keep in `styles.css` (暫不作為下一輪小搬移).**
+2. If split later, `settings.css` is the most plausible owner (system/menu semantics), but only after one bounded task confirms policy:
+   - keep fallback corner menu,
+   - or fully deprecate it in favor of v3 HUD.
+3. Do not move only one of the two corner menu blocks. Treat the mobile display block and the force-hide block as a single decision unit.
+
+Next-round minimal plan (proposal only, no implementation):
+
+1. Audit-only task: confirm runtime policy with `corner-menu.js` (enabled fallback vs permanently disabled).
+2. If policy is "keep fallback": move both corner menu blocks together to `settings.css` in one mechanical pass.
+3. If policy is "deprecate": remove both CSS blocks and retire `corner-menu.js` in a dedicated JS+CSS cleanup task (outside Phase 1-style mechanical move).
+
+### Dev-Tools Evaluation (Phase 1-F follow-up)
+
+Scope discovered in `styles.css`:
+
+1. Dev-tools related selectors found in CSS are concentrated in `L2278-L2458` and all use the `.audio-debug-*` namespace.
+2. Nearby rules before this block are battle Flick/TAP polish (`.flick-opt*`), and after this block are map mentor selectors.
+3. No standalone `.dev-tools-*`, `.fps-*`, or generic debug overlay selector family was found in `styles.css`.
+
+Classification split:
+
+1. Pure dev tools UI (non-audio): **none found in current `styles.css`**.
+2. `.audio-debug-*` / audio debug related: present and fully namespaced (`.audio-debug-overlay`, header/body/rows/actions, mobile overrides).
+3. FPS/debug overlay related: no dedicated CSS selectors in `styles.css`; FPS overlay appears JS-inline styled (see `fps-debug.js`), not a CSS block to extract.
+
+Coupling check:
+
+- Map selectors: not mixed inside `.audio-debug-*` rules.
+- Stage record/settings modal selectors: not mixed inside `.audio-debug-*` rules.
+- RWD/four-mode override blocks: not in four-mode region; only local max-width override for audio debug panel.
+- Battle/HUD/Flick/TAP: adjacent to battle selectors physically, but `.audio-debug-*` block itself is selector-isolated.
+- Audio/iOS resume: directly audio diagnostics domain, therefore frozen by policy.
+
+Recommendation:
+
+1. **Next-round dev-tools non-audio CSS move is not recommended** (no isolated non-audio dev-tools selector family currently exists in `styles.css`).
+2. `.audio-debug-*` must remain excluded and frozen in `styles.css` until audio/TTS/BGM/fanfare/iOS resume work is explicitly opened.
+3. If future work needs `dev-tools.css`, scope should come from newly introduced non-audio debug selectors (or by moving FPS inline styles to CSS in a dedicated task), not from the current `.audio-debug-*` block.
 
 ### Phase 2 - Candidate Evaluation (Documentation Only)
 
@@ -176,11 +275,8 @@ Preferred candidates (proposal only, no implementation in this phase):
    - Risk to manage: it still bridges map stage selection, best record display, and mentor entry flow.
 2. Dev-tools non-audio-debug micro split:
    - Candidate target: `dev-tools.css` but strictly non-audio diagnostics only.
-   - Why plausible: low coupling if selector family is truly debug-only and not battle runtime.
+   - Current status: blocked for now; no isolated non-audio dev-tools selector family is present in `styles.css`.
    - Hard boundary: keep `.audio-debug-*` in `styles.css` during audio freeze.
-3. Other clearly isolated utility pockets:
-   - Candidate examples: small modal/changelog utility families such as `.modal-caption` if not cross-domain.
-   - Rule: only move namespaces with no `#hud` / battle core / resonance / RWD coupling.
 
 Not recommended in Phase 2 (keep frozen):
 
