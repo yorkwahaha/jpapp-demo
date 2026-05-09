@@ -14,7 +14,7 @@
 - [ ] 右上角系統 MENU 按鈕可開啟。
 - [ ] 「設定頁」可正常開啟，且選項可操作。
 - [ ] 「更新日誌」可開啟，並顯示最新版本資訊。
-- [ ] **安全性檢查**：在一般正式環境（非 localhost/dev）下，不應在 MENU 看到開發者專用的開關（如 Simple Audio V2 Toggle）。
+- [ ] **安全性檢查**：在一般正式環境（非 localhost/dev）下，不應在 MENU 看到開發者專用控制項；僅可在開發環境看到 `Simple Audio V2` dev status 類型的除錯資訊。
 
 ## 3. 小助靈圖鑑 (Spirit Codex)
 - [ ] 圖鑑（Codex）可正常從選單開啟。
@@ -66,7 +66,7 @@
 
 ## 9. 開發者工具與隱私 (Dev-only Verification)
 - [ ] 在 `localhost` 或特定開發 Flag 下，Debug Overlay 與 FPS 工具可見。
-- [ ] **安全性檢查**：在一般正式環境下，不顯示 `Simple Audio V2` 或 `Performance Overlay` 的切換按鈕。
+- [ ] **安全性檢查**：在一般正式環境下，不顯示 `Simple Audio V2` dev status 或 `Performance Overlay` 相關的開發者控制項／入口。
 - [ ] `audioDebug` 面板僅在指定 Flag 或 URL 參數下才出現。
 
 ## 10. 每次提交 (Commit) 前最低驗證命令

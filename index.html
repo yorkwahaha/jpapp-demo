@@ -2669,7 +2669,10 @@
                                             <div class="codex-spirit-aura"></div>
                                             <div class="codex-affinity-badge"
                                                 :class="{ 'codex-affinity-badge--full': isBondMaxSkill(codexPageSkills[0].id) }"
-                                                aria-label="親密度">
+                                                :tabindex="isBondMaxSkill(codexPageSkills[0].id) ? 0 : null"
+                                                :role="isBondMaxSkill(codexPageSkills[0].id) ? 'button' : null"
+                                                :aria-label="isBondMaxSkill(codexPageSkills[0].id) ? '親密度 100%。攻擊化為紅色彗星，命中更穩定。' : '親密度'"
+                                                data-full-bond-hint="攻擊化為紅色彗星，命中更穩定。">
                                                 <div class="codex-affinity-heart">
                                                     <div class="codex-affinity-heart-fill"
                                                         :style="{ height: getSkillMastery(codexPageSkills[0].id) + '%' }"></div>
@@ -2683,24 +2686,32 @@
                                         </div>
                                         <div class="codex-spirit-title-block">
                                             <h3 class="codex-spirit-name">{{ getSpiritForSkill(codexPageSkills[0]).nameJa }}</h3>
-                                            <p class="codex-spirit-subtitle">{{ codexPageSkills[0].meaning || '—' }}</p>
                                         </div>
                                         <div class="codex-spirit-details">
                                             <div v-if="getSpiritForSkill(codexPageSkills[0])?.flavorText"
                                                 class="codex-back-section codex-spirit-flavor">
+                                                <div v-if="isBondMaxSkill(codexPageSkills[0].id)"
+                                                    class="codex-inline-true-resonance">
+                                                    <span class="codex-label-mini codex-label-mini--true-resonance">滿絆共鳴</span>
+                                                    <p v-if="getSpiritForSkill(codexPageSkills[0])?.trueResonanceTitleJa"
+                                                        class="codex-back-tip-text">{{
+                                                        getSpiritForSkill(codexPageSkills[0]).trueResonanceTitleJa }}<span
+                                                            v-if="getSpiritForSkill(codexPageSkills[0])?.trueResonanceTitleZh && getSpiritForSkill(codexPageSkills[0]).trueResonanceTitleZh !== getSpiritForSkill(codexPageSkills[0]).trueResonanceTitleJa"> / {{
+                                                            getSpiritForSkill(codexPageSkills[0]).trueResonanceTitleZh }}</span></p>
+                                                    <ul v-if="getSpiritForSkill(codexPageSkills[0])?.trueResonanceLines?.length"
+                                                        class="codex-true-resonance-lines--ja">
+                                                        <li v-for="line in getSpiritForSkill(codexPageSkills[0]).trueResonanceLines.slice(0, 1)"
+                                                            class="codex-true-resonance-line--ja">{{ line }}</li>
+                                                    </ul>
+                                                    <ul v-if="getSpiritForSkill(codexPageSkills[0])?.trueResonanceLines?.length > 1"
+                                                        class="codex-true-resonance-lines--zh">
+                                                        <li v-for="line in getSpiritForSkill(codexPageSkills[0]).trueResonanceLines.slice(1)"
+                                                            class="codex-true-resonance-line--zh">{{ line }}</li>
+                                                    </ul>
+                                                </div>
                                                 <span class="codex-label-mini codex-label-mini--tip">小助靈</span>
                                                 <p class="codex-back-tip-text">{{
                                                     getSpiritForSkill(codexPageSkills[0]).flavorText }}</p>
-                                            </div>
-                                            <div v-if="isBondMaxSkill(codexPageSkills[0].id)"
-                                                class="codex-true-resonance-block spirit-detail--true-resonance">
-                                                <span class="codex-label-mini codex-label-mini--true-resonance">滿絆共鳴</span>
-                                                <p class="codex-back-tip-text">攻擊化為紅色彗星，命中更穩定，擊中時爆發更強。</p>
-                                            </div>
-                                            <div class="codex-back-section">
-                                                <span class="codex-label-mini codex-label-mini--formula">句型</span>
-                                                <code
-                                                    class="codex-back-formula-code">{{ codexPageSkills[0].rule || '—' }}</code>
                                             </div>
                                             <div v-if="codexPageSkills[0].examples && codexPageSkills[0].examples.length"
                                                 class="codex-back-section">
@@ -2708,6 +2719,9 @@
                                                 <ul class="codex-back-examples-list">
                                                     <li v-for="ex in codexPageSkills[0].examples.slice(0,2)"
                                                         class="codex-back-example-item">{{ ex }}</li>
+                                                    <li class="codex-back-example-item codex-back-example-item--rule">
+                                                        <code class="codex-back-formula-code">{{ codexPageSkills[0].rule || '—' }}</code>
+                                                    </li>
                                                 </ul>
                                             </div>
                                             <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
@@ -2817,7 +2831,10 @@
                                             <div class="codex-spirit-aura"></div>
                                             <div class="codex-affinity-badge"
                                                 :class="{ 'codex-affinity-badge--full': isBondMaxSkill(codexNextSkill.id) }"
-                                                aria-label="親密度">
+                                                :tabindex="isBondMaxSkill(codexNextSkill.id) ? 0 : null"
+                                                :role="isBondMaxSkill(codexNextSkill.id) ? 'button' : null"
+                                                :aria-label="isBondMaxSkill(codexNextSkill.id) ? '親密度 100%。攻擊化為紅色彗星，命中更穩定。' : '親密度'"
+                                                data-full-bond-hint="攻擊化為紅色彗星，命中更穩定。">
                                                 <div class="codex-affinity-heart">
                                                     <div class="codex-affinity-heart-fill"
                                                         :style="{ height: getSkillMastery(codexNextSkill.id) + '%' }"></div>
@@ -2831,24 +2848,32 @@
                                         </div>
                                         <div class="codex-spirit-title-block">
                                             <h3 class="codex-spirit-name">{{ getSpiritForSkill(codexNextSkill).nameJa }}</h3>
-                                            <p class="codex-spirit-subtitle">{{ codexNextSkill.meaning || '—' }}</p>
                                         </div>
                                         <div class="codex-spirit-details">
                                             <div v-if="getSpiritForSkill(codexNextSkill)?.flavorText"
                                                 class="codex-back-section codex-spirit-flavor">
+                                                <div v-if="isBondMaxSkill(codexNextSkill.id)"
+                                                    class="codex-inline-true-resonance">
+                                                    <span class="codex-label-mini codex-label-mini--true-resonance">滿絆共鳴</span>
+                                                    <p v-if="getSpiritForSkill(codexNextSkill)?.trueResonanceTitleJa"
+                                                        class="codex-back-tip-text">{{
+                                                        getSpiritForSkill(codexNextSkill).trueResonanceTitleJa }}<span
+                                                            v-if="getSpiritForSkill(codexNextSkill)?.trueResonanceTitleZh && getSpiritForSkill(codexNextSkill).trueResonanceTitleZh !== getSpiritForSkill(codexNextSkill).trueResonanceTitleJa"> / {{
+                                                            getSpiritForSkill(codexNextSkill).trueResonanceTitleZh }}</span></p>
+                                                    <ul v-if="getSpiritForSkill(codexNextSkill)?.trueResonanceLines?.length"
+                                                        class="codex-true-resonance-lines--ja">
+                                                        <li v-for="line in getSpiritForSkill(codexNextSkill).trueResonanceLines.slice(0, 1)"
+                                                            class="codex-true-resonance-line--ja">{{ line }}</li>
+                                                    </ul>
+                                                    <ul v-if="getSpiritForSkill(codexNextSkill)?.trueResonanceLines?.length > 1"
+                                                        class="codex-true-resonance-lines--zh">
+                                                        <li v-for="line in getSpiritForSkill(codexNextSkill).trueResonanceLines.slice(1)"
+                                                            class="codex-true-resonance-line--zh">{{ line }}</li>
+                                                    </ul>
+                                                </div>
                                                 <span class="codex-label-mini codex-label-mini--tip">小助靈</span>
                                                 <p class="codex-back-tip-text">{{
                                                     getSpiritForSkill(codexNextSkill).flavorText }}</p>
-                                            </div>
-                                            <div v-if="isBondMaxSkill(codexNextSkill.id)"
-                                                class="codex-true-resonance-block spirit-detail--true-resonance">
-                                                <span class="codex-label-mini codex-label-mini--true-resonance">滿絆共鳴</span>
-                                                <p class="codex-back-tip-text">攻擊化為紅色彗星，命中更穩定，擊中時爆發更強。</p>
-                                            </div>
-                                            <div class="codex-back-section">
-                                                <span class="codex-label-mini codex-label-mini--formula">句型</span>
-                                                <code
-                                                    class="codex-back-formula-code">{{ codexNextSkill.rule || '—' }}</code>
                                             </div>
                                             <div v-if="codexNextSkill.examples && codexNextSkill.examples.length"
                                                 class="codex-back-section">
@@ -2856,6 +2881,9 @@
                                                 <ul class="codex-back-examples-list">
                                                     <li v-for="ex in codexNextSkill.examples.slice(0,2)"
                                                         class="codex-back-example-item">{{ ex }}</li>
+                                                    <li class="codex-back-example-item codex-back-example-item--rule">
+                                                        <code class="codex-back-formula-code">{{ codexNextSkill.rule || '—' }}</code>
+                                                    </li>
                                                 </ul>
                                             </div>
                                             <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
@@ -4404,7 +4432,10 @@
                                             <div class="codex-spirit-aura"></div>
                                             <div class="codex-affinity-badge"
                                                 :class="{ 'codex-affinity-badge--full': isBondMaxSkill(codexPageSkills[0].id) }"
-                                                aria-label="親密度">
+                                                :tabindex="isBondMaxSkill(codexPageSkills[0].id) ? 0 : null"
+                                                :role="isBondMaxSkill(codexPageSkills[0].id) ? 'button' : null"
+                                                :aria-label="isBondMaxSkill(codexPageSkills[0].id) ? '親密度 100%。攻擊化為紅色彗星，命中更穩定。' : '親密度'"
+                                                data-full-bond-hint="攻擊化為紅色彗星，命中更穩定。">
                                                 <div class="codex-affinity-heart">
                                                     <div class="codex-affinity-heart-fill"
                                                         :style="{ height: getSkillMastery(codexPageSkills[0].id) + '%' }"></div>
@@ -4418,24 +4449,32 @@
                                         </div>
                                         <div class="codex-spirit-title-block">
                                             <h3 class="codex-spirit-name">{{ getSpiritForSkill(codexPageSkills[0]).nameJa }}</h3>
-                                            <p class="codex-spirit-subtitle">{{ codexPageSkills[0].meaning || '—' }}</p>
                                         </div>
                                         <div class="codex-spirit-details">
                                             <div v-if="getSpiritForSkill(codexPageSkills[0])?.flavorText"
                                                 class="codex-back-section codex-spirit-flavor">
+                                                <div v-if="isBondMaxSkill(codexPageSkills[0].id)"
+                                                    class="codex-inline-true-resonance">
+                                                    <span class="codex-label-mini codex-label-mini--true-resonance">滿絆共鳴</span>
+                                                    <p v-if="getSpiritForSkill(codexPageSkills[0])?.trueResonanceTitleJa"
+                                                        class="codex-back-tip-text">{{
+                                                        getSpiritForSkill(codexPageSkills[0]).trueResonanceTitleJa }}<span
+                                                            v-if="getSpiritForSkill(codexPageSkills[0])?.trueResonanceTitleZh && getSpiritForSkill(codexPageSkills[0]).trueResonanceTitleZh !== getSpiritForSkill(codexPageSkills[0]).trueResonanceTitleJa"> / {{
+                                                            getSpiritForSkill(codexPageSkills[0]).trueResonanceTitleZh }}</span></p>
+                                                    <ul v-if="getSpiritForSkill(codexPageSkills[0])?.trueResonanceLines?.length"
+                                                        class="codex-true-resonance-lines--ja">
+                                                        <li v-for="line in getSpiritForSkill(codexPageSkills[0]).trueResonanceLines.slice(0, 1)"
+                                                            class="codex-true-resonance-line--ja">{{ line }}</li>
+                                                    </ul>
+                                                    <ul v-if="getSpiritForSkill(codexPageSkills[0])?.trueResonanceLines?.length > 1"
+                                                        class="codex-true-resonance-lines--zh">
+                                                        <li v-for="line in getSpiritForSkill(codexPageSkills[0]).trueResonanceLines.slice(1)"
+                                                            class="codex-true-resonance-line--zh">{{ line }}</li>
+                                                    </ul>
+                                                </div>
                                                 <span class="codex-label-mini codex-label-mini--tip">小助靈</span>
                                                 <p class="codex-back-tip-text">{{
                                                     getSpiritForSkill(codexPageSkills[0]).flavorText }}</p>
-                                            </div>
-                                            <div v-if="isBondMaxSkill(codexPageSkills[0].id)"
-                                                class="codex-true-resonance-block spirit-detail--true-resonance">
-                                                <span class="codex-label-mini codex-label-mini--true-resonance">滿絆共鳴</span>
-                                                <p class="codex-back-tip-text">攻擊化為紅色彗星，命中更穩定，擊中時爆發更強。</p>
-                                            </div>
-                                            <div class="codex-back-section">
-                                                <span class="codex-label-mini codex-label-mini--formula">句型</span>
-                                                <code
-                                                    class="codex-back-formula-code">{{ codexPageSkills[0].rule || '—' }}</code>
                                             </div>
                                             <div v-if="codexPageSkills[0].examples && codexPageSkills[0].examples.length"
                                                 class="codex-back-section">
@@ -4443,6 +4482,9 @@
                                                 <ul class="codex-back-examples-list">
                                                     <li v-for="ex in codexPageSkills[0].examples.slice(0,2)"
                                                         class="codex-back-example-item">{{ ex }}</li>
+                                                    <li class="codex-back-example-item codex-back-example-item--rule">
+                                                        <code class="codex-back-formula-code">{{ codexPageSkills[0].rule || '—' }}</code>
+                                                    </li>
                                                 </ul>
                                             </div>
                                             <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
@@ -4543,7 +4585,10 @@
                                             <div class="codex-spirit-aura"></div>
                                             <div class="codex-affinity-badge"
                                                 :class="{ 'codex-affinity-badge--full': isBondMaxSkill(codexNextSkill.id) }"
-                                                aria-label="親密度">
+                                                :tabindex="isBondMaxSkill(codexNextSkill.id) ? 0 : null"
+                                                :role="isBondMaxSkill(codexNextSkill.id) ? 'button' : null"
+                                                :aria-label="isBondMaxSkill(codexNextSkill.id) ? '親密度 100%。攻擊化為紅色彗星，命中更穩定。' : '親密度'"
+                                                data-full-bond-hint="攻擊化為紅色彗星，命中更穩定。">
                                                 <div class="codex-affinity-heart">
                                                     <div class="codex-affinity-heart-fill"
                                                         :style="{ height: getSkillMastery(codexNextSkill.id) + '%' }"></div>
@@ -4557,24 +4602,32 @@
                                         </div>
                                         <div class="codex-spirit-title-block">
                                             <h3 class="codex-spirit-name">{{ getSpiritForSkill(codexNextSkill).nameJa }}</h3>
-                                            <p class="codex-spirit-subtitle">{{ codexNextSkill.meaning || '—' }}</p>
                                         </div>
                                         <div class="codex-spirit-details">
                                             <div v-if="getSpiritForSkill(codexNextSkill)?.flavorText"
                                                 class="codex-back-section codex-spirit-flavor">
+                                                <div v-if="isBondMaxSkill(codexNextSkill.id)"
+                                                    class="codex-inline-true-resonance">
+                                                    <span class="codex-label-mini codex-label-mini--true-resonance">滿絆共鳴</span>
+                                                    <p v-if="getSpiritForSkill(codexNextSkill)?.trueResonanceTitleJa"
+                                                        class="codex-back-tip-text">{{
+                                                        getSpiritForSkill(codexNextSkill).trueResonanceTitleJa }}<span
+                                                            v-if="getSpiritForSkill(codexNextSkill)?.trueResonanceTitleZh && getSpiritForSkill(codexNextSkill).trueResonanceTitleZh !== getSpiritForSkill(codexNextSkill).trueResonanceTitleJa"> / {{
+                                                            getSpiritForSkill(codexNextSkill).trueResonanceTitleZh }}</span></p>
+                                                    <ul v-if="getSpiritForSkill(codexNextSkill)?.trueResonanceLines?.length"
+                                                        class="codex-true-resonance-lines--ja">
+                                                        <li v-for="line in getSpiritForSkill(codexNextSkill).trueResonanceLines.slice(0, 1)"
+                                                            class="codex-true-resonance-line--ja">{{ line }}</li>
+                                                    </ul>
+                                                    <ul v-if="getSpiritForSkill(codexNextSkill)?.trueResonanceLines?.length > 1"
+                                                        class="codex-true-resonance-lines--zh">
+                                                        <li v-for="line in getSpiritForSkill(codexNextSkill).trueResonanceLines.slice(1)"
+                                                            class="codex-true-resonance-line--zh">{{ line }}</li>
+                                                    </ul>
+                                                </div>
                                                 <span class="codex-label-mini codex-label-mini--tip">小助靈</span>
                                                 <p class="codex-back-tip-text">{{
                                                     getSpiritForSkill(codexNextSkill).flavorText }}</p>
-                                            </div>
-                                            <div v-if="isBondMaxSkill(codexNextSkill.id)"
-                                                class="codex-true-resonance-block spirit-detail--true-resonance">
-                                                <span class="codex-label-mini codex-label-mini--true-resonance">滿絆共鳴</span>
-                                                <p class="codex-back-tip-text">攻擊化為紅色彗星，命中更穩定，擊中時爆發更強。</p>
-                                            </div>
-                                            <div class="codex-back-section">
-                                                <span class="codex-label-mini codex-label-mini--formula">句型</span>
-                                                <code
-                                                    class="codex-back-formula-code">{{ codexNextSkill.rule || '—' }}</code>
                                             </div>
                                             <div v-if="codexNextSkill.examples && codexNextSkill.examples.length"
                                                 class="codex-back-section">
@@ -4582,6 +4635,9 @@
                                                 <ul class="codex-back-examples-list">
                                                     <li v-for="ex in codexNextSkill.examples.slice(0,2)"
                                                         class="codex-back-example-item">{{ ex }}</li>
+                                                    <li class="codex-back-example-item codex-back-example-item--rule">
+                                                        <code class="codex-back-formula-code">{{ codexNextSkill.rule || '—' }}</code>
+                                                    </li>
                                                 </ul>
                                             </div>
                                             <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
