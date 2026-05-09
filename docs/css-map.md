@@ -6,15 +6,15 @@ This document maps `assets/css/styles.css` and proposes a safe CSS split plan. L
 
 `index.html` currently loads CSS in this order:
 
-1. `assets/css/styles.css?v=26050801`
-2. `assets/css/home.css?v=26050801`
-3. `assets/css/settings.css?v=26050801`
-4. `assets/css/mentor.css?v=26050801`
-5. `assets/css/battle.css?v=26050801`
-6. `assets/css/battle-vfx.css?v=26050801`
-7. `assets/css/codex.css?v=26050801`
-8. `assets/css/result-mistakes.css?v=26050801`
-9. `assets/css/escape.css?v=26050801`
+1. `assets/css/styles.css?v=26050901`
+2. `assets/css/home.css?v=26050901`
+3. `assets/css/settings.css?v=26050901`
+4. `assets/css/mentor.css?v=26050901`
+5. `assets/css/battle.css?v=26050901`
+6. `assets/css/battle-vfx.css?v=26050901`
+7. `assets/css/codex.css?v=26050901`
+8. `assets/css/result-mistakes.css?v=26050901`
+9. `assets/css/escape.css?v=26050901`
 
 Future split files should preserve cascade intent by keeping broad/base rules first, feature rules next, RWD overrides late, and `escape.css` last unless its scope is audited separately.
 
@@ -127,7 +127,7 @@ Smoke check completed after Phase 1-A, 1-B, and 1-C. No new CSS split files or s
 
 Confirmed:
 
-1. `index.html` loads split CSS in the documented order: `styles.css`, `home.css`, `settings.css`, `mentor.css`, `battle.css`, `battle-vfx.css`, `codex.css`, `result-mistakes.css`, then `escape.css`, all with `v=26050801`.
+1. `index.html` loads split CSS in the documented order: `styles.css`, `home.css`, `settings.css`, `mentor.css`, `battle.css`, `battle-vfx.css`, `codex.css`, `result-mistakes.css`, then `escape.css`, all with `v=26050901`.
 2. High-risk selectors remain in `styles.css`: `#hud`, `.battle-hud-*`, `#heroAvatar`, `.resonance-*`, `#flickLayer`, `.hud-tap-mode`, and the four-mode RWD override blocks.
 3. Split files do not contain the prohibited battle HUD / resonance / flick / TAP selectors.
 4. Extracted selector families are not duplicated as base definitions across split files and `styles.css`. Remaining intersections are intentional retained overrides: `.mentor-overlay` / `.mentor-panel` desktop polish in `styles.css`, and `.monster-codex-*` rules inside the four-mode RWD blocks.
@@ -136,7 +136,7 @@ Confirmed:
 
 Phase 1-D smoke check:
 
-1. `result-mistakes.css` is loaded after `styles.css` and before `escape.css`, with `v=26050801`.
+1. `result-mistakes.css` is loaded after `styles.css` and before `escape.css`, with `v=26050901`.
 2. Result/mistakes/stage-record selector families now resolve only in `result-mistakes.css`.
 3. `.stage-confirm-*` selectors remain in `styles.css`.
 4. No JS files were edited.

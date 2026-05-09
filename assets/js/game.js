@@ -978,7 +978,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26050801";
+        const APP_VERSION = window.APP_VERSION || "26050901";
         const versionImageAsset = (path) => {
             if (!path || typeof path !== 'string' || /[?&]v=/.test(path)) return path;
             return `${path}${path.includes('?') ? '&' : '?'}v=${encodeURIComponent(String(APP_VERSION))}`;
@@ -6315,7 +6315,7 @@ const _jpApp = Vue.createApp({
         // hiddenBoss.tierWeights: L36 各層難度比例 [tier3, tier2, tier1]
         const QUESTION_MIX_CONFIG = {
             normal: { newRatio: 0.5 },
-            boss: { sameMapRatio: 0.8 },
+            boss: { sameMapRatio: 0.72 },
             hiddenBoss: { tierWeights: [0.5, 0.3, 0.2] }
         };
 
@@ -7973,7 +7973,10 @@ const _jpApp = Vue.createApp({
 
             // 一般關：預建確定性比例 slot bag（L1/L2/boss 關不使用）
             const _isBossOrSpecial = isBossLevel(lv) || lv === 1 || lv === 2;
-            _normalSlotBag = _isBossOrSpecial ? [] : buildSlotBag(QUESTION_MIX_CONFIG.normal.newRatio, 100);
+            const normalNewRatio = Number.isFinite(config?.skillMix?.newSkillWeight)
+                ? config.skillMix.newSkillWeight
+                : QUESTION_MIX_CONFIG.normal.newRatio;
+            _normalSlotBag = _isBossOrSpecial ? [] : buildSlotBag(normalNewRatio, 100);
             _normalSlotRetrySkill = null;
             _forceOldNext = false;
             // boss 關每次進入都重建 queue，避免舊關卡的 stale 技能汙染（e.g. L10 → L36）
@@ -7996,19 +7999,9 @@ const _jpApp = Vue.createApp({
 
             const L5_REVIEW_POOL = ['WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE', 'WO_OBJECT_BASIC'];
 
-            // L10 固定 review pool（L6-9 的 skill）
-
-            const L10_REVIEW_POOL = ['HE_DIRECTION', 'MO_ALSO_BASIC', 'NI_TIME', 'TO_AND'];
-
-            const L15_REVIEW_POOL = ['DE_ACTION_PLACE', 'NI_EXIST_PLACE', 'GA_EXIST_SUBJECT', 'TO_WITH'];
-
-            // 預先為 L5/L10/L15 建立 review 排程 queue：每 4 題一組，各 skill 各出一次再 shuffle
+            // 預先為 L5 建立 review 排程 queue：每 4 題一組，各 skill 各出一次再 shuffle
 
             const l5Queue = [];
-
-            const l10Queue = [];
-
-            const l15Queue = [];
 
             if (lv === 5) {
 
@@ -8017,30 +8010,6 @@ const _jpApp = Vue.createApp({
                     const block = [...L5_REVIEW_POOL].sort(() => Math.random() - 0.5);
 
                     l5Queue.push(...block);
-
-                }
-
-            }
-
-            if (lv === 10) {
-
-                for (let b = 0; b < Math.ceil(100 / 4); b++) {
-
-                    const block = [...L10_REVIEW_POOL].sort(() => Math.random() - 0.5);
-
-                    l10Queue.push(...block);
-
-                }
-
-            }
-
-            if (lv === 15) {
-
-                for (let b = 0; b < Math.ceil(100 / 4); b++) {
-
-                    const block = [...L15_REVIEW_POOL].sort(() => Math.random() - 0.5);
-
-                    l15Queue.push(...block);
 
                 }
 
@@ -8067,21 +8036,9 @@ const _jpApp = Vue.createApp({
 
                     isReview = false;
 
-                } else if (lv === 10) {
+                } else if (isBossLevel(lv)) {
 
-                    // L10 Boss Review：複習 L6-9 的 4 個 skill，預排 queue 確保平均
-
-                    skillId = l10Queue[i % l10Queue.length];
-
-                    isReview = false;
-
-                } else if (lv === 15) {
-
-                    // L15 Boss Review：複習 L11-14 的 4 個 skill，預排 queue 確保平均
-
-                    skillId = l15Queue[i % l15Queue.length];
-
-                    isReview = false;
+                    skillId = pickSkillIdForNextQuestion(lv);
 
                 } else if (unlockedSkillIds.value.length > 0) {
 
@@ -8309,7 +8266,7 @@ const _jpApp = Vue.createApp({
 
                 }
 
-                const REVIEW_FALLBACK_POOLS = { 5: L5_REVIEW_POOL, 10: L10_REVIEW_POOL };
+                const REVIEW_FALLBACK_POOLS = { 5: L5_REVIEW_POOL };
                 if (!generatedFromSkill && REVIEW_FALLBACK_POOLS[lv]) {
                     const pool = REVIEW_FALLBACK_POOLS[lv];
                     const fallbackSkillId = pool.find(s => s !== skillId) || pool[0];

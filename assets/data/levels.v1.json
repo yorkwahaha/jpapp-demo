@@ -102,8 +102,8 @@
       "HE_DIRECTION"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 30,
     "boss": null,
@@ -122,8 +122,8 @@
       "MO_ALSO_BASIC"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 30,
     "boss": null,
@@ -142,8 +142,8 @@
       "NI_TIME"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 30,
     "boss": null,
@@ -162,8 +162,8 @@
       "TO_AND"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 30,
     "boss": null,
@@ -201,8 +201,8 @@
       "DE_ACTION_PLACE"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 40,
     "boss": null,
@@ -221,8 +221,8 @@
       "NI_EXIST_PLACE"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 40,
     "boss": null,
@@ -241,8 +241,8 @@
       "GA_EXIST_SUBJECT"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 40,
     "boss": null,
@@ -261,8 +261,8 @@
       "TO_WITH"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 40,
     "boss": null,
@@ -300,8 +300,8 @@
       "KARA_SOURCE_START"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 50,
     "boss": null,
@@ -320,8 +320,8 @@
       "MADE_LIMIT_END"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 50,
     "boss": null,
@@ -340,8 +340,8 @@
       "NI_DESTINATION"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 50,
     "boss": null,
@@ -360,8 +360,8 @@
       "DE_TOOL_MEANS"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 50,
     "boss": null,
@@ -399,8 +399,8 @@
       "NI_TARGET"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 60,
     "levelNumber": 21,
@@ -418,8 +418,8 @@
       "GA_BUT"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 60,
     "levelNumber": 22,
@@ -437,8 +437,8 @@
       "MO_COMPLETE_NEGATION"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 60,
     "levelNumber": 23,
@@ -456,8 +456,8 @@
       "TO_CONDITIONAL"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 60,
     "levelNumber": 24,
@@ -494,8 +494,8 @@
       "YA_AND_OTHERS"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 70,
     "levelNumber": 26,
@@ -513,8 +513,8 @@
       "DE_SCOPE"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 70,
     "levelNumber": 27,
@@ -532,8 +532,8 @@
       "NI_PURPOSE"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 70,
     "levelNumber": 28,
@@ -551,8 +551,8 @@
       "TO_QUOTE"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 70,
     "levelNumber": 29,
@@ -589,8 +589,8 @@
       "KARA_REASON"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 80,
     "levelNumber": 31,
@@ -608,8 +608,8 @@
       "YORI_COMPARE"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 80,
     "levelNumber": 32,
@@ -627,8 +627,8 @@
       "NI_FREQUENCY"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 80,
     "levelNumber": 33,
@@ -646,8 +646,8 @@
       "DE_MATERIAL"
     ],
     "skillMix": {
-      "newSkillWeight": 0.3,
-      "oldSkillWeight": 0.7
+      "newSkillWeight": 0.35,
+      "oldSkillWeight": 0.65
     },
     "questionCount": 80,
     "levelNumber": 34,
