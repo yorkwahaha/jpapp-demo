@@ -978,7 +978,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26050901";
+        const APP_VERSION = window.APP_VERSION || "26050902";
         const versionImageAsset = (path) => {
             if (!path || typeof path !== 'string' || /[?&]v=/.test(path)) return path;
             return `${path}${path.includes('?') ? '&' : '?'}v=${encodeURIComponent(String(APP_VERSION))}`;
@@ -8737,13 +8737,8 @@ const _jpApp = Vue.createApp({
         const addParticleMasteryProgress = () => {
             getMasteryParticlesForCurrentQuestion().forEach(particle => {
                 if (getParticleMastery(particle) >= 100) return;
-                const nextCount = (Number(particleCorrectCounts.value[particle] || 0) + 1);
-                if (nextCount >= 2) {
-                    particleCorrectCounts.value[particle] = nextCount - 2;
-                    particleMastery.value[particle] = Math.min(100, getParticleMastery(particle) + 1);
-                } else {
-                    particleCorrectCounts.value[particle] = nextCount;
-                }
+                particleCorrectCounts.value[particle] = 0;
+                particleMastery.value[particle] = Math.min(100, getParticleMastery(particle) + 1);
             });
             saveProgression();
         };
@@ -8752,13 +8747,8 @@ const _jpApp = Vue.createApp({
             const skillId = currentQuestion.value?.skillId;
             if (!skillId || typeof skillId !== 'string') return;
             if (getSkillMastery(skillId) >= 100) return;
-            const nextCount = (Number(skillCorrectCounts.value[skillId] || 0) + 1);
-            if (nextCount >= 2) {
-                skillCorrectCounts.value[skillId] = nextCount - 2;
-                skillMastery.value[skillId] = Math.min(100, getSkillMastery(skillId) + 1);
-            } else {
-                skillCorrectCounts.value[skillId] = nextCount;
-            }
+            skillCorrectCounts.value[skillId] = 0;
+            skillMastery.value[skillId] = Math.min(100, getSkillMastery(skillId) + 1);
             saveProgression();
         };
 
