@@ -3126,7 +3126,7 @@
 
                                 <div class="grid grid-cols-2 gap-2">
 
-                                    <button @click="settings.defaultAttackMode = 'tap'"
+                                    <button @click="setDefaultAttackMode('tap')"
                                         class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
                                         :class="settings.defaultAttackMode === 'tap' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
 
@@ -3134,7 +3134,7 @@
 
                                     </button>
 
-                                    <button @click="settings.defaultAttackMode = 'flick'"
+                                    <button @click="setDefaultAttackMode('flick')"
                                         class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
                                         :class="settings.defaultAttackMode === 'flick' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
 
@@ -4992,6 +4992,86 @@
 
                         </div>
 
+                        <div class="modal-section-card space-y-4">
+
+                            <div>
+
+                                <span class="settings-section-label">預設操作模式</span>
+                                <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">進入戰鬥時的預設操作方式</p>
+
+                                <div class="grid grid-cols-2 gap-2">
+
+                                    <button @click="setDefaultAttackMode('tap')"
+                                        class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
+                                        :class="settings.defaultAttackMode === 'tap' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+
+                                        點擊（Tap）
+
+                                    </button>
+
+                                    <button @click="setDefaultAttackMode('flick')"
+                                        class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
+                                        :class="settings.defaultAttackMode === 'flick' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+
+                                        滑動（Flick）
+
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                            <div>
+
+                                <span class="settings-section-label">回饋語音</span>
+
+                                <div class="grid grid-cols-2 gap-2">
+
+                                    <button @click="settings.feedbackVoiceMode = 'combo'"
+                                        class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
+                                        :class="settings.feedbackVoiceMode === 'combo' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+
+                                        連擊回饋
+
+                                    </button>
+
+                                    <button @click="settings.feedbackVoiceMode = 'correct'"
+                                        class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
+                                        :class="settings.feedbackVoiceMode === 'correct' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+
+                                        正解回饋
+
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                            <div>
+
+                                <span class="settings-section-label">戰鬥節奏</span>
+                                <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">目前提供即時戰鬥；回合制即將開放。</p>
+
+                                <div class="grid grid-cols-2 gap-2">
+
+                                    <button @click="settings.enemyAttackMode = 'atb'"
+                                        class="flex flex-col items-center py-2.5 px-1 rounded-xl border transition-all"
+                                        :class="settings.enemyAttackMode === 'atb' ? 'bg-rose-500/20 border-rose-500 text-rose-100 shadow-[0_0_15px_rgba(244,63,94,0.2)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+                                        <span class="text-sm font-black">即時戰鬥</span>
+                                        <span class="text-[9px] opacity-60 font-medium mt-1">行動不中斷，適合連擊</span>
+                                    </button>
+
+                                    <button disabled
+                                        class="flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/5 bg-black/10 text-slate-600 cursor-not-allowed italic">
+                                        <span class="text-sm font-black">回合制</span>
+                                        <span class="text-[9px] opacity-60 font-medium mt-1">輪流行動，即將開放</span>
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
 
                     </div>
 
