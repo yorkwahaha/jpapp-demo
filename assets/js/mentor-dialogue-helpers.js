@@ -37,14 +37,26 @@
         return { pages, emotions };
     };
 
+    const SAFE_EMOTION_KEY_RE = /^[a-z0-9_-]+$/;
     const resolveMentorEmotionImage = (emotion, imagePaths, failedPaths) => {
         const paths = imagePaths || {};
         const failed = failedPaths || {};
         const key = emotion || 'gentle';
         const gentlePath = paths.gentle;
-        const path = paths[key] || gentlePath;
-        if (!failed[path]) return path;
-        if (path !== gentlePath && !failed[gentlePath]) return gentlePath;
+        // 1. Fixed mapping takes priority
+        if (paths[key] !== undefined) {
+            const path = paths[key];
+            if (!failed[path]) return path;
+            if (path !== gentlePath && !failed[gentlePath]) return gentlePath;
+            return null;
+        }
+        // 2. Safe dynamic fallback: try selene_${key}.webp if key is safe
+        if (SAFE_EMOTION_KEY_RE.test(key)) {
+            const dynamicPath = `assets/images/mentor/selene_${key}.webp`;
+            if (!failed[dynamicPath]) return dynamicPath;
+        }
+        // 3. Fall back to gentle
+        if (!failed[gentlePath]) return gentlePath;
         return null;
     };
 

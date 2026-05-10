@@ -1181,16 +1181,30 @@ const _jpApp = Vue.createApp({
                 });
                 return { pages, emotions };
             },
-            resolveMentorEmotionImage: (emotion, imagePaths, failedPaths) => {
-                const paths = imagePaths || {};
-                const failed = failedPaths || {};
-                const key = emotion || 'gentle';
-                const gentlePath = paths.gentle;
-                const path = paths[key] || gentlePath;
-                if (!failed[path]) return path;
-                if (path !== gentlePath && !failed[gentlePath]) return gentlePath;
-                return null;
-            },
+            resolveMentorEmotionImage: (() => {
+                const _safeKeyRe = /^[a-z0-9_-]+$/;
+                return (emotion, imagePaths, failedPaths) => {
+                    const paths = imagePaths || {};
+                    const failed = failedPaths || {};
+                    const key = emotion || 'gentle';
+                    const gentlePath = paths.gentle;
+                    // 1. Fixed mapping takes priority
+                    if (paths[key] !== undefined) {
+                        const path = paths[key];
+                        if (!failed[path]) return path;
+                        if (path !== gentlePath && !failed[gentlePath]) return gentlePath;
+                        return null;
+                    }
+                    // 2. Safe dynamic fallback: try selene_${key}.webp if key is safe
+                    if (_safeKeyRe.test(key)) {
+                        const dynamicPath = `assets/images/mentor/selene_${key}.webp`;
+                        if (!failed[dynamicPath]) return dynamicPath;
+                    }
+                    // 3. Fall back to gentle
+                    if (!failed[gentlePath]) return gentlePath;
+                    return null;
+                };
+            })(),
             isLastMentorLine: (pageCount, pageIndex) => {
                 if (!Number.isFinite(pageCount) || pageCount <= 0) return true;
                 return pageIndex >= pageCount - 1;
