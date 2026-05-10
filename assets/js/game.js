@@ -3949,43 +3949,61 @@ const _jpApp = Vue.createApp({
 
             playSfx('escape');
             escapeOverlayVisible.value = true;
+
+            const waitForOpacityTransition = (el, fallbackMs) => {
+                return new Promise(resolve => {
+                    if (!el) return setTimeout(resolve, fallbackMs);
+                    let resolved = false;
+                    const complete = () => {
+                        if (resolved) return;
+                        resolved = true;
+                        el.removeEventListener('transitionend', onEnd);
+                        clearTimeout(fallbackId);
+                        resolve();
+                    };
+                    const onEnd = (e) => { if (e.propertyName === 'opacity') complete(); };
+                    el.addEventListener('transitionend', onEnd);
+                    const fallbackId = setTimeout(complete, fallbackMs);
+                });
+            };
+
             // Allow browser to perform layout with opacity:0 before transitioning to 1
             requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
+                requestAnimationFrame(async () => {
+                    const el = document.querySelector('.escape-fade-overlay');
                     escapeOverlayOpacity.value = 1;
+
+                    // Phase 1: Wait for fade to black (1s transition + 200ms buffer)
+                    await waitForOpacityTransition(el, 1200);
+
+                    // Phase 2: Middle of darkness, reset everything
+                    stopAllAudio();
+                    isMenuOpen.value = false;
+                    isAdvancedSettingsOpen.value = false;
+                    hasSubmitted.value = false;
+                    userAnswers.value = [];
+                    slotFeedbacks.value = {};
+
+                    // 🟢 FIX: Reset combat state to prevent HP carry-over
+                    player.value.hp = player.value.maxHp;
+                    resetSP();
+                    setHeroAvatar('neutral');
+                    clearSpeedStatus();
+
+                    // Return to map via standard map transition pipeline
+                    returnToMap();
+
+                    // Phase 3: Wait briefly to let map DOM settle, then fade out
+                    setTimeout(async () => {
+                        escapeOverlayOpacity.value = 0;
+                        await waitForOpacityTransition(el, 1200);
+
+                        // Phase 4: Full cleanup
+                        escapeOverlayVisible.value = false;
+                        isEscaping.value = false;
+                    }, 500);
                 });
             });
-
-            // Phase 1: 1s fade to black, stay 2s
-            setTimeout(() => {
-                // Phase 2: Middle of darkness, reset everything
-                stopAllAudio();
-                isMenuOpen.value = false;
-                isAdvancedSettingsOpen.value = false;
-                hasSubmitted.value = false;
-                userAnswers.value = [];
-                slotFeedbacks.value = {};
-
-                // 🟢 FIX: Reset combat state to prevent HP carry-over
-                player.value.hp = player.value.maxHp;
-                resetSP();
-                setHeroAvatar('neutral');
-                clearSpeedStatus();
-
-                // Return to map via standard map transition pipeline
-                returnToMap();
-            }, 1000 + 1000); // 1s fade + 1s buffer
-
-            // Phase 3: Start fade back after 3s total (1s fade + 2s black)
-            setTimeout(() => {
-                escapeOverlayOpacity.value = 0;
-            }, 3000);
-
-            // Phase 4: Full cleanup after 4s total
-            setTimeout(() => {
-                escapeOverlayVisible.value = false;
-                isEscaping.value = false;
-            }, 4000);
         };
 
         const startRunAwayPress = (event) => {
