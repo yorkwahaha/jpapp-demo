@@ -54,5 +54,23 @@
     "cost": 8,
     "type": "attackBuff",
     "icon": "⚔️"
+  },
+  {
+    "id": "SUKKIRI",
+    "name": "すっきり/神清氣爽",
+    "desc": "立即回復 20 HP",
+    "cost": 8,
+    "type": "heal",
+    "icon": "💧",
+    "unlockLevel": 5
+  },
+  {
+    "id": "PITTARI",
+    "name": "ぴったり/剛好命中",
+    "desc": "下一題僅顯示正確答案（每場戰鬥限用一次）",
+    "cost": 10,
+    "type": "buff",
+    "icon": "🎯",
+    "unlockLevel": 10
   }
 ]

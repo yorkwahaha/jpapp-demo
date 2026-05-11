@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26050902'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26051101'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -58,15 +58,15 @@
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/styles.css?v=26050902">
-    <link rel="stylesheet" href="assets/css/home.css?v=26050902">
-    <link rel="stylesheet" href="assets/css/settings.css?v=26050902">
-    <link rel="stylesheet" href="assets/css/mentor.css?v=26050902">
-    <link rel="stylesheet" href="assets/css/battle.css?v=26050902">
-    <link rel="stylesheet" href="assets/css/battle-vfx.css?v=26050902">
-    <link rel="stylesheet" href="assets/css/codex.css?v=26050902">
-    <link rel="stylesheet" href="assets/css/result-mistakes.css?v=26050902">
-    <link rel="stylesheet" href="assets/css/escape.css?v=26050902">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26051101">
+    <link rel="stylesheet" href="assets/css/home.css?v=26051101">
+    <link rel="stylesheet" href="assets/css/settings.css?v=26051101">
+    <link rel="stylesheet" href="assets/css/mentor.css?v=26051101">
+    <link rel="stylesheet" href="assets/css/battle.css?v=26051101">
+    <link rel="stylesheet" href="assets/css/battle-vfx.css?v=26051101">
+    <link rel="stylesheet" href="assets/css/codex.css?v=26051101">
+    <link rel="stylesheet" href="assets/css/result-mistakes.css?v=26051101">
+    <link rel="stylesheet" href="assets/css/escape.css?v=26051101">
 
 
 
@@ -76,7 +76,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26050902';
+            const v = window.APP_VERSION || '26051101';
 
 
 
@@ -2301,9 +2301,15 @@
 
                         <!-- ── Hero avatar ── -->
 
-                        <div class="map-hud-avatar">
+                        <div class="map-hud-avatar relative">
 
                             <img src="assets/images/hero/hero_001.png" class="map-hud-avatar-img" alt="">
+                            <div class="absolute -top-1 -right-2 bg-slate-900 border border-amber-500/50 rounded px-1.5 py-0.5 text-[10px] text-amber-400 font-bold z-10 whitespace-nowrap shadow shadow-black/50">
+                                Lv.{{ playerStats.level }}
+                            </div>
+                            <div class="absolute -bottom-1 left-0 w-full h-1 bg-slate-800 z-10 border border-slate-900 overflow-hidden">
+                                <div class="bg-amber-500 h-full transition-all" :style="{ width: playerStats.level >= 30 ? '100%' : ((playerStats.exp / getExpRequiredForNextLevel(playerStats.level)) * 100) + '%' }"></div>
+                            </div>
 
                         </div>
 
@@ -2418,9 +2424,15 @@
 
 
 
-                <div class="map-hud-avatar">
+                <div class="map-hud-avatar relative">
 
                     <img src="assets/images/hero/hero_001.png" class="map-hud-avatar-img" alt="">
+                    <div class="absolute -top-1 -right-2 bg-slate-900 border border-amber-500/50 rounded px-1.5 py-0.5 text-[10px] text-amber-400 font-bold z-10 whitespace-nowrap shadow shadow-black/50">
+                        Lv.{{ playerStats.level }}
+                    </div>
+                    <div class="absolute -bottom-1 left-0 w-full h-1 bg-slate-800 z-10 border border-slate-900 overflow-hidden">
+                        <div class="bg-amber-500 h-full transition-all" :style="{ width: playerStats.level >= 30 ? '100%' : ((playerStats.exp / getExpRequiredForNextLevel(playerStats.level)) * 100) + '%' }"></div>
+                    </div>
 
                 </div>
 
@@ -3827,6 +3839,7 @@
 
                                     <button v-for="(opt, i) in currentQuestion.choices"
                                         :key="'tap_' + opt + '_' + i" @click="selectChoice(opt, $event)"
+                                        v-show="!isPittariSealed(opt)"
                                         class="resonance-slot group" :class="getChoiceBtnClass(opt)"
                                         type="button" :aria-label="'選項 ' + opt">
 
@@ -3856,6 +3869,7 @@
                                     @pointerup="endFlick" @pointercancel="endFlick">
 
                                     <button v-for="(opt, i) in currentQuestion.choices" :key="'flick_' + opt + '_' + i"
+                                        v-show="!isPittariSealed(opt)"
                                         class="resonance-slot"
                                         :class="{ 'is-active': flickState.activeOpt === opt, 'is-correct': flickState.successOpt === opt }"
                                         type="button" :aria-label="'選項 ' + opt"
@@ -4052,9 +4066,26 @@
 
                                     }}</span></div>
 
-                            <div class="result-stat-row flex justify-between items-center">
-                                <span class="result-stat-label text-slate-400 text-xs">獲得經驗值</span>
-                                <span class="result-stat-value text-blue-400 font-mono font-bold">+{{ animatedExp }}</span>
+                            <!-- 經驗值與等級 -->
+                            <div class="result-stat-row flex flex-col items-center border-t border-slate-700/50 pt-3 mt-1">
+                                <div class="w-full flex justify-between items-end mb-1">
+                                    <div class="flex items-baseline gap-2">
+                                        <span class="text-amber-400 font-bold text-lg">Lv.{{ playerStats.level }}</span>
+                                        <span class="text-slate-400 text-xs" v-if="playerStats.level < 30">
+                                            {{ playerStats.exp }} / {{ getExpRequiredForNextLevel(playerStats.level) }}
+                                        </span>
+                                        <span class="text-slate-400 text-xs" v-else>MAX LEVEL</span>
+                                    </div>
+                                    <span class="result-stat-value text-blue-400 font-mono font-bold">+{{ animatedExp }} EXP</span>
+                                </div>
+                                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden relative">
+                                    <div class="bg-amber-500 h-full transition-all duration-300"
+                                         :style="{ width: playerStats.level >= 30 ? '100%' : ((playerStats.exp / getExpRequiredForNextLevel(playerStats.level)) * 100) + '%' }">
+                                    </div>
+                                </div>
+                                <div v-if="hasLeveledUp" class="mt-2 text-amber-300 font-bold animate-pulse text-sm">
+                                    LEVEL UP! 最大 HP & SP 提升！
+                                </div>
                             </div>
 
                         </div>
