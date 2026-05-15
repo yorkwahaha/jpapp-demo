@@ -10659,8 +10659,7 @@ const _jpApp = Vue.createApp({
                 clearedLevels,
                 bestGrades,
                 stageBestRecords,
-                normalizeStageBestRecord,
-                maxRankCountStages: 35
+                normalizeStageBestRecord
             }
         );
 

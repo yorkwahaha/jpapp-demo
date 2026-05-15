@@ -3433,7 +3433,7 @@
                 <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
 
                 <div
-                    class="stage-records-modal relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-5 sm:p-6 w-full max-w-[520px] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden">
+                    class="stage-records-modal w-full max-w-[520px] confirm-modal-glass stage-confirm-modal rounded-[2rem] p-5 sm:p-6 flex flex-col overflow-hidden">
 
                     <div class="modal-header-row flex-shrink-0">
 
@@ -3457,7 +3457,7 @@
                             :class="{ 'is-uncleared': !row.isCleared }">
                             <div class="stage-record-main">
                                 <div class="stage-record-no">STAGE {{ String(row.stageNumber).padStart(2, '0') }}</div>
-                                <div v-if="row.isCleared" class="stage-record-name">
+                                <div class="stage-record-name">
                                     <div class="stage-record-particle">{{ row.focusParticle }}</div>
                                     <div class="stage-record-title">{{ row.focusLabel || '—' }}</div>
                                 </div>
@@ -3465,9 +3465,18 @@
                             <div class="stage-record-score">
                                 <template v-if="row.isCleared">
                                     <span class="stage-record-rank" :class="getGradeColor(row.rank)">{{ row.rank }}</span>
+                                    <span class="stage-record-stars" :aria-label="'三星紀錄 ' + getStageBestStarsDisplay(row.stageNumber)">
+                                        <span v-for="star in 3" :key="star"
+                                            :class="{ 'is-earned': getStageBestRecord(row.stageNumber) && Number(getStageBestRecord(row.stageNumber).bestStars) >= star }">★</span>
+                                    </span>
                                     <span class="stage-record-time">{{ row.bestTimeText }}</span>
                                 </template>
-                                <span v-else class="stage-record-status">{{ row.statusText }}</span>
+                                <template v-else>
+                                    <span class="stage-record-stars is-empty" aria-label="尚未取得三星紀錄">
+                                        <span v-for="star in 3" :key="star">★</span>
+                                    </span>
+                                    <span class="stage-record-status">{{ row.statusText }}</span>
+                                </template>
                             </div>
                         </div>
                     </div>
@@ -5040,7 +5049,7 @@
                 <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
 
                 <div
-                    class="stage-records-modal relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-5 sm:p-6 w-full max-w-[520px] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden">
+                    class="stage-records-modal w-full max-w-[520px] confirm-modal-glass stage-confirm-modal rounded-[2rem] p-5 sm:p-6 flex flex-col overflow-hidden">
 
                     <div class="modal-header-row flex-shrink-0">
 
@@ -5064,7 +5073,7 @@
                             :class="{ 'is-uncleared': !row.isCleared }">
                             <div class="stage-record-main">
                                 <div class="stage-record-no">STAGE {{ String(row.stageNumber).padStart(2, '0') }}</div>
-                                <div v-if="row.isCleared" class="stage-record-name">
+                                <div class="stage-record-name">
                                     <div class="stage-record-particle">{{ row.focusParticle }}</div>
                                     <div class="stage-record-title">{{ row.focusLabel || '—' }}</div>
                                 </div>
@@ -5072,9 +5081,18 @@
                             <div class="stage-record-score">
                                 <template v-if="row.isCleared">
                                     <span class="stage-record-rank" :class="getGradeColor(row.rank)">{{ row.rank }}</span>
+                                    <span class="stage-record-stars" :aria-label="'三星紀錄 ' + getStageBestStarsDisplay(row.stageNumber)">
+                                        <span v-for="star in 3" :key="star"
+                                            :class="{ 'is-earned': getStageBestRecord(row.stageNumber) && Number(getStageBestRecord(row.stageNumber).bestStars) >= star }">★</span>
+                                    </span>
                                     <span class="stage-record-time">{{ row.bestTimeText }}</span>
                                 </template>
-                                <span v-else class="stage-record-status">{{ row.statusText }}</span>
+                                <template v-else>
+                                    <span class="stage-record-stars is-empty" aria-label="尚未取得三星紀錄">
+                                        <span v-for="star in 3" :key="star">★</span>
+                                    </span>
+                                    <span class="stage-record-status">{{ row.statusText }}</span>
+                                </template>
                             </div>
                         </div>
                     </div>
@@ -5458,7 +5476,7 @@
             <div class="absolute inset-0 bg-slate-950/50 backdrop-blur-md pointer-events-none"></div>
 
             <div
-                class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[500px] h-full max-h-[75vh] shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
+                class="changelog-modal w-full max-w-[500px] h-full max-h-[75vh] confirm-modal-glass stage-confirm-modal rounded-[2rem] p-6 flex flex-col overflow-hidden">
 
                 <div class="modal-header-row flex-shrink-0">
 
@@ -5491,10 +5509,10 @@
 
                 </div>
 
-                <div v-else class="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-1 pb-2">
+                <div v-else class="changelog-list flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-1 pb-2">
 
                     <div v-for="(entry, index) in changelogData" :key="index"
-                        class="p-5 bg-white/5 rounded-2xl border border-white/5 shadow-inner group">
+                        class="changelog-entry-card p-5 rounded-2xl group">
 
                         <div class="flex items-center justify-between mb-3">
 
@@ -5526,10 +5544,10 @@
 
                 </div>
 
-                <div class="flex justify-end pt-5 mt-3 border-t border-white/10 flex-shrink-0">
+                <div class="changelog-footer flex justify-center pt-5 mt-3 border-t border-white/10 flex-shrink-0">
 
                     <button @click="isChangelogOpen = false; playSfx('click');"
-                        class="px-8 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95">關閉</button>
+                        class="stage-records-close changelog-close">關閉</button>
 
                 </div>
 

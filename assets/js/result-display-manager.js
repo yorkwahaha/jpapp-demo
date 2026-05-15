@@ -4,7 +4,17 @@
 (function (global) {
     'use strict';
 
-    var DEFAULT_STAR_TIME_LIMIT_SECONDS = 90;
+    var DEFAULT_STAR_TIME_LIMIT_SECONDS = 60;
+
+    function getDefaultStageStarTimeLimitSeconds(levelId) {
+        var stage = Number(levelId);
+        if (stage === 36) return 300;
+        if (stage === 35) return 180;
+        if (stage === 25 || stage === 30) return 150;
+        if (stage === 15 || stage === 20) return 120;
+        if (stage === 5 || stage === 10) return 90;
+        return DEFAULT_STAR_TIME_LIMIT_SECONDS;
+    }
 
     function isBossStageForStarRules(levelId, LEVEL_CONFIG) {
         var cfg = LEVEL_CONFIG && LEVEL_CONFIG[Number(levelId)];
@@ -14,7 +24,6 @@
     function calculateStageStars(snapshot, ctx) {
         ctx = ctx || {};
         var LEVEL_CONFIG = ctx.LEVEL_CONFIG || {};
-        var limitBase = ctx.starTimeLimitSeconds != null ? ctx.starTimeLimitSeconds : DEFAULT_STAR_TIME_LIMIT_SECONDS;
         var s = snapshot || {};
         var totalCount = Math.max(0, Number(s.total) || 0);
         if (totalCount <= 0) return 1;
@@ -22,7 +31,9 @@
         var wrong = Math.max(0, totalCount - correctCount);
         var elapsed = Number(s.elapsedSeconds);
         var levelId = s.levelId;
-        var limit = Number(LEVEL_CONFIG[Number(levelId)] && LEVEL_CONFIG[Number(levelId)].starTimeLimitSeconds) || limitBase;
+        var limitBase = ctx.starTimeLimitSeconds != null ? ctx.starTimeLimitSeconds : getDefaultStageStarTimeLimitSeconds(levelId);
+        var configuredLimit = Number(LEVEL_CONFIG[Number(levelId)] && LEVEL_CONFIG[Number(levelId)].starTimeLimitSeconds);
+        var limit = Number.isFinite(configuredLimit) && configuredLimit > 0 ? configuredLimit : limitBase;
         var isBossStage = isBossStageForStarRules(levelId, LEVEL_CONFIG);
         if (isBossStage) {
             /* boss pacing hook — parity with game.js */
@@ -137,8 +148,6 @@
         var bestGrades = deps.bestGrades;
         var stageBestRecords = deps.stageBestRecords;
         var normalizeStageBestRecord = deps.normalizeStageBestRecord;
-        var maxRankCountStages = deps.maxRankCountStages || 35;
-
         var accuracyPct = computed(function () {
             if (totalQuestionsAnswered.value === 0) return 0;
             return Math.round((correctAnswersAmount.value / totalQuestionsAnswered.value) * 100);
@@ -201,8 +210,9 @@
 
         var sRankCount = computed(function () {
             var count = 0;
-            for (var i = 1; i <= maxRankCountStages; i++) {
-                if (bestGrades.value[i] === 'S') count++;
+            var rows = stageRecordRows.value || [];
+            for (var i = 0; i < rows.length; i++) {
+                if (rows[i].rank === 'S') count++;
             }
             return count;
         });
@@ -223,6 +233,7 @@
 
     global.JPAPPResultDisplayManager = {
         DEFAULT_STAR_TIME_LIMIT_SECONDS: DEFAULT_STAR_TIME_LIMIT_SECONDS,
+        getDefaultStageStarTimeLimitSeconds: getDefaultStageStarTimeLimitSeconds,
         createVueBindings: createVueBindings,
         calculateStageStars: calculateStageStars,
         isBossStageForStarRules: isBossStageForStarRules,
