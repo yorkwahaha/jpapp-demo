@@ -8,6 +8,28 @@
     const MISTAKES_KEY = 'jpRpgMistakesV1';
     const AUDIO_DEBUG_KEY = 'jpapp_audio_debug';
     const AUDIO_DEBUG_POS_KEY = 'jpapp_audio_debug_pos';
+    const SAVE_SLOTS_KEY = 'jpapp_save_slots_v1';
+    const ACTIVE_SAVE_SLOT_KEY = 'jpapp_active_save_slot_v1';
+    const VALID_SAVE_SLOTS = [1, 2, 3];
+
+    const getActiveSaveSlotId = function() {
+        try {
+            const rawMetadata = localStorage.getItem(SAVE_SLOTS_KEY);
+            if (rawMetadata) {
+                const metadata = JSON.parse(rawMetadata);
+                const metadataSlotId = Number(metadata?.activeSlot);
+                if (VALID_SAVE_SLOTS.includes(metadataSlotId)) return metadataSlotId;
+            }
+            const slotId = Number(localStorage.getItem(ACTIVE_SAVE_SLOT_KEY));
+            return VALID_SAVE_SLOTS.includes(slotId) ? slotId : 1;
+        } catch (_) {
+            return 1;
+        }
+    };
+
+    const getSlotScopedKey = function(baseKey) {
+        return baseKey + '_slot_' + getActiveSaveSlotId();
+    };
 
     const JPAPPStorageManager = {
         KEYS: {
@@ -25,7 +47,7 @@
          */
         loadMentorSeen: function() {
             try {
-                const raw = localStorage.getItem(MENTOR_SEEN_KEY);
+                const raw = localStorage.getItem(getSlotScopedKey(MENTOR_SEEN_KEY));
                 return raw ? JSON.parse(raw) : [];
             } catch (e) {
                 console.warn('[StorageManager] loadMentorSeen error', e);
@@ -39,7 +61,7 @@
          */
         saveMentorSeen: function(seenList) {
             try {
-                localStorage.setItem(MENTOR_SEEN_KEY, JSON.stringify(seenList || []));
+                localStorage.setItem(getSlotScopedKey(MENTOR_SEEN_KEY), JSON.stringify(seenList || []));
             } catch (e) {
                 console.warn('[StorageManager] saveMentorSeen error', e);
             }
@@ -53,7 +75,7 @@
          */
         loadMistakes: function() {
             try {
-                const raw = localStorage.getItem(MISTAKES_KEY);
+                const raw = localStorage.getItem(getSlotScopedKey(MISTAKES_KEY));
                 return raw ? JSON.parse(raw) : [];
             } catch (e) {
                 console.warn('[StorageManager] loadMistakes error', e);
@@ -67,7 +89,7 @@
          */
         saveMistakes: function(mistakes) {
             try {
-                localStorage.setItem(MISTAKES_KEY, JSON.stringify(mistakes || []));
+                localStorage.setItem(getSlotScopedKey(MISTAKES_KEY), JSON.stringify(mistakes || []));
             } catch (e) {
                 console.warn('[StorageManager] saveMistakes error', e);
             }

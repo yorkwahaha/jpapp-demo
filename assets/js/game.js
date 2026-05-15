@@ -182,6 +182,213 @@ const _jpApp = Vue.createApp({
         // --- Stage Map / Progression State ---
 
         const PROGRESSION_KEY = 'jpapp_progression_v1';
+        const SAVE_SLOTS_KEY = 'jpapp_save_slots_v1';
+        const ACTIVE_SAVE_SLOT_KEY = 'jpapp_active_save_slot_v1';
+        const SAVE_SLOT_IDS = [1, 2, 3];
+        const SLOT_SCOPED_STORY_KEYS = [
+            'jpapp_seen_prologue_opening',
+            'jpapp_seen_main_ending_finale',
+            'jpRpgTrueEndingSeen',
+            'jpRpgL36Unlocked',
+            'jpRpgL35EndingSeen'
+        ];
+        const slotProgressionKey = (slotId) => `${PROGRESSION_KEY}_slot_${slotId}`;
+        const slotScopedKey = (baseKey, slotId = getActiveSaveSlotId()) => `${baseKey}_slot_${slotId}`;
+        const normalizeSaveSlotId = (slotId) => SAVE_SLOT_IDS.includes(Number(slotId)) ? Number(slotId) : 1;
+        const buildEmptySaveSlotsMetadata = (activeSlot = 1) => ({
+            version: 1,
+            activeSlot: normalizeSaveSlotId(activeSlot),
+            slots: SAVE_SLOT_IDS.reduce((acc, slotId) => {
+                acc[String(slotId)] = {
+                    id: slotId,
+                    isEmpty: true,
+                    label: `存檔 ${slotId}`,
+                    playerLevel: null,
+                    highestUnlockedLevel: null,
+                    clearedCount: 0,
+                    lastPlayedAt: null
+                };
+                return acc;
+            }, {})
+        });
+        const readSaveSlotsMetadata = () => {
+            try {
+                const raw = localStorage.getItem(SAVE_SLOTS_KEY);
+                if (!raw) return null;
+                const parsed = JSON.parse(raw);
+                if (!parsed || typeof parsed !== 'object') return null;
+                const next = buildEmptySaveSlotsMetadata(parsed.activeSlot);
+                SAVE_SLOT_IDS.forEach(slotId => {
+                    const current = parsed.slots?.[String(slotId)];
+                    if (current && typeof current === 'object') {
+                        next.slots[String(slotId)] = { ...next.slots[String(slotId)], ...current, id: slotId };
+                    }
+                });
+                next.activeSlot = normalizeSaveSlotId(parsed.activeSlot);
+                return next;
+            } catch (e) {
+                console.warn('[SaveSlots] metadata load error', e);
+                return null;
+            }
+        };
+        const writeSaveSlotsMetadata = (metadata) => {
+            try {
+                localStorage.setItem(SAVE_SLOTS_KEY, JSON.stringify(metadata));
+                localStorage.setItem(ACTIVE_SAVE_SLOT_KEY, String(normalizeSaveSlotId(metadata.activeSlot)));
+            } catch (e) {
+                console.warn('[SaveSlots] metadata save error', e);
+            }
+        };
+        const getActiveSaveSlotId = () => {
+            try {
+                const fromKey = normalizeSaveSlotId(localStorage.getItem(ACTIVE_SAVE_SLOT_KEY));
+                const metadata = readSaveSlotsMetadata();
+                if (metadata && SAVE_SLOT_IDS.includes(Number(metadata.activeSlot))) return Number(metadata.activeSlot);
+                return fromKey;
+            } catch (_) {
+                return 1;
+            }
+        };
+        const copyStorageValue = (fromKey, toKey) => {
+            try {
+                const value = localStorage.getItem(fromKey);
+                if (value !== null && localStorage.getItem(toKey) === null) {
+                    localStorage.setItem(toKey, value);
+                }
+            } catch (e) {
+                console.warn('[SaveSlots] migration copy error', fromKey, toKey, e);
+            }
+        };
+        const ensureSaveSlotMigration = () => {
+            if (readSaveSlotsMetadata()) return;
+            const metadata = buildEmptySaveSlotsMetadata(1);
+            try {
+                const legacyProgress = localStorage.getItem(PROGRESSION_KEY);
+                if (legacyProgress) {
+                    localStorage.setItem(slotProgressionKey(1), legacyProgress);
+                    copyStorageValue('jpRpgMentorSeenV1', 'jpRpgMentorSeenV1_slot_1');
+                    copyStorageValue('jpRpgMistakesV1', 'jpRpgMistakesV1_slot_1');
+                    SLOT_SCOPED_STORY_KEYS.forEach(key => copyStorageValue(key, `${key}_slot_1`));
+                    metadata.slots['1'].isEmpty = false;
+                    try {
+                        const parsed = JSON.parse(legacyProgress);
+                        const levels = Array.isArray(parsed?.unlockedLevels) ? parsed.unlockedLevels.map(Number).filter(Number.isFinite) : [];
+                        const cleared = Array.isArray(parsed?.clearedLevels) ? parsed.clearedLevels : [];
+                        metadata.slots['1'].playerLevel = Number(parsed?.playerStats?.level) || 1;
+                        metadata.slots['1'].highestUnlockedLevel = levels.length ? Math.max(...levels) : 1;
+                        metadata.slots['1'].clearedCount = cleared.length;
+                    } catch (_) {
+                        metadata.slots['1'].playerLevel = 1;
+                        metadata.slots['1'].highestUnlockedLevel = 1;
+                    }
+                    metadata.slots['1'].lastPlayedAt = new Date().toISOString();
+                }
+            } catch (e) {
+                console.warn('[SaveSlots] migration error', e);
+            }
+            metadata.activeSlot = 1;
+            writeSaveSlotsMetadata(metadata);
+        };
+        const updateActiveSaveSlotMetadata = () => {
+            const slotId = getActiveSaveSlotId();
+            const metadata = readSaveSlotsMetadata() || buildEmptySaveSlotsMetadata(slotId);
+            const levels = Array.isArray(unlockedLevels.value) ? unlockedLevels.value.map(Number).filter(Number.isFinite) : [];
+            const cleared = Array.isArray(clearedLevels.value) ? clearedLevels.value : [];
+            metadata.activeSlot = slotId;
+            metadata.slots[String(slotId)] = {
+                ...metadata.slots[String(slotId)],
+                id: slotId,
+                isEmpty: false,
+                label: `存檔 ${slotId}`,
+                playerLevel: Number(playerStats.value?.level) || 1,
+                highestUnlockedLevel: levels.length ? Math.max(...levels) : 1,
+                clearedCount: cleared.length,
+                lastPlayedAt: new Date().toISOString()
+            };
+            writeSaveSlotsMetadata(metadata);
+        };
+        const getStoryFlag = (key) => localStorage.getItem(slotScopedKey(key));
+        const setStoryFlag = (key, value) => localStorage.setItem(slotScopedKey(key), value);
+        const removeStoryFlag = (key) => localStorage.removeItem(slotScopedKey(key));
+        const saveSlotsMetadata = ref(readSaveSlotsMetadata() || buildEmptySaveSlotsMetadata(1));
+        const activeSaveSlotId = ref(getActiveSaveSlotId());
+        const isSaveSlotPanelOpen = ref(false);
+        const saveSlotPanelMode = ref('select');
+        const pendingDeleteSaveSlotId = ref(null);
+        const isSlotProgressionReadable = (slotId) => {
+            try {
+                const raw = localStorage.getItem(slotProgressionKey(normalizeSaveSlotId(slotId)));
+                if (!raw) return false;
+                JSON.parse(raw);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        };
+        const refreshSaveSlotsMetadata = () => {
+            saveSlotsMetadata.value = readSaveSlotsMetadata() || buildEmptySaveSlotsMetadata(activeSaveSlotId.value);
+            activeSaveSlotId.value = normalizeSaveSlotId(saveSlotsMetadata.value.activeSlot);
+        };
+        const setActiveSaveSlotId = (slotId) => {
+            const normalized = normalizeSaveSlotId(slotId);
+            const metadata = readSaveSlotsMetadata() || buildEmptySaveSlotsMetadata(normalized);
+            metadata.activeSlot = normalized;
+            writeSaveSlotsMetadata(metadata);
+            refreshSaveSlotsMetadata();
+        };
+        const formatSaveSlotTime = (value) => {
+            if (!value) return '尚未遊玩';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return '尚未遊玩';
+            return date.toLocaleString('zh-TW', {
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+                hourCycle: 'h23'
+            });
+        };
+        const calculateSaveSlotResonanceText = (slotId, isEmpty) => {
+            if (isEmpty) return '--% 共鳴率';
+            try {
+                const raw = localStorage.getItem(slotProgressionKey(slotId));
+                if (!raw) return '--% 共鳴率';
+                const parsed = JSON.parse(raw);
+                const cleared = new Set((Array.isArray(parsed?.clearedLevels) ? parsed.clearedLevels : []).map(Number));
+                const grades = parsed?.bestGrades || {};
+                const records = parsed?.stageBestRecords || {};
+                if (cleared.size === 0 && Object.keys(records).length === 0) return '--% 共鳴率';
+                let score = 0;
+                for (let stage = 1; stage <= 36; stage++) {
+                    const record = records[String(stage)] || records[stage];
+                    const isCleared = cleared.has(stage) || !!record;
+                    if (!isCleared) continue;
+                    score += 0.5;
+                    if (grades[String(stage)] === 'S' || grades[stage] === 'S') score += 0.3;
+                    if (Number(record?.bestStars) >= 3) score += 0.2;
+                }
+                return `${((score / 36) * 100).toFixed(1)}% 共鳴率`;
+            } catch (_) {
+                return '--% 共鳴率';
+            }
+        };
+        const saveSlotCards = computed(() => SAVE_SLOT_IDS.map(slotId => {
+            const slot = saveSlotsMetadata.value?.slots?.[String(slotId)] || buildEmptySaveSlotsMetadata().slots[String(slotId)];
+            const isEmpty = slot.isEmpty || !isSlotProgressionReadable(slotId);
+            return {
+                ...slot,
+                id: slotId,
+                isActive: activeSaveSlotId.value === slotId,
+                isEmpty,
+                statusText: isEmpty ? '空存檔' : '已有進度',
+                playerLevelText: isEmpty ? '-' : `Lv.${slot.playerLevel || 1}`,
+                highestUnlockedText: isEmpty ? '-' : `第 ${slot.highestUnlockedLevel || 1} 關`,
+                clearedCountText: isEmpty ? '-' : `${slot.clearedCount || 0}`,
+                resonanceText: calculateSaveSlotResonanceText(slotId, isEmpty),
+                lastPlayedText: isEmpty ? '尚未遊玩' : formatSaveSlotTime(slot.lastPlayedAt)
+            };
+        }));
 
         const showMap = ref(false);
         const isForegroundSettling = ref(false);
@@ -342,6 +549,8 @@ const _jpApp = Vue.createApp({
         const getMapNodeStyle = (node) => window.JPAPPSettingsManager.getMapNodePositionStyle(node);
 
         let _pendingAbilityIds = null;
+        let applyUnlockedAbilityIds = (ids) => { _pendingAbilityIds = Array.isArray(ids) ? ids : []; };
+        let resetUnlockedSkillIds = () => {};
 
         // ---- [ NEW: PLAYER LEVELING SYSTEM PHASE 1 ] ----
         const playerStats = ref({ level: 1, exp: 0 });
@@ -395,7 +604,8 @@ const _jpApp = Vue.createApp({
 
                 };
 
-                localStorage.setItem(PROGRESSION_KEY, JSON.stringify(data));
+                localStorage.setItem(slotProgressionKey(getActiveSaveSlotId()), JSON.stringify(data));
+                updateActiveSaveSlotMetadata();
 
             } catch (e) {
 
@@ -409,11 +619,26 @@ const _jpApp = Vue.createApp({
 
             try {
 
-                const raw = localStorage.getItem(PROGRESSION_KEY);
+                const slotId = getActiveSaveSlotId();
+                const raw = localStorage.getItem(slotProgressionKey(slotId));
 
                 if (raw) {
 
-                    const parsed = JSON.parse(raw);
+                    let parsed;
+                    try {
+                        parsed = JSON.parse(raw);
+                    } catch (parseError) {
+                        if (slotId === 1) throw parseError;
+                        localStorage.setItem(ACTIVE_SAVE_SLOT_KEY, '1');
+                        const metadata = readSaveSlotsMetadata();
+                        if (metadata) {
+                            metadata.activeSlot = 1;
+                            writeSaveSlotsMetadata(metadata);
+                        }
+                        const fallbackRaw = localStorage.getItem(slotProgressionKey(1));
+                        if (!fallbackRaw) throw parseError;
+                        parsed = JSON.parse(fallbackRaw);
+                    }
 
                     if (parsed.unlockedLevels) unlockedLevels.value = parsed.unlockedLevels;
 
@@ -423,7 +648,7 @@ const _jpApp = Vue.createApp({
 
                     if (parsed.stageBestRecords) stageBestRecords.value = normalizeStageBestRecords(parsed.stageBestRecords);
 
-                    if (parsed.unlockedAbilityIds) _pendingAbilityIds = parsed.unlockedAbilityIds;
+                    if (parsed.unlockedAbilityIds) applyUnlockedAbilityIds(parsed.unlockedAbilityIds);
 
                     if (parsed.unlockedOnomatopeIds) unlockedOnomatopeIds.value = parsed.unlockedOnomatopeIds;
 
@@ -458,11 +683,40 @@ const _jpApp = Vue.createApp({
 
         };
 
+        const resetProgressionRuntimeState = () => {
+            unlockedLevels.value = [1];
+            clearedLevels.value = [];
+            bestGrades.value = {};
+            stageBestRecords.value = {};
+            unlockedOnomatopeIds.value = [];
+            particleMastery.value = createParticleProgressMap(0);
+            particleCorrectCounts.value = createParticleProgressMap(0);
+            skillMastery.value = {};
+            skillCorrectCounts.value = {};
+            playerStats.value = { level: 1, exp: 0 };
+            activeChapter.value = 'chapter1';
+            selectedSegmentIdx.value = 0;
+            lastClearedLevel.value = null;
+            newUnlockLv.value = null;
+            applyUnlockedAbilityIds([]);
+            resetUnlockedSkillIds();
+        };
+
+        ensureSaveSlotMigration();
+        refreshSaveSlotsMetadata();
         loadProgression();
+
+        const getMentorDialogueEntry = (skillId) => {
+            const mentorMap = MENTOR_AUDIO_MAP.value || {};
+            if (skillId === 'PROLOGUE_OPENING') {
+                return mentorMap.PROLOGUE_OPENING || mentorMap.PROLOGUE;
+            }
+            return mentorMap[skillId];
+        };
 
         // ---- [ NEW: PROLOGUE TRIGGER ] ----
         const checkPrologueTrigger = () => {
-            if (!localStorage.getItem('jpapp_seen_prologue_opening')) {
+            if (!getStoryFlag('jpapp_seen_prologue_opening')) {
                 // Determine background
                 const bg = SCENE_IMAGE_PATHS.prologueBg || SCENE_IMAGE_PATHS.prologueFallbackBg;
 
@@ -477,7 +731,7 @@ const _jpApp = Vue.createApp({
 
                 window._resumeAfterMentor = () => {
                     isSpecialSceneActive.value = false;
-                    localStorage.setItem('jpapp_seen_prologue_opening', 'true');
+                    setStoryFlag('jpapp_seen_prologue_opening', 'true');
 
                     // Proceed to normal map BGM
                     Vue.nextTick(() => {
@@ -489,20 +743,32 @@ const _jpApp = Vue.createApp({
                 };
 
                 // Trigger dialogue (Wait for MENTOR_AUDIO_MAP to be ready)
-                const trigger = () => {
-                    if (MENTOR_AUDIO_MAP.value && MENTOR_AUDIO_MAP.value['PROLOGUE_OPENING']) {
+                const trigger = (attempt = 0) => {
+                    const prologueEntry = getMentorDialogueEntry('PROLOGUE_OPENING');
+                    if (prologueEntry?.dialogue?.length) {
                         setupMentorDialogue({
                             id: 'PROLOGUE_OPENING',
                             name: 'Selene姐姐',
-                            mentorDialogue: MENTOR_AUDIO_MAP.value['PROLOGUE_OPENING'].dialogue
+                            mentorDialogue: prologueEntry.dialogue
                         });
                         // Play BGM if set
                         if (PROLOGUE_BGM && bgmAudio.value) {
                             bgmAudio.value.src = PROLOGUE_BGM;
                             bgmAudio.value.play().catch(() => { });
                         }
+                    } else if (attempt >= 30) {
+                        console.warn('[Prologue] PROLOGUE_OPENING/PROLOGUE dialogue unavailable; using fallback intro.');
+                        setupMentorDialogue({
+                            id: 'PROLOGUE_OPENING',
+                            name: 'Selene姐姐',
+                            mentorDialogue: [
+                                { text: '……聽得見嗎？', emotion: 'gentle' },
+                                { text: '這裡，是言ノ葉神殿。失散的小助靈們，正在等待能聽見它們聲音的人。', emotion: 'explain' },
+                                { text: '如果你願意，請把你的聲音借給這個世界。從第一位小助靈開始吧。', emotion: 'encourage' }
+                            ]
+                        });
                     } else {
-                        setTimeout(trigger, 100);
+                        setTimeout(() => trigger(attempt + 1), 100);
                     }
                 };
                 trigger();
@@ -631,6 +897,141 @@ const _jpApp = Vue.createApp({
                 Vue.nextTick(() => MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value, activeSegment.value?.themeKey));
             }
 
+        };
+
+        const openSaveSlotPanel = (mode = 'select') => {
+            if (!showLevelSelect.value) return;
+            refreshSaveSlotsMetadata();
+            saveSlotPanelMode.value = mode;
+            pendingDeleteSaveSlotId.value = null;
+            isSaveSlotPanelOpen.value = true;
+            playSfx('uiPop');
+        };
+
+        const getSaveSlotMetadata = (slotId) => {
+            refreshSaveSlotsMetadata();
+            const normalized = normalizeSaveSlotId(slotId);
+            const slot = saveSlotsMetadata.value?.slots?.[String(normalized)] || buildEmptySaveSlotsMetadata().slots[String(normalized)];
+            return {
+                ...slot,
+                isEmpty: slot.isEmpty || !isSlotProgressionReadable(normalized)
+            };
+        };
+
+        const getFirstPlayableSaveSlotId = () => SAVE_SLOT_IDS.find(slotId => !getSaveSlotMetadata(slotId).isEmpty) || null;
+
+        const startActiveSaveSlot = () => {
+            if (!showLevelSelect.value) return;
+            const activeSlot = getSaveSlotMetadata(activeSaveSlotId.value);
+            if (activeSlot.isEmpty) {
+                const fallbackSlotId = getFirstPlayableSaveSlotId();
+                if (fallbackSlotId) {
+                    setActiveSaveSlotId(fallbackSlotId);
+                    resetProgressionRuntimeState();
+                    loadProgression();
+                    loadMentorState();
+                    loadMistakes();
+                    isSaveSlotPanelOpen.value = false;
+                    openMap();
+                    return;
+                }
+                openSaveSlotPanel('continue');
+                return;
+            }
+            resetProgressionRuntimeState();
+            loadProgression();
+            loadMentorState();
+            loadMistakes();
+            isSaveSlotPanelOpen.value = false;
+            openMap();
+        };
+
+        const startNewGameFromSlot = (slotId) => {
+            if (!showLevelSelect.value) return;
+            const normalized = normalizeSaveSlotId(slotId);
+            setActiveSaveSlotId(normalized);
+            resetProgressionRuntimeState();
+            mentorTutorialSeen.value = [];
+            mistakes.value = [];
+            window.JPAPPStorageManager.saveMentorSeen([]);
+            window.JPAPPStorageManager.saveMistakes([]);
+            SLOT_SCOPED_STORY_KEYS.forEach(key => localStorage.removeItem(slotScopedKey(key, normalized)));
+            saveProgression();
+            refreshSaveSlotsMetadata();
+            isSaveSlotPanelOpen.value = false;
+            openMap();
+        };
+
+        const selectSaveSlot = (slotId) => {
+            if (!showLevelSelect.value) return;
+            const slot = getSaveSlotMetadata(slotId);
+            if (slot.isEmpty) {
+                startNewGameFromSlot(slotId);
+                return;
+            }
+            setActiveSaveSlotId(slotId);
+            resetProgressionRuntimeState();
+            loadProgression();
+            loadMentorState();
+            loadMistakes();
+            isSaveSlotPanelOpen.value = false;
+            openMap();
+        };
+
+        const requestNewGame = () => {
+            if (!showLevelSelect.value) return;
+            openSaveSlotPanel('new');
+        };
+
+        const requestDeleteSaveSlot = (slotId) => {
+            if (!showLevelSelect.value) return;
+            const slot = getSaveSlotMetadata(slotId);
+            pendingDeleteSaveSlotId.value = slot.isEmpty ? null : normalizeSaveSlotId(slotId);
+        };
+
+        const cancelDeleteSaveSlot = () => {
+            pendingDeleteSaveSlotId.value = null;
+        };
+
+        const clearSaveSlotStorage = (slotId) => {
+            const normalized = normalizeSaveSlotId(slotId);
+            localStorage.removeItem(slotProgressionKey(normalized));
+            localStorage.removeItem(`jpRpgMentorSeenV1_slot_${normalized}`);
+            localStorage.removeItem(`jpRpgMistakesV1_slot_${normalized}`);
+            SLOT_SCOPED_STORY_KEYS.forEach(key => localStorage.removeItem(slotScopedKey(key, normalized)));
+        };
+
+        const resetSaveSlotMetadataEntry = (metadata, slotId) => {
+            const normalized = normalizeSaveSlotId(slotId);
+            metadata.slots[String(normalized)] = {
+                id: normalized,
+                isEmpty: true,
+                label: `存檔 ${normalized}`,
+                playerLevel: null,
+                highestUnlockedLevel: null,
+                clearedCount: 0,
+                lastPlayedAt: null
+            };
+        };
+
+        const confirmDeleteSaveSlot = () => {
+            if (!showLevelSelect.value || pendingDeleteSaveSlotId.value === null) return;
+            const slotId = normalizeSaveSlotId(pendingDeleteSaveSlotId.value);
+            const wasActive = activeSaveSlotId.value === slotId;
+            const metadata = readSaveSlotsMetadata() || buildEmptySaveSlotsMetadata(activeSaveSlotId.value);
+            clearSaveSlotStorage(slotId);
+            resetSaveSlotMetadataEntry(metadata, slotId);
+            if (wasActive) {
+                const fallbackSlotId = SAVE_SLOT_IDS.find(id => id !== slotId && metadata.slots[String(id)] && !metadata.slots[String(id)].isEmpty && isSlotProgressionReadable(id)) || 1;
+                metadata.activeSlot = fallbackSlotId;
+                resetProgressionRuntimeState();
+                mentorTutorialSeen.value = [];
+                mistakes.value = [];
+            }
+            writeSaveSlotsMetadata(metadata);
+            pendingDeleteSaveSlotId.value = null;
+            refreshSaveSlotsMetadata();
+            isSaveSlotPanelOpen.value = true;
         };
 
         const scrollToStage = (n) => window.JPAPPSettingsManager.scrollStageNodeIntoView(n, Vue.nextTick);
@@ -765,14 +1166,14 @@ const _jpApp = Vue.createApp({
 
         if (unlockedLevels.value.includes(36) && !window.JPAPPResultDisplayManager.isAllStagesSRank(bestGrades.value, 35)) {
             unlockedLevels.value = unlockedLevels.value.filter(lv => lv !== 36);
-            localStorage.removeItem('jpRpgL36Unlocked');
+            removeStoryFlag('jpRpgL36Unlocked');
         }
 
         const checkGlobalEndingTriggers = () => {
             // ---- [ NEW: MAIN ENDING FINALE ] ----
             // Trigger immediately after defeating Level 36 for the first time
             if (clearedLevels.value.includes(36) && currentLevel.value === 36) {
-                const hasSeenFinale = localStorage.getItem('jpapp_seen_main_ending_finale');
+                const hasSeenFinale = getStoryFlag('jpapp_seen_main_ending_finale');
                 if (!hasSeenFinale) {
                     // Set Scene
                     isSpecialSceneActive.value = true;
@@ -797,8 +1198,8 @@ const _jpApp = Vue.createApp({
                         });
                         window._resumeAfterMentor = () => {
                             isSpecialSceneActive.value = false;
-                            localStorage.setItem('jpapp_seen_main_ending_finale', 'true');
-                            localStorage.setItem('jpRpgTrueEndingSeen', 'true');
+                            setStoryFlag('jpapp_seen_main_ending_finale', 'true');
+                            setStoryFlag('jpRpgTrueEndingSeen', 'true');
                             openMap();
                         };
                     }, 800);
@@ -807,9 +1208,9 @@ const _jpApp = Vue.createApp({
             }
 
             if (clearedLevels.value.includes(36) && currentLevel.value === 36) {
-                const hasSeenTrueEnding = localStorage.getItem('jpRpgTrueEndingSeen');
+                const hasSeenTrueEnding = getStoryFlag('jpRpgTrueEndingSeen');
                 if (!hasSeenTrueEnding) {
-                    localStorage.setItem('jpRpgTrueEndingSeen', 'true');
+                    setStoryFlag('jpRpgTrueEndingSeen', 'true');
                     setTimeout(() => setupMentorDialogue({
                         id: 'MAIN_ENDING_FINALE',
                         name: 'Selene姐姐'
@@ -819,8 +1220,8 @@ const _jpApp = Vue.createApp({
             }
             if (!clearedLevels.value.includes(35)) return;
             const isAllS = window.JPAPPResultDisplayManager.isAllStagesSRank(bestGrades.value, 35);
-            const hasSeenAllS = localStorage.getItem('jpRpgL36Unlocked');
-            const hasSeenNormal = localStorage.getItem('jpRpgL35EndingSeen');
+            const hasSeenAllS = getStoryFlag('jpRpgL36Unlocked');
+            const hasSeenNormal = getStoryFlag('jpRpgL35EndingSeen');
             const openL35EndingDialogue = (id) => {
                 setupMentorDialogue({
                     id,
@@ -829,25 +1230,25 @@ const _jpApp = Vue.createApp({
                 });
             };
             if (isAllS && !hasSeenAllS) {
-                localStorage.setItem('jpRpgL36Unlocked', 'true');
+                setStoryFlag('jpRpgL36Unlocked', 'true');
                 if (!unlockedLevels.value.includes(36)) unlockedLevels.value.push(36);
                 saveProgression();
                 const endingId = currentLevel.value === 35 ? 'ENDING_L35_ALL_S_AT_35' : 'ENDING_L35_ALL_S';
                 setTimeout(() => openL35EndingDialogue(endingId), 800);
             } else if (!isAllS && !hasSeenNormal && currentLevel.value === 35) {
-                localStorage.setItem('jpRpgL35EndingSeen', 'true');
+                setStoryFlag('jpRpgL35EndingSeen', 'true');
                 setTimeout(() => openL35EndingDialogue('ENDING_L35_NORMAL'), 800);
             }
         };
 
         const playPrologueOpening = () => {
-            localStorage.removeItem('jpapp_seen_prologue_opening');
+            removeStoryFlag('jpapp_seen_prologue_opening');
             checkPrologueTrigger();
         };
 
         const playMainEndingFinale = () => {
             stopAllAudio();
-            localStorage.removeItem('jpapp_seen_main_ending_finale');
+            removeStoryFlag('jpapp_seen_main_ending_finale');
             // Force state to satisfy trigger conditions
             if (!clearedLevels.value.includes(36)) clearedLevels.value.push(36);
             currentLevel.value = 36;
@@ -1006,7 +1407,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26050902";
+        const APP_VERSION = window.APP_VERSION || "26051601";
         const versionImageAsset = (path) => {
             if (!path || typeof path !== 'string' || /[?&]v=/.test(path)) return path;
             return `${path}${path.includes('?') ? '&' : '?'}v=${encodeURIComponent(String(APP_VERSION))}`;
@@ -1133,6 +1534,7 @@ const _jpApp = Vue.createApp({
         const skillUnlockMap = ref({});
 
         const unlockedSkillIds = ref([]);
+        resetUnlockedSkillIds = () => { unlockedSkillIds.value = []; };
 
         // [ CODEX - STATE ]
         const isCodexOpen = ref(false);
@@ -1416,7 +1818,7 @@ const _jpApp = Vue.createApp({
             currentMentorSkill.value = skill;
 
             // 優先讀取集中化 JSON 內的對話資料，保留原有 skill 內的作為 fallback
-            const centralizedData = MENTOR_AUDIO_MAP.value?.[skill.id];
+            const centralizedData = getMentorDialogueEntry(skill.id);
             const dialogueSource = centralizedData?.dialogue || skill.mentorDialogue || [];
             mentorPortraitVideo.value = skill.id === 'PROLOGUE_OPENING' ? null : (centralizedData?.portraitVideo || skill.portraitVideo || null);
 
@@ -1504,7 +1906,7 @@ const _jpApp = Vue.createApp({
 
         const getMentorAudioPath = (skillId, pageIndex) => {
 
-            const entry = MENTOR_AUDIO_MAP.value?.[skillId];
+            const entry = getMentorDialogueEntry(skillId);
 
             if (entry?.audio) return entry.audio[pageIndex] ?? null;
 
@@ -2049,6 +2451,9 @@ const _jpApp = Vue.createApp({
         loadGameData();
 
         const unlockedAbilityIds = ref(_pendingAbilityIds || []);
+        applyUnlockedAbilityIds = (ids) => {
+            unlockedAbilityIds.value = Array.isArray(ids) ? ids : [];
+        };
 
         _pendingAbilityIds = null;
 
@@ -10463,7 +10868,7 @@ const _jpApp = Vue.createApp({
             isMentorSkipPressing, startMentorSkipPress, cancelMentorSkipPress,
             isMonsterImageError, handleMonsterImageError, handleMapImageError, currentMonsterSprite, monsterPositionStyle, monsterIsEntering, monsterIsDying, monsterTrulyDead, monsterResultShown, bossDeathVfxActive, bossDeathStage, monsterAttackLunge,
             showMap, unlockedLevels, clearedLevels,
-            openMap, isLevelUnlocked, isLevelCleared, getStageNodeClass, getLevelTitle, getStageFocusParticle, getStageFocusLabel, hasMentor,
+            openMap, startActiveSaveSlot, openSaveSlotPanel, requestNewGame, selectSaveSlot, requestDeleteSaveSlot, cancelDeleteSaveSlot, confirmDeleteSaveSlot, pendingDeleteSaveSlotId, isSaveSlotPanelOpen, saveSlotCards, activeSaveSlotId, saveSlotPanelMode, isLevelUnlocked, isLevelCleared, getStageNodeClass, getLevelTitle, getStageFocusParticle, getStageFocusLabel, hasMentor,
 
             selectStageFromMap, startStageWithExplanation, returnToMap,
 

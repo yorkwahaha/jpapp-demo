@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26051101'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26051601'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -58,15 +58,15 @@
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/styles.css?v=26051101">
-    <link rel="stylesheet" href="assets/css/home.css?v=26051101">
-    <link rel="stylesheet" href="assets/css/settings.css?v=26051101">
-    <link rel="stylesheet" href="assets/css/mentor.css?v=26051101">
-    <link rel="stylesheet" href="assets/css/battle.css?v=26051101">
-    <link rel="stylesheet" href="assets/css/battle-vfx.css?v=26051101">
-    <link rel="stylesheet" href="assets/css/codex.css?v=26051101">
-    <link rel="stylesheet" href="assets/css/result-mistakes.css?v=26051101">
-    <link rel="stylesheet" href="assets/css/escape.css?v=26051101">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26051601">
+    <link rel="stylesheet" href="assets/css/home.css?v=26051601">
+    <link rel="stylesheet" href="assets/css/settings.css?v=26051601">
+    <link rel="stylesheet" href="assets/css/mentor.css?v=26051601">
+    <link rel="stylesheet" href="assets/css/battle.css?v=26051601">
+    <link rel="stylesheet" href="assets/css/battle-vfx.css?v=26051601">
+    <link rel="stylesheet" href="assets/css/codex.css?v=26051601">
+    <link rel="stylesheet" href="assets/css/result-mistakes.css?v=26051601">
+    <link rel="stylesheet" href="assets/css/escape.css?v=26051601">
 
 
 
@@ -76,7 +76,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26051101';
+            const v = window.APP_VERSION || '26051601';
 
 
 
@@ -2085,12 +2085,70 @@
 
                 <div class="home-cta-box">
 
-                    <button @click="openMap" class="home-start-btn">
+                    <button @click="startActiveSaveSlot" class="home-start-btn">
 
-                        開始冒險
+                        繼續遊戲
 
                     </button>
 
+                    <div class="home-save-actions">
+                        <button @click="openSaveSlotPanel('select')" class="home-save-btn" type="button">
+                            選擇存檔
+                        </button>
+                        <button @click="requestNewGame" class="home-save-btn" type="button">
+                            新遊戲
+                        </button>
+                    </div>
+
+                </div>
+
+                <div v-if="isSaveSlotPanelOpen" class="save-slot-overlay"
+                    @click.self="isSaveSlotPanelOpen = false; cancelDeleteSaveSlot()">
+                    <div class="save-slot-panel">
+                        <div class="save-slot-panel-header">
+                            <div>
+                                <h3 class="save-slot-title">選擇存檔</h3>
+                            </div>
+                            <button @click="isSaveSlotPanelOpen = false; cancelDeleteSaveSlot()" class="save-slot-close" type="button"
+                                aria-label="關閉存檔選擇">×</button>
+                        </div>
+                        <div class="save-slot-grid">
+                            <div v-for="slot in saveSlotCards" :key="slot.id" @click="selectSaveSlot(slot.id)"
+                                @keydown.enter.prevent="selectSaveSlot(slot.id)"
+                                @keydown.space.prevent="selectSaveSlot(slot.id)" role="button" tabindex="0"
+                                class="save-slot-card" :class="{ 'is-active': slot.isActive, 'is-empty': slot.isEmpty }"
+                                :aria-label="'選擇存檔 ' + slot.id">
+                                <div class="save-slot-card-main">
+                                    <div class="save-slot-card-top">
+                                        <span class="save-slot-name">存檔 {{ slot.id }}</span>
+                                        <span class="save-slot-status">{{ slot.isActive ? '目前選擇中' : slot.statusText }}</span>
+                                    </div>
+                                <div class="save-slot-summary">
+                                    <span><strong>{{ slot.playerLevelText }}</strong></span>
+                                    <span><strong>{{ slot.highestUnlockedText }}</strong></span>
+                                    <span><strong>{{ slot.resonanceText }}</strong></span>
+                                    <span><strong>{{ slot.lastPlayedText }}</strong></span>
+                                </div>
+                                <div class="save-slot-actions-panel">
+                                    <button v-if="!slot.isEmpty" @click.stop="requestDeleteSaveSlot(slot.id)"
+                                        class="save-slot-delete-btn" type="button">
+                                        刪除
+                                    </button>
+                                </div>
+                                </div>
+                                <div v-if="pendingDeleteSaveSlotId === slot.id" class="save-slot-delete-confirm"
+                                    @click.stop>
+                                    <p>刪除存檔 {{ slot.id }}？此操作無法復原。</p>
+                                    <div class="save-slot-delete-actions">
+                                        <button @click="confirmDeleteSaveSlot" class="save-slot-delete-confirm-btn"
+                                            type="button">確定刪除</button>
+                                        <button @click="cancelDeleteSaveSlot" class="save-slot-delete-cancel-btn"
+                                            type="button">取消</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Simple Audio V2 Debug Status (Floating for Home Screen) -->

@@ -212,6 +212,402 @@
     transform: scale(0.95) translateY(2px);
 }
 
+.home-save-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.home-save-btn {
+    min-width: 9rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background: rgba(15, 23, 42, 0.62);
+    color: #f8fafc;
+    font-size: 0.95rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.home-save-btn:hover {
+    transform: translateY(-2px);
+    background: rgba(30, 41, 59, 0.78);
+    border-color: rgba(251, 191, 36, 0.45);
+}
+
+.save-slot-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 6500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(1rem, 4vw, 2.5rem);
+    background:
+        linear-gradient(180deg, rgba(15, 23, 42, 0.08), rgba(2, 6, 23, 0.22)),
+        rgba(2, 6, 23, 0.16);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+}
+
+.save-slot-panel {
+    position: relative;
+    isolation: isolate;
+    width: min(980px, 100%);
+    max-height: min(88dvh, 760px);
+    overflow-y: auto;
+    border: 2px solid rgba(255, 255, 255, 0.18);
+    border-radius: 2rem;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(32px) saturate(180%);
+    -webkit-backdrop-filter: blur(32px) saturate(180%);
+    box-shadow:
+        0 24px 48px rgba(0, 0, 0, 0.8),
+        inset 0 2px 0 rgba(255, 255, 255, 0.25),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.35),
+        inset 0 0 0 8px rgba(255, 255, 255, 0.02);
+    padding: clamp(1rem, 2.8vw, 1.5rem);
+    color: #f8fafc;
+}
+
+.save-slot-panel::before,
+.save-slot-panel::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+.save-slot-panel::before {
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.08) 14%, rgba(255, 255, 255, 0.04) 28%, transparent 48%);
+    mix-blend-mode: screen;
+}
+
+.save-slot-panel::after {
+    background:
+        radial-gradient(80% 60% at 0% 0%, rgba(236, 253, 255, 0.12) 0%, transparent 60%),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.04) 22%, transparent 36%),
+        linear-gradient(to top, rgba(0, 0, 0, 0.18), transparent 35%);
+    mix-blend-mode: screen;
+}
+
+.save-slot-panel-header {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.1rem;
+    padding: 0.6rem 0.25rem 1rem;
+    border-radius: inherit;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05), transparent 92%);
+}
+
+.save-slot-title {
+    margin: 0;
+    color: #fde68a;
+    font-size: clamp(1.45rem, 3vw, 1.8rem);
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-shadow: 0 0 16px rgba(251, 191, 36, 0.25), 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.save-slot-subtitle {
+    margin: 0.25rem 0 0;
+    color: rgba(226, 232, 240, 0.72);
+    font-size: 0.9rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+}
+
+.save-slot-close {
+    flex: 0 0 auto;
+    width: 2.45rem;
+    height: 2.45rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    background:
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)),
+        rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.74);
+    font-size: 1.5rem;
+    line-height: 1;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 10px 20px rgba(0, 0, 0, 0.22);
+    cursor: pointer;
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.save-slot-close:hover {
+    transform: translateY(-1px);
+    border-color: rgba(251, 191, 36, 0.5);
+    background:
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05)),
+        rgba(255, 255, 255, 0.08);
+    color: #fde68a;
+}
+
+.save-slot-grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+}
+
+.save-slot-card {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-height: 0;
+    padding: 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 1.35rem;
+    background:
+        radial-gradient(circle at 12% 10%, rgba(125, 211, 252, 0.13), transparent 54%),
+        rgba(255, 255, 255, 0.055);
+    color: #f8fafc;
+    text-align: left;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 10px 24px rgba(0, 0, 0, 0.18);
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.save-slot-card-main {
+    display: grid;
+    grid-template-columns: minmax(5.75rem, 0.54fr) minmax(25rem, 3fr) minmax(4.5rem, 0.34fr);
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.save-slot-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background:
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.08), transparent 42%),
+        radial-gradient(80% 70% at 0% 0%, rgba(236, 253, 255, 0.08), transparent 58%);
+    opacity: 1;
+    pointer-events: none;
+}
+
+.save-slot-card:hover,
+.save-slot-card.is-active {
+    transform: translateY(-3px);
+    border-color: rgba(251, 191, 36, 0.64);
+    background:
+        radial-gradient(circle at 12% 10%, rgba(125, 211, 252, 0.2), transparent 54%),
+        rgba(255, 255, 255, 0.085);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 14px 30px rgba(0, 0, 0, 0.24),
+        0 0 20px rgba(251, 191, 36, 0.12);
+}
+
+.save-slot-card.is-active {
+    border-color: rgba(251, 191, 36, 0.82);
+    box-shadow:
+        0 20px 44px rgba(0, 0, 0, 0.38),
+        0 0 0 1px rgba(251, 191, 36, 0.18),
+        0 0 26px rgba(251, 191, 36, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.17);
+}
+
+.save-slot-card.is-empty {
+    border-color: rgba(255, 255, 255, 0.12);
+    background:
+        radial-gradient(circle at 12% 10%, rgba(226, 232, 240, 0.08), transparent 54%),
+        rgba(255, 255, 255, 0.035);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.055),
+        0 10px 22px rgba(0, 0, 0, 0.16);
+}
+
+.save-slot-card.is-empty::before {
+    opacity: 0.34;
+}
+
+.save-slot-card-top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.save-slot-name {
+    color: #fff7ed;
+    font-size: clamp(1.08rem, 2.2vw, 1.28rem);
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.42);
+}
+
+.save-slot-status {
+    flex-shrink: 0;
+    padding: 0.28rem 0.64rem;
+    border-radius: 999px;
+    border: 1px solid rgba(251, 191, 36, 0.34);
+    background:
+        linear-gradient(180deg, rgba(251, 191, 36, 0.2), rgba(251, 191, 36, 0.08)),
+        rgba(15, 23, 42, 0.54);
+    color: #fde68a;
+    font-size: 0.72rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.save-slot-card.is-empty .save-slot-status {
+    border-color: rgba(203, 213, 225, 0.28);
+    background:
+        linear-gradient(180deg, rgba(148, 163, 184, 0.14), rgba(148, 163, 184, 0.05)),
+        rgba(15, 23, 42, 0.48);
+    color: rgba(226, 232, 240, 0.74);
+}
+
+.save-slot-summary {
+    display: grid;
+    grid-template-columns: 0.7fr 0.9fr 1.25fr 1.15fr;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.58rem 0.6rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: rgba(226, 232, 240, 0.9);
+    font-size: 0.96rem;
+    line-height: 1.35;
+    box-shadow: none;
+}
+
+.save-slot-summary span {
+    display: flex;
+    justify-content: flex-start;
+    gap: 0;
+    min-width: 0;
+}
+
+.save-slot-summary strong {
+    color: rgba(248, 250, 252, 0.96);
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.36);
+}
+
+.save-slot-actions-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.2rem;
+}
+
+.save-slot-delete-btn {
+    min-height: 1.75rem;
+    padding: 0.26rem 0.58rem;
+    border: 1px solid rgba(185, 28, 28, 0.26);
+    border-radius: 999px;
+    background:
+        linear-gradient(180deg, rgba(127, 29, 29, 0.12), rgba(69, 10, 10, 0.2)),
+        rgba(15, 23, 42, 0.34);
+    color: rgba(254, 202, 202, 0.68);
+    font-size: 0.7rem;
+    font-weight: 700;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 5px 12px rgba(0, 0, 0, 0.14);
+    cursor: pointer;
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.save-slot-delete-btn:hover {
+    transform: translateY(-1px);
+    border-color: rgba(248, 113, 113, 0.52);
+    background:
+        linear-gradient(180deg, rgba(127, 29, 29, 0.28), rgba(69, 10, 10, 0.36)),
+        rgba(15, 23, 42, 0.54);
+    color: rgba(254, 226, 226, 0.92);
+}
+
+.save-slot-delete-confirm {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid rgba(248, 113, 113, 0.28);
+    border-radius: 0.85rem;
+    background:
+        radial-gradient(circle at 12% 10%, rgba(248, 113, 113, 0.1), transparent 54%),
+        rgba(255, 255, 255, 0.04);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.055),
+        0 6px 14px rgba(69, 10, 10, 0.12);
+}
+
+.save-slot-delete-confirm p {
+    margin: 0;
+    color: #fee2e2;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.save-slot-delete-actions {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.save-slot-delete-confirm-btn,
+.save-slot-delete-cancel-btn {
+    flex: 1;
+    min-height: 1.85rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.18s ease, filter 0.18s ease, border-color 0.18s ease;
+}
+
+.save-slot-delete-confirm-btn:hover,
+.save-slot-delete-cancel-btn:hover {
+    transform: translateY(-1px);
+}
+
+.save-slot-delete-confirm-btn {
+    border: 1px solid rgba(248, 113, 113, 0.55);
+    background:
+        linear-gradient(180deg, rgba(185, 28, 28, 0.72), rgba(127, 29, 29, 0.72));
+    color: #ffffff;
+    box-shadow: 0 5px 12px rgba(127, 29, 29, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.save-slot-delete-cancel-btn {
+    border: 1px solid rgba(148, 163, 184, 0.38);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03)),
+        rgba(15, 23, 42, 0.72);
+    color: #f8fafc;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
 .home-cta-label {
     font-size: 10px;
     font-weight: 900;
@@ -259,6 +655,30 @@
         padding: 1rem 4.5rem;
         font-size: 1.45rem;
     }
+
+    .save-slot-panel {
+        max-height: 88dvh;
+    }
+}
+
+@media (max-width: 960px) and (min-width: 769px) {
+    .save-slot-panel {
+        width: min(820px, 100%);
+    }
+
+    .save-slot-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .save-slot-card-main {
+        grid-template-columns: minmax(6rem, 0.6fr) minmax(18rem, 2.2fr) minmax(4.25rem, 0.36fr);
+        gap: 0.75rem;
+    }
+
+    .save-slot-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem 0.75rem;
+    }
 }
 
 /* Mobile Adjustments for Cover */
@@ -283,5 +703,96 @@
     .home-start-btn {
         padding: 1rem 4rem;
         font-size: 1.5rem;
+    }
+
+    .home-save-actions {
+        gap: 0.5rem;
+    }
+
+    .home-save-btn {
+        min-width: 7.5rem;
+        padding: 0.65rem 0.9rem;
+        font-size: 0.84rem;
+    }
+
+    .save-slot-panel {
+        max-height: 88dvh;
+        padding: 1rem;
+        border-radius: 1.35rem;
+    }
+
+    .save-slot-panel-header {
+        gap: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .save-slot-title {
+        font-size: 1.28rem;
+    }
+
+    .save-slot-subtitle {
+        font-size: 0.82rem;
+    }
+
+    .save-slot-close {
+        width: 2.25rem;
+        height: 2.25rem;
+    }
+
+    .save-slot-grid {
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+    }
+
+    .save-slot-card {
+        min-height: 0;
+        border-radius: 1.1rem;
+        padding: 0.9rem;
+    }
+
+    .save-slot-card-main {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+        gap: 0.8rem;
+    }
+
+    .save-slot-card-top {
+        align-items: flex-start;
+        justify-content: flex-start;
+    }
+
+    .save-slot-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 0.72rem;
+        font-size: 0.9rem;
+    }
+
+    .save-slot-summary span {
+        gap: 0.5rem;
+    }
+
+    .save-slot-summary strong {
+        white-space: normal;
+    }
+
+    .save-slot-actions-panel {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+    .save-slot-delete-btn {
+        min-width: 3.5rem;
+        padding-inline: 0.58rem;
+    }
+
+    .save-slot-delete-confirm {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        padding: 0.55rem;
+    }
+
+    .save-slot-delete-actions {
+        justify-content: flex-start;
     }
 }
