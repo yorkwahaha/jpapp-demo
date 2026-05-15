@@ -3603,6 +3603,10 @@
                                         <span v-else class="relative z-[2] monster-breath inline-block"
                                             :style="{ transform: 'scale(' + (1 / (monster.attackRingScale || 1)) + ')' }">{{
                                             monster.sprite || '👹' }}</span>
+                                        <div v-if="counterSlashVfx" class="bacchiri-counter-slash-vfx" aria-hidden="true">
+                                            <span class="bacchiri-counter-slash-vfx__cut"></span>
+                                            <span class="bacchiri-counter-slash-vfx__spark"></span>
+                                        </div>
                                     </div>
 
                                     <!-- Boss Aura (Foreground Layers) -->
@@ -3705,6 +3709,22 @@
                             <span class="skill-banner-v2-label">SKILL</span>
                             <span class="skill-banner-v2-name">{{ battleMessage }}</span>
                         </div>
+                    </div>
+                </div>
+            </transition>
+
+            <transition name="level-passive-vfx">
+                <div v-if="levelPassiveVfx" :key="levelPassiveVfx.key"
+                    class="level-passive-vfx absolute inset-0 pointer-events-none z-[56] flex items-center justify-center"
+                    :class="'level-passive-vfx--' + levelPassiveVfx.id">
+                    <div v-if="levelPassiveVfx.id === 'shikkari'" class="passive-combo-hold-vfx">
+                        <span class="passive-combo-hold-vfx__text">COMBO</span>
+                        <img src="assets/images/vfx/passive/passive_combo_chain.png" alt=""
+                            class="passive-combo-hold-vfx__chain">
+                    </div>
+                    <div v-else class="level-passive-vfx__card">
+                        <span class="level-passive-vfx__label">{{ levelPassiveVfx.label }}</span>
+                        <span class="level-passive-vfx__text">{{ levelPassiveVfx.text }}</span>
                     </div>
                 </div>
             </transition>
@@ -4070,21 +4090,22 @@
                             <div class="result-stat-row flex flex-col items-center border-t border-slate-700/50 pt-3 mt-1">
                                 <div class="w-full flex justify-between items-end mb-1">
                                     <div class="flex items-baseline gap-2">
-                                        <span class="text-amber-400 font-bold text-lg">Lv.{{ playerStats.level }}</span>
-                                        <span class="text-slate-400 text-xs" v-if="playerStats.level < 30">
-                                            {{ playerStats.exp }} / {{ getExpRequiredForNextLevel(playerStats.level) }}
+                                        <span class="text-amber-400 font-bold text-lg">Lv.{{ displayedResultLevel }}</span>
+                                        <span class="text-slate-400 text-xs" v-if="displayedResultLevel < 30">
+                                            {{ displayedResultExp }} / {{ displayedResultNextExp }}
                                         </span>
                                         <span class="text-slate-400 text-xs" v-else>MAX LEVEL</span>
                                     </div>
                                     <span class="result-stat-value text-blue-400 font-mono font-bold">+{{ animatedExp }} EXP</span>
                                 </div>
                                 <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden relative">
-                                    <div class="bg-amber-500 h-full transition-all duration-300"
-                                         :style="{ width: playerStats.level >= 30 ? '100%' : ((playerStats.exp / getExpRequiredForNextLevel(playerStats.level)) * 100) + '%' }">
+                                    <div class="bg-amber-500 h-full"
+                                         :class="resultExpBarTransitionEnabled ? 'transition-all duration-300' : ''"
+                                         :style="{ width: displayedResultExpPct + '%' }">
                                     </div>
                                 </div>
-                                <div v-if="hasLeveledUp" class="mt-2 text-amber-300 font-bold animate-pulse text-sm">
-                                    LEVEL UP! 最大 HP & SP 提升！
+                                <div v-if="showLevelUpMessageAfterAnimation" class="mt-2 text-amber-300 font-bold animate-pulse text-sm">
+                                    {{ resultLevelUpStatText }}
                                 </div>
                             </div>
 
@@ -4125,6 +4146,28 @@
                             查看題目</button>
                     </div>
                 </div>
+                <transition name="result-milestone-float">
+                    <div v-if="showResultMilestoneRewards && resultUnlockedMilestones.length"
+                        class="result-milestone-float"
+                        role="dialog" aria-modal="true" aria-label="等級獎勵">
+                        <div class="result-milestone-float__panel">
+                            <button type="button" class="result-milestone-float__close"
+                                aria-label="關閉等級獎勵" @click="dismissResultMilestoneRewards">×</button>
+                            <div class="result-milestone-float__title">等級獎勵解放</div>
+                            <div v-for="reward in resultUnlockedMilestones" :key="'level-reward-' + reward.level"
+                                class="result-milestone-card">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="result-milestone-card__heading">
+                                        {{ reward.type === 'NEW SKILL' ? '✨ 學會新技能！' : '✨ 解放新被動！' }}
+                                    </span>
+                                    <span class="result-milestone-card__level">Lv.{{ reward.level }}</span>
+                                </div>
+                                <div class="result-milestone-card__name">{{ reward.name }}</div>
+                                <div class="result-milestone-card__desc">{{ reward.desc }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </transition>
             </div>
 
             <!-- 💀 Defeat Overlay -->
@@ -4158,6 +4201,19 @@
                 <img src="assets/images/hero/hero_neutral.png"
                     class="w-full h-full object-contain drop-shadow-[0_8px_12px_rgba(0,0,0,0.6)]"
                     data-state="neutral" />
+                <div v-if="levelPassiveVfx && levelPassiveVfx.id === 'gatchiri'"
+                    class="gatchiri-hero-shield-vfx" aria-hidden="true">
+                    <img src="assets/images/vfx/passive/passive_guard_shield_base.png" alt=""
+                        class="gatchiri-hero-shield-vfx__image gatchiri-hero-shield-vfx__image--base">
+                    <img src="assets/images/vfx/passive/passive_guard_shield_crack.png" alt=""
+                        class="gatchiri-hero-shield-vfx__image gatchiri-hero-shield-vfx__image--crack">
+                </div>
+                <div v-if="activeLevelPassiveBadges.length" class="level-passive-badge-tray">
+                    <span v-for="badge in activeLevelPassiveBadges" :key="badge.id"
+                        class="level-passive-badge" :class="'level-passive-badge--' + badge.id">
+                        {{ badge.label }}<span v-if="badge.countText" class="level-passive-badge__count">{{ badge.countText }}</span>
+                    </span>
+                </div>
             </div>
 
             <!-- New Dedicated Buff Overlay Layer (Above HUD but below Modals) -->

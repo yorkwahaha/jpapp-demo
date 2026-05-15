@@ -41,6 +41,9 @@
             bossExplosion: 'assets/audio/sfx/boss_explosion.mp3',
             uiPop: 'assets/audio/sfx/pop.mp3',
             battlePop: 'assets/audio/sfx/pop2.mp3',
+            barrierBreak: 'assets/audio/sfx/barrier_break.mp3',
+            counter: 'assets/audio/sfx/counter.mp3',
+            chain: 'assets/audio/sfx/chain.mp3',
             win: 'assets/audio/sfx/win.mp3',
             gameover: 'assets/audio/sfx/sfx_gameover.mp3'
         },
@@ -67,7 +70,10 @@
             win: 'assets/audio/sfx/win.mp3',
             gameover: 'assets/audio/sfx/sfx_gameover.mp3',
             skillpop: 'assets/audio/sfx/skillpop.mp3',
-            skillget: 'assets/audio/sfx/skillget.mp3'
+            skillget: 'assets/audio/sfx/skillget.mp3',
+            barrierBreak: 'assets/audio/sfx/barrier_break.mp3',
+            counter: 'assets/audio/sfx/counter.mp3',
+            chain: 'assets/audio/sfx/chain.mp3'
         },
 
         UI_SFX_SRC_MAP: {
@@ -97,6 +103,9 @@
             gameover: 'assets/audio/sfx/sfx_gameover.mp3',
             skillpop: 'assets/audio/sfx/skillpop.mp3',
             skillget: 'assets/audio/sfx/skillget.mp3',
+            barrierBreak: 'assets/audio/sfx/barrier_break.mp3',
+            counter: 'assets/audio/sfx/counter.mp3',
+            chain: 'assets/audio/sfx/chain.mp3',
             escape: 'assets/audio/sfx/sfx_escape.mp3'
         },
 
@@ -109,6 +118,9 @@
             win: 0.7,
             gameover: 0.8,
             skillget: 0.8,
+            barrierBreak: 0.92,
+            counter: 0.92,
+            chain: 0.82,
             uiPop: 1.0,
             battlePop: 0.9,
             hit: 0.9,

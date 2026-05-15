@@ -2085,6 +2085,25 @@ const _jpApp = Vue.createApp({
         const pittariUsedThisBattle = ref(false);
         const shikkariUsedThisBattle = ref(false);
         const gatchiriUsedThisBattle = ref(false);
+        const bacchiriCounterCountThisBattle = ref(0);
+        const activeLevelPassiveBadges = computed(() => {
+            const badges = [];
+            if (playerStats.value.level >= 20 && !shikkariUsedThisBattle.value) {
+                badges.push({ id: 'shikkari', label: '連', countText: '', type: 'passive' });
+            }
+            if (playerStats.value.level >= 25 && !gatchiriUsedThisBattle.value) {
+                badges.push({ id: 'gatchiri', label: '護', countText: '', type: 'passive' });
+            }
+            if (playerStats.value.level >= 30 && bacchiriCounterCountThisBattle.value < 3) {
+                badges.push({
+                    id: 'bacchiri',
+                    label: '反',
+                    countText: `×${3 - bacchiriCounterCountThisBattle.value}`,
+                    type: 'passive'
+                });
+            }
+            return badges;
+        });
 
         const pendingLevelUpAbility = ref(null);
 
@@ -2554,6 +2573,10 @@ const _jpApp = Vue.createApp({
         const timeUp = ref(false);
         const battleMessage = ref('');
         let battleMessageTimer = null;
+        const levelPassiveVfx = ref(null);
+        let levelPassiveVfxTimer = null;
+        const counterSlashVfx = ref(false);
+        let counterSlashVfxTimer = null;
 
         const wrongAnswerPause = ref(false);
 
@@ -2571,6 +2594,45 @@ const _jpApp = Vue.createApp({
 
         const animatedExp = ref(0);
         const hasLeveledUp = ref(false);
+        const displayedResultLevel = ref(playerStats.value.level);
+        const displayedResultExp = ref(playerStats.value.exp);
+        const displayedResultNextExp = ref(getExpRequiredForNextLevel(playerStats.value.level));
+        const displayedResultExpPct = ref(0);
+        const resultExpBarTransitionEnabled = ref(true);
+        const showLevelUpMessageAfterAnimation = ref(false);
+        const resultLevelUpStatText = ref('');
+        const resultLevelMilestoneRewards = [
+            { level: 5, type: 'NEW SKILL', name: 'すっきり / 清爽恢復', desc: '消耗 SP，回復 20 HP' },
+            { level: 10, type: 'NEW SKILL', name: 'ぴったり / 完美對上', desc: '此題只留下正確答案，每場一次' },
+            { level: 20, type: 'NEW PASSIVE', name: 'しっかり / 穩住節奏', desc: '每場一次，答錯也不會中斷 Combo' },
+            { level: 25, type: 'NEW PASSIVE', name: 'がっちり / 牢牢撐住', desc: '每場一次，受到致命傷時 HP 保留 1' },
+            { level: 30, type: 'NEW PASSIVE', name: 'ばっちり / 完美反擊', desc: '受擊後反擊同等傷害，每場最多 3 次' }
+        ];
+        const resultUnlockedMilestones = ref([]);
+        const showResultMilestoneRewards = ref(false);
+        let resultMilestoneRewardShowTimer = null;
+
+        const clearResultMilestoneRewardTimers = () => {
+            if (resultMilestoneRewardShowTimer) {
+                clearTimeout(resultMilestoneRewardShowTimer);
+                resultMilestoneRewardShowTimer = null;
+            }
+        };
+
+        const dismissResultMilestoneRewards = () => {
+            clearResultMilestoneRewardTimers();
+            showResultMilestoneRewards.value = false;
+        };
+
+        const scheduleResultMilestoneRewards = () => {
+            clearResultMilestoneRewardTimers();
+            showResultMilestoneRewards.value = false;
+            if (!resultUnlockedMilestones.value.length) return;
+            resultMilestoneRewardShowTimer = setTimeout(() => {
+                showResultMilestoneRewards.value = true;
+                resultMilestoneRewardShowTimer = null;
+            }, 650);
+        };
 
         const battleStartedAtMs = ref(null);
 
@@ -4118,14 +4180,26 @@ const _jpApp = Vue.createApp({
             }, ttlMs);
         };
 
+        const showLevelPassiveVfx = (id, label, text) => {
+            levelPassiveVfx.value = { id, label, text, key: Date.now() };
+            if (levelPassiveVfxTimer) clearTimeout(levelPassiveVfxTimer);
+            levelPassiveVfxTimer = setTimeout(() => {
+                levelPassiveVfx.value = null;
+                levelPassiveVfxTimer = null;
+            }, 2600);
+        };
+
         const tryUseShikkariPassive = () => {
             if (playerStats.value.level < 20 || shikkariUsedThisBattle.value || comboCount.value <= 0) return false;
             shikkariUsedThisBattle.value = true;
+            showLevelPassiveVfx('shikkari', 'COMBO HOLD', '連繫 Combo');
+            playSfx('chain');
             pushBattleLog('しっかり：Combo 中斷を一度こらえた！', 'buff');
             return true;
         };
 
         const applyPlayerDamage = (damage) => {
+            const currentHp = player.value.hp;
             const nextHp = player.value.hp - damage;
             if (
                 playerStats.value.level >= 25 &&
@@ -4138,11 +4212,69 @@ const _jpApp = Vue.createApp({
             ) {
                 gatchiriUsedThisBattle.value = true;
                 player.value.hp = 1;
-                pushBattleLog('がっちり：致命傷をこらえて HP 1 で踏みとどまった！', 'buff');
-                return;
+                showLevelPassiveVfx('gatchiri', '', '');
+                playSfx('barrierBreak');
+                pushBattleLog('がっちり：致命傷をこらえた！', 'buff');
+                return Math.max(0, currentHp - player.value.hp);
             }
 
             player.value.hp = Math.max(0, nextHp);
+            return Math.max(0, currentHp - player.value.hp);
+        };
+
+        const tryUseBacchiriPassive = (damageTaken) => {
+            const counterDamage = Math.max(0, Math.floor(Number(damageTaken) || 0));
+            if (
+                playerStats.value.level < 30 ||
+                bacchiriCounterCountThisBattle.value >= 3 ||
+                counterDamage <= 0 ||
+                player.value.hp <= 0 ||
+                isDefeated.value ||
+                isFinished.value ||
+                monsterDead.value ||
+                monsterIsDying.value ||
+                monsterResultShown.value ||
+                !monster.value ||
+                monster.value.hp <= 0
+            ) return false;
+
+            bacchiriCounterCountThisBattle.value++;
+            const counterCount = bacchiriCounterCountThisBattle.value;
+            setTimeout(() => {
+                if (
+                    player.value.hp <= 0 ||
+                    isDefeated.value ||
+                    isFinished.value ||
+                    monsterDead.value ||
+                    monsterIsDying.value ||
+                    monsterResultShown.value ||
+                    !monster.value ||
+                    monster.value.hp <= 0
+                ) return;
+
+                monster.value.hp = Math.max(0, monster.value.hp - counterDamage);
+                showLevelPassiveVfx('bacchiri', '', '');
+                pushBattleLog(`ばっちり：反擊で ${counterDamage} ダメージ！ (${counterCount}/3)`, 'buff');
+                playSfx('counter');
+
+                counterSlashVfx.value = true;
+                if (counterSlashVfxTimer) clearTimeout(counterSlashVfxTimer);
+                counterSlashVfxTimer = setTimeout(() => {
+                    counterSlashVfx.value = false;
+                    counterSlashVfxTimer = null;
+                }, 1300);
+                monsterHit.value = true;
+                monsterHitImageFailed.value = false;
+                setTimeout(() => { monsterHit.value = false; }, 300);
+                window.spawnFloatingDamage('monster', counterDamage);
+
+                if (monster.value.hp <= 0) {
+                    if (window.__AUTO_ADVANCE_TIMEOUT) { clearTimeout(window.__AUTO_ADVANCE_TIMEOUT); window.__AUTO_ADVANCE_TIMEOUT = null; }
+                    grantRewards();
+                }
+            }, 1200);
+
+            return true;
         };
 
         // ── iOS Safari Background Audio Guard ──
@@ -4503,6 +4635,8 @@ const _jpApp = Vue.createApp({
         let lastPageForegroundedAt = 0;
         let pageBattleTimerWasRunning = false;
         let pagePauseTimerWasRunning = false;
+        let pageBattleTimerResumeWatchdog = null;
+        let pageBattleTimerResumeGeneration = 0;
         let foregroundSettlingTimer = null;
         const PAGE_RENDERING_RESUME_SETTLE_MS = 800;
         const FOREGROUND_SETTLING_MESSAGE = '正在恢復遊戲...';
@@ -4547,33 +4681,95 @@ const _jpApp = Vue.createApp({
             !playerDead.value &&
             !monsterDead.value;
 
+        const clearPageBattleTimerResumeWatchdog = () => {
+            pageBattleTimerResumeGeneration += 1;
+            if (pageBattleTimerResumeWatchdog) {
+                clearTimeout(pageBattleTimerResumeWatchdog);
+                pageBattleTimerResumeWatchdog = null;
+            }
+        };
+
+        const restartBattleTimerInterval = () => {
+            if (timerId) clearInterval(timerId);
+            timerId = setInterval(runTimerLogic, 100);
+        };
+
+        const restartPauseTimerInterval = () => {
+            if (pauseTimerId) clearInterval(pauseTimerId);
+            pauseTimerId = setInterval(runPauseTimerLogic, 1000);
+        };
+
         const pauseBattleRuntimeForPageBackground = () => {
             lastPageBackgroundedAt = Date.now();
             pageBattleTimerWasRunning = pageBattleTimerWasRunning || !!timerId;
             pagePauseTimerWasRunning = pagePauseTimerWasRunning || !!pauseTimerId;
+            clearPageBattleTimerResumeWatchdog();
 
             if (timerId) { clearInterval(timerId); timerId = null; }
             if (pauseTimerId) { clearInterval(pauseTimerId); pauseTimerId = null; }
         };
 
-        const resumeBattleRuntimeAfterPageForeground = () => {
-            lastPageForegroundedAt = Date.now();
+        const schedulePageBattleTimerResumeWatchdog = (expectBattleTimer, expectPauseTimer) => {
+            clearPageBattleTimerResumeWatchdog();
+            if (!expectBattleTimer && !expectPauseTimer) return;
 
-            if (!isBattleRuntimeActive()) {
+            const generation = pageBattleTimerResumeGeneration;
+            const observedTimeLeft = timeLeft.value;
+            const observedPauseCountdown = wrongAnswerPauseCountdown.value;
+
+            pageBattleTimerResumeWatchdog = setTimeout(() => {
+                pageBattleTimerResumeWatchdog = null;
+                if (generation !== pageBattleTimerResumeGeneration) return;
+                if (!isBattleRuntimeActive()) return;
+
+                if (expectBattleTimer && !wrongAnswerPause.value) {
+                    const timerStale = !timerId || Math.abs(Number(timeLeft.value) - Number(observedTimeLeft)) < 0.001;
+                    if (timerStale) restartBattleTimerInterval();
+                }
+
+                if (expectPauseTimer && wrongAnswerPause.value) {
+                    const pauseTimerStale = !pauseTimerId || Number(wrongAnswerPauseCountdown.value) === Number(observedPauseCountdown);
+                    if (pauseTimerStale) restartPauseTimerInterval();
+                }
+
                 pageBattleTimerWasRunning = false;
                 pagePauseTimerWasRunning = false;
+            }, 450);
+        };
+
+        const resumeBattleRuntimeAfterPageForeground = () => {
+            lastPageForegroundedAt = Date.now();
+            const wantsBattleTimer = pageBattleTimerWasRunning || !!timerId;
+            const wantsPauseTimer = pagePauseTimerWasRunning || !!pauseTimerId;
+
+            if (!isBattleRuntimeActive()) {
+                schedulePageBattleTimerResumeWatchdog(wantsBattleTimer, wantsPauseTimer);
                 return;
             }
 
-            if (pageBattleTimerWasRunning && !timerId && !wrongAnswerPause.value) {
-                timerId = setInterval(runTimerLogic, 100);
+            const shouldResumeBattleTimer = wantsBattleTimer && !wrongAnswerPause.value;
+            const shouldResumePauseTimer = wantsPauseTimer && wrongAnswerPause.value;
+
+            if (shouldResumeBattleTimer && timerId) {
+                clearInterval(timerId);
+                timerId = null;
             }
 
-            if (pagePauseTimerWasRunning && wrongAnswerPause.value && !pauseTimerId) {
-                pauseTimerId = setInterval(runPauseTimerLogic, 1000);
+            if (shouldResumePauseTimer && pauseTimerId) {
+                clearInterval(pauseTimerId);
+                pauseTimerId = null;
+            }
+
+            if (shouldResumeBattleTimer && !timerId) {
+                restartBattleTimerInterval();
+            }
+
+            if (shouldResumePauseTimer && !pauseTimerId) {
+                restartPauseTimerInterval();
             }
 
             questionStartTime = Date.now();
+            schedulePageBattleTimerResumeWatchdog(shouldResumeBattleTimer, shouldResumePauseTimer);
             pageBattleTimerWasRunning = false;
             pagePauseTimerWasRunning = false;
         };
@@ -4857,7 +5053,7 @@ const _jpApp = Vue.createApp({
 
         const SFX_POOL_SIZE = 4;
 
-        const WARMUP_SFX_KEYS = ['click', 'uiPop', 'battlePop', 'hit', 'damage', 'damage1', 'skillpop', 'skillget'];
+        const WARMUP_SFX_KEYS = ['click', 'uiPop', 'battlePop', 'hit', 'damage', 'damage1', 'skillpop', 'skillget', 'barrierBreak', 'counter', 'chain'];
 
         const POOLED_SFX_KEYS = new Set([
             ...WARMUP_SFX_KEYS,
@@ -6285,9 +6481,10 @@ const _jpApp = Vue.createApp({
                         flashOverlay.value = true;
                         setTimeout(() => { flashOverlay.value = false; }, 300);
 
-                        applyPlayerDamage(dmg);
-                        window.spawnFloatingDamage('player', dmg);
+                        const actualDamageTaken = applyPlayerDamage(dmg);
+                        if (actualDamageTaken > 0) window.spawnFloatingDamage('player', actualDamageTaken);
                         flashHeroHit(player.value.hp / player.value.maxHp);
+                        tryUseBacchiriPassive(actualDamageTaken);
                         if (player.value.hp <= 0) handleGameOver();
 
                         hpBarDanger.value = true;
@@ -6302,10 +6499,12 @@ const _jpApp = Vue.createApp({
                     }
                 }
 
-                wrongAnswerPause.value = true;
-                wrongAnswerPauseCountdown.value = difficulty.value === 'hard' ? 3 : 2;
-                if (pauseTimerId) clearInterval(pauseTimerId);
-                pauseTimerId = setInterval(runPauseTimerLogic, 1000);
+                if (!monsterDead.value && !monsterIsDying.value && !monsterResultShown.value) {
+                    wrongAnswerPause.value = true;
+                    wrongAnswerPauseCountdown.value = difficulty.value === 'hard' ? 3 : 2;
+                    if (pauseTimerId) clearInterval(pauseTimerId);
+                    pauseTimerId = setInterval(runPauseTimerLogic, 1000);
+                }
             }, 100);
         };
 
@@ -8472,10 +8671,30 @@ const _jpApp = Vue.createApp({
 
             animatedExp.value = 0;
             hasLeveledUp.value = false;
+            displayedResultLevel.value = playerStats.value.level;
+            displayedResultExp.value = playerStats.value.exp;
+            displayedResultNextExp.value = getExpRequiredForNextLevel(playerStats.value.level);
+            displayedResultExpPct.value = playerStats.value.level >= 30 ? 100 : (playerStats.value.exp / displayedResultNextExp.value) * 100;
+            resultExpBarTransitionEnabled.value = true;
+            showLevelUpMessageAfterAnimation.value = false;
+            resultLevelUpStatText.value = '';
+            resultUnlockedMilestones.value = [];
+            dismissResultMilestoneRewards();
+            levelPassiveVfx.value = null;
+            if (levelPassiveVfxTimer) {
+                clearTimeout(levelPassiveVfxTimer);
+                levelPassiveVfxTimer = null;
+            }
+            counterSlashVfx.value = false;
+            if (counterSlashVfxTimer) {
+                clearTimeout(counterSlashVfxTimer);
+                counterSlashVfxTimer = null;
+            }
             pittariActive.value = false;
             pittariUsedThisBattle.value = false;
             shikkariUsedThisBattle.value = false;
             gatchiriUsedThisBattle.value = false;
+            bacchiriCounterCountThisBattle.value = 0;
 
             // 安全 fallback：全關卡已有 enemies.v1.json；若未比對則用預設屬性
             const mdef = { hpMax: MONSTER_HP, name: '助詞怪', sprite: DEFAULT_IMAGE_PATHS.monsterSprite, trait: '普通型' };
@@ -9480,6 +9699,19 @@ const _jpApp = Vue.createApp({
 
             const lv = currentLevel.value;
             resultSpirit.value = getResultSpiritForLevel(lv);
+            const resultStartLevel = playerStats.value.level;
+            const resultStartExp = playerStats.value.exp;
+            const resultStartMaxHp = getDerivedMaxHp(resultStartLevel);
+            const resultStartMaxSp = getDerivedMaxSp(resultStartLevel);
+            const resultStartMaxPotions = getDerivedMaxPotions(resultStartLevel);
+            displayedResultLevel.value = resultStartLevel;
+            displayedResultExp.value = resultStartExp;
+            displayedResultNextExp.value = getExpRequiredForNextLevel(resultStartLevel);
+            displayedResultExpPct.value = resultStartLevel >= 30 ? 100 : (resultStartExp / displayedResultNextExp.value) * 100;
+            resultExpBarTransitionEnabled.value = true;
+            showLevelUpMessageAfterAnimation.value = false;
+            resultLevelUpStatText.value = '';
+            dismissResultMilestoneRewards();
 
             const baseExp = 50 + (lv * 20);
 
@@ -9491,8 +9723,19 @@ const _jpApp = Vue.createApp({
             // Re-apply maxHp and maxSp immediately if leveled up so reset logic fills them to new max
             if (hasLeveledUp.value) {
                 const newMaxHp = getDerivedMaxHp(playerStats.value.level);
+                const newMaxPotions = getDerivedMaxPotions(playerStats.value.level);
                 player.value.maxHp = newMaxHp;
                 window.__sp.max = getDerivedMaxSp(playerStats.value.level);
+                const hpGain = newMaxHp - resultStartMaxHp;
+                const spGain = window.__sp.max - resultStartMaxSp;
+                const potionGain = newMaxPotions - resultStartMaxPotions;
+                const statParts = [`最大 HP +${hpGain}`];
+                if (spGain > 0) statParts.push(`最大 SP +${spGain}`);
+                if (potionGain > 0) statParts.push(`回復水瓶 +${potionGain}`);
+                resultLevelUpStatText.value = `LEVEL UP! ${statParts.join(' / ')}`;
+                resultUnlockedMilestones.value = resultLevelMilestoneRewards.filter(reward =>
+                    reward.level > resultStartLevel && reward.level <= playerStats.value.level
+                );
             }
 
             // Unconditional HP/SP Reset on Victory
@@ -9605,6 +9848,41 @@ const _jpApp = Vue.createApp({
             const startTallySequence = () => {
 
                 const expTarget = earnedExp.value;
+                const startLevel = resultStartLevel;
+                const startExp = resultStartExp;
+                const finalLevel = playerStats.value.level;
+                const levelBoundaryHoldMs = 220;
+                let pauseStartedAt = 0;
+                let pauseUntil = 0;
+                let accumulatedPauseMs = 0;
+
+                const getBoundaryGainForLevel = (targetLevel) => {
+                    let level = startLevel;
+                    let exp = startExp;
+                    let gained = 0;
+                    while (level < targetLevel && level < 30) {
+                        const nextExp = getExpRequiredForNextLevel(level);
+                        gained += nextExp - exp;
+                        level++;
+                        exp = 0;
+                    }
+                    return gained;
+                };
+
+                const updateResultExpDisplay = (gainedExp) => {
+                    let level = startLevel;
+                    let exp = startExp + gainedExp;
+                    while (level < 30 && exp >= getExpRequiredForNextLevel(level)) {
+                        exp -= getExpRequiredForNextLevel(level);
+                        level++;
+                    }
+                    if (level >= 30) exp = 0;
+
+                    displayedResultLevel.value = level;
+                    displayedResultExp.value = exp;
+                    displayedResultNextExp.value = getExpRequiredForNextLevel(level);
+                    displayedResultExpPct.value = level >= 30 ? 100 : (exp / displayedResultNextExp.value) * 100;
+                };
 
                 const maxUnits = expTarget;
 
@@ -9616,11 +9894,46 @@ const _jpApp = Vue.createApp({
 
                 const animateRewards = () => {
 
-                    const elapsed = Date.now() - startTime;
+                    const now = Date.now();
+                    if (pauseUntil > 0) {
+                        if (now < pauseUntil) {
+                            requestAnimationFrame(animateRewards);
+                            return;
+                        }
+                        accumulatedPauseMs += pauseUntil - pauseStartedAt;
+                        pauseUntil = 0;
+                        displayedResultLevel.value++;
+                        displayedResultExp.value = 0;
+                        displayedResultNextExp.value = getExpRequiredForNextLevel(displayedResultLevel.value);
+                        displayedResultExpPct.value = displayedResultLevel.value >= 30 ? 100 : 0;
+                        resultExpBarTransitionEnabled.value = false;
+                        requestAnimationFrame(() => {
+                            resultExpBarTransitionEnabled.value = true;
+                            requestAnimationFrame(animateRewards);
+                        });
+                        return;
+                    }
+
+                    const elapsed = now - startTime - accumulatedPauseMs;
 
                     const progress = Math.min(elapsed / duration, 1);
 
-                    animatedExp.value = Math.floor(expTarget * progress);
+                    const nextAnimatedExp = Math.floor(expTarget * progress);
+                    if (displayedResultLevel.value < finalLevel) {
+                        const boundaryGain = getBoundaryGainForLevel(displayedResultLevel.value + 1);
+                        if (nextAnimatedExp >= boundaryGain) {
+                            animatedExp.value = boundaryGain;
+                            displayedResultExp.value = displayedResultNextExp.value;
+                            displayedResultExpPct.value = 100;
+                            pauseStartedAt = now;
+                            pauseUntil = now + levelBoundaryHoldMs;
+                            requestAnimationFrame(animateRewards);
+                            return;
+                        }
+                    }
+
+                    animatedExp.value = nextAnimatedExp;
+                    updateResultExpDisplay(animatedExp.value);
 
                     if (progress < 1) {
 
@@ -9631,6 +9944,11 @@ const _jpApp = Vue.createApp({
                         // 🌟 第三階段：遞增完成後，才顯示 Next 鈕
 
                         animatedExp.value = expTarget;
+                        updateResultExpDisplay(expTarget);
+                        if (hasLeveledUp.value && finalLevel > startLevel) {
+                            showLevelUpMessageAfterAnimation.value = true;
+                            scheduleResultMilestoneRewards();
+                        }
 
                         scheduleBattleFlowTimeout(() => {
 
@@ -10110,7 +10428,9 @@ const _jpApp = Vue.createApp({
             playPrologueOpening, playMainEndingFinale,
             mapChapters, activeChapter, selectedSegmentIdx, getMapNodeStyle,
             MENTOR_AUDIO_MAP,
-            grantRewards, playerDead, monsterIsDying, monsterTrulyDead, monsterResultShown
+            grantRewards, playerDead, monsterIsDying, monsterTrulyDead, monsterResultShown,
+            playerStats, saveProgression, inventory, resetSP,
+            getDerivedMaxHp, getDerivedMaxSp, getDerivedMaxPotions, getExpRequiredForNextLevel
         });
 
         // ぴったり: returns true if this choice should be hidden while pittariActive
@@ -10123,13 +10443,13 @@ const _jpApp = Vue.createApp({
 
         return {
             isNextBtnVisible,
-            animatedExp, hasLeveledUp, playerStats, getExpRequiredForNextLevel,
+            animatedExp, hasLeveledUp, displayedResultLevel, displayedResultExp, displayedResultNextExp, displayedResultExpPct, resultExpBarTransitionEnabled, showLevelUpMessageAfterAnimation, resultLevelUpStatText, resultUnlockedMilestones, showResultMilestoneRewards, dismissResultMilestoneRewards, playerStats, getExpRequiredForNextLevel,
             isAudioDebugEnabled, isAudioDebugOpen, isAudioDebugDragging, audioDebugOverlayStyle, audioDebugSections, refreshAudioDebugState, startAudioDebugDrag, debugResumeAudioContext, debugTestSfx, debugTestBgmPlay, debugPauseBgm, debugTestRawAudio, debugEnableHtmlAudioFallback, debugDisableHtmlAudioFallback, debugEnableFallbackAudioContextV2, debugDisableFallbackAudioContextV2, debugResumeFallbackAudioContext, debugTestFallbackContextBgm, debugTestFallbackBgm, debugTestFallbackSfx, debugShowAudioState,
-            setDefaultAttackMode, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, monsterHitGiragira, monsterGiraKnockActive, monsterGiraKnockStyle, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
+            setDefaultAttackMode, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, levelPassiveVfx, counterSlashVfx, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, monsterHitGiragira, monsterGiraKnockActive, monsterGiraKnockStyle, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             handleEscapeToMap, escapeOverlayVisible, escapeOverlayOpacity, isEscaping,
             heroBuffs, debugControls,
             // ぴったり: hide wrong choices for the next question
-            skillList, castAbility, spState, settings, shouldShowNextButton, praiseToast, comboPopup, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG, getSkillTypeLabel, pittariActive, isPittariSealed,
+            skillList, castAbility, spState, settings, shouldShowNextButton, praiseToast, comboPopup, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG, getSkillTypeLabel, pittariActive, isPittariSealed, activeLevelPassiveBadges,
             formatParticleBadge, formatSkillSpiritName, formatSkillMeaning, formatSkillRule, formatUnlockLevel,
             particleMastery, particleCorrectCounts, skillMastery, skillCorrectCounts, getParticleMastery, getParticleMasteryStyle, getSkillMastery, getSkillMasteryStyle, isBondMaxSkill,
             isMonsterCodexOpen, openMonsterCodex, monsterCodexEntries, selectedMonsterCodexEntry, selectMonsterCodexEntry, handleMonsterCodexImageError,
