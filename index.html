@@ -2141,7 +2141,7 @@
                                     <p>刪除存檔 {{ slot.id }}？此操作無法復原。</p>
                                     <div class="save-slot-delete-actions">
                                         <button @click="confirmDeleteSaveSlot" class="save-slot-delete-confirm-btn"
-                                            type="button">確定刪除</button>
+                                            type="button">確定</button>
                                         <button @click="cancelDeleteSaveSlot" class="save-slot-delete-cancel-btn"
                                             type="button">取消</button>
                                     </div>
@@ -2707,18 +2707,18 @@
             <!-- ── 秘笈本 Codex（地圖頁可用） ── -->
             <div v-if="isCodexOpen"
                 class="modal-overlay codex-modal-overlay fixed inset-0 z-[2000] flex items-center justify-center p-3 sm:p-6"
-                @click.self="isCodexOpen = false; flippedCardId = null; playSfx('click')">
+                @click.self="closeCodex(); playSfx('click')">
                 <div class="absolute inset-0 bg-black/72 backdrop-blur-sm pointer-events-none"></div>
-                <div class="codex-book relative w-full sm:max-w-4xl flex flex-col">
+                <div class="codex-book codex-book--resonance relative w-full sm:max-w-4xl flex flex-col">
                     <div class="codex-book-header flex-shrink-0 flex items-center justify-between px-5 py-3">
                         <div class="flex items-center gap-2">
                             <span class="text-xl">✦</span>
                             <div>
-                                <h2 class="codex-book-title">小助靈圖鑑</h2>
-                                <p class="codex-book-subtitle">SPIRIT INDEX</p>
+                                <h2 class="codex-book-title">小助靈共鳴輪</h2>
+                                <p class="codex-book-subtitle">SPIRIT RESONANCE</p>
                             </div>
                         </div>
-                        <button @click="isCodexOpen = false; flippedCardId = null; playSfx('click')"
+                        <button @click="closeCodex(); playSfx('click')"
                             class="codex-close-btn">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
@@ -2726,7 +2726,109 @@
                             </svg>
                         </button>
                     </div>
-                    <div class="codex-spread flex-1 min-h-0 flex overflow-hidden">
+                    <div class="codex-resonance-shell flex-1 min-h-0">
+                        <div v-if="!codexDetailMode" class="codex-resonance-overview">
+                            <div class="codex-wheel-stage"
+                                @pointerdown="startCodexDrag"
+                                @pointerup="endCodexDrag"
+                                @pointercancel="endCodexDrag">
+                                <button class="codex-wheel-arrow codex-wheel-arrow--left" type="button"
+                                    @pointerdown.stop
+                                    @pointerup.stop
+                                    @pointercancel.stop
+                                    @click.stop="shiftCodexWheel(-1); playSfx('click')" aria-label="上一隻小助靈">‹</button>
+                                <div class="codex-wheel-orbit" role="list" aria-label="小助靈共鳴輪">
+                                    <button v-for="(skill, index) in codexWheelSkills" :key="skill.id"
+                                        type="button"
+                                        class="codex-wheel-spirit"
+                                        :class="getCodexWheelItemClass(skill, index)"
+                                        :style="getCodexWheelItemStyle(index)"
+                                        @click="openCodexDetail(skill, index); playSfx('uiPop')"
+                                        role="listitem">
+                                        <span class="codex-wheel-ring"></span>
+                                        <img v-if="getSpiritForSkill(skill)" class="codex-wheel-img"
+                                            :src="getSpiritImageSrc(getSpiritForSkill(skill))"
+                                            :alt="unlockedSkillIds.includes(skill.id) ? getCodexSkillDisplayName(skill) : '尚未解鎖的小助靈'"
+                                            @error="handleSpiritImageError($event, getSpiritForSkill(skill))">
+                                        <span v-else class="codex-wheel-particle">{{ (skill.particle || '技').length <= 3 ? (skill.particle || '技') : '技' }}</span>
+                                        <span class="codex-wheel-name">{{ unlockedSkillIds.includes(skill.id) ? getCodexSkillDisplayName(skill) : '???' }}</span>
+                                        <span class="codex-wheel-state">
+                                            <span v-if="isBondMaxSkill(skill.id)">滿絆</span>
+                                            <span v-else-if="unlockedSkillIds.includes(skill.id)">親密度 {{ getSkillMastery(skill.id) }}%</span>
+                                            <span v-else>未解鎖</span>
+                                        </span>
+                                    </button>
+                                </div>
+                                <button class="codex-wheel-arrow codex-wheel-arrow--right" type="button"
+                                    @pointerdown.stop
+                                    @pointerup.stop
+                                    @pointercancel.stop
+                                    @click.stop="shiftCodexWheel(1); playSfx('click')" aria-label="下一隻小助靈">›</button>
+                            </div>
+                            <div class="codex-wheel-footer" v-if="codexSelectedSkill">
+                                <span>{{ codexPage + 1 }} / {{ codexWheelSkills.length }}</span>
+                                <small>點擊中央小助靈查看共鳴資料</small>
+                            </div>
+                        </div>
+                        <div v-else-if="codexSelectedSkill" class="codex-resonance-detail custom-scrollbar"
+                            :class="{ 'is-locked': !unlockedSkillIds.includes(codexSelectedSkill.id), 'is-bond-max': isBondMaxSkill(codexSelectedSkill.id) }">
+                            <button class="codex-detail-back" type="button"
+                                @click="closeCodexDetail(); playSfx('click')">← 返回共鳴輪</button>
+                            <div class="codex-contract-hero">
+                                <div class="codex-contract-seal"></div>
+                                <img v-if="getSpiritForSkill(codexSelectedSkill)" class="codex-contract-img"
+                                    :src="getSpiritImageSrc(getSpiritForSkill(codexSelectedSkill))"
+                                    :alt="unlockedSkillIds.includes(codexSelectedSkill.id) ? getCodexSkillDisplayName(codexSelectedSkill) : '尚未解鎖的小助靈'"
+                                    @error="handleSpiritImageError($event, getSpiritForSkill(codexSelectedSkill))">
+                                <span v-else class="codex-contract-particle">{{ (codexSelectedSkill.particle || '技').length <= 3 ? (codexSelectedSkill.particle || '技') : '技' }}</span>
+                            </div>
+                            <div class="codex-contract-panel">
+                                <template v-if="unlockedSkillIds.includes(codexSelectedSkill.id)">
+                                    <p class="codex-contract-kicker">RESONANCE RECORD</p>
+                                    <h3 class="codex-contract-name">{{ getCodexSkillDisplayName(codexSelectedSkill) }}</h3>
+                                    <div class="codex-contract-affinity">
+                                        <span :class="{ 'is-full': isBondMaxSkill(codexSelectedSkill.id) }">{{ isBondMaxSkill(codexSelectedSkill.id) ? '滿絆共鳴' : '親密度 ' + getSkillMastery(codexSelectedSkill.id) + '%' }}</span>
+                                        <div class="codex-mastery-track">
+                                            <div class="codex-mastery-fill"
+                                                :class="{ 'codex-mastery-fill--full': isBondMaxSkill(codexSelectedSkill.id) }"
+                                                :style="getSkillMasteryStyle(codexSelectedSkill.id)"></div>
+                                        </div>
+                                    </div>
+                                    <div class="codex-contract-grid">
+                                        <section class="codex-contract-section">
+                                            <span class="codex-label-mini codex-label-mini--formula">助詞</span>
+                                            <strong>{{ codexSelectedSkill.particle || '—' }}</strong>
+                                        </section>
+                                        <section class="codex-contract-section">
+                                            <span class="codex-label-mini codex-label-mini--tip">用法</span>
+                                            <p>{{ codexSelectedSkill.meaning || getSpiritForSkill(codexSelectedSkill)?.flavorText || '—' }}</p>
+                                        </section>
+                                        <section class="codex-contract-section">
+                                            <span class="codex-label-mini codex-label-mini--rule">接續</span>
+                                            <code>{{ codexSelectedSkill.rule || '—' }}</code>
+                                        </section>
+                                        <section class="codex-contract-section">
+                                            <span class="codex-label-mini codex-label-mini--example">例句</span>
+                                            <ul v-if="codexSelectedSkill.examples && codexSelectedSkill.examples.length">
+                                                <li v-for="ex in codexSelectedSkill.examples.slice(0, 2)">{{ ex }}</li>
+                                            </ul>
+                                            <p v-else>例句補充中…</p>
+                                        </section>
+                                        <section v-if="getSpiritForSkill(codexSelectedSkill)?.flavorText" class="codex-contract-section codex-contract-section--wide">
+                                            <span class="codex-label-mini codex-label-mini--tip">共鳴記錄</span>
+                                            <p>{{ getSpiritForSkill(codexSelectedSkill).flavorText }}</p>
+                                        </section>
+                                    </div>
+                                </template>
+                                <template v-else>
+                                    <p class="codex-contract-kicker">SEALED RECORD</p>
+                                    <h3 class="codex-contract-name">???</h3>
+                                    <p class="codex-contract-locked-text">{{ codexSelectedSkill.unlockLevel ? '第 ' + codexSelectedSkill.unlockLevel + ' 關解鎖' : '尚未記錄解鎖條件' }}</p>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-if="false" class="codex-spread flex-1 min-h-0 flex overflow-hidden">
                         <div class="flex flex-1 min-w-0 overflow-hidden">
                             <div
                                 class="codex-book-page flex flex-1 items-center justify-center overflow-y-auto p-4 sm:p-8">
@@ -3060,7 +3162,7 @@
                                 ch.label }}</button>
                         </div>
                     </div>
-                    <div class="codex-page-nav flex-shrink-0 flex items-center justify-between px-4 py-2">
+                    <div v-if="false" class="codex-page-nav flex-shrink-0 flex items-center justify-between px-4 py-2">
                         <button @click="codexPage = Math.max(0, codexPage - 1); flippedCardId = null"
                             :disabled="codexPage === 0" class="codex-nav-btn">← 前頁</button>
                         <div class="codex-page-indicator flex items-baseline gap-1">
@@ -3145,18 +3247,16 @@
             <!-- ── 進階設定（地圖頁可用） ── -->
 
             <div v-if="isAdvancedSettingsOpen"
-                class="modal-overlay fixed inset-0 z-[5000] flex items-center justify-center p-4"
+                class="fixed inset-0 z-[5000] flex items-center justify-center p-4 bg-slate-950/[0.05] backdrop-blur-[2px] transition-all duration-300"
                 @click.self="isAdvancedSettingsOpen = false">
 
-                <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
-
                 <div
-                    class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[400px] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col">
+                    class="settings-modal w-full max-w-[400px] confirm-modal-glass stage-confirm-modal rounded-[2rem] p-6 flex flex-col">
 
                     <div class="modal-header-row">
 
                         <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">遊戲設定 <span
-                                class="modal-caption">SETTINGS</span></h2>
+                                class="modal-caption uppercase">SETTINGS</span></h2>
 
                         <button @click="isAdvancedSettingsOpen = false" class="modal-close-btn">✕</button>
 
@@ -3166,10 +3266,10 @@
 
                         <div class="modal-section-card">
 
-                            <label class="flex items-center justify-between cursor-pointer group">
+                            <label class="flex items-center justify-between cursor-pointer">
 
                                 <span
-                                    class="text-sm font-bold text-slate-200 group-hover:text-white transition-colors">答錯時自動朗讀句子</span>
+                                    class="text-sm font-bold text-white transition-colors">答錯時自動朗讀句子</span>
 
                                 <div class="relative inline-flex items-center cursor-pointer">
 
@@ -3192,21 +3292,20 @@
                             <div>
 
                                 <span class="settings-section-label">預設操作模式</span>
-                                <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">進入戰鬥時的預設操作方式</p>
 
                                 <div class="grid grid-cols-2 gap-2">
 
                                     <button @click="setDefaultAttackMode('tap')"
-                                        class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
-                                        :class="settings.defaultAttackMode === 'tap' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+                                        class="py-2 px-1 text-sm font-bold rounded-xl border transition-all"
+                                        :class="settings.defaultAttackMode === 'tap' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-white/85 hover:text-white'">
 
                                         點擊（Tap）
 
                                     </button>
 
                                     <button @click="setDefaultAttackMode('flick')"
-                                        class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
-                                        :class="settings.defaultAttackMode === 'flick' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+                                        class="py-2 px-1 text-sm font-bold rounded-xl border transition-all"
+                                        :class="settings.defaultAttackMode === 'flick' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-white/85 hover:text-white'">
 
                                         滑動（Flick）
 
@@ -3223,16 +3322,16 @@
                                 <div class="grid grid-cols-2 gap-2">
 
                                     <button @click="settings.feedbackVoiceMode = 'combo'"
-                                        class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
-                                        :class="settings.feedbackVoiceMode === 'combo' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+                                        class="py-2 px-1 text-sm font-bold rounded-xl border transition-all"
+                                        :class="settings.feedbackVoiceMode === 'combo' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-white/85 hover:text-white'">
 
                                         連擊回饋
 
                                     </button>
 
                                     <button @click="settings.feedbackVoiceMode = 'correct'"
-                                        class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
-                                        :class="settings.feedbackVoiceMode === 'correct' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+                                        class="py-2 px-1 text-sm font-bold rounded-xl border transition-all"
+                                        :class="settings.feedbackVoiceMode === 'correct' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-white/85 hover:text-white'">
 
                                         正解回饋
 
@@ -3245,21 +3344,18 @@
                             <div>
 
                                 <span class="settings-section-label">戰鬥節奏</span>
-                                <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">目前提供即時戰鬥；回合制即將開放。</p>
 
                                 <div class="grid grid-cols-2 gap-2">
 
                                     <button @click="settings.enemyAttackMode = 'atb'"
-                                        class="flex flex-col items-center py-2.5 px-1 rounded-xl border transition-all"
-                                        :class="settings.enemyAttackMode === 'atb' ? 'bg-rose-500/20 border-rose-500 text-rose-100 shadow-[0_0_15px_rgba(244,63,94,0.2)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
-                                        <span class="text-sm font-black">即時戰鬥</span>
-                                        <span class="text-[9px] opacity-60 font-medium mt-1">行動不中斷，適合連擊</span>
+                                        class="py-2.5 px-1 text-sm font-bold rounded-xl border transition-all"
+                                        :class="settings.enemyAttackMode === 'atb' ? 'bg-rose-500/20 border-rose-500 text-rose-100 shadow-[0_0_15px_rgba(244,63,94,0.2)]' : 'bg-black/20 border-white/5 text-white/85 hover:text-white'">
+                                        即時戰鬥
                                     </button>
 
                                     <button disabled
-                                        class="flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/5 bg-black/10 text-slate-600 cursor-not-allowed italic">
-                                        <span class="text-sm font-black">回合制</span>
-                                        <span class="text-[9px] opacity-60 font-medium mt-1">輪流行動，即將開放</span>
+                                        class="py-2.5 px-1 text-sm font-bold rounded-xl border border-white/5 bg-black/10 text-white/45 cursor-not-allowed italic">
+                                        回合制
                                     </button>
 
                                 </div>
@@ -3271,10 +3367,10 @@
 
                     </div>
 
-                    <div class="flex justify-end mt-5 pt-4 border-t border-white/10">
+                    <div class="settings-modal-footer flex justify-center mt-5 pt-4 border-t border-white/10">
 
                         <button @click="isAdvancedSettingsOpen = false; playSfx('click');"
-                            class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95">關閉</button>
+                            class="stage-records-close settings-close">關閉</button>
 
                     </div>
 
@@ -3427,20 +3523,16 @@
             <!-- Stage Records（地圖頁可用） -->
 
             <div v-if="isStageRecordsOpen"
-                class="modal-overlay fixed inset-0 z-[5000] flex items-center justify-center p-3 sm:p-4"
+                class="fixed inset-0 z-[5000] flex items-center justify-center p-3 sm:p-4 bg-slate-950/[0.05] backdrop-blur-[2px] transition-all duration-300"
                 @click.self="isStageRecordsOpen = false; playSfx('click');">
-
-                <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
 
                 <div
                     class="stage-records-modal w-full max-w-[520px] confirm-modal-glass stage-confirm-modal rounded-[2rem] p-5 sm:p-6 flex flex-col overflow-hidden">
 
                     <div class="modal-header-row flex-shrink-0">
 
-                        <div>
-                            <h2 class="stage-records-title">全關卡成績</h2>
-                            <p class="stage-records-subtitle">通關時間 / Rank 一覽</p>
-                        </div>
+                        <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">全關卡成績 <span
+                                class="modal-caption uppercase">SCORE</span></h2>
 
                         <button @click="isStageRecordsOpen = false; playSfx('click');"
                             class="modal-close-btn">✕</button>
@@ -4561,8 +4653,8 @@
                         <div class="flex items-center gap-2">
                             <span class="text-xl">✦</span>
                             <div>
-                                <h2 class="codex-book-title">小助靈圖鑑</h2>
-                                <p class="codex-book-subtitle">SPIRIT INDEX</p>
+                                <h2 class="codex-book-title">小助靈共鳴輪</h2>
+                                <p class="codex-book-subtitle">SPIRIT RESONANCE</p>
                             </div>
                         </div>
                         <button @click="closeCodex(); if (!isSkillOpen) resumeBattle(); playSfx('click')"
@@ -5043,20 +5135,16 @@
             <!-- Stage Records -->
 
             <div v-if="isStageRecordsOpen"
-                class="modal-overlay fixed inset-0 z-[5000] flex items-center justify-center p-3 sm:p-4"
+                class="fixed inset-0 z-[5000] flex items-center justify-center p-3 sm:p-4 bg-slate-950/[0.05] backdrop-blur-[2px] transition-all duration-300"
                 @click.self="isStageRecordsOpen = false; resumeBattle(); playSfx('click');">
-
-                <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
 
                 <div
                     class="stage-records-modal w-full max-w-[520px] confirm-modal-glass stage-confirm-modal rounded-[2rem] p-5 sm:p-6 flex flex-col overflow-hidden">
 
                     <div class="modal-header-row flex-shrink-0">
 
-                        <div>
-                            <h2 class="stage-records-title">全關卡成績</h2>
-                            <p class="stage-records-subtitle">通關時間 / Rank 一覽</p>
-                        </div>
+                        <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">全關卡成績 <span
+                                class="modal-caption uppercase">SCORE</span></h2>
 
                         <button @click="isStageRecordsOpen = false; resumeBattle(); playSfx('click');"
                             class="modal-close-btn">✕</button>
@@ -5109,18 +5197,16 @@
             <!-- Advanced Settings -->
 
             <div v-if="isAdvancedSettingsOpen"
-                class="modal-overlay fixed inset-0 z-[5000] flex items-center justify-center p-4"
+                class="fixed inset-0 z-[5000] flex items-center justify-center p-4 bg-slate-950/[0.05] backdrop-blur-[2px] transition-all duration-300"
                 @click.self="isAdvancedSettingsOpen = false; resumeBattle(); playSfx('click');">
 
-                <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md pointer-events-none"></div>
-
                 <div
-                    class="relative glass-panel modal-panel !bg-indigo-950/45 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 w-full max-w-[400px] shadow-[0_20px_60px_rgba(0,0,0,0.7)] flex flex-col">
+                    class="settings-modal w-full max-w-[400px] confirm-modal-glass stage-confirm-modal rounded-[2rem] p-6 flex flex-col">
 
                     <div class="modal-header-row">
 
                         <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">遊戲設定 <span
-                                class="modal-caption">SETTINGS</span></h2>
+                                class="modal-caption uppercase">SETTINGS</span></h2>
 
                         <button @click="isAdvancedSettingsOpen = false; resumeBattle(); playSfx('click');"
                             class="modal-close-btn">✕</button>
@@ -5135,10 +5221,10 @@
 
                         <div class="modal-section-card">
 
-                            <label class="flex items-center justify-between cursor-pointer group">
+                            <label class="flex items-center justify-between cursor-pointer">
 
                                 <span
-                                    class="text-sm font-bold text-slate-200 group-hover:text-white transition-colors">答錯時自動朗讀句子</span>
+                                    class="text-sm font-bold text-white transition-colors">答錯時自動朗讀句子</span>
 
                                 <div class="relative inline-flex items-center cursor-pointer">
 
@@ -5160,21 +5246,20 @@
                             <div>
 
                                 <span class="settings-section-label">預設操作模式</span>
-                                <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">進入戰鬥時的預設操作方式</p>
 
                                 <div class="grid grid-cols-2 gap-2">
 
                                     <button @click="setDefaultAttackMode('tap')"
-                                        class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
-                                        :class="settings.defaultAttackMode === 'tap' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+                                        class="py-2 px-1 text-sm font-bold rounded-xl border transition-all"
+                                        :class="settings.defaultAttackMode === 'tap' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-white/85 hover:text-white'">
 
                                         點擊（Tap）
 
                                     </button>
 
                                     <button @click="setDefaultAttackMode('flick')"
-                                        class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
-                                        :class="settings.defaultAttackMode === 'flick' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+                                        class="py-2 px-1 text-sm font-bold rounded-xl border transition-all"
+                                        :class="settings.defaultAttackMode === 'flick' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-white/85 hover:text-white'">
 
                                         滑動（Flick）
 
@@ -5191,16 +5276,16 @@
                                 <div class="grid grid-cols-2 gap-2">
 
                                     <button @click="settings.feedbackVoiceMode = 'combo'"
-                                        class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
-                                        :class="settings.feedbackVoiceMode === 'combo' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+                                        class="py-2 px-1 text-sm font-bold rounded-xl border transition-all"
+                                        :class="settings.feedbackVoiceMode === 'combo' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-white/85 hover:text-white'">
 
                                         連擊回饋
 
                                     </button>
 
                                     <button @click="settings.feedbackVoiceMode = 'correct'"
-                                        class="py-2 px-1 text-xs font-bold rounded-xl border transition-all"
-                                        :class="settings.feedbackVoiceMode === 'correct' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
+                                        class="py-2 px-1 text-sm font-bold rounded-xl border transition-all"
+                                        :class="settings.feedbackVoiceMode === 'correct' ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.18)]' : 'bg-black/20 border-white/5 text-white/85 hover:text-white'">
 
                                         正解回饋
 
@@ -5213,21 +5298,18 @@
                             <div>
 
                                 <span class="settings-section-label">戰鬥節奏</span>
-                                <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">目前提供即時戰鬥；回合制即將開放。</p>
 
                                 <div class="grid grid-cols-2 gap-2">
 
                                     <button @click="settings.enemyAttackMode = 'atb'"
-                                        class="flex flex-col items-center py-2.5 px-1 rounded-xl border transition-all"
-                                        :class="settings.enemyAttackMode === 'atb' ? 'bg-rose-500/20 border-rose-500 text-rose-100 shadow-[0_0_15px_rgba(244,63,94,0.2)]' : 'bg-black/20 border-white/5 text-slate-500 hover:text-slate-300'">
-                                        <span class="text-sm font-black">即時戰鬥</span>
-                                        <span class="text-[9px] opacity-60 font-medium mt-1">行動不中斷，適合連擊</span>
+                                        class="py-2.5 px-1 text-sm font-bold rounded-xl border transition-all"
+                                        :class="settings.enemyAttackMode === 'atb' ? 'bg-rose-500/20 border-rose-500 text-rose-100 shadow-[0_0_15px_rgba(244,63,94,0.2)]' : 'bg-black/20 border-white/5 text-white/85 hover:text-white'">
+                                        即時戰鬥
                                     </button>
 
                                     <button disabled
-                                        class="flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/5 bg-black/10 text-slate-600 cursor-not-allowed italic">
-                                        <span class="text-sm font-black">回合制</span>
-                                        <span class="text-[9px] opacity-60 font-medium mt-1">輪流行動，即將開放</span>
+                                        class="py-2.5 px-1 text-sm font-bold rounded-xl border border-white/5 bg-black/10 text-white/45 cursor-not-allowed italic">
+                                        回合制
                                     </button>
 
                                 </div>
@@ -5240,13 +5322,13 @@
 
 
 
-                    <div class="grid grid-cols-2 gap-3 mt-6 pt-4 border-t border-white/10">
+                    <div class="settings-modal-footer settings-modal-footer--battle mt-6 pt-4 border-t border-white/10">
 
                         <button @click="isAdvancedSettingsOpen = false; isMenuOpen = true; playSfx('click');"
-                            class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-bold border border-white/5 transition-all">返回主選單</button>
+                            class="settings-return-btn">返回主選單</button>
 
                         <button @click="isAdvancedSettingsOpen = false; resumeBattle(); playSfx('click');"
-                            class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95">關閉全部</button>
+                            class="stage-records-close settings-close">關閉全部</button>
 
                     </div>
 
@@ -5470,20 +5552,17 @@
 
         <!-- ── 更新日誌（共享 / Map + Battle） ── -->
 
-        <div v-if="isChangelogOpen" class="fixed inset-0 z-[6000] flex items-center justify-center p-4"
-            style="z-index: 6000;" @click.self="isChangelogOpen = false; playSfx('click');">
-
-            <div class="absolute inset-0 bg-slate-950/50 backdrop-blur-md pointer-events-none"></div>
+        <div v-if="isChangelogOpen"
+            class="fixed inset-0 z-[6000] flex items-center justify-center p-4 bg-slate-950/[0.05] backdrop-blur-[2px] transition-all duration-300"
+            @click.self="isChangelogOpen = false; playSfx('click');">
 
             <div
                 class="changelog-modal w-full max-w-[500px] h-full max-h-[75vh] confirm-modal-glass stage-confirm-modal rounded-[2rem] p-6 flex flex-col overflow-hidden">
 
                 <div class="modal-header-row flex-shrink-0">
 
-                    <h2 class="text-2xl font-black text-indigo-300 tracking-[0.1em] drop-shadow-lg">更新日誌 <span
-                            class="modal-caption uppercase">CHANGELOG</span>
-
-                    </h2>
+                    <h2 class="text-2xl font-black text-amber-400 tracking-[0.1em] drop-shadow-lg">更新日誌 <span
+                            class="modal-caption uppercase">CHANGELOG</span></h2>
 
                     <button @click="isChangelogOpen = false; playSfx('click');" class="modal-close-btn">✕</button>
 

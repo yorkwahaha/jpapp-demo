@@ -632,6 +632,15 @@
     max-height: 75dvh;
 }
 
+.codex-book--resonance {
+    background:
+        radial-gradient(circle at 50% 2%, rgba(255, 255, 255, 0.52), transparent 36%),
+        radial-gradient(circle at 18% 38%, rgba(147, 197, 253, 0.22), transparent 34%),
+        linear-gradient(180deg, rgba(226, 240, 255, 0.96), rgba(171, 207, 246, 0.95) 52%, rgba(74, 102, 162, 0.92));
+    border-color: rgba(214, 230, 255, 0.72);
+    box-shadow: 0 24px 70px rgba(14, 23, 52, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.36);
+}
+
 .spirit-reward-portrait-wrap {
     width: 178px;
     height: 178px;
@@ -1020,6 +1029,14 @@
     box-shadow: inset 0 -1px 0 rgba(252, 228, 160, 0.16), 0 2px 10px rgba(70, 35, 5, 0.18);
 }
 
+.codex-book--resonance .codex-book-header {
+    background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.24), transparent 26%, rgba(147, 197, 253, 0.2)),
+        linear-gradient(135deg, rgba(43, 69, 135, 0.92), rgba(82, 112, 181, 0.9));
+    border-bottom-color: rgba(219, 234, 254, 0.5);
+    box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.22), 0 2px 12px rgba(43, 69, 135, 0.2);
+}
+
 .codex-book-title {
     color: #fce4a0;
     font-weight: 900;
@@ -1048,6 +1065,596 @@
 
 .codex-close-btn:active {
     transform: scale(0.88);
+}
+
+/* ── Spirit Codex Resonance Wheel Prototype ── */
+.codex-resonance-shell {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.46), transparent 32%),
+        radial-gradient(circle at 18% 72%, rgba(191, 219, 254, 0.34), transparent 30%),
+        radial-gradient(circle at 82% 70%, rgba(252, 211, 77, 0.16), transparent 28%),
+        linear-gradient(180deg, rgba(235, 247, 255, 0.98), rgba(180, 213, 247, 0.96) 58%, rgba(77, 105, 168, 0.94));
+}
+
+.codex-resonance-overview {
+    position: relative;
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.8rem;
+    padding: 1.05rem 1rem 0.95rem;
+}
+
+.codex-wheel-stage {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-height: 300px;
+    overflow: hidden;
+    touch-action: pan-y;
+    user-select: none;
+}
+
+.codex-wheel-stage::before {
+    content: "";
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: 10%;
+    height: 26%;
+    border-radius: 50%;
+    border: 1px solid rgba(252, 211, 77, 0.34);
+    box-shadow: inset 0 0 28px rgba(252, 211, 77, 0.12), 0 0 34px rgba(15, 23, 42, 0.34);
+    transform: perspective(620px) rotateX(64deg);
+    pointer-events: none;
+}
+
+.codex-wheel-stage::after {
+    content: "";
+    position: absolute;
+    left: 6%;
+    right: 6%;
+    top: 24%;
+    height: 44%;
+    border-radius: 50%;
+    border: 1px solid rgba(252, 211, 77, 0.14);
+    background:
+        radial-gradient(circle at 50% 0%, rgba(252, 211, 77, 0.16), transparent 8%),
+        radial-gradient(circle at 14% 45%, rgba(252, 211, 77, 0.14), transparent 6%),
+        radial-gradient(circle at 86% 45%, rgba(252, 211, 77, 0.14), transparent 6%),
+        radial-gradient(circle at 50% 50%, transparent 54%, rgba(252, 211, 77, 0.045) 56%, transparent 62%);
+    box-shadow: 0 0 28px rgba(252, 211, 77, 0.085);
+    pointer-events: none;
+}
+
+.codex-resonance-overview::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 24% 26%, rgba(255, 255, 255, 0.72) 0 1px, transparent 2px),
+        radial-gradient(circle at 66% 18%, rgba(219, 234, 254, 0.72) 0 1px, transparent 2px),
+        radial-gradient(circle at 78% 38%, rgba(255, 255, 255, 0.48) 0 1px, transparent 2px),
+        radial-gradient(circle at 38% 70%, rgba(219, 234, 254, 0.52) 0 1px, transparent 2px);
+    opacity: 0.58;
+}
+
+.codex-wheel-orbit {
+    position: relative;
+    width: min(86vw, 620px);
+    height: min(58vh, 420px);
+    min-height: 310px;
+}
+
+.codex-wheel-orbit::before,
+.codex-wheel-orbit::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+    border-radius: 50%;
+}
+
+.codex-wheel-orbit::before {
+    left: 7%;
+    top: 28%;
+    width: 86%;
+    height: 42%;
+    border: 1px solid rgba(252, 211, 77, 0.18);
+    box-shadow: inset 0 0 28px rgba(252, 211, 77, 0.08);
+}
+
+.codex-wheel-orbit::after {
+    left: 12%;
+    top: 34%;
+    width: 76%;
+    height: 30%;
+    border: 1px dashed rgba(252, 211, 77, 0.12);
+}
+
+.codex-wheel-spirit {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 148px;
+    min-height: 208px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.34rem;
+    border: 0;
+    background: transparent;
+    color: #fef3c7;
+    transition: left 0.28s ease, top 0.28s ease, transform 0.28s ease, opacity 0.28s ease, filter 0.28s ease;
+    filter: saturate(0.74) brightness(0.84);
+    cursor: pointer;
+}
+
+.codex-wheel-spirit.is-selected {
+    filter: saturate(0.86) brightness(0.96);
+}
+
+.codex-wheel-spirit.is-selected:not(.is-locked) {
+    filter: saturate(0.92) brightness(1.02);
+}
+
+.codex-wheel-spirit.is-selected .codex-wheel-img,
+.codex-wheel-spirit.is-selected .codex-wheel-particle {
+    filter: drop-shadow(0 16px 16px rgba(30, 41, 59, 0.24)) drop-shadow(0 0 6px rgba(255, 255, 255, 0.22));
+}
+
+.codex-wheel-spirit.is-selected:not(.is-locked) .codex-wheel-img,
+.codex-wheel-spirit.is-selected:not(.is-locked) .codex-wheel-particle {
+    filter: drop-shadow(0 14px 14px rgba(30, 58, 95, 0.2)) drop-shadow(0 0 8px rgba(255, 255, 255, 0.34));
+}
+
+.codex-wheel-spirit.is-midground {
+    width: 96px;
+    min-height: 96px;
+    gap: 0;
+    filter: saturate(0.62) brightness(0.84);
+}
+
+.codex-wheel-spirit.is-midground:not(.is-locked) {
+    filter: saturate(0.72) brightness(0.9);
+}
+
+.codex-wheel-spirit.is-background {
+    width: 68px;
+    min-height: 68px;
+    gap: 0;
+    filter: saturate(0.7) brightness(0.92);
+}
+
+.codex-wheel-spirit.is-background:not(.is-locked) {
+    filter: saturate(0.78) brightness(0.96);
+}
+
+.codex-wheel-spirit.is-locked {
+    color: rgba(226, 232, 240, 0.66);
+    filter: saturate(0.2) brightness(0.72);
+}
+
+.codex-wheel-spirit.is-selected.is-locked {
+    color: rgba(254, 243, 199, 0.9);
+    filter: saturate(0.42) brightness(0.92);
+}
+
+.codex-wheel-spirit.is-bond-max .codex-wheel-ring {
+    border-color: rgba(252, 211, 77, 0.9);
+    box-shadow: 0 0 22px rgba(252, 211, 77, 0.42), inset 0 0 18px rgba(252, 211, 77, 0.18);
+}
+
+.codex-wheel-ring {
+    position: absolute;
+    top: 13px;
+    width: 112px;
+    height: 112px;
+    border-radius: 999px;
+    border: 1px solid rgba(252, 211, 77, 0.36);
+    background: radial-gradient(circle, rgba(252, 211, 77, 0.13), rgba(79, 38, 8, 0.08) 62%, transparent 70%);
+}
+
+.codex-wheel-spirit.is-locked .codex-wheel-ring {
+    border-color: rgba(226, 232, 240, 0.32);
+    background:
+        radial-gradient(circle, rgba(226, 232, 240, 0.16), rgba(129, 140, 248, 0.08) 48%, transparent 68%),
+        linear-gradient(135deg, transparent 46%, rgba(226, 232, 240, 0.22) 49%, transparent 52%);
+    box-shadow: inset 0 0 14px rgba(226, 232, 240, 0.08), 0 0 12px rgba(129, 140, 248, 0.16);
+}
+
+.codex-wheel-spirit.is-midground .codex-wheel-ring {
+    top: 8px;
+    width: 78px;
+    height: 78px;
+    border-color: rgba(252, 211, 77, 0.3);
+    background: radial-gradient(circle, rgba(252, 211, 77, 0.18), rgba(79, 38, 8, 0.08) 58%, transparent 70%);
+}
+
+.codex-wheel-spirit.is-background .codex-wheel-ring {
+    top: 6px;
+    width: 58px;
+    height: 58px;
+    border-color: rgba(252, 211, 77, 0.42);
+    background: radial-gradient(circle, rgba(252, 211, 77, 0.38), rgba(252, 211, 77, 0.12) 48%, transparent 70%);
+    box-shadow: 0 0 14px rgba(252, 211, 77, 0.2);
+}
+
+.codex-wheel-img,
+.codex-wheel-particle {
+    position: relative;
+    width: 132px;
+    height: 132px;
+    object-fit: contain;
+    margin-top: 0;
+    filter: drop-shadow(0 18px 18px rgba(0, 0, 0, 0.28));
+}
+
+.codex-wheel-spirit.is-locked .codex-wheel-img {
+    opacity: 0.46;
+    filter: brightness(0) saturate(0) opacity(0.9) drop-shadow(0 0 8px rgba(226, 232, 240, 0.34));
+}
+
+.codex-wheel-spirit.is-selected.is-locked .codex-wheel-img {
+    opacity: 0.62;
+    filter: brightness(0) saturate(0) opacity(0.9) drop-shadow(0 0 12px rgba(226, 232, 240, 0.42));
+}
+
+.codex-wheel-spirit.is-midground .codex-wheel-img,
+.codex-wheel-spirit.is-midground .codex-wheel-particle {
+    width: 78px;
+    height: 78px;
+    opacity: 0.88;
+}
+
+.codex-wheel-spirit.is-background .codex-wheel-img,
+.codex-wheel-spirit.is-background .codex-wheel-particle {
+    width: 58px;
+    height: 58px;
+    opacity: 0.84;
+}
+
+.codex-wheel-spirit.is-background.is-locked .codex-wheel-img {
+    opacity: 0.5;
+    filter: brightness(0) saturate(0) opacity(0.9) drop-shadow(0 0 8px rgba(226, 232, 240, 0.3));
+}
+
+.codex-wheel-particle {
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: rgba(252, 211, 77, 0.12);
+    border: 1px solid rgba(252, 211, 77, 0.34);
+    font-weight: 900;
+    font-size: 2.2rem;
+}
+
+.codex-wheel-name {
+    max-width: 148px;
+    min-height: 2.05rem;
+    font-weight: 900;
+    font-size: 0.98rem;
+    line-height: 1.08;
+    text-align: center;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.42);
+}
+
+.codex-wheel-spirit:not(.is-selected) .codex-wheel-name,
+.codex-wheel-spirit:not(.is-selected) .codex-wheel-state {
+    display: none;
+}
+
+.codex-wheel-state {
+    min-height: 1.35rem;
+    padding: 0.2rem 0.54rem;
+    border-radius: 999px;
+    background: rgba(28, 16, 8, 0.62);
+    border: 1px solid rgba(252, 211, 77, 0.2);
+    color: rgba(254, 243, 199, 0.84);
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.codex-wheel-arrow {
+    position: absolute;
+    z-index: 220;
+    top: 50%;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 58px;
+    border-radius: 8px;
+    border: 1px solid rgba(252, 211, 77, 0.3);
+    background: rgba(36, 20, 8, 0.74);
+    color: #fde68a;
+    font-size: 2.3rem;
+    line-height: 1;
+    transform: translateY(-50%);
+}
+
+.codex-wheel-arrow--left {
+    left: 0.2rem;
+}
+
+.codex-wheel-arrow--right {
+    right: 0.2rem;
+}
+
+.codex-wheel-footer {
+    display: grid;
+    gap: 0.18rem;
+    justify-items: center;
+    color: rgba(239, 246, 255, 0.78);
+    text-align: center;
+}
+
+.codex-wheel-footer span {
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.24em;
+    color: rgba(219, 234, 254, 0.88);
+}
+
+.codex-wheel-footer strong {
+    color: #fff7d6;
+    font-size: 1.08rem;
+}
+
+.codex-wheel-footer small {
+    max-width: min(92vw, 460px);
+    color: rgba(239, 246, 255, 0.78);
+    font-size: 0.78rem;
+}
+
+.codex-resonance-detail {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(220px, 0.78fr) minmax(0, 1.22fr);
+    gap: 1rem;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1rem;
+    color: #16325f;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    background:
+        radial-gradient(ellipse 72% 58% at 24% 44%, rgba(147, 197, 253, 0.2), transparent 58%),
+        radial-gradient(circle at 52% 88%, rgba(191, 219, 254, 0.14), transparent 42%),
+        radial-gradient(circle at 26% 20%, rgba(255, 255, 255, 0.7), transparent 28%),
+        radial-gradient(circle at 78% 28%, rgba(191, 219, 254, 0.34), transparent 34%),
+        linear-gradient(180deg, rgba(241, 248, 255, 0.92), rgba(207, 226, 251, 0.88));
+}
+
+.codex-detail-back {
+    grid-column: 1 / -1;
+    justify-self: start;
+    min-height: 36px;
+    padding: 0.42rem 0.72rem;
+    border-radius: 8px;
+    border: 1px solid rgba(96, 165, 250, 0.42);
+    background: rgba(255, 255, 255, 0.58);
+    color: #1d4f91;
+    font-size: 0.84rem;
+    font-weight: 900;
+    box-shadow: 0 8px 22px rgba(37, 99, 235, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.76);
+}
+
+.codex-contract-hero {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 280px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    isolation: isolate;
+}
+
+.codex-contract-hero::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: min(92%, 360px);
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    background:
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.55) 0%, rgba(191, 219, 254, 0.12) 42%, transparent 62%),
+        radial-gradient(circle at 50% 50%, transparent 48%, rgba(96, 165, 250, 0.09) 52%, transparent 58%);
+    box-shadow:
+        0 0 0 1px rgba(147, 197, 253, 0.14),
+        0 0 48px rgba(59, 130, 246, 0.1);
+}
+
+.codex-contract-seal {
+    position: absolute;
+    width: min(52vw, 300px);
+    height: min(52vw, 300px);
+    max-width: 300px;
+    max-height: 300px;
+    border-radius: 999px;
+    border: 1px solid rgba(147, 197, 253, 0.58);
+    z-index: 1;
+    background:
+        radial-gradient(circle, rgba(255, 255, 255, 0.72), rgba(191, 219, 254, 0.2) 46%, transparent 66%),
+        radial-gradient(circle, transparent 52%, rgba(252, 211, 77, 0.16) 53%, transparent 58%);
+    box-shadow:
+        inset 0 0 32px rgba(96, 165, 250, 0.14),
+        0 0 34px rgba(96, 165, 250, 0.18),
+        0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+.codex-contract-img,
+.codex-contract-particle {
+    position: relative;
+    z-index: 2;
+    width: min(48vw, 278px);
+    height: min(48vw, 278px);
+    max-width: 278px;
+    max-height: 278px;
+    object-fit: contain;
+    filter: drop-shadow(0 22px 22px rgba(30, 64, 175, 0.22)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.26));
+}
+
+.codex-resonance-detail.is-locked .codex-contract-img {
+    opacity: 0.52;
+    filter: grayscale(1) brightness(0.38) contrast(1.2);
+}
+
+.codex-contract-particle {
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    border: 1px solid rgba(147, 197, 253, 0.46);
+    background: rgba(239, 246, 255, 0.66);
+    color: #1d4ed8;
+    font-size: 3rem;
+    font-weight: 900;
+}
+
+.codex-contract-panel {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    align-self: stretch;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(147, 197, 253, 0.48);
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(219, 234, 254, 0.44)),
+        rgba(239, 246, 255, 0.74);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82), 0 16px 36px rgba(37, 99, 235, 0.14);
+    backdrop-filter: blur(14px);
+}
+
+.codex-contract-kicker {
+    font-size: 0.66rem;
+    font-weight: 900;
+    letter-spacing: 0.28em;
+    color: #174f9c;
+    opacity: 0.92;
+}
+
+.codex-contract-name {
+    margin-top: 0.2rem;
+    color: #0c2448;
+    font-size: 1.45rem;
+    font-weight: 900;
+    line-height: 1.12;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.codex-contract-affinity {
+    display: grid;
+    gap: 0.42rem;
+    margin: 0.75rem 0;
+}
+
+.codex-contract-affinity span {
+    width: max-content;
+    max-width: 100%;
+    padding: 0.22rem 0.62rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(96, 165, 250, 0.34);
+    color: #143d6e;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    line-height: 1.2;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+.codex-contract-affinity span.is-full {
+    color: #8a5b05;
+    border-color: rgba(245, 158, 11, 0.42);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.75),
+        0 0 16px rgba(252, 211, 77, 0.2);
+}
+
+.codex-contract-affinity .codex-mastery-track {
+    border-color: rgba(96, 165, 250, 0.28);
+    background: rgba(255, 255, 255, 0.46);
+    box-shadow: inset 0 1px 4px rgba(30, 64, 175, 0.12), 0 1px 0 rgba(255, 255, 255, 0.58);
+}
+
+.codex-contract-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.62rem;
+}
+
+.codex-contract-section {
+    min-width: 0;
+    padding: 0.72rem;
+    border-radius: 8px;
+    border: 1px solid rgba(147, 197, 253, 0.32);
+    background: rgba(255, 255, 255, 0.5);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.68);
+}
+
+.codex-contract-section--wide {
+    grid-column: 1 / -1;
+}
+
+.codex-contract-section strong {
+    display: block;
+    margin-top: 0.35rem;
+    color: #0a1f3d;
+    font-size: 1.25rem;
+    font-weight: 900;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.codex-contract-section p,
+.codex-contract-section li,
+.codex-contract-section code,
+.codex-contract-locked-text {
+    margin-top: 0.35rem;
+    color: #1a3a5c;
+    font-size: 0.9rem;
+    line-height: 1.55;
+}
+
+.codex-contract-section code {
+    display: block;
+    overflow-wrap: anywhere;
+    font-family: "Noto Sans JP", sans-serif;
+    font-weight: 800;
+}
+
+.codex-contract-section .codex-label-mini {
+    padding: 0.2rem 0.62rem;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    color: #143d6e;
+    border-color: rgba(96, 165, 250, 0.34);
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+.codex-contract-section ul {
+    margin: 0.25rem 0 0;
+    padding-left: 1rem;
 }
 
 /* ── Right-side vertical tab strip (書側索引) ── */
@@ -2128,6 +2735,164 @@
     .codex-book-header {
         padding-top: 0.58rem !important;
         padding-bottom: 0.58rem !important;
+    }
+
+    .codex-resonance-overview {
+        padding: 0.62rem 0.24rem 0.58rem;
+        gap: 0.44rem;
+    }
+
+    .codex-wheel-stage {
+        min-height: 300px;
+    }
+
+    .codex-wheel-stage::after {
+        left: 1%;
+        right: 1%;
+        top: 26%;
+        height: 40%;
+    }
+
+    .codex-wheel-orbit {
+        width: 100%;
+        height: min(54vh, 390px);
+        min-height: 292px;
+    }
+
+    .codex-wheel-orbit::before {
+        left: 5%;
+        top: 28%;
+        width: 90%;
+        height: 40%;
+    }
+
+    .codex-wheel-orbit::after {
+        left: 12%;
+        top: 36%;
+        width: 76%;
+        height: 28%;
+    }
+
+    .codex-wheel-spirit {
+        width: 116px;
+        min-height: 178px;
+    }
+
+    .codex-wheel-spirit.is-midground {
+        width: 76px;
+        min-height: 76px;
+    }
+
+    .codex-wheel-spirit.is-background {
+        width: 50px;
+        min-height: 50px;
+    }
+
+    .codex-wheel-ring {
+        top: 11px;
+        width: 96px;
+        height: 96px;
+    }
+
+    .codex-wheel-spirit.is-background .codex-wheel-ring {
+        top: 6px;
+        width: 42px;
+        height: 42px;
+    }
+
+    .codex-wheel-img,
+    .codex-wheel-particle {
+        width: 112px;
+        height: 112px;
+    }
+
+    .codex-wheel-spirit.is-midground .codex-wheel-img,
+    .codex-wheel-spirit.is-midground .codex-wheel-particle {
+        width: 62px;
+        height: 62px;
+    }
+
+    .codex-wheel-spirit.is-background .codex-wheel-img,
+    .codex-wheel-spirit.is-background .codex-wheel-particle {
+        width: 42px;
+        height: 42px;
+    }
+
+    .codex-wheel-name {
+        max-width: 116px;
+        font-size: 0.82rem;
+    }
+
+    .codex-wheel-state {
+        padding: 0.18rem 0.42rem;
+        font-size: 0.66rem;
+    }
+
+    .codex-wheel-arrow {
+        width: 34px;
+        height: 50px;
+        font-size: 1.85rem;
+    }
+
+    .codex-wheel-footer strong {
+        font-size: 0.96rem;
+    }
+
+    .codex-resonance-detail {
+        grid-template-columns: 1fr;
+        gap: 0.72rem;
+        padding: 0.62rem max(0.5rem, env(safe-area-inset-left)) 0.72rem max(0.5rem, env(safe-area-inset-right));
+    }
+
+    .codex-detail-back {
+        min-height: 34px;
+        font-size: 0.78rem;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .codex-contract-hero {
+        min-height: 178px;
+        padding: 0 0.12rem;
+    }
+
+    .codex-contract-hero::before {
+        width: min(86%, 260px);
+    }
+
+    .codex-contract-seal {
+        width: min(68vw, 190px);
+        height: min(68vw, 190px);
+    }
+
+    .codex-contract-img,
+    .codex-contract-particle {
+        width: min(64vw, 178px);
+        height: min(64vw, 178px);
+    }
+
+    .codex-contract-panel {
+        padding: 0.76rem;
+    }
+
+    .codex-contract-name {
+        font-size: 1.12rem;
+    }
+
+    .codex-contract-grid {
+        grid-template-columns: 1fr;
+        gap: 0.48rem;
+    }
+
+    .codex-contract-section {
+        padding: 0.58rem;
+    }
+
+    .codex-contract-section p,
+    .codex-contract-section li,
+    .codex-contract-section code,
+    .codex-contract-locked-text {
+        font-size: 0.82rem;
     }
 
     .codex-spread {
