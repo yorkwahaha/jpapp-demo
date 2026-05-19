@@ -2733,10 +2733,13 @@
                                 @pointerup="endCodexDrag"
                                 @pointercancel="endCodexDrag">
                                 <button class="codex-wheel-arrow codex-wheel-arrow--left" type="button"
-                                    @pointerdown.stop
-                                    @pointerup.stop
-                                    @pointercancel.stop
-                                    @click.stop="shiftCodexWheel(-1); playSfx('click')" aria-label="上一隻小助靈">‹</button>
+                                    @pointerdown.stop="startCodexWheelArrowPress(-1, $event)"
+                                    @pointerup.stop="stopCodexWheelArrowPress"
+                                    @pointercancel.stop="stopCodexWheelArrowPress"
+                                    @pointerleave.stop="stopCodexWheelArrowPress"
+                                    @lostpointercapture.stop="stopCodexWheelArrowPress"
+                                    @contextmenu.prevent
+                                    @click.stop="handleCodexWheelArrowClick(-1)" aria-label="上一隻小助靈">‹</button>
                                 <div class="codex-wheel-orbit" role="list" aria-label="小助靈共鳴輪">
                                     <button v-for="(skill, index) in codexWheelSkills" :key="skill.id"
                                         type="button"
@@ -2751,23 +2754,35 @@
                                             :alt="unlockedSkillIds.includes(skill.id) ? getCodexSkillDisplayName(skill) : '尚未解鎖的小助靈'"
                                             @error="handleSpiritImageError($event, getSpiritForSkill(skill))">
                                         <span v-else class="codex-wheel-particle">{{ (skill.particle || '技').length <= 3 ? (skill.particle || '技') : '技' }}</span>
-                                        <span class="codex-wheel-name">{{ unlockedSkillIds.includes(skill.id) ? getCodexSkillDisplayName(skill) : '???' }}</span>
-                                        <span class="codex-wheel-state">
-                                            <span v-if="isBondMaxSkill(skill.id)">滿絆</span>
-                                            <span v-else-if="unlockedSkillIds.includes(skill.id)">親密度 {{ getSkillMastery(skill.id) }}%</span>
-                                            <span v-else>未解鎖</span>
-                                        </span>
+                                        <div class="codex-wheel-meta">
+                                            <span class="codex-wheel-name">{{ unlockedSkillIds.includes(skill.id) ? getCodexSkillDisplayName(skill) : '???' }}</span>
+                                            <span class="codex-wheel-state"
+                                                :class="{
+                                                    'codex-wheel-state--bond': isBondMaxSkill(skill.id),
+                                                    'codex-wheel-state--affinity': unlockedSkillIds.includes(skill.id) && !isBondMaxSkill(skill.id),
+                                                    'codex-wheel-state--locked': !unlockedSkillIds.includes(skill.id)
+                                                }"
+                                                :style="unlockedSkillIds.includes(skill.id) && !isBondMaxSkill(skill.id) ? { '--affinity': getSkillMastery(skill.id) + '%' } : null">
+                                                <span v-if="unlockedSkillIds.includes(skill.id)" class="codex-wheel-affinity-row">
+                                                    <span class="codex-wheel-affinity-heart" aria-hidden="true">❤</span>
+                                                    <span class="codex-wheel-affinity-meter">
+                                                        <span class="codex-wheel-affinity-fill" aria-hidden="true"></span>
+                                                        <span class="codex-wheel-affinity-text">{{ isBondMaxSkill(skill.id) ? '滿絆' : getSkillMastery(skill.id) + '%' }}</span>
+                                                    </span>
+                                                </span>
+                                                <template v-else>未解鎖</template>
+                                            </span>
+                                        </div>
                                     </button>
                                 </div>
                                 <button class="codex-wheel-arrow codex-wheel-arrow--right" type="button"
-                                    @pointerdown.stop
-                                    @pointerup.stop
-                                    @pointercancel.stop
-                                    @click.stop="shiftCodexWheel(1); playSfx('click')" aria-label="下一隻小助靈">›</button>
-                            </div>
-                            <div class="codex-wheel-footer" v-if="codexSelectedSkill">
-                                <span>{{ codexPage + 1 }} / {{ codexWheelSkills.length }}</span>
-                                <small>點擊中央小助靈查看共鳴資料</small>
+                                    @pointerdown.stop="startCodexWheelArrowPress(1, $event)"
+                                    @pointerup.stop="stopCodexWheelArrowPress"
+                                    @pointercancel.stop="stopCodexWheelArrowPress"
+                                    @pointerleave.stop="stopCodexWheelArrowPress"
+                                    @lostpointercapture.stop="stopCodexWheelArrowPress"
+                                    @contextmenu.prevent
+                                    @click.stop="handleCodexWheelArrowClick(1)" aria-label="下一隻小助靈">›</button>
                             </div>
                         </div>
                         <div v-else-if="codexSelectedSkill" class="codex-resonance-detail custom-scrollbar"

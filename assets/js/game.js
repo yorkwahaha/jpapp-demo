@@ -1,14 +1,14 @@
 
 window.__sp = { cur: 20, max: 20 };
 
-const spawnFloatingDamage = window.__JPAPP_VFX?.spawnFloatingDamage || function () {};
+const spawnFloatingDamage = window.__JPAPP_VFX?.spawnFloatingDamage || function () { };
 window.spawnFloatingDamage = spawnFloatingDamage;
 
 // window.spawnSkillActivationVfx — 已移至 assets/js/skill-vfx.js (載入順序在本檔之前)
 
-const spawnGiraGiraHitVfx = window.__JPAPP_VFX?.spawnGiraGiraHitVfx || function () {};
+const spawnGiraGiraHitVfx = window.__JPAPP_VFX?.spawnGiraGiraHitVfx || function () { };
 window.spawnGiraGiraHitVfx = spawnGiraGiraHitVfx;
-const spawnGiraGiraBurstVfx = window.__JPAPP_VFX?.spawnGiraGiraBurstVfx || function () {};
+const spawnGiraGiraBurstVfx = window.__JPAPP_VFX?.spawnGiraGiraBurstVfx || function () { };
 window.spawnGiraGiraBurstVfx = spawnGiraGiraBurstVfx;
 const rectCenter = (el) => {
     const helper = window.JPAPPVfxHelpers?.rectCenter;
@@ -575,7 +575,7 @@ const _jpApp = Vue.createApp({
             _progressionHadPersistedUnlockedSkillIds = hasPersistedField;
             _pendingUnlockedSkillIds = hasPersistedField ? normalizeUnlockedSkillIdList(ids) : null;
         };
-        let resetUnlockedSkillIds = () => {};
+        let resetUnlockedSkillIds = () => { };
 
         // ---- [ NEW: PLAYER LEVELING SYSTEM PHASE 1 ] ----
         const playerStats = ref({ level: 1, exp: 0 });
@@ -1479,7 +1479,7 @@ const _jpApp = Vue.createApp({
                 };
                 return { isChangelogOpen, changelogData, changelogError, openChangelog };
             },
-            applyVersionStoragePolicy: () => {}
+            applyVersionStoragePolicy: () => { }
         };
         const { isChangelogOpen, changelogData, changelogError, openChangelog } = changelogManager.createChangelogState({
             ref,
@@ -1595,6 +1595,10 @@ const _jpApp = Vue.createApp({
         const codexDetailMode = ref(false);
         const codexDragStartX = ref(null);
         const codexSuppressClick = ref(false);
+        const codexWheelArrowPressTimer = ref(null);
+        const codexWheelArrowRepeatTimer = ref(null);
+        const codexWheelArrowDidRepeat = ref(false);
+        const codexWheelArrowSuppressClick = ref(false);
         const isMonsterCodexOpen = ref(false);
         const selectedMonsterCodexId = ref(null);
         // [ /CODEX - STATE ]
@@ -2256,7 +2260,48 @@ const _jpApp = Vue.createApp({
             spiritCodexHelpers.getCodexNextSkill(codexFilteredSkills.value, codexPage.value)
         );
 
-        const codexWheelSkills = computed(() => codexBaseSkills.value);
+        const SPIRIT_RESONANCE_VISUAL_ORDER = Object.freeze([
+            'WA_TOPIC_BASIC',
+            'NI_TIME',
+            'KARA_SOURCE_START',
+            'GA_EXIST_SUBJECT',
+            'TO_AND',
+            'DE_ACTION_PLACE',
+            'NO_POSSESSIVE',
+            'NI_EXIST_PLACE',
+            'MADE_LIMIT_END',
+            'MO_ALSO_BASIC',
+            'DE_TOOL_MEANS',
+            'TO_WITH',
+            'GA_INTRANSITIVE',
+            'NI_DESTINATION',
+            'YORI_COMPARE',
+            'YA_AND_OTHERS',
+            'WO_OBJECT_BASIC',
+            'NI_TARGET',
+            'KARA_REASON',
+            'GA_BUT',
+            'DE_SCOPE',
+            'TO_QUOTE',
+            'HE_DIRECTION',
+            'NI_PURPOSE',
+            'MO_COMPLETE_NEGATION',
+            'TO_CONDITIONAL',
+            'NI_FREQUENCY',
+            'DE_MATERIAL'
+        ]);
+
+        const orderCodexWheelSkillsForResonance = (skills) => {
+            const skillList = Array.isArray(skills) ? skills : [];
+            const byId = new Map(skillList.map(skill => [skill.id, skill]));
+            const ordered = SPIRIT_RESONANCE_VISUAL_ORDER
+                .map(id => byId.get(id))
+                .filter(Boolean);
+            const orderedIds = new Set(ordered.map(skill => skill.id));
+            return ordered.concat(skillList.filter(skill => !orderedIds.has(skill.id)));
+        };
+
+        const codexWheelSkills = computed(() => orderCodexWheelSkillsForResonance(codexBaseSkills.value));
 
         const isCodexSkillUnlocked = (skill) => Boolean(skill?.id && unlockedSkillIds.value.includes(skill.id));
 
@@ -2293,25 +2338,73 @@ const _jpApp = Vue.createApp({
         const shiftCodexWheel = (step) => {
             const total = codexWheelSkills.value.length;
             const direction = step >= 0 ? 1 : -1;
-            if (!total || !codexUnlockedWheelIndices.value.length) return;
+            if (!total || !codexUnlockedWheelIndices.value.length) return false;
             for (let i = 1; i <= total; i += 1) {
                 const nextIndex = (codexPage.value + direction * i + total) % total;
                 if (isCodexSkillUnlocked(codexWheelSkills.value[nextIndex])) {
                     setCodexSelectedIndex(nextIndex);
-                    return;
+                    return true;
                 }
             }
+            return false;
+        };
+
+        const shiftCodexWheelWithClickSfx = (step) => {
+            if (shiftCodexWheel(step)) playSfx('click');
+        };
+
+        const clearCodexWheelArrowTimers = () => {
+            if (codexWheelArrowPressTimer.value !== null) {
+                window.clearTimeout(codexWheelArrowPressTimer.value);
+                codexWheelArrowPressTimer.value = null;
+            }
+            if (codexWheelArrowRepeatTimer.value !== null) {
+                window.clearInterval(codexWheelArrowRepeatTimer.value);
+                codexWheelArrowRepeatTimer.value = null;
+            }
+        };
+
+        const startCodexWheelArrowPress = (step, event) => {
+            clearCodexWheelArrowTimers();
+            codexWheelArrowDidRepeat.value = false;
+            codexWheelArrowSuppressClick.value = false;
+            event?.currentTarget?.setPointerCapture?.(event.pointerId);
+            codexWheelArrowPressTimer.value = window.setTimeout(() => {
+                codexWheelArrowPressTimer.value = null;
+                codexWheelArrowDidRepeat.value = true;
+                shiftCodexWheelWithClickSfx(step);
+                codexWheelArrowRepeatTimer.value = window.setInterval(() => {
+                    shiftCodexWheelWithClickSfx(step);
+                }, 200);
+            }, 300);
+        };
+
+        const stopCodexWheelArrowPress = () => {
+            clearCodexWheelArrowTimers();
+            if (codexWheelArrowDidRepeat.value) {
+                codexWheelArrowSuppressClick.value = true;
+                window.setTimeout(() => { codexWheelArrowSuppressClick.value = false; }, 180);
+            }
+        };
+
+        const handleCodexWheelArrowClick = (step) => {
+            if (codexWheelArrowSuppressClick.value) {
+                codexWheelArrowSuppressClick.value = false;
+                codexWheelArrowDidRepeat.value = false;
+                return;
+            }
+            shiftCodexWheelWithClickSfx(step);
         };
 
         const getCodexWheelItemStyle = (index) => {
             const offset = normalizeCodexWheelOffset(index);
             const abs = Math.abs(offset);
             const total = Math.max(1, codexWheelSkills.value.length);
-            const frontAngleStep = 0.45;
+            const frontAngleStep = 0.36;
             let angle = (Math.PI / 2) + offset * frontAngleStep;
-            let radiusX = 43;
-            let radiusY = 21;
-            let centerY = 57;
+            let radiusX = 40;
+            let radiusY = 22;
+            let centerY = 58.8;
             let scale = 1.34;
             let opacity = 1;
             let zIndex = 130;
@@ -2326,8 +2419,9 @@ const _jpApp = Vue.createApp({
                 opacity = 0.68;
                 zIndex = 104;
             } else if (abs >= 3 && abs <= 5) {
-                scale = 0.54 - (abs - 3) * 0.055;
-                opacity = 0.6 - (abs - 3) * 0.055;
+                // Distance excludes selected C position: 3 = third spirit, 4 = fourth.
+                scale = abs === 3 ? 0.76 : 0.585 - (abs - 4) * 0.085;
+                opacity = abs === 3 ? 0.56 : 0.56 - (abs - 4) * 0.035;
                 zIndex = 86 - abs;
             } else if (abs > 5) {
                 const halfSpan = Math.max(1, total / 2 - 5);
@@ -2336,11 +2430,11 @@ const _jpApp = Vue.createApp({
                 const midEdgeAngle = (Math.PI / 2) + side * 5 * frontAngleStep;
                 const topAngle = side > 0 ? Math.PI * 1.5 : -Math.PI / 2;
                 angle = midEdgeAngle + (topAngle - midEdgeAngle) * t;
-                radiusX = 43;
-                radiusY = 21;
-                centerY = 57;
-                scale = 0.58 - t * 0.08;
-                opacity = 0.54 - t * 0.08;
+                radiusX = 40;
+                radiusY = 22;
+                centerY = 58.8;
+                scale = 0.48 - t * 0.08;
+                opacity = 0.5 - t * 0.08;
                 zIndex = Math.round(48 - t * 16);
                 pointerEvents = 'none';
             }
@@ -2377,11 +2471,13 @@ const _jpApp = Vue.createApp({
                 setCodexSelectedIndex(index);
                 return;
             }
+            clearCodexWheelArrowTimers();
             codexDetailMode.value = true;
             flippedCardId.value = null;
         };
 
         const closeCodexDetail = () => {
+            clearCodexWheelArrowTimers();
             codexDetailMode.value = false;
             flippedCardId.value = null;
         };
@@ -2513,6 +2609,7 @@ const _jpApp = Vue.createApp({
             if (!isCodexSkillUnlocked(codexWheelSkills.value[codexPage.value]) && codexUnlockedWheelIndices.value.length) {
                 codexPage.value = codexUnlockedWheelIndices.value[0];
                 flippedCardId.value = null;
+                clearCodexWheelArrowTimers();
                 codexDetailMode.value = false;
             }
         });
@@ -3612,7 +3709,7 @@ const _jpApp = Vue.createApp({
                 createAudioDebugManager: ({ vue }) => {
                     const fallbackRef = vue?.ref || ((v) => ({ value: v }));
                     const fallbackComputed = vue?.computed || ((getter) => ({ get value() { return getter(); } }));
-                    const noop = () => {};
+                    const noop = () => { };
                     return {
                         isAudioDebugEnabled: fallbackRef(false),
                         isAudioDebugOpen: fallbackRef(false),
@@ -3763,6 +3860,7 @@ const _jpApp = Vue.createApp({
         };
 
         const closeCodex = () => {
+            clearCodexWheelArrowTimers();
             isCodexOpen.value = false;
             flippedCardId.value = null;
             codexDetailMode.value = false;
@@ -4893,7 +4991,7 @@ const _jpApp = Vue.createApp({
         // ── iOS Safari Background Audio Guard ──
         const isIosDevice = () => {
             return /iPad|iPhone|iPod/i.test(navigator.userAgent) ||
-                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
         };
 
         // Returns true only when the page is visible and audio is allowed to play.
@@ -7474,7 +7572,7 @@ const _jpApp = Vue.createApp({
             _audioUnlockTried.value = true;
 
             // Warm up critical SFX to reduce first-play latency
-            try { warmupSfx(); } catch(e) {}
+            try { warmupSfx(); } catch (e) { }
 
             try {
                 if (!audioCtx.value) {
@@ -10916,7 +11014,7 @@ const _jpApp = Vue.createApp({
 
             const unlockAudioOnce = () => {
                 // Warm up critical SFX
-                try { warmupSfx(); } catch(e) {}
+                try { warmupSfx(); } catch (e) { }
 
                 initAudioCtx().then(() => {
 
@@ -11058,7 +11156,7 @@ const _jpApp = Vue.createApp({
             isNextBtnVisible,
             animatedExp, hasLeveledUp, displayedResultLevel, displayedResultExp, displayedResultNextExp, displayedResultExpPct, resultExpBarTransitionEnabled, showLevelUpMessageAfterAnimation, resultLevelUpStatText, resultUnlockedMilestones, showResultMilestoneRewards, dismissResultMilestoneRewards, playerStats, getExpRequiredForNextLevel,
             isAudioDebugEnabled, isAudioDebugOpen, isAudioDebugDragging, audioDebugOverlayStyle, audioDebugSections, refreshAudioDebugState, startAudioDebugDrag, debugResumeAudioContext, debugTestSfx, debugTestBgmPlay, debugPauseBgm, debugTestRawAudio, debugEnableHtmlAudioFallback, debugDisableHtmlAudioFallback, debugEnableFallbackAudioContextV2, debugDisableFallbackAudioContextV2, debugResumeFallbackAudioContext, debugTestFallbackContextBgm, debugTestFallbackBgm, debugTestFallbackSfx, debugShowAudioState,
-            setDefaultAttackMode, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, levelPassiveVfx, counterSlashVfx, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, monsterHitGiragira, monsterGiraKnockActive, monsterGiraKnockStyle, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, codexWheelSkills, codexSelectedSkill, codexDetailMode, getCodexWheelItemStyle, getCodexWheelItemClass, getCodexSkillDisplayName, setCodexSelectedIndex, shiftCodexWheel, openCodexDetail, closeCodexDetail, startCodexDrag, endCodexDrag, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
+            setDefaultAttackMode, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, levelPassiveVfx, counterSlashVfx, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, monsterHitGiragira, monsterGiraKnockActive, monsterGiraKnockStyle, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, codexWheelSkills, codexSelectedSkill, codexDetailMode, getCodexWheelItemStyle, getCodexWheelItemClass, getCodexSkillDisplayName, setCodexSelectedIndex, shiftCodexWheel, startCodexWheelArrowPress, stopCodexWheelArrowPress, handleCodexWheelArrowClick, openCodexDetail, closeCodexDetail, startCodexDrag, endCodexDrag, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             handleEscapeToMap, escapeOverlayVisible, escapeOverlayOpacity, isEscaping,
             heroBuffs, debugControls,
             // ぴったり: hide wrong choices for the next question
