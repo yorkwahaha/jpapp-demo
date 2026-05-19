@@ -550,6 +550,31 @@ const _jpApp = Vue.createApp({
 
         let _pendingAbilityIds = null;
         let applyUnlockedAbilityIds = (ids) => { _pendingAbilityIds = Array.isArray(ids) ? ids : []; };
+        const normalizeUnlockedSkillIdList = (ids = []) => {
+            const seen = new Set();
+            return (Array.isArray(ids) ? ids : []).filter(id => {
+                if (!id || typeof id !== 'string' || seen.has(id)) return false;
+                seen.add(id);
+                return true;
+            });
+        };
+        const buildUnlockedSkillIdsFromClearedLevels = () => {
+            const rebuilt = [];
+            clearedLevels.value.forEach(lv => {
+                const cfg = LEVEL_CONFIG.value[lv];
+                if (!cfg?.unlockSkills) return;
+                cfg.unlockSkills.forEach(id => {
+                    if (id && !rebuilt.includes(id)) rebuilt.push(id);
+                });
+            });
+            return rebuilt;
+        };
+        let _progressionHadPersistedUnlockedSkillIds = false;
+        let _pendingUnlockedSkillIds = undefined;
+        let applyUnlockedSkillIds = (ids, hasPersistedField = true) => {
+            _progressionHadPersistedUnlockedSkillIds = hasPersistedField;
+            _pendingUnlockedSkillIds = hasPersistedField ? normalizeUnlockedSkillIdList(ids) : null;
+        };
         let resetUnlockedSkillIds = () => {};
 
         // ---- [ NEW: PLAYER LEVELING SYSTEM PHASE 1 ] ----
@@ -603,6 +628,14 @@ const _jpApp = Vue.createApp({
                     playerStats: playerStats.value
 
                 };
+                const hasLevelConfig = Object.keys(LEVEL_CONFIG.value || {}).length > 0;
+                const unlockedSkillIdsForSave = normalizeUnlockedSkillIdList(unlockedSkillIds.value);
+                const derivedUnlockedSkillIdsForSave = hasLevelConfig && unlockedSkillIdsForSave.length === 0
+                    ? buildUnlockedSkillIdsFromClearedLevels()
+                    : unlockedSkillIdsForSave;
+                if (hasLevelConfig || derivedUnlockedSkillIdsForSave.length > 0) {
+                    data.unlockedSkillIds = derivedUnlockedSkillIdsForSave;
+                }
 
                 localStorage.setItem(slotProgressionKey(getActiveSaveSlotId()), JSON.stringify(data));
                 updateActiveSaveSlotMetadata();
@@ -649,6 +682,12 @@ const _jpApp = Vue.createApp({
                     if (parsed.stageBestRecords) stageBestRecords.value = normalizeStageBestRecords(parsed.stageBestRecords);
 
                     if (parsed.unlockedAbilityIds) applyUnlockedAbilityIds(parsed.unlockedAbilityIds);
+
+                    if (Object.prototype.hasOwnProperty.call(parsed, 'unlockedSkillIds')) {
+                        applyUnlockedSkillIds(parsed.unlockedSkillIds, true);
+                    } else {
+                        applyUnlockedSkillIds(null, false);
+                    }
 
                     if (parsed.unlockedOnomatopeIds) unlockedOnomatopeIds.value = parsed.unlockedOnomatopeIds;
 
@@ -1533,14 +1572,29 @@ const _jpApp = Vue.createApp({
 
         const skillUnlockMap = ref({});
 
-        const unlockedSkillIds = ref([]);
-        resetUnlockedSkillIds = () => { unlockedSkillIds.value = []; };
+        const unlockedSkillIds = ref(Array.isArray(_pendingUnlockedSkillIds) ? _pendingUnlockedSkillIds : []);
+        if (Array.isArray(_pendingUnlockedSkillIds)) _pendingUnlockedSkillIds = undefined;
+        applyUnlockedSkillIds = (ids, hasPersistedField = true) => {
+            _progressionHadPersistedUnlockedSkillIds = hasPersistedField;
+            _pendingUnlockedSkillIds = undefined;
+            unlockedSkillIds.value = hasPersistedField
+                ? normalizeUnlockedSkillIdList(ids)
+                : buildUnlockedSkillIdsFromClearedLevels();
+        };
+        resetUnlockedSkillIds = () => {
+            _progressionHadPersistedUnlockedSkillIds = true;
+            _pendingUnlockedSkillIds = undefined;
+            unlockedSkillIds.value = [];
+        };
 
         // [ CODEX - STATE ]
         const isCodexOpen = ref(false);
         const codexPage = ref(0);
         const codexChapter = ref('all');
         const flippedCardId = ref(null);
+        const codexDetailMode = ref(false);
+        const codexDragStartX = ref(null);
+        const codexSuppressClick = ref(false);
         const isMonsterCodexOpen = ref(false);
         const selectedMonsterCodexId = ref(null);
         // [ /CODEX - STATE ]
@@ -2202,6 +2256,151 @@ const _jpApp = Vue.createApp({
             spiritCodexHelpers.getCodexNextSkill(codexFilteredSkills.value, codexPage.value)
         );
 
+        const codexWheelSkills = computed(() => codexBaseSkills.value);
+
+        const isCodexSkillUnlocked = (skill) => Boolean(skill?.id && unlockedSkillIds.value.includes(skill.id));
+
+        const codexUnlockedWheelIndices = computed(() =>
+            codexWheelSkills.value
+                .map((skill, index) => isCodexSkillUnlocked(skill) ? index : -1)
+                .filter(index => index >= 0)
+        );
+
+        const codexSelectedSkill = computed(() => {
+            const skills = codexWheelSkills.value;
+            if (!skills.length) return null;
+            return skills[Math.min(Math.max(codexPage.value, 0), skills.length - 1)] || null;
+        });
+
+        const normalizeCodexWheelOffset = (index) => {
+            const total = codexWheelSkills.value.length;
+            if (!total) return 0;
+            let offset = index - codexPage.value;
+            if (offset > total / 2) offset -= total;
+            if (offset < -total / 2) offset += total;
+            return offset;
+        };
+
+        const setCodexSelectedIndex = (index) => {
+            const total = codexWheelSkills.value.length;
+            if (!total) return;
+            const normalizedIndex = (index + total) % total;
+            if (!isCodexSkillUnlocked(codexWheelSkills.value[normalizedIndex])) return;
+            codexPage.value = normalizedIndex;
+            flippedCardId.value = null;
+        };
+
+        const shiftCodexWheel = (step) => {
+            const total = codexWheelSkills.value.length;
+            const direction = step >= 0 ? 1 : -1;
+            if (!total || !codexUnlockedWheelIndices.value.length) return;
+            for (let i = 1; i <= total; i += 1) {
+                const nextIndex = (codexPage.value + direction * i + total) % total;
+                if (isCodexSkillUnlocked(codexWheelSkills.value[nextIndex])) {
+                    setCodexSelectedIndex(nextIndex);
+                    return;
+                }
+            }
+        };
+
+        const getCodexWheelItemStyle = (index) => {
+            const offset = normalizeCodexWheelOffset(index);
+            const abs = Math.abs(offset);
+            const total = Math.max(1, codexWheelSkills.value.length);
+            const frontAngleStep = 0.45;
+            let angle = (Math.PI / 2) + offset * frontAngleStep;
+            let radiusX = 43;
+            let radiusY = 21;
+            let centerY = 57;
+            let scale = 1.34;
+            let opacity = 1;
+            let zIndex = 130;
+            let pointerEvents = 'auto';
+
+            if (abs === 1) {
+                scale = 0.96;
+                opacity = 0.82;
+                zIndex = 116;
+            } else if (abs === 2) {
+                scale = 0.72;
+                opacity = 0.68;
+                zIndex = 104;
+            } else if (abs >= 3 && abs <= 5) {
+                scale = 0.54 - (abs - 3) * 0.055;
+                opacity = 0.6 - (abs - 3) * 0.055;
+                zIndex = 86 - abs;
+            } else if (abs > 5) {
+                const halfSpan = Math.max(1, total / 2 - 5);
+                const t = Math.min(1, (abs - 5) / halfSpan);
+                const side = offset > 0 ? 1 : -1;
+                const midEdgeAngle = (Math.PI / 2) + side * 5 * frontAngleStep;
+                const topAngle = side > 0 ? Math.PI * 1.5 : -Math.PI / 2;
+                angle = midEdgeAngle + (topAngle - midEdgeAngle) * t;
+                radiusX = 43;
+                radiusY = 21;
+                centerY = 57;
+                scale = 0.58 - t * 0.08;
+                opacity = 0.54 - t * 0.08;
+                zIndex = Math.round(48 - t * 16);
+                pointerEvents = 'none';
+            }
+
+            const x = 50 + Math.cos(angle) * radiusX;
+            const y = centerY + Math.sin(angle) * radiusY;
+
+            return {
+                left: `${x}%`,
+                top: `${y}%`,
+                transform: `translate3d(-50%, -50%, 0) scale(${scale})`,
+                opacity,
+                zIndex,
+                pointerEvents
+            };
+        };
+
+        const getCodexSkillDisplayName = (skill) => getSpiritForSkill(skill)?.nameJa || skill?.name?.split('：')[1] || skill?.name || '???';
+
+        const getCodexWheelItemClass = (skill, index) => ({
+            'is-selected': normalizeCodexWheelOffset(index) === 0,
+            'is-foreground': Math.abs(normalizeCodexWheelOffset(index)) <= 2,
+            'is-midground': Math.abs(normalizeCodexWheelOffset(index)) >= 3 && Math.abs(normalizeCodexWheelOffset(index)) <= 5,
+            'is-background': Math.abs(normalizeCodexWheelOffset(index)) > 5,
+            'is-locked': !isCodexSkillUnlocked(skill),
+            'is-bond-max': isBondMaxSkill(skill?.id)
+        });
+
+        const openCodexDetail = (skill, index) => {
+            if (codexSuppressClick.value) return;
+            if (!skill) return;
+            if (!isCodexSkillUnlocked(skill)) return;
+            if (normalizeCodexWheelOffset(index) !== 0) {
+                setCodexSelectedIndex(index);
+                return;
+            }
+            codexDetailMode.value = true;
+            flippedCardId.value = null;
+        };
+
+        const closeCodexDetail = () => {
+            codexDetailMode.value = false;
+            flippedCardId.value = null;
+        };
+
+        const startCodexDrag = (event) => {
+            if (event?.target?.closest?.('.codex-wheel-arrow')) return;
+            codexDragStartX.value = event?.clientX ?? null;
+        };
+
+        const endCodexDrag = (event) => {
+            if (codexDragStartX.value === null) return;
+            const deltaX = (event?.clientX ?? codexDragStartX.value) - codexDragStartX.value;
+            codexDragStartX.value = null;
+            if (Math.abs(deltaX) < 42) return;
+            codexSuppressClick.value = true;
+            window.setTimeout(() => { codexSuppressClick.value = false; }, 140);
+            shiftCodexWheel(deltaX > 0 ? -1 : 1);
+        };
+
         const getParticleMastery = (particle) => {
             if (!MASTERY_PARTICLES.includes(particle)) return 0;
             const value = Number(particleMastery.value[particle] ?? 0);
@@ -2304,10 +2503,24 @@ const _jpApp = Vue.createApp({
         };
         // [ /CODEX - COMPUTED ]
 
+        watch([isCodexOpen, codexWheelSkills, codexUnlockedWheelIndices], () => {
+            if (!isCodexOpen.value) return;
+            const total = codexWheelSkills.value.length;
+            if (!total) return;
+            if (codexPage.value < 0 || codexPage.value >= total) {
+                codexPage.value = 0;
+            }
+            if (!isCodexSkillUnlocked(codexWheelSkills.value[codexPage.value]) && codexUnlockedWheelIndices.value.length) {
+                codexPage.value = codexUnlockedWheelIndices.value[0];
+                flippedCardId.value = null;
+                codexDetailMode.value = false;
+            }
+        });
+
         // [ CODEX - GLOBAL EVENTS ]
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && isCodexOpen.value) {
-                isCodexOpen.value = false;
+                closeCodex();
                 resumeBattle();
             }
             if (e.key === 'Escape' && isMonsterCodexOpen.value) {
@@ -2409,19 +2622,11 @@ const _jpApp = Vue.createApp({
 
                     skillUnlockMap.value = tempMap;
 
-                    // Codex 修復：從 clearedLevels 重建 unlockedSkillIds
-                    // 確保重新整頁後 Codex 仍正確顯示已解鎖條目（而非全部 🔒 未習得）
-                    unlockedSkillIds.value = [];
-                    clearedLevels.value.forEach(lv => {
-                        const cfg = LEVEL_CONFIG.value[lv];
-                        if (cfg?.unlockSkills) {
-                            cfg.unlockSkills.forEach(id => {
-                                if (!unlockedSkillIds.value.includes(id)) {
-                                    unlockedSkillIds.value.push(id);
-                                }
-                            });
-                        }
-                    });
+                    // Older saves did not persist unlockedSkillIds, so derive them once
+                    // from cleared levels. Newer saves keep the saved list as source of truth.
+                    if (!_progressionHadPersistedUnlockedSkillIds) {
+                        unlockedSkillIds.value = buildUnlockedSkillIdsFromClearedLevels();
+                    }
 
                 }
 
@@ -3560,6 +3765,9 @@ const _jpApp = Vue.createApp({
         const closeCodex = () => {
             isCodexOpen.value = false;
             flippedCardId.value = null;
+            codexDetailMode.value = false;
+            codexDragStartX.value = null;
+            codexSuppressClick.value = false;
         };
 
         // ================= [ AUDIO & TTS ] =================
@@ -8652,6 +8860,7 @@ const _jpApp = Vue.createApp({
                 });
 
                 if (newUnlocks.length > 0) {
+                    _progressionHadPersistedUnlockedSkillIds = true;
 
                     if (window._disableMentorAutoTrigger || skipMentor) {
 
@@ -10849,7 +11058,7 @@ const _jpApp = Vue.createApp({
             isNextBtnVisible,
             animatedExp, hasLeveledUp, displayedResultLevel, displayedResultExp, displayedResultNextExp, displayedResultExpPct, resultExpBarTransitionEnabled, showLevelUpMessageAfterAnimation, resultLevelUpStatText, resultUnlockedMilestones, showResultMilestoneRewards, dismissResultMilestoneRewards, playerStats, getExpRequiredForNextLevel,
             isAudioDebugEnabled, isAudioDebugOpen, isAudioDebugDragging, audioDebugOverlayStyle, audioDebugSections, refreshAudioDebugState, startAudioDebugDrag, debugResumeAudioContext, debugTestSfx, debugTestBgmPlay, debugPauseBgm, debugTestRawAudio, debugEnableHtmlAudioFallback, debugDisableHtmlAudioFallback, debugEnableFallbackAudioContextV2, debugDisableFallbackAudioContextV2, debugResumeFallbackAudioContext, debugTestFallbackContextBgm, debugTestFallbackBgm, debugTestFallbackSfx, debugShowAudioState,
-            setDefaultAttackMode, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, levelPassiveVfx, counterSlashVfx, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, monsterHitGiragira, monsterGiraKnockActive, monsterGiraKnockStyle, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
+            setDefaultAttackMode, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, levelPassiveVfx, counterSlashVfx, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, monsterHitGiragira, monsterGiraKnockActive, monsterGiraKnockStyle, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, codexWheelSkills, codexSelectedSkill, codexDetailMode, getCodexWheelItemStyle, getCodexWheelItemClass, getCodexSkillDisplayName, setCodexSelectedIndex, shiftCodexWheel, openCodexDetail, closeCodexDetail, startCodexDrag, endCodexDrag, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             handleEscapeToMap, escapeOverlayVisible, escapeOverlayOpacity, isEscaping,
             heroBuffs, debugControls,
             // ぴったり: hide wrong choices for the next question
