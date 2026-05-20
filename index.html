@@ -2399,7 +2399,7 @@
 
                                 <button @click="isCodexOpen = true; playSfx('uiPop');"
                                     class="map-hud-btn map-hud-btn--spirit-codex" type="button"
-                                    aria-label="小助靈圖鑑"><span>📖</span></button>
+                                    aria-label="小助靈共鳴輪"><span>✨</span></button>
                                 <button @click="openMonsterCodex" class="map-hud-btn map-hud-btn--monster-codex"
                                     type="button" aria-label="怪物圖鑑"><span>🐾</span></button>
                                 <button @click="isMenuOpen = true; playSfx('uiPop');"
@@ -2521,7 +2521,7 @@
                         <div class="map-hud-actions">
                             <button @click="isCodexOpen = true; playSfx('uiPop');"
                                 class="map-hud-btn map-hud-btn--spirit-codex" type="button"
-                                aria-label="小助靈圖鑑"><span>📖</span></button>
+                                aria-label="小助靈共鳴輪"><span>✨</span></button>
                             <button @click="openMonsterCodex" class="map-hud-btn map-hud-btn--monster-codex"
                                 type="button" aria-label="怪物圖鑑"><span>🐾</span></button>
                             <button @click="isMenuOpen = true; playSfx('uiPop');" class="map-hud-btn map-hud-btn--system"
@@ -2704,7 +2704,7 @@
 
             </transition>
 
-            <!-- ── 秘笈本 Codex（地圖頁可用） ── -->
+            <!-- ── 小助靈共鳴輪（地圖頁可用） ── -->
             <div v-if="isCodexOpen"
                 class="modal-overlay codex-modal-overlay fixed inset-0 z-[2000] flex items-center justify-center p-3 sm:p-6"
                 @click.self="closeCodex(); playSfx('click')">
@@ -2843,351 +2843,8 @@
                             </div>
                         </div>
                     </div>
-                    <div v-if="false" class="codex-spread flex-1 min-h-0 flex overflow-hidden">
-                        <div class="flex flex-1 min-w-0 overflow-hidden">
-                            <div
-                                class="codex-book-page flex flex-1 items-center justify-center overflow-y-auto p-4 sm:p-8">
-                                <div v-if="codexPageSkills[0]" :id="'skill-card-' + codexPageSkills[0].id"
-                                    class="codex-card-stack flex flex-col items-center justify-center gap-3 w-full">
-                                    <div v-if="unlockedSkillIds.includes(codexPageSkills[0].id) && getSpiritForSkill(codexPageSkills[0])"
-                                        class="codex-spirit-entry"
-                                        :class="{ 'codex-spirit--true-resonance': isBondMaxSkill(codexPageSkills[0].id) }">
-                                        <div class="codex-spirit-hero">
-                                            <div class="codex-spirit-aura"></div>
-                                            <div class="codex-affinity-badge"
-                                                :class="{ 'codex-affinity-badge--full': isBondMaxSkill(codexPageSkills[0].id) }"
-                                                :tabindex="isBondMaxSkill(codexPageSkills[0].id) ? 0 : null"
-                                                :role="isBondMaxSkill(codexPageSkills[0].id) ? 'button' : null"
-                                                :aria-label="isBondMaxSkill(codexPageSkills[0].id) ? '親密度 100%。攻擊化為紅色彗星，命中更穩定。' : '親密度'"
-                                                data-full-bond-hint="攻擊化為紅色彗星，命中更穩定。">
-                                                <div class="codex-affinity-heart">
-                                                    <div class="codex-affinity-heart-fill"
-                                                        :style="{ height: getSkillMastery(codexPageSkills[0].id) + '%' }"></div>
-                                                </div>
-                                                <span>親密度 {{ getSkillMastery(codexPageSkills[0].id) }}%</span>
-                                            </div>
-                                            <img class="codex-spirit-main-img"
-                                                :src="getSpiritImageSrc(getSpiritForSkill(codexPageSkills[0]))"
-                                                :alt="getSpiritForSkill(codexPageSkills[0]).nameJa || getSpiritForSkill(codexPageSkills[0]).nameZh"
-                                                @error="handleSpiritImageError($event, getSpiritForSkill(codexPageSkills[0]))">
-                                        </div>
-                                        <div class="codex-spirit-title-block">
-                                            <h3 class="codex-spirit-name">{{ getSpiritForSkill(codexPageSkills[0]).nameJa }}</h3>
-                                        </div>
-                                        <div class="codex-spirit-details">
-                                            <div v-if="getSpiritForSkill(codexPageSkills[0])?.flavorText"
-                                                class="codex-back-section codex-spirit-flavor">
-                                                <div v-if="isBondMaxSkill(codexPageSkills[0].id)"
-                                                    class="codex-inline-true-resonance">
-                                                    <span class="codex-label-mini codex-label-mini--true-resonance">滿絆共鳴</span>
-                                                    <p v-if="getSpiritForSkill(codexPageSkills[0])?.trueResonanceTitleJa"
-                                                        class="codex-back-tip-text">{{
-                                                        getSpiritForSkill(codexPageSkills[0]).trueResonanceTitleJa }}<span
-                                                            v-if="getSpiritForSkill(codexPageSkills[0])?.trueResonanceTitleZh && getSpiritForSkill(codexPageSkills[0]).trueResonanceTitleZh !== getSpiritForSkill(codexPageSkills[0]).trueResonanceTitleJa"> / {{
-                                                            getSpiritForSkill(codexPageSkills[0]).trueResonanceTitleZh }}</span></p>
-                                                    <ul v-if="getSpiritForSkill(codexPageSkills[0])?.trueResonanceLines?.length"
-                                                        class="codex-true-resonance-lines--ja">
-                                                        <li v-for="line in getSpiritForSkill(codexPageSkills[0]).trueResonanceLines.slice(0, 1)"
-                                                            class="codex-true-resonance-line--ja">{{ line }}</li>
-                                                    </ul>
-                                                    <ul v-if="getSpiritForSkill(codexPageSkills[0])?.trueResonanceLines?.length > 1"
-                                                        class="codex-true-resonance-lines--zh">
-                                                        <li v-for="line in getSpiritForSkill(codexPageSkills[0]).trueResonanceLines.slice(1)"
-                                                            class="codex-true-resonance-line--zh">{{ line }}</li>
-                                                    </ul>
-                                                </div>
-                                                <span class="codex-label-mini codex-label-mini--tip">小助靈</span>
-                                                <p class="codex-back-tip-text">{{
-                                                    getSpiritForSkill(codexPageSkills[0]).flavorText }}</p>
-                                            </div>
-                                            <div v-if="codexPageSkills[0].examples && codexPageSkills[0].examples.length"
-                                                class="codex-back-section">
-                                                <span class="codex-label-mini codex-label-mini--example">例句</span>
-                                                <ul class="codex-back-examples-list">
-                                                    <li v-for="ex in codexPageSkills[0].examples.slice(0,2)"
-                                                        class="codex-back-example-item">{{ ex }}</li>
-                                                    <li class="codex-back-example-item codex-back-example-item--rule">
-                                                        <code class="codex-back-formula-code">{{ codexPageSkills[0].rule || '—' }}</code>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
-                                            <div v-if="codexPageSkills[0].tip" class="codex-back-tip-block">
-                                                <span class="codex-label-mini codex-label-mini--tip">提醒</span>
-                                                <p class="codex-back-tip-text">{{ codexPageSkills[0].tip }}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div v-else-if="unlockedSkillIds.includes(codexPageSkills[0].id)" class="codex-flip-card"
-                                        @click="flippedCardId = (flippedCardId === codexPageSkills[0].id ? null : codexPageSkills[0].id); playSfx('uiPop')">
-                                        <div class="codex-flip-inner"
-                                            :class="{ 'is-flipped': flippedCardId === codexPageSkills[0].id }">
-                                            <div class="codex-face codex-face-front">
-                                                <div v-if="getSpiritForSkill(codexPageSkills[0])"
-                                                    class="codex-spirit-portrait-wrap">
-                                                    <img class="codex-spirit-portrait"
-                                                        :src="getSpiritImageSrc(getSpiritForSkill(codexPageSkills[0]))"
-                                                        :alt="getSpiritForSkill(codexPageSkills[0]).nameJa || getSpiritForSkill(codexPageSkills[0]).nameZh"
-                                                        @error="handleSpiritImageError($event, getSpiritForSkill(codexPageSkills[0]))">
-                                                </div>
-                                                <div v-else class="flex justify-center"><span
-                                                        class="codex-particle-badge-lg">{{ (codexPageSkills[0].particle
-                                                        || '技').length <= 3 ? (codexPageSkills[0].particle || '技' )
-                                                            : '技' }}</span>
-                                                </div>
-                                                <h3 class="codex-face-name">{{ getSpiritForSkill(codexPageSkills[0])?.nameJa ||
-                                                    codexPageSkills[0].name.split('：')[1] ||
-                                                    codexPageSkills[0].name }}</h3>
-                                                <p class="codex-face-meaning-text">{{ codexPageSkills[0].meaning || '—'
-                                                    }}</p>
-                                                <div class="codex-face-rule-block"><span
-                                                        class="codex-label-mini codex-label-mini--rule">句型</span><code
-                                                        class="codex-face-rule-code ml-2">{{ codexPageSkills[0].rule || '—' }}</code>
-                                                </div>
-                                                <p class="codex-flip-hint">翻面查看 ↺</p>
-                                            </div>
-                                            <div class="codex-face codex-face-back">
-                                                <div class="codex-back-id-row">
-                                                    <span class="codex-particle-badge"
-                                                        style="width:26px;height:26px;font-size:0.72rem">{{
-                                                        (codexPageSkills[0].particle || '技').length <= 3 ?
-                                                            (codexPageSkills[0].particle || '技' ) : '技' }}</span>
-                                                            <span class="codex-back-id-name">{{
-                                                                codexPageSkills[0].name.split('：')[1] ||
-                                                                codexPageSkills[0].name }}</span>
-                                                </div>
-                                                <div v-if="getSpiritForSkill(codexPageSkills[0])?.flavorText"
-                                                    class="codex-back-section codex-spirit-flavor">
-                                                    <span class="codex-label-mini codex-label-mini--tip">小助靈</span>
-                                                    <p class="codex-back-tip-text">{{
-                                                        getSpiritForSkill(codexPageSkills[0]).flavorText }}</p>
-                                                </div>
-                                                <div class="codex-back-section">
-                                                    <span class="codex-label-mini codex-label-mini--formula">公式</span>
-                                                    <code
-                                                        class="codex-back-formula-code">{{ codexPageSkills[0].rule || '—' }}</code>
-                                                </div>
-                                                <div v-if="codexPageSkills[0].examples && codexPageSkills[0].examples.length"
-                                                    class="codex-back-section">
-                                                    <span class="codex-label-mini codex-label-mini--example">例句</span>
-                                                    <ul class="codex-back-examples-list">
-                                                        <li v-for="ex in codexPageSkills[0].examples.slice(0,2)"
-                                                            class="codex-back-example-item">{{ ex }}</li>
-                                                    </ul>
-                                                </div>
-                                                <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
-                                                <div v-if="codexPageSkills[0].tip" class="codex-back-tip-block">
-                                                    <span class="codex-label-mini codex-label-mini--tip">提醒</span>
-                                                    <p class="codex-back-tip-text">{{ codexPageSkills[0].tip }}</p>
-                                                </div>
-                                                <p class="codex-flip-hint mt-auto">← 返回正面</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div v-else class="codex-locked-card">
-                                        <div class="flex items-center gap-2"><span>🔒</span><span
-                                                class="font-bold text-slate-500/70 text-sm">尚未習得</span></div>
-                                        <span class="codex-unlock-tip">{{ codexPageSkills[0].unlockLevel ? '第 ' +
-                                            codexPageSkills[0].unlockLevel + ' 關解鎖' : '探索中' }}</span>
-                                    </div>
-                                    <div v-if="unlockedSkillIds.includes(codexPageSkills[0].id) && codexPageSkills[0].particle && !getSpiritForSkill(codexPageSkills[0])"
-                                        class="codex-mastery-panel">
-                                        <div class="codex-mastery-row">
-                                            <span>親密度</span>
-                                            <strong>{{ getSkillMastery(codexPageSkills[0].id) }}%</strong>
-                                        </div>
-                                        <div class="codex-mastery-track">
-                                            <div class="codex-mastery-fill"
-                                                :style="getSkillMasteryStyle(codexPageSkills[0].id)"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div v-else class="codex-page-empty">
-                                    <p class="text-amber-900/40 text-sm">此章節尚無技能</p>
-                                </div>
-                            </div>
-                            <div class="codex-spine hidden sm:block flex-shrink-0"></div>
-                            <div
-                                class="codex-book-page codex-book-page--right hidden sm:flex flex-1 items-center justify-center overflow-y-auto p-8">
-                                <div v-if="codexNextSkill" :id="'skill-card-r-' + codexNextSkill.id"
-                                    class="codex-card-stack flex flex-col items-center justify-center gap-3 w-full">
-                                    <div v-if="unlockedSkillIds.includes(codexNextSkill.id) && getSpiritForSkill(codexNextSkill)"
-                                        class="codex-spirit-entry"
-                                        :class="{ 'codex-spirit--true-resonance': isBondMaxSkill(codexNextSkill.id) }">
-                                        <div class="codex-spirit-hero">
-                                            <div class="codex-spirit-aura"></div>
-                                            <div class="codex-affinity-badge"
-                                                :class="{ 'codex-affinity-badge--full': isBondMaxSkill(codexNextSkill.id) }"
-                                                :tabindex="isBondMaxSkill(codexNextSkill.id) ? 0 : null"
-                                                :role="isBondMaxSkill(codexNextSkill.id) ? 'button' : null"
-                                                :aria-label="isBondMaxSkill(codexNextSkill.id) ? '親密度 100%。攻擊化為紅色彗星，命中更穩定。' : '親密度'"
-                                                data-full-bond-hint="攻擊化為紅色彗星，命中更穩定。">
-                                                <div class="codex-affinity-heart">
-                                                    <div class="codex-affinity-heart-fill"
-                                                        :style="{ height: getSkillMastery(codexNextSkill.id) + '%' }"></div>
-                                                </div>
-                                                <span>親密度 {{ getSkillMastery(codexNextSkill.id) }}%</span>
-                                            </div>
-                                            <img class="codex-spirit-main-img"
-                                                :src="getSpiritImageSrc(getSpiritForSkill(codexNextSkill))"
-                                                :alt="getSpiritForSkill(codexNextSkill).nameJa || getSpiritForSkill(codexNextSkill).nameZh"
-                                                @error="handleSpiritImageError($event, getSpiritForSkill(codexNextSkill))">
-                                        </div>
-                                        <div class="codex-spirit-title-block">
-                                            <h3 class="codex-spirit-name">{{ getSpiritForSkill(codexNextSkill).nameJa }}</h3>
-                                        </div>
-                                        <div class="codex-spirit-details">
-                                            <div v-if="getSpiritForSkill(codexNextSkill)?.flavorText"
-                                                class="codex-back-section codex-spirit-flavor">
-                                                <div v-if="isBondMaxSkill(codexNextSkill.id)"
-                                                    class="codex-inline-true-resonance">
-                                                    <span class="codex-label-mini codex-label-mini--true-resonance">滿絆共鳴</span>
-                                                    <p v-if="getSpiritForSkill(codexNextSkill)?.trueResonanceTitleJa"
-                                                        class="codex-back-tip-text">{{
-                                                        getSpiritForSkill(codexNextSkill).trueResonanceTitleJa }}<span
-                                                            v-if="getSpiritForSkill(codexNextSkill)?.trueResonanceTitleZh && getSpiritForSkill(codexNextSkill).trueResonanceTitleZh !== getSpiritForSkill(codexNextSkill).trueResonanceTitleJa"> / {{
-                                                            getSpiritForSkill(codexNextSkill).trueResonanceTitleZh }}</span></p>
-                                                    <ul v-if="getSpiritForSkill(codexNextSkill)?.trueResonanceLines?.length"
-                                                        class="codex-true-resonance-lines--ja">
-                                                        <li v-for="line in getSpiritForSkill(codexNextSkill).trueResonanceLines.slice(0, 1)"
-                                                            class="codex-true-resonance-line--ja">{{ line }}</li>
-                                                    </ul>
-                                                    <ul v-if="getSpiritForSkill(codexNextSkill)?.trueResonanceLines?.length > 1"
-                                                        class="codex-true-resonance-lines--zh">
-                                                        <li v-for="line in getSpiritForSkill(codexNextSkill).trueResonanceLines.slice(1)"
-                                                            class="codex-true-resonance-line--zh">{{ line }}</li>
-                                                    </ul>
-                                                </div>
-                                                <span class="codex-label-mini codex-label-mini--tip">小助靈</span>
-                                                <p class="codex-back-tip-text">{{
-                                                    getSpiritForSkill(codexNextSkill).flavorText }}</p>
-                                            </div>
-                                            <div v-if="codexNextSkill.examples && codexNextSkill.examples.length"
-                                                class="codex-back-section">
-                                                <span class="codex-label-mini codex-label-mini--example">例句</span>
-                                                <ul class="codex-back-examples-list">
-                                                    <li v-for="ex in codexNextSkill.examples.slice(0,2)"
-                                                        class="codex-back-example-item">{{ ex }}</li>
-                                                    <li class="codex-back-example-item codex-back-example-item--rule">
-                                                        <code class="codex-back-formula-code">{{ codexNextSkill.rule || '—' }}</code>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
-                                            <div v-if="codexNextSkill.tip" class="codex-back-tip-block">
-                                                <span class="codex-label-mini codex-label-mini--tip">提醒</span>
-                                                <p class="codex-back-tip-text">{{ codexNextSkill.tip }}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div v-else-if="unlockedSkillIds.includes(codexNextSkill.id)" class="codex-flip-card"
-                                        @click="flippedCardId = (flippedCardId === codexNextSkill.id ? null : codexNextSkill.id); playSfx('uiPop')">
-                                        <div class="codex-flip-inner"
-                                            :class="{ 'is-flipped': flippedCardId === codexNextSkill.id }">
-                                            <div class="codex-face codex-face-front">
-                                                <div v-if="getSpiritForSkill(codexNextSkill)"
-                                                    class="codex-spirit-portrait-wrap">
-                                                    <img class="codex-spirit-portrait"
-                                                        :src="getSpiritImageSrc(getSpiritForSkill(codexNextSkill))"
-                                                        :alt="getSpiritForSkill(codexNextSkill).nameJa || getSpiritForSkill(codexNextSkill).nameZh"
-                                                        @error="handleSpiritImageError($event, getSpiritForSkill(codexNextSkill))">
-                                                </div>
-                                                <div v-else class="flex justify-center"><span
-                                                        class="codex-particle-badge-lg">{{ (codexNextSkill.particle ||
-                                                        '技').length <= 3 ? (codexNextSkill.particle || '技' ) : '技'
-                                                            }}</span>
-                                                </div>
-                                                <h3 class="codex-face-name">{{ getSpiritForSkill(codexNextSkill)?.nameJa ||
-                                                    codexNextSkill.name.split('：')[1] ||
-                                                    codexNextSkill.name }}</h3>
-                                                <p class="codex-face-meaning-text">{{ codexNextSkill.meaning || '—' }}
-                                                </p>
-                                                <div class="codex-face-rule-block"><span
-                                                        class="codex-label-mini codex-label-mini--rule">句型</span><code
-                                                        class="codex-face-rule-code ml-2">{{ codexNextSkill.rule || '—' }}</code>
-                                                </div>
-                                                <p class="codex-flip-hint">翻面查看 ↺</p>
-                                            </div>
-                                            <div class="codex-face codex-face-back">
-                                                <div class="codex-back-id-row">
-                                                    <span class="codex-particle-badge"
-                                                        style="width:26px;height:26px;font-size:0.72rem">{{
-                                                        (codexNextSkill.particle || '技').length <= 3 ?
-                                                            (codexNextSkill.particle || '技' ) : '技' }}</span>
-                                                            <span class="codex-back-id-name">{{
-                                                                codexNextSkill.name.split('：')[1] || codexNextSkill.name
-                                                                }}</span>
-                                                </div>
-                                                <div v-if="getSpiritForSkill(codexNextSkill)?.flavorText"
-                                                    class="codex-back-section codex-spirit-flavor">
-                                                    <span class="codex-label-mini codex-label-mini--tip">小助靈</span>
-                                                    <p class="codex-back-tip-text">{{
-                                                        getSpiritForSkill(codexNextSkill).flavorText }}</p>
-                                                </div>
-                                                <div class="codex-back-section">
-                                                    <span class="codex-label-mini codex-label-mini--formula">公式</span>
-                                                    <code
-                                                        class="codex-back-formula-code">{{ codexNextSkill.rule || '—' }}</code>
-                                                </div>
-                                                <div v-if="codexNextSkill.examples && codexNextSkill.examples.length"
-                                                    class="codex-back-section">
-                                                    <span class="codex-label-mini codex-label-mini--example">例句</span>
-                                                    <ul class="codex-back-examples-list">
-                                                        <li v-for="ex in codexNextSkill.examples.slice(0,2)"
-                                                            class="codex-back-example-item">{{ ex }}</li>
-                                                    </ul>
-                                                </div>
-                                                <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
-                                                <div v-if="codexNextSkill.tip" class="codex-back-tip-block">
-                                                    <span class="codex-label-mini codex-label-mini--tip">提醒</span>
-                                                    <p class="codex-back-tip-text">{{ codexNextSkill.tip }}</p>
-                                                </div>
-                                                <p class="codex-flip-hint mt-auto">← 返回正面</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div v-else class="codex-locked-card">
-                                        <div class="flex items-center gap-2"><span>🔒</span><span
-                                                class="font-bold text-slate-500/70 text-sm">尚未習得</span></div>
-                                        <span class="codex-unlock-tip">{{ codexNextSkill.unlockLevel ? '第 ' +
-                                            codexNextSkill.unlockLevel + ' 關解鎖' : '探索中' }}</span>
-                                    </div>
-                                    <div v-if="unlockedSkillIds.includes(codexNextSkill.id) && codexNextSkill.particle && !getSpiritForSkill(codexNextSkill)"
-                                        class="codex-mastery-panel">
-                                        <div class="codex-mastery-row">
-                                            <span>親密度</span>
-                                            <strong>{{ getSkillMastery(codexNextSkill.id) }}%</strong>
-                                        </div>
-                                        <div class="codex-mastery-track">
-                                            <div class="codex-mastery-fill"
-                                                :style="getSkillMasteryStyle(codexNextSkill.id)"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div v-else class="codex-page-fin text-center">
-                                    <div class="text-amber-900/35 text-3xl mb-2">✦</div>
-                                    <p class="text-amber-900/30 text-xs tracking-[0.3em]">— 終 —</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="codex-tab-strip flex-shrink-0">
-                            <button v-for="ch in codexChapterList" :key="ch.key"
-                                @click="codexChapter = ch.key; codexPage = 0; flippedCardId = null"
-                                :class="['codex-tab-item', codexChapter === ch.key ? 'codex-tab-item--active' : '']">{{
-                                ch.label }}</button>
-                        </div>
-                    </div>
-                    <div v-if="false" class="codex-page-nav flex-shrink-0 flex items-center justify-between px-4 py-2">
-                        <button @click="codexPage = Math.max(0, codexPage - 1); flippedCardId = null"
-                            :disabled="codexPage === 0" class="codex-nav-btn">← 前頁</button>
-                        <div class="codex-page-indicator flex items-baseline gap-1">
-                            <span class="text-amber-900/55 text-xs">第</span>
-                            <span class="codex-page-num">{{ codexPage + 1 }}</span>
-                            <span class="text-amber-900/55 text-xs">頁 / 共 {{ codexTotalPages }} 頁</span>
-                        </div>
-                        <button @click="codexPage = Math.min(codexTotalPages - 1, codexPage + 1); flippedCardId = null"
-                            :disabled="codexPage >= codexTotalPages - 1" class="codex-nav-btn">後頁 →</button>
-                    </div>
+
+
                 </div>
             </div>
 
@@ -3653,7 +3310,7 @@
 
                         <div v-if="!monsterTrulyDead"
                             class="flex flex-col items-center relative transition-all duration-300 pointer-events-auto"
-                            :style="monsterPositionStyle" :class="{ 
+                            :style="monsterPositionStyle" :class="{
                                 'monster-death-anim': monsterIsDying && currentLevel % 5 !== 0 && currentLevel !== 36,
                                 'boss-death-anim': monsterIsDying && (currentLevel % 5 === 0 || currentLevel === 36),
                                 'boss-death-anim--hidden': monsterIsDying && currentLevel === 36
@@ -3664,7 +3321,7 @@
                                 :style="monsterGiraKnockStyle">
 
                             <!-- Hit Animation Wrapper: Isolates hit/shake from base position transform to prevent jumping -->
-                            <div class="flex flex-col items-center" :class="{ 
+                            <div class="flex flex-col items-center" :class="{
                                     hit: monsterHit && !monsterHitGiragira,
                                     'hit-boss': monsterHit && !monsterHitGiragira && currentLevel % 5 === 0,
                                     'gira-hit-impact': monsterHitGiragira && currentLevel % 5 !== 0,
@@ -3683,7 +3340,7 @@
                                 <!-- Monster Image -->
 
                                 <div class="relative rounded-full flex items-center justify-center text-5xl mb-3 shadow-[0_0_30px_rgba(225,29,72,0.3)] ring-2 ring-rose-500/20"
-                                    :style="{ 
+                                    :style="{
 
                                     background: 'conic-gradient(rgba(225, 29, 72, 0.6) ' + (((monster.attackIntervalMs ? monster.attackIntervalMs / 1000 : 10) - timeLeft) / (monster.attackIntervalMs ? monster.attackIntervalMs / 1000 : 10) * 360) + 'deg, rgba(136, 19, 55, 0.2) 0deg)',
 
@@ -4184,8 +3841,8 @@
 
 
                                     <button @click="isSkillOpen = true; pauseBattle(); playSfx('uiPop');"
-                                        class="hud-tool-btn is-skill-ready group" title="秘笈本">
-                                        <span class="group-hover:scale-110">📖</span>
+                                        class="hud-tool-btn is-skill-ready group" title="技能">
+                                        <span class="group-hover:scale-110">✨</span>
                                     </button>
 
                                     <button @click="usePotion()" class="hud-tool-btn is-potion-ready group"
@@ -4534,7 +4191,7 @@
                             </div>
 
                             <div class="card-footer">
-                                點擊收錄至秘笈本
+                                點擊收錄至共鳴輪
                             </div>
 
                             <!-- Inner Shine Effect -->
@@ -4611,7 +4268,7 @@
                         <div class="flex gap-2">
 
                             <button @click="isCodexOpen = true"
-                                class="px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl border border-white/5 transition-all active:scale-95 shadow-lg backdrop-blur-md">圖鑑</button>
+                                class="px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl border border-white/5 transition-all active:scale-95 shadow-lg backdrop-blur-md">共鳴輪</button>
 
                             <button @click="closeSkillOverlay(); resumeBattle();"
                                 class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-800/60 hover:bg-slate-700 text-white/80 font-bold border border-white/10 transition-all active:scale-95 shadow-lg">✕</button>
@@ -4658,12 +4315,12 @@
 
 
 
-            <!-- ── 秘笈本 Codex（戰鬥頁可用） ── -->
+            <!-- ── 小助靈共鳴輪（戰鬥頁可用） ── -->
             <div v-if="isCodexOpen"
                 class="modal-overlay codex-modal-overlay fixed inset-0 z-[2000] flex items-center justify-center p-3 sm:p-6"
                 @click.self="closeCodex(); if (!isSkillOpen) resumeBattle(); playSfx('click')">
                 <div class="absolute inset-0 bg-black/72 backdrop-blur-sm pointer-events-none"></div>
-                <div class="codex-book relative w-full sm:max-w-4xl flex flex-col">
+                <div class="codex-book codex-book--resonance relative w-full sm:max-w-4xl flex flex-col">
                     <div class="codex-book-header flex-shrink-0 flex items-center justify-between px-5 py-3">
                         <div class="flex items-center gap-2">
                             <span class="text-xl">✦</span>
@@ -4680,333 +4337,125 @@
                             </svg>
                         </button>
                     </div>
-                    <div class="codex-spread flex-1 min-h-0 flex overflow-hidden">
-                        <div class="flex flex-1 min-w-0 overflow-hidden">
-                            <div
-                                class="codex-book-page flex flex-1 items-center justify-center overflow-y-auto p-4 sm:p-8">
-                                <div v-if="codexPageSkills[0]" :id="'skill-card-' + codexPageSkills[0].id"
-                                    class="codex-card-stack flex flex-col items-center justify-center gap-3 w-full">
-                                    <div v-if="unlockedSkillIds.includes(codexPageSkills[0].id) && getSpiritForSkill(codexPageSkills[0])"
-                                        class="codex-spirit-entry"
-                                        :class="{ 'codex-spirit--true-resonance': isBondMaxSkill(codexPageSkills[0].id) }">
-                                        <div class="codex-spirit-hero">
-                                            <div class="codex-spirit-aura"></div>
-                                            <div class="codex-affinity-badge"
-                                                :class="{ 'codex-affinity-badge--full': isBondMaxSkill(codexPageSkills[0].id) }"
-                                                :tabindex="isBondMaxSkill(codexPageSkills[0].id) ? 0 : null"
-                                                :role="isBondMaxSkill(codexPageSkills[0].id) ? 'button' : null"
-                                                :aria-label="isBondMaxSkill(codexPageSkills[0].id) ? '親密度 100%。攻擊化為紅色彗星，命中更穩定。' : '親密度'"
-                                                data-full-bond-hint="攻擊化為紅色彗星，命中更穩定。">
-                                                <div class="codex-affinity-heart">
-                                                    <div class="codex-affinity-heart-fill"
-                                                        :style="{ height: getSkillMastery(codexPageSkills[0].id) + '%' }"></div>
-                                                </div>
-                                                <span>親密度 {{ getSkillMastery(codexPageSkills[0].id) }}%</span>
-                                            </div>
-                                            <img class="codex-spirit-main-img"
-                                                :src="getSpiritImageSrc(getSpiritForSkill(codexPageSkills[0]))"
-                                                :alt="getSpiritForSkill(codexPageSkills[0]).nameJa || getSpiritForSkill(codexPageSkills[0]).nameZh"
-                                                @error="handleSpiritImageError($event, getSpiritForSkill(codexPageSkills[0]))">
+                    <div class="codex-resonance-shell flex-1 min-h-0">
+                        <div v-if="!codexDetailMode" class="codex-resonance-overview">
+                            <div class="codex-wheel-stage"
+                                @pointerdown="startCodexDrag"
+                                @pointerup="endCodexDrag"
+                                @pointercancel="endCodexDrag">
+                                <button class="codex-wheel-arrow codex-wheel-arrow--left" type="button"
+                                    @pointerdown.stop="startCodexWheelArrowPress(-1, $event)"
+                                    @pointerup.stop="stopCodexWheelArrowPress"
+                                    @pointercancel.stop="stopCodexWheelArrowPress"
+                                    @pointerleave.stop="stopCodexWheelArrowPress"
+                                    @lostpointercapture.stop="stopCodexWheelArrowPress"
+                                    @contextmenu.prevent
+                                    @click.stop="handleCodexWheelArrowClick(-1)" aria-label="上一隻小助靈">‹</button>
+                                <div class="codex-wheel-orbit" role="list" aria-label="小助靈共鳴輪">
+                                    <button v-for="(skill, index) in codexWheelSkills" :key="skill.id"
+                                        type="button"
+                                        class="codex-wheel-spirit"
+                                        :class="getCodexWheelItemClass(skill, index)"
+                                        :style="getCodexWheelItemStyle(index)"
+                                        @click="openCodexDetail(skill, index); playSfx('uiPop')"
+                                        role="listitem">
+                                        <span class="codex-wheel-ring"></span>
+                                        <img v-if="getSpiritForSkill(skill)" class="codex-wheel-img"
+                                            :src="getSpiritImageSrc(getSpiritForSkill(skill))"
+                                            :alt="unlockedSkillIds.includes(skill.id) ? getCodexSkillDisplayName(skill) : '尚未解鎖的小助靈'"
+                                            @error="handleSpiritImageError($event, getSpiritForSkill(skill))">
+                                        <span v-else class="codex-wheel-particle">{{ (skill.particle || '技').length <= 3 ? (skill.particle || '技') : '技' }}</span>
+                                        <div class="codex-wheel-meta">
+                                            <span class="codex-wheel-name">{{ unlockedSkillIds.includes(skill.id) ? getCodexSkillDisplayName(skill) : '???' }}</span>
+                                            <span class="codex-wheel-state"
+                                                :class="{
+                                                    'codex-wheel-state--bond': isBondMaxSkill(skill.id),
+                                                    'codex-wheel-state--affinity': unlockedSkillIds.includes(skill.id) && !isBondMaxSkill(skill.id),
+                                                    'codex-wheel-state--locked': !unlockedSkillIds.includes(skill.id)
+                                                }"
+                                                :style="unlockedSkillIds.includes(skill.id) && !isBondMaxSkill(skill.id) ? { '--affinity': getSkillMastery(skill.id) + '%' } : null">
+                                                <span v-if="unlockedSkillIds.includes(skill.id)" class="codex-wheel-affinity-row">
+                                                    <span class="codex-wheel-affinity-heart" aria-hidden="true">❤</span>
+                                                    <span class="codex-wheel-affinity-meter">
+                                                        <span class="codex-wheel-affinity-fill" aria-hidden="true"></span>
+                                                        <span class="codex-wheel-affinity-text">{{ isBondMaxSkill(skill.id) ? '滿絆' : getSkillMastery(skill.id) + '%' }}</span>
+                                                    </span>
+                                                </span>
+                                                <template v-else>未解鎖</template>
+                                            </span>
                                         </div>
-                                        <div class="codex-spirit-title-block">
-                                            <h3 class="codex-spirit-name">{{ getSpiritForSkill(codexPageSkills[0]).nameJa }}</h3>
-                                        </div>
-                                        <div class="codex-spirit-details">
-                                            <div v-if="getSpiritForSkill(codexPageSkills[0])?.flavorText"
-                                                class="codex-back-section codex-spirit-flavor">
-                                                <div v-if="isBondMaxSkill(codexPageSkills[0].id)"
-                                                    class="codex-inline-true-resonance">
-                                                    <span class="codex-label-mini codex-label-mini--true-resonance">滿絆共鳴</span>
-                                                    <p v-if="getSpiritForSkill(codexPageSkills[0])?.trueResonanceTitleJa"
-                                                        class="codex-back-tip-text">{{
-                                                        getSpiritForSkill(codexPageSkills[0]).trueResonanceTitleJa }}<span
-                                                            v-if="getSpiritForSkill(codexPageSkills[0])?.trueResonanceTitleZh && getSpiritForSkill(codexPageSkills[0]).trueResonanceTitleZh !== getSpiritForSkill(codexPageSkills[0]).trueResonanceTitleJa"> / {{
-                                                            getSpiritForSkill(codexPageSkills[0]).trueResonanceTitleZh }}</span></p>
-                                                    <ul v-if="getSpiritForSkill(codexPageSkills[0])?.trueResonanceLines?.length"
-                                                        class="codex-true-resonance-lines--ja">
-                                                        <li v-for="line in getSpiritForSkill(codexPageSkills[0]).trueResonanceLines.slice(0, 1)"
-                                                            class="codex-true-resonance-line--ja">{{ line }}</li>
-                                                    </ul>
-                                                    <ul v-if="getSpiritForSkill(codexPageSkills[0])?.trueResonanceLines?.length > 1"
-                                                        class="codex-true-resonance-lines--zh">
-                                                        <li v-for="line in getSpiritForSkill(codexPageSkills[0]).trueResonanceLines.slice(1)"
-                                                            class="codex-true-resonance-line--zh">{{ line }}</li>
-                                                    </ul>
-                                                </div>
-                                                <span class="codex-label-mini codex-label-mini--tip">小助靈</span>
-                                                <p class="codex-back-tip-text">{{
-                                                    getSpiritForSkill(codexPageSkills[0]).flavorText }}</p>
-                                            </div>
-                                            <div v-if="codexPageSkills[0].examples && codexPageSkills[0].examples.length"
-                                                class="codex-back-section">
-                                                <span class="codex-label-mini codex-label-mini--example">例句</span>
-                                                <ul class="codex-back-examples-list">
-                                                    <li v-for="ex in codexPageSkills[0].examples.slice(0,2)"
-                                                        class="codex-back-example-item">{{ ex }}</li>
-                                                    <li class="codex-back-example-item codex-back-example-item--rule">
-                                                        <code class="codex-back-formula-code">{{ codexPageSkills[0].rule || '—' }}</code>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
-                                            <div v-if="codexPageSkills[0].tip" class="codex-back-tip-block">
-                                                <span class="codex-label-mini codex-label-mini--tip">提醒</span>
-                                                <p class="codex-back-tip-text">{{ codexPageSkills[0].tip }}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div v-else-if="unlockedSkillIds.includes(codexPageSkills[0].id)" class="codex-flip-card"
-                                        @click="flippedCardId = (flippedCardId === codexPageSkills[0].id ? null : codexPageSkills[0].id); playSfx('uiPop')">
-                                        <div class="codex-flip-inner"
-                                            :class="{ 'is-flipped': flippedCardId === codexPageSkills[0].id }">
-                                            <div class="codex-face codex-face-front">
-                                                <div v-if="getSpiritForSkill(codexPageSkills[0])"
-                                                    class="codex-spirit-portrait-wrap">
-                                                    <img class="codex-spirit-portrait"
-                                                        :src="getSpiritImageSrc(getSpiritForSkill(codexPageSkills[0]))"
-                                                        :alt="getSpiritForSkill(codexPageSkills[0]).nameJa || getSpiritForSkill(codexPageSkills[0]).nameZh"
-                                                        @error="handleSpiritImageError($event, getSpiritForSkill(codexPageSkills[0]))">
-                                                </div>
-                                                <div v-else class="flex justify-center"><span
-                                                        class="codex-particle-badge-lg">{{ formatParticleBadge(codexPageSkills[0].particle) }}</span>
-                                                </div>
-                                                <h3 class="codex-face-name">{{ formatSkillSpiritName(codexPageSkills[0], getSpiritForSkill(codexPageSkills[0])) }}</h3>
-                                                <p class="codex-face-meaning-text">{{ formatSkillMeaning(codexPageSkills[0].meaning) }}</p>
-                                                <div class="codex-face-rule-block"><span
-                                                        class="codex-label-mini codex-label-mini--rule">句型</span><code
-                                                        class="codex-face-rule-code ml-2">{{ formatSkillRule(codexPageSkills[0].rule) }}</code>
-                                                </div>
-                                                <p class="codex-flip-hint">翻面查看 ↺</p>
-                                            </div>
-                                            <div class="codex-face codex-face-back">
-                                                <div class="codex-back-id-row">
-                                                    <span class="codex-particle-badge"
-                                                        style="width:26px;height:26px;font-size:0.72rem">{{ formatParticleBadge(codexPageSkills[0].particle) }}</span>
-                                                    <span class="codex-back-id-name">{{ formatSkillSpiritName(codexPageSkills[0]) }}</span>
-                                                </div>
-                                                <div v-if="getSpiritForSkill(codexPageSkills[0])?.flavorText"
-                                                    class="codex-back-section codex-spirit-flavor">
-                                                    <span class="codex-label-mini codex-label-mini--tip">小助靈</span>
-                                                    <p class="codex-back-tip-text">{{
-                                                        getSpiritForSkill(codexPageSkills[0]).flavorText }}</p>
-                                                </div>
-                                                <div class="codex-back-section">
-                                                    <span class="codex-label-mini codex-label-mini--formula">公式</span>
-                                                    <code
-                                                        class="codex-back-formula-code">{{ formatSkillRule(codexPageSkills[0].rule) }}</code>
-                                                </div>
-                                                <div v-if="codexPageSkills[0].examples && codexPageSkills[0].examples.length"
-                                                    class="codex-back-section">
-                                                    <span class="codex-label-mini codex-label-mini--example">例句</span>
-                                                    <ul class="codex-back-examples-list">
-                                                        <li v-for="ex in codexPageSkills[0].examples.slice(0,2)"
-                                                            class="codex-back-example-item">{{ ex }}</li>
-                                                    </ul>
-                                                </div>
-                                                <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
-                                                <div v-if="codexPageSkills[0].tip" class="codex-back-tip-block">
-                                                    <span class="codex-label-mini codex-label-mini--tip">提醒</span>
-                                                    <p class="codex-back-tip-text">{{ codexPageSkills[0].tip }}</p>
-                                                </div>
-                                                <p class="codex-flip-hint mt-auto">← 返回正面</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div v-else class="codex-locked-card">
-                                        <div class="flex items-center gap-2"><span>🔒</span><span
-                                                class="font-bold text-slate-500/70 text-sm">尚未習得</span></div>
-                                        <span class="codex-unlock-tip">{{ codexPageSkills[0].unlockLevel ? '第 ' +
-                                            codexPageSkills[0].unlockLevel + ' 關解鎖' : '探索中' }}</span>
-                                    </div>
-                                    <div v-if="unlockedSkillIds.includes(codexPageSkills[0].id) && codexPageSkills[0].particle && !getSpiritForSkill(codexPageSkills[0])"
-                                        class="codex-mastery-panel">
-                                        <div class="codex-mastery-row">
-                                            <span>親密度</span>
-                                            <strong>{{ getSkillMastery(codexPageSkills[0].id) }}%</strong>
-                                        </div>
-                                        <div class="codex-mastery-track">
-                                            <div class="codex-mastery-fill"
-                                                :style="getSkillMasteryStyle(codexPageSkills[0].id)"></div>
-                                        </div>
-                                    </div>
+                                    </button>
                                 </div>
-                                <div v-else class="codex-page-empty">
-                                    <p class="text-amber-900/40 text-sm">此章節尚無技能</p>
-                                </div>
-                            </div>
-                            <div class="codex-spine hidden sm:block flex-shrink-0"></div>
-                            <div
-                                class="codex-book-page codex-book-page--right hidden sm:flex flex-1 items-center justify-center overflow-y-auto p-8">
-                                <div v-if="codexNextSkill" :id="'skill-card-r-' + codexNextSkill.id"
-                                    class="codex-card-stack flex flex-col items-center justify-center gap-3 w-full">
-                                    <div v-if="unlockedSkillIds.includes(codexNextSkill.id) && getSpiritForSkill(codexNextSkill)"
-                                        class="codex-spirit-entry"
-                                        :class="{ 'codex-spirit--true-resonance': isBondMaxSkill(codexNextSkill.id) }">
-                                        <div class="codex-spirit-hero">
-                                            <div class="codex-spirit-aura"></div>
-                                            <div class="codex-affinity-badge"
-                                                :class="{ 'codex-affinity-badge--full': isBondMaxSkill(codexNextSkill.id) }"
-                                                :tabindex="isBondMaxSkill(codexNextSkill.id) ? 0 : null"
-                                                :role="isBondMaxSkill(codexNextSkill.id) ? 'button' : null"
-                                                :aria-label="isBondMaxSkill(codexNextSkill.id) ? '親密度 100%。攻擊化為紅色彗星，命中更穩定。' : '親密度'"
-                                                data-full-bond-hint="攻擊化為紅色彗星，命中更穩定。">
-                                                <div class="codex-affinity-heart">
-                                                    <div class="codex-affinity-heart-fill"
-                                                        :style="{ height: getSkillMastery(codexNextSkill.id) + '%' }"></div>
-                                                </div>
-                                                <span>親密度 {{ getSkillMastery(codexNextSkill.id) }}%</span>
-                                            </div>
-                                            <img class="codex-spirit-main-img"
-                                                :src="getSpiritImageSrc(getSpiritForSkill(codexNextSkill))"
-                                                :alt="getSpiritForSkill(codexNextSkill).nameJa || getSpiritForSkill(codexNextSkill).nameZh"
-                                                @error="handleSpiritImageError($event, getSpiritForSkill(codexNextSkill))">
-                                        </div>
-                                        <div class="codex-spirit-title-block">
-                                            <h3 class="codex-spirit-name">{{ getSpiritForSkill(codexNextSkill).nameJa }}</h3>
-                                        </div>
-                                        <div class="codex-spirit-details">
-                                            <div v-if="getSpiritForSkill(codexNextSkill)?.flavorText"
-                                                class="codex-back-section codex-spirit-flavor">
-                                                <div v-if="isBondMaxSkill(codexNextSkill.id)"
-                                                    class="codex-inline-true-resonance">
-                                                    <span class="codex-label-mini codex-label-mini--true-resonance">滿絆共鳴</span>
-                                                    <p v-if="getSpiritForSkill(codexNextSkill)?.trueResonanceTitleJa"
-                                                        class="codex-back-tip-text">{{
-                                                        getSpiritForSkill(codexNextSkill).trueResonanceTitleJa }}<span
-                                                            v-if="getSpiritForSkill(codexNextSkill)?.trueResonanceTitleZh && getSpiritForSkill(codexNextSkill).trueResonanceTitleZh !== getSpiritForSkill(codexNextSkill).trueResonanceTitleJa"> / {{
-                                                            getSpiritForSkill(codexNextSkill).trueResonanceTitleZh }}</span></p>
-                                                    <ul v-if="getSpiritForSkill(codexNextSkill)?.trueResonanceLines?.length"
-                                                        class="codex-true-resonance-lines--ja">
-                                                        <li v-for="line in getSpiritForSkill(codexNextSkill).trueResonanceLines.slice(0, 1)"
-                                                            class="codex-true-resonance-line--ja">{{ line }}</li>
-                                                    </ul>
-                                                    <ul v-if="getSpiritForSkill(codexNextSkill)?.trueResonanceLines?.length > 1"
-                                                        class="codex-true-resonance-lines--zh">
-                                                        <li v-for="line in getSpiritForSkill(codexNextSkill).trueResonanceLines.slice(1)"
-                                                            class="codex-true-resonance-line--zh">{{ line }}</li>
-                                                    </ul>
-                                                </div>
-                                                <span class="codex-label-mini codex-label-mini--tip">小助靈</span>
-                                                <p class="codex-back-tip-text">{{
-                                                    getSpiritForSkill(codexNextSkill).flavorText }}</p>
-                                            </div>
-                                            <div v-if="codexNextSkill.examples && codexNextSkill.examples.length"
-                                                class="codex-back-section">
-                                                <span class="codex-label-mini codex-label-mini--example">例句</span>
-                                                <ul class="codex-back-examples-list">
-                                                    <li v-for="ex in codexNextSkill.examples.slice(0,2)"
-                                                        class="codex-back-example-item">{{ ex }}</li>
-                                                    <li class="codex-back-example-item codex-back-example-item--rule">
-                                                        <code class="codex-back-formula-code">{{ codexNextSkill.rule || '—' }}</code>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
-                                            <div v-if="codexNextSkill.tip" class="codex-back-tip-block">
-                                                <span class="codex-label-mini codex-label-mini--tip">提醒</span>
-                                                <p class="codex-back-tip-text">{{ codexNextSkill.tip }}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div v-else-if="unlockedSkillIds.includes(codexNextSkill.id)" class="codex-flip-card"
-                                        @click="flippedCardId = (flippedCardId === codexNextSkill.id ? null : codexNextSkill.id); playSfx('uiPop')">
-                                        <div class="codex-flip-inner"
-                                            :class="{ 'is-flipped': flippedCardId === codexNextSkill.id }">
-                                            <div class="codex-face codex-face-front">
-                                                <div v-if="getSpiritForSkill(codexNextSkill)"
-                                                    class="codex-spirit-portrait-wrap">
-                                                    <img class="codex-spirit-portrait"
-                                                        :src="getSpiritImageSrc(getSpiritForSkill(codexNextSkill))"
-                                                        :alt="getSpiritForSkill(codexNextSkill).nameJa || getSpiritForSkill(codexNextSkill).nameZh"
-                                                        @error="handleSpiritImageError($event, getSpiritForSkill(codexNextSkill))">
-                                                </div>
-                                                <div v-else class="flex justify-center"><span
-                                                        class="codex-particle-badge-lg">{{ formatParticleBadge(codexNextSkill.particle) }}</span>
-                                                </div>
-                                                <h3 class="codex-face-name">{{ formatSkillSpiritName(codexNextSkill, getSpiritForSkill(codexNextSkill)) }}</h3>
-                                                <p class="codex-face-meaning-text">{{ formatSkillMeaning(codexNextSkill.meaning) }}</p>
-                                                <div class="codex-face-rule-block"><span
-                                                        class="codex-label-mini codex-label-mini--rule">句型</span><code
-                                                        class="codex-face-rule-code ml-2">{{ formatSkillRule(codexNextSkill.rule) }}</code>
-                                                </div>
-                                                <p class="codex-flip-hint">翻面查看 ↺</p>
-                                            </div>
-                                            <div class="codex-face codex-face-back">
-                                                <div class="codex-back-id-row">
-                                                    <span class="codex-particle-badge"
-                                                        style="width:26px;height:26px;font-size:0.72rem">{{ formatParticleBadge(codexNextSkill.particle) }}</span>
-                                                    <span class="codex-back-id-name">{{ formatSkillSpiritName(codexNextSkill) }}</span>
-                                                </div>
-                                                <div v-if="getSpiritForSkill(codexNextSkill)?.flavorText"
-                                                    class="codex-back-section codex-spirit-flavor">
-                                                    <span class="codex-label-mini codex-label-mini--tip">小助靈</span>
-                                                    <p class="codex-back-tip-text">{{
-                                                        getSpiritForSkill(codexNextSkill).flavorText }}</p>
-                                                </div>
-                                                <div class="codex-back-section">
-                                                    <span class="codex-label-mini codex-label-mini--formula">公式</span>
-                                                    <code
-                                                        class="codex-back-formula-code">{{ formatSkillRule(codexNextSkill.rule) }}</code>
-                                                </div>
-                                                <div v-if="codexNextSkill.examples && codexNextSkill.examples.length"
-                                                    class="codex-back-section">
-                                                    <span class="codex-label-mini codex-label-mini--example">例句</span>
-                                                    <ul class="codex-back-examples-list">
-                                                        <li v-for="ex in codexNextSkill.examples.slice(0,2)"
-                                                            class="codex-back-example-item">{{ ex }}</li>
-                                                    </ul>
-                                                </div>
-                                                <div v-else class="text-slate-500/50 text-xs italic">例句補充中…</div>
-                                                <div v-if="codexNextSkill.tip" class="codex-back-tip-block">
-                                                    <span class="codex-label-mini codex-label-mini--tip">提醒</span>
-                                                    <p class="codex-back-tip-text">{{ codexNextSkill.tip }}</p>
-                                                </div>
-                                                <p class="codex-flip-hint mt-auto">← 返回正面</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div v-else class="codex-locked-card">
-                                        <div class="flex items-center gap-2"><span>🔒</span><span
-                                                class="font-bold text-slate-500/70 text-sm">尚未習得</span></div>
-                                        <span class="codex-unlock-tip">{{ codexNextSkill.unlockLevel ? '第 ' +
-                                            codexNextSkill.unlockLevel + ' 關解鎖' : '探索中' }}</span>
-                                    </div>
-                                    <div v-if="unlockedSkillIds.includes(codexNextSkill.id) && codexNextSkill.particle && !getSpiritForSkill(codexNextSkill)"
-                                        class="codex-mastery-panel">
-                                        <div class="codex-mastery-row">
-                                            <span>親密度</span>
-                                            <strong>{{ getSkillMastery(codexNextSkill.id) }}%</strong>
-                                        </div>
-                                        <div class="codex-mastery-track">
-                                            <div class="codex-mastery-fill"
-                                                :style="getSkillMasteryStyle(codexNextSkill.id)"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div v-else class="codex-page-fin text-center">
-                                    <div class="text-amber-900/35 text-3xl mb-2">✦</div>
-                                    <p class="text-amber-900/30 text-xs tracking-[0.3em]">— 終 —</p>
-                                </div>
+                                <button class="codex-wheel-arrow codex-wheel-arrow--right" type="button"
+                                    @pointerdown.stop="startCodexWheelArrowPress(1, $event)"
+                                    @pointerup.stop="stopCodexWheelArrowPress"
+                                    @pointercancel.stop="stopCodexWheelArrowPress"
+                                    @pointerleave.stop="stopCodexWheelArrowPress"
+                                    @lostpointercapture.stop="stopCodexWheelArrowPress"
+                                    @contextmenu.prevent
+                                    @click.stop="handleCodexWheelArrowClick(1)" aria-label="下一隻小助靈">›</button>
                             </div>
                         </div>
-                        <div class="codex-tab-strip flex-shrink-0">
-                            <button v-for="ch in codexChapterList" :key="ch.key"
-                                @click="codexChapter = ch.key; codexPage = 0; flippedCardId = null"
-                                :class="['codex-tab-item', codexChapter === ch.key ? 'codex-tab-item--active' : '']">{{
-                                ch.label }}</button>
+                        <div v-else-if="codexSelectedSkill" class="codex-resonance-detail custom-scrollbar"
+                            :class="{ 'is-locked': !unlockedSkillIds.includes(codexSelectedSkill.id), 'is-bond-max': isBondMaxSkill(codexSelectedSkill.id) }">
+                            <button class="codex-detail-back" type="button"
+                                @click="closeCodexDetail(); playSfx('click')">← 返回共鳴輪</button>
+                            <div class="codex-contract-hero">
+                                <div class="codex-contract-seal"></div>
+                                <img v-if="getSpiritForSkill(codexSelectedSkill)" class="codex-contract-img"
+                                    :src="getSpiritImageSrc(getSpiritForSkill(codexSelectedSkill))"
+                                    :alt="unlockedSkillIds.includes(codexSelectedSkill.id) ? getCodexSkillDisplayName(codexSelectedSkill) : '尚未解鎖的小助靈'"
+                                    @error="handleSpiritImageError($event, getSpiritForSkill(codexSelectedSkill))">
+                                <span v-else class="codex-contract-particle">{{ (codexSelectedSkill.particle || '技').length <= 3 ? (codexSelectedSkill.particle || '技') : '技' }}</span>
+                            </div>
+                            <div class="codex-contract-panel">
+                                <template v-if="unlockedSkillIds.includes(codexSelectedSkill.id)">
+                                    <p class="codex-contract-kicker">RESONANCE RECORD</p>
+                                    <h3 class="codex-contract-name">{{ getCodexSkillDisplayName(codexSelectedSkill) }}</h3>
+                                    <div class="codex-contract-affinity">
+                                        <span :class="{ 'is-full': isBondMaxSkill(codexSelectedSkill.id) }">{{ isBondMaxSkill(codexSelectedSkill.id) ? '滿絆共鳴' : '親密度 ' + getSkillMastery(codexSelectedSkill.id) + '%' }}</span>
+                                        <div class="codex-mastery-track">
+                                            <div class="codex-mastery-fill"
+                                                :class="{ 'codex-mastery-fill--full': isBondMaxSkill(codexSelectedSkill.id) }"
+                                                :style="getSkillMasteryStyle(codexSelectedSkill.id)"></div>
+                                        </div>
+                                    </div>
+                                    <div class="codex-contract-grid">
+                                        <section class="codex-contract-section">
+                                            <span class="codex-label-mini codex-label-mini--formula">助詞</span>
+                                            <strong>{{ codexSelectedSkill.particle || '—' }}</strong>
+                                        </section>
+                                        <section class="codex-contract-section">
+                                            <span class="codex-label-mini codex-label-mini--tip">用法</span>
+                                            <p>{{ codexSelectedSkill.meaning || getSpiritForSkill(codexSelectedSkill)?.flavorText || '—' }}</p>
+                                        </section>
+                                        <section class="codex-contract-section">
+                                            <span class="codex-label-mini codex-label-mini--rule">接續</span>
+                                            <code>{{ codexSelectedSkill.rule || '—' }}</code>
+                                        </section>
+                                        <section class="codex-contract-section">
+                                            <span class="codex-label-mini codex-label-mini--example">例句</span>
+                                            <ul v-if="codexSelectedSkill.examples && codexSelectedSkill.examples.length">
+                                                <li v-for="ex in codexSelectedSkill.examples.slice(0, 2)">{{ ex }}</li>
+                                            </ul>
+                                            <p v-else>例句補充中…</p>
+                                        </section>
+                                        <section v-if="getSpiritForSkill(codexSelectedSkill)?.flavorText" class="codex-contract-section codex-contract-section--wide">
+                                            <span class="codex-label-mini codex-label-mini--tip">共鳴記錄</span>
+                                            <p>{{ getSpiritForSkill(codexSelectedSkill).flavorText }}</p>
+                                        </section>
+                                    </div>
+                                </template>
+                                <template v-else>
+                                    <p class="codex-contract-kicker">SEALED RECORD</p>
+                                    <h3 class="codex-contract-name">???</h3>
+                                    <p class="codex-contract-locked-text">{{ codexSelectedSkill.unlockLevel ? '第 ' + codexSelectedSkill.unlockLevel + ' 關解鎖' : '尚未記錄解鎖條件' }}</p>
+                                </template>
+                            </div>
                         </div>
                     </div>
-                    <div class="codex-page-nav flex-shrink-0 flex items-center justify-between px-4 py-2">
-                        <button @click="codexPage = Math.max(0, codexPage - 1); flippedCardId = null"
-                            :disabled="codexPage === 0" class="codex-nav-btn">← 前頁</button>
-                        <div class="codex-page-indicator flex items-baseline gap-1">
-                            <span class="text-amber-900/55 text-xs">第</span>
-                            <span class="codex-page-num">{{ codexPage + 1 }}</span>
-                            <span class="text-amber-900/55 text-xs">頁 / 共 {{ codexTotalPages }} 頁</span>
-                        </div>
-                        <button @click="codexPage = Math.min(codexTotalPages - 1, codexPage + 1); flippedCardId = null"
-                            :disabled="codexPage >= codexTotalPages - 1" class="codex-nav-btn">後頁 →</button>
-                    </div>
+
+
                 </div>
             </div>
 
@@ -5485,9 +4934,9 @@
                             @keydown.space.prevent="playMistakeVoice(m)"
                             :class="[
 
-                                m.isCorrect 
+                                m.isCorrect
 
-                                    ? 'bg-indigo-900/10 border-l-4 border-l-emerald-500/40 shadow-indigo-900/5' 
+                                    ? 'bg-indigo-900/10 border-l-4 border-l-emerald-500/40 shadow-indigo-900/5'
 
                                     : 'bg-rose-950/10 border-l-4 border-l-rose-500 shadow-[0_0_20px_rgba(225,29,72,0.08)]'
 
