@@ -58,41 +58,6 @@
         );
     };
 
-    const buildCodexChapterList = (codexBaseSkills) => {
-        const seen = new Set();
-        const list = [{ key: 'all', label: '全部' }];
-        (Array.isArray(codexBaseSkills) ? codexBaseSkills : []).forEach(skill => {
-            const particle = skill.particle || '技';
-            if (!seen.has(particle)) {
-                seen.add(particle);
-                list.push({ key: particle, label: particle });
-            }
-        });
-        return list;
-    };
-
-    const filterCodexSkills = (codexBaseSkills, codexChapter) => {
-        const skills = Array.isArray(codexBaseSkills) ? codexBaseSkills : [];
-        if (codexChapter === 'all') return skills;
-        return skills.filter(skill => (skill.particle || '技') === codexChapter);
-    };
-
-    const getCodexTotalPages = (codexFilteredSkills, perPage) => {
-        const count = Array.isArray(codexFilteredSkills) ? codexFilteredSkills.length : 0;
-        return Math.max(1, Math.ceil(count / perPage));
-    };
-
-    const getCodexPageSkills = (codexFilteredSkills, page, perPage) => {
-        const skills = Array.isArray(codexFilteredSkills) ? codexFilteredSkills : [];
-        const start = page * perPage;
-        return skills.slice(start, start + perPage);
-    };
-
-    const getCodexNextSkill = (codexFilteredSkills, page) => {
-        const skills = Array.isArray(codexFilteredSkills) ? codexFilteredSkills : [];
-        return skills[page + 1] || null;
-    };
-
     const normalizeMasteryPercent = (value) => {
         const n = Number(value ?? 0);
         return Number.isFinite(n) ? Math.min(100, Math.max(0, Math.floor(n))) : 0;
@@ -111,11 +76,6 @@
         decorateSkillWithSpirit,
         buildSkillsWithUnlockLevel,
         getCodexBaseSkills,
-        buildCodexChapterList,
-        filterCodexSkills,
-        getCodexTotalPages,
-        getCodexPageSkills,
-        getCodexNextSkill,
         normalizeMasteryPercent,
         getMasteryStyle,
         isMasteryMax

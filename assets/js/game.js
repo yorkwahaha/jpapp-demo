@@ -1555,8 +1555,6 @@ const _jpApp = Vue.createApp({
         // [ CODEX - STATE ]
         const isCodexOpen = ref(false);
         const codexPage = ref(0);
-        const codexChapter = ref('all');
-        const flippedCardId = ref(null);
         const codexDetailMode = ref(false);
         const codexDragStartX = ref(null);
         const codexSuppressClick = ref(false);
@@ -2199,30 +2197,8 @@ const _jpApp = Vue.createApp({
             spiritCodexHelpers.buildSkillsWithUnlockLevel(SKILLS.value, unlockedSkillIds.value, skillUnlockMap.value)
         );
 
-        const CODEX_PER_PAGE = 1;
-
         const codexBaseSkills = computed(() =>
             spiritCodexHelpers.getCodexBaseSkills(skillsWithUnlockLevel.value)
-        );
-
-        const codexChapterList = computed(() =>
-            spiritCodexHelpers.buildCodexChapterList(codexBaseSkills.value)
-        );
-
-        const codexFilteredSkills = computed(() =>
-            spiritCodexHelpers.filterCodexSkills(codexBaseSkills.value, codexChapter.value)
-        );
-
-        const codexTotalPages = computed(() =>
-            spiritCodexHelpers.getCodexTotalPages(codexFilteredSkills.value, CODEX_PER_PAGE)
-        );
-
-        const codexPageSkills = computed(() =>
-            spiritCodexHelpers.getCodexPageSkills(codexFilteredSkills.value, codexPage.value, CODEX_PER_PAGE)
-        );
-
-        const codexNextSkill = computed(() =>
-            spiritCodexHelpers.getCodexNextSkill(codexFilteredSkills.value, codexPage.value)
         );
 
         const SPIRIT_RESONANCE_VISUAL_ORDER = Object.freeze([
@@ -2297,7 +2273,6 @@ const _jpApp = Vue.createApp({
             const normalizedIndex = (index + total) % total;
             if (!isCodexSkillUnlocked(codexWheelSkills.value[normalizedIndex])) return;
             codexPage.value = normalizedIndex;
-            flippedCardId.value = null;
         };
 
         const shiftCodexWheel = (step) => {
@@ -2438,13 +2413,11 @@ const _jpApp = Vue.createApp({
             }
             clearCodexWheelArrowTimers();
             codexDetailMode.value = true;
-            flippedCardId.value = null;
         };
 
         const closeCodexDetail = () => {
             clearCodexWheelArrowTimers();
             codexDetailMode.value = false;
-            flippedCardId.value = null;
         };
 
         const startCodexDrag = (event) => {
@@ -2563,7 +2536,6 @@ const _jpApp = Vue.createApp({
             }
             if (!isCodexSkillUnlocked(codexWheelSkills.value[codexPage.value]) && codexUnlockedWheelIndices.value.length) {
                 codexPage.value = codexUnlockedWheelIndices.value[0];
-                flippedCardId.value = null;
                 clearCodexWheelArrowTimers();
                 codexDetailMode.value = false;
             }
@@ -3817,7 +3789,6 @@ const _jpApp = Vue.createApp({
         const closeCodex = () => {
             clearCodexWheelArrowTimers();
             isCodexOpen.value = false;
-            flippedCardId.value = null;
             codexDetailMode.value = false;
             codexDragStartX.value = null;
             codexSuppressClick.value = false;
@@ -11088,7 +11059,7 @@ const _jpApp = Vue.createApp({
             isNextBtnVisible,
             animatedExp, hasLeveledUp, displayedResultLevel, displayedResultExp, displayedResultNextExp, displayedResultExpPct, resultExpBarTransitionEnabled, showLevelUpMessageAfterAnimation, resultLevelUpStatText, resultUnlockedMilestones, showResultMilestoneRewards, dismissResultMilestoneRewards, playerStats, getExpRequiredForNextLevel,
             isAudioDebugEnabled, isAudioDebugOpen, isAudioDebugDragging, audioDebugOverlayStyle, audioDebugSections, refreshAudioDebugState, startAudioDebugDrag, debugResumeAudioContext, debugTestSfx, debugTestBgmPlay, debugPauseBgm, debugTestRawAudio, debugEnableHtmlAudioFallback, debugDisableHtmlAudioFallback, debugEnableFallbackAudioContextV2, debugDisableFallbackAudioContextV2, debugResumeFallbackAudioContext, debugTestFallbackContextBgm, debugTestFallbackBgm, debugTestFallbackSfx, debugShowAudioState,
-            setDefaultAttackMode, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, levelPassiveVfx, counterSlashVfx, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, monsterHitGiragira, monsterGiraKnockActive, monsterGiraKnockStyle, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, codexPage, codexChapter, flippedCardId, codexChapterList, codexFilteredSkills, codexTotalPages, codexPageSkills, codexNextSkill, codexWheelSkills, codexSelectedSkill, codexDetailMode, getCodexWheelItemStyle, getCodexWheelItemClass, getCodexSkillDisplayName, setCodexSelectedIndex, shiftCodexWheel, startCodexWheelArrowPress, stopCodexWheelArrowPress, handleCodexWheelArrowClick, openCodexDetail, closeCodexDetail, startCodexDrag, endCodexDrag, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
+            setDefaultAttackMode, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, levelPassiveVfx, counterSlashVfx, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, monsterHitGiragira, monsterGiraKnockActive, monsterGiraKnockStyle, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, codexPage, codexWheelSkills, codexSelectedSkill, codexDetailMode, getCodexWheelItemStyle, getCodexWheelItemClass, getCodexSkillDisplayName, setCodexSelectedIndex, shiftCodexWheel, startCodexWheelArrowPress, stopCodexWheelArrowPress, handleCodexWheelArrowClick, openCodexDetail, closeCodexDetail, startCodexDrag, endCodexDrag, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             handleEscapeToMap, escapeOverlayVisible, escapeOverlayOpacity, isEscaping,
             heroBuffs, debugControls,
             // ぴったり: hide wrong choices for the next question
