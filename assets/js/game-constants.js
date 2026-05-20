@@ -131,8 +131,6 @@
 
         SPIRIT_IMAGE_PLACEHOLDER: 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><radialGradient id="g" cx="50%" cy="38%" r="58%"><stop offset="0%" stop-color="#fef3c7" stop-opacity=".9"/><stop offset="50%" stop-color="#fbbf24" stop-opacity=".38"/><stop offset="100%" stop-color="#1e1b4b" stop-opacity=".05"/></radialGradient></defs><rect width="512" height="512" rx="96" fill="#161225"/><circle cx="256" cy="246" r="162" fill="url(#g)"/><path d="M256 116c58 0 105 49 105 110 0 76-63 130-105 170-42-40-105-94-105-170 0-61 47-110 105-110Z" fill="#fbbf24" opacity=".36"/><circle cx="256" cy="224" r="46" fill="#fff7ed" opacity=".48"/><path d="M170 391c45 28 127 28 172 0" fill="none" stroke="#fde68a" stroke-width="18" stroke-linecap="round" opacity=".48"/></svg>`),
 
-        MASTERY_PARTICLES: ['は', 'の', 'が', 'を', 'に', 'へ', 'も', 'で', 'と', 'から', 'まで', 'や', 'より'],
-
         HERO_VISUAL_CONFIG: {
             battle: {
                 marginBottom: '150px',

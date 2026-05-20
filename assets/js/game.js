@@ -479,29 +479,6 @@ const _jpApp = Vue.createApp({
         // --- オノマトペ Skills (unlocked on boss clear) ---
         const unlockedOnomatopeIds = ref([]);
 
-        const MASTERY_PARTICLES = GAME_CONSTANTS.MASTERY_PARTICLES;
-        const createParticleProgressMap = (initialValue = 0) => {
-            return MASTERY_PARTICLES.reduce((acc, particle) => {
-                acc[particle] = initialValue;
-                return acc;
-            }, {});
-        };
-        const normalizeParticleMasteryMap = (source = {}) => {
-            const base = createParticleProgressMap(0);
-            MASTERY_PARTICLES.forEach(particle => {
-                const value = Number(source?.[particle] ?? 0);
-                base[particle] = Number.isFinite(value) ? Math.min(100, Math.max(0, Math.floor(value))) : 0;
-            });
-            return base;
-        };
-        const normalizeParticleCorrectCountsMap = (source = {}) => {
-            const base = createParticleProgressMap(0);
-            MASTERY_PARTICLES.forEach(particle => {
-                const value = Number(source?.[particle] ?? 0);
-                base[particle] = Number.isFinite(value) ? Math.max(0, Math.floor(value)) % 2 : 0;
-            });
-            return base;
-        };
         const normalizeSkillMasteryMap = (source = {}) => {
             return Object.entries(source || {}).reduce((acc, [skillId, rawValue]) => {
                 if (!skillId || typeof skillId !== 'string') return acc;
@@ -518,8 +495,6 @@ const _jpApp = Vue.createApp({
                 return acc;
             }, {});
         };
-        const particleMastery = ref(createParticleProgressMap(0));
-        const particleCorrectCounts = ref(createParticleProgressMap(0));
         const skillMastery = ref({});
         const skillCorrectCounts = ref({});
 
@@ -615,10 +590,6 @@ const _jpApp = Vue.createApp({
 
                     unlockedOnomatopeIds: unlockedOnomatopeIds.value,
 
-                    particleMastery: particleMastery.value,
-
-                    particleCorrectCounts: particleCorrectCounts.value,
-
                     skillMastery: skillMastery.value,
 
                     skillCorrectCounts: skillCorrectCounts.value,
@@ -691,10 +662,6 @@ const _jpApp = Vue.createApp({
 
                     if (parsed.unlockedOnomatopeIds) unlockedOnomatopeIds.value = parsed.unlockedOnomatopeIds;
 
-                    if (parsed.particleMastery) particleMastery.value = normalizeParticleMasteryMap(parsed.particleMastery);
-
-                    if (parsed.particleCorrectCounts) particleCorrectCounts.value = normalizeParticleCorrectCountsMap(parsed.particleCorrectCounts);
-
                     if (parsed.skillMastery) skillMastery.value = normalizeSkillMasteryMap(parsed.skillMastery);
 
                     if (parsed.skillCorrectCounts) skillCorrectCounts.value = normalizeSkillCorrectCountsMap(parsed.skillCorrectCounts);
@@ -728,8 +695,6 @@ const _jpApp = Vue.createApp({
             bestGrades.value = {};
             stageBestRecords.value = {};
             unlockedOnomatopeIds.value = [];
-            particleMastery.value = createParticleProgressMap(0);
-            particleCorrectCounts.value = createParticleProgressMap(0);
             skillMastery.value = {};
             skillCorrectCounts.value = {};
             playerStats.value = { level: 1, exp: 0 };
@@ -2496,16 +2461,6 @@ const _jpApp = Vue.createApp({
             window.setTimeout(() => { codexSuppressClick.value = false; }, 140);
             shiftCodexWheel(deltaX > 0 ? -1 : 1);
         };
-
-        const getParticleMastery = (particle) => {
-            if (!MASTERY_PARTICLES.includes(particle)) return 0;
-            const value = Number(particleMastery.value[particle] ?? 0);
-            return Number.isFinite(value) ? Math.min(100, Math.max(0, Math.floor(value))) : 0;
-        };
-
-        const getParticleMasteryStyle = (particle) => ({
-            width: `${getParticleMastery(particle)}%`
-        });
 
         const getSkillMastery = (skillId) => {
             if (!skillId || typeof skillId !== 'string') return 0;
@@ -9799,29 +9754,6 @@ const _jpApp = Vue.createApp({
         };
 
         // ================= [ BATTLE LOGIC ] =================
-        const getMasteryParticlesForCurrentQuestion = () => {
-            const q = currentQuestion.value;
-            if (!q || !Array.isArray(q.answers)) return [];
-            const particles = [];
-            const blanks = levelConfig.value?.blanks || q.answers.length;
-            q.answers.slice(0, blanks).forEach(answerSet => {
-                const answer = Array.isArray(answerSet) ? answerSet[0] : answerSet;
-                if (MASTERY_PARTICLES.includes(answer) && !particles.includes(answer)) {
-                    particles.push(answer);
-                }
-            });
-            return particles;
-        };
-
-        const addParticleMasteryProgress = () => {
-            getMasteryParticlesForCurrentQuestion().forEach(particle => {
-                if (getParticleMastery(particle) >= 100) return;
-                particleCorrectCounts.value[particle] = 0;
-                particleMastery.value[particle] = Math.min(100, getParticleMastery(particle) + 1);
-            });
-            saveProgression();
-        };
-
         const addSkillMasteryProgress = () => {
             const skillId = currentQuestion.value?.skillId;
             if (!skillId || typeof skillId !== 'string') return;
@@ -11162,7 +11094,7 @@ const _jpApp = Vue.createApp({
             // ぴったり: hide wrong choices for the next question
             skillList, castAbility, spState, settings, shouldShowNextButton, praiseToast, comboPopup, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG, getSkillTypeLabel, pittariActive, isPittariSealed, activeLevelPassiveBadges,
             formatParticleBadge, formatSkillSpiritName, formatSkillMeaning, formatSkillRule, formatUnlockLevel,
-            particleMastery, particleCorrectCounts, skillMastery, skillCorrectCounts, getParticleMastery, getParticleMasteryStyle, getSkillMastery, getSkillMasteryStyle, isBondMaxSkill,
+            skillMastery, skillCorrectCounts, getSkillMastery, getSkillMasteryStyle, isBondMaxSkill,
             isMonsterCodexOpen, openMonsterCodex, monsterCodexEntries, selectedMonsterCodexEntry, selectMonsterCodexEntry, handleMonsterCodexImageError,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
             isMentorModalOpen, isLevelJumpOpen, isAdvancedSettingsOpen, isStageRecordsOpen, stageRecordRows, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
