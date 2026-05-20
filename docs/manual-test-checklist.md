@@ -4,6 +4,17 @@
 
 ---
 
+## 0. 桌面瀏覽器測試環境（效能）
+
+在進行 battle、共鳴輪、結算 EXP 條、玻璃 UI 等**桌面流暢度**驗收前，請先確認：
+
+- [ ] **Chrome「使用圖形加速功能」（硬體加速）已開啟**
+  路徑：`設定` → `系統` → 開啟「使用圖形加速功能（若可用）」→ 依提示**重新啟動 Chrome**。
+- [ ] 若硬體加速**關閉**，畫面可能出現明顯掉幀（含普通 UI 動畫如結算 EXP 條、backdrop 玻璃層），**不應優先當成 JPAPP runtime regression**。
+- [ ] 其他 Chromium 系瀏覽器（Edge 等）亦有類似「硬體加速」開關，測試前建議一併確認。
+
+---
+
 ## 1. 基本啟動 (Initial Load)
 - [ ] 遊戲首頁可正常載入，背景與 UI 顯示正確。
 - [ ] 「開始冒險」按鈕正常顯示，點擊可進入下一步。
@@ -65,7 +76,7 @@
 - [ ] 「Next Stage」按鈕在勝利後延遲出現的機制正常。
 
 ## 9. 開發者工具與隱私 (Dev-only Verification)
-- [ ] 在 `localhost` 或特定開發 Flag 下，Debug Overlay 與 FPS 工具可見。
+- [ ] 在 `localhost`（或本機 LAN IP）下，可選載入 Debug Overlay、debug.js、FPS 工具；**預設不應**出現 runtime summary / longtask 等定時 console 輸出。
 - [ ] **安全性檢查**：在一般正式環境下，不顯示 `Simple Audio V2` dev status 或 `Performance Overlay` 相關的開發者控制項／入口。
 - [ ] `audioDebug` 面板僅在指定 Flag 或 URL 參數下才出現。
 

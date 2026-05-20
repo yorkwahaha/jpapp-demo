@@ -1225,7 +1225,7 @@
     background: transparent;
     color: #fef3c7;
     overflow: visible;
-    transition: left 0.28s ease, top 0.28s ease, transform 0.28s ease, opacity 0.28s ease, filter 0.28s ease;
+    transition: filter 0.18s ease;
     filter: saturate(0.74) brightness(0.84);
     cursor: pointer;
 }
@@ -1257,9 +1257,6 @@
 }
 
 .codex-wheel-spirit.is-midground {
-    width: 96px;
-    min-height: 96px;
-    gap: 0;
     filter: saturate(0.62) brightness(0.84);
 }
 
@@ -1268,9 +1265,6 @@
 }
 
 .codex-wheel-spirit.is-background {
-    width: 68px;
-    min-height: 68px;
-    gap: 0;
     filter: saturate(0.7) brightness(0.92);
 }
 
@@ -1281,6 +1275,59 @@
 .codex-wheel-spirit.is-foreground:not(.is-selected):not(.is-locked) .codex-wheel-img,
 .codex-wheel-spirit.is-foreground:not(.is-selected):not(.is-locked) .codex-wheel-particle {
     animation: codex-orbit-breathe 6.8s ease-in-out infinite;
+}
+
+/* Spin composite downgrade: all slots stay in DOM/RAF; no filter/shadow cost while moving */
+.codex-wheel-orbit.is-spinning .codex-wheel-spirit {
+    transition: none;
+    will-change: transform;
+    filter: none;
+}
+
+.codex-wheel-orbit.is-spinning .codex-wheel-spirit .codex-wheel-img,
+.codex-wheel-orbit.is-spinning .codex-wheel-spirit .codex-wheel-particle {
+    filter: none;
+    animation: none;
+}
+
+/* Spin-only sealed badge: hide spirit art, show neutral lock disc (no veil overlay) */
+.codex-wheel-orbit.is-spinning .codex-wheel-spirit.is-locked .codex-wheel-img {
+    filter: none;
+    opacity: 0.46;
+}
+
+.codex-wheel-orbit.is-spinning .codex-wheel-spirit.is-locked .codex-wheel-particle {
+    filter: none;
+    opacity: 0.22;
+    color: rgba(203, 213, 225, 0.78);
+    background: rgba(51, 65, 85, 0.52);
+    border-color: rgba(100, 116, 139, 0.48);
+}
+
+.codex-wheel-orbit.is-spinning .codex-wheel-ring {
+    box-shadow: none;
+    background: radial-gradient(circle, rgba(252, 211, 77, 0.12), transparent 72%);
+}
+
+.codex-wheel-orbit.is-spinning .codex-wheel-spirit.is-locked .codex-wheel-ring {
+    z-index: 1;
+    border: 1px solid rgba(100, 116, 139, 0.22);
+    background: transparent;
+    box-shadow: none;
+    filter: none;
+}
+
+.codex-wheel-orbit.is-spinning .codex-wheel-spirit.is-midground .codex-wheel-ring,
+.codex-wheel-orbit.is-spinning .codex-wheel-spirit.is-background .codex-wheel-ring {
+    background: radial-gradient(circle, rgba(252, 211, 77, 0.14), transparent 72%);
+}
+
+.codex-wheel-orbit.is-spinning .codex-wheel-spirit.is-bond-max .codex-wheel-ring {
+    box-shadow: none;
+}
+
+.codex-wheel-orbit.is-spinning .codex-wheel-name {
+    text-shadow: none;
 }
 
 .codex-wheel-spirit.is-locked {
@@ -1317,17 +1364,11 @@
 }
 
 .codex-wheel-spirit.is-midground .codex-wheel-ring {
-    top: 8px;
-    width: 78px;
-    height: 78px;
     border-color: rgba(252, 211, 77, 0.3);
     background: radial-gradient(circle, rgba(252, 211, 77, 0.18), rgba(79, 38, 8, 0.08) 58%, transparent 70%);
 }
 
 .codex-wheel-spirit.is-background .codex-wheel-ring {
-    top: 6px;
-    width: 58px;
-    height: 58px;
     border-color: rgba(252, 211, 77, 0.42);
     background: radial-gradient(circle, rgba(252, 211, 77, 0.38), rgba(252, 211, 77, 0.12) 48%, transparent 70%);
     box-shadow: 0 0 14px rgba(252, 211, 77, 0.2);
@@ -1345,31 +1386,27 @@
 
 .codex-wheel-spirit.is-locked .codex-wheel-img {
     opacity: 0.46;
-    filter: brightness(0) saturate(0) opacity(0.9) drop-shadow(0 0 8px rgba(226, 232, 240, 0.34));
+    filter: none;
 }
 
 .codex-wheel-spirit.is-selected.is-locked .codex-wheel-img {
     opacity: 0.62;
-    filter: brightness(0) saturate(0) opacity(0.9) drop-shadow(0 0 12px rgba(226, 232, 240, 0.42));
+    filter: none;
 }
 
 .codex-wheel-spirit.is-midground .codex-wheel-img,
 .codex-wheel-spirit.is-midground .codex-wheel-particle {
-    width: 78px;
-    height: 78px;
     opacity: 0.88;
 }
 
 .codex-wheel-spirit.is-background .codex-wheel-img,
 .codex-wheel-spirit.is-background .codex-wheel-particle {
-    width: 58px;
-    height: 58px;
     opacity: 0.84;
 }
 
 .codex-wheel-spirit.is-background.is-locked .codex-wheel-img {
     opacity: 0.5;
-    filter: brightness(0) saturate(0) opacity(0.9) drop-shadow(0 0 8px rgba(226, 232, 240, 0.3));
+    filter: none;
 }
 
 .codex-wheel-particle {
@@ -1973,44 +2010,16 @@
         min-height: 178px;
     }
 
-    .codex-wheel-spirit.is-midground {
-        width: 76px;
-        min-height: 76px;
-    }
-
-    .codex-wheel-spirit.is-background {
-        width: 50px;
-        min-height: 50px;
-    }
-
     .codex-wheel-ring {
         top: 11px;
         width: 96px;
         height: 96px;
     }
 
-    .codex-wheel-spirit.is-background .codex-wheel-ring {
-        top: 6px;
-        width: 42px;
-        height: 42px;
-    }
-
     .codex-wheel-img,
     .codex-wheel-particle {
         width: 112px;
         height: 112px;
-    }
-
-    .codex-wheel-spirit.is-midground .codex-wheel-img,
-    .codex-wheel-spirit.is-midground .codex-wheel-particle {
-        width: 62px;
-        height: 62px;
-    }
-
-    .codex-wheel-spirit.is-background .codex-wheel-img,
-    .codex-wheel-spirit.is-background .codex-wheel-particle {
-        width: 42px;
-        height: 42px;
     }
 
     .codex-wheel-name {

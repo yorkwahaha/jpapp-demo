@@ -31,11 +31,21 @@
         /**
          * Get Spirit Image source (WebP)
          * @param {Object} spirit 
+         * @param {boolean} isWheel
+         * @param {boolean} isLocked
          * @returns {string}
          */
-        getSpiritImageSrc: function(spirit) {
+        getSpiritImageSrc: function(spirit, isWheel = false, isLocked = false) {
             const placeholder = window.JPAPP_CONSTANTS?.SPIRIT_IMAGE_PLACEHOLDER || '';
             if (!spirit?.implemented || !spirit.imageBase) return placeholder;
+            if (isWheel) {
+                if (isLocked) {
+                    const lockedBase = spirit.imageBase.replace('/display/', '/wheel-locked/');
+                    return `${lockedBase}.webp`;
+                }
+                const wheelBase = spirit.imageBase.replace('/display/', '/wheel/');
+                return `${wheelBase}.webp`;
+            }
             return `${spirit.imageBase}.webp`;
         },
 
@@ -43,15 +53,47 @@
          * Handle Spirit Image Error (WebP -> PNG fallback or placeholder)
          * @param {Event} event 
          * @param {Object} spirit 
+         * @param {boolean} isWheel
+         * @param {boolean} isLocked
          */
-        handleSpiritImageError: function(event, spirit) {
+        handleSpiritImageError: function(event, spirit, isWheel = false, isLocked = false) {
             const img = event?.target;
             const placeholder = window.JPAPP_CONSTANTS?.SPIRIT_IMAGE_PLACEHOLDER || '';
             if (!img) return;
-            if (spirit?.implemented && spirit.imageBase && img.src.includes('.webp')) {
-                img.src = `${spirit.imageBase}.png`;
-                return;
+            if (spirit?.implemented && spirit.imageBase) {
+                if (isWheel) {
+                    if (isLocked) {
+                        img.onerror = function() {
+                            img.onerror = function() {
+                                img.onerror = function() {
+                                    img.onerror = null;
+                                    img.src = placeholder;
+                                };
+                                img.src = `${spirit.imageBase}.png`;
+                            };
+                            img.src = `${spirit.imageBase}.webp`;
+                        };
+                        const wheelBase = spirit.imageBase.replace('/display/', '/wheel/');
+                        img.src = `${wheelBase}.webp`;
+                        return;
+                    }
+                    img.onerror = function() {
+                        img.onerror = function() {
+                            img.onerror = null;
+                            img.src = placeholder;
+                        };
+                        img.src = `${spirit.imageBase}.png`;
+                    };
+                    img.src = `${spirit.imageBase}.webp`;
+                    return;
+                }
+                if (img.src.includes('.webp')) {
+                    img.onerror = null;
+                    img.src = `${spirit.imageBase}.png`;
+                    return;
+                }
             }
+            img.onerror = null;
             img.src = placeholder;
         },
 

@@ -732,7 +732,11 @@ window.MapAmbient = (() => {
         stones = [];
     }
 
+    function isActive() {
+        return !!active;
+    }
+
     // ── Expose ─────────────────────────────────────────────────────────────
-    return { activate, deactivate };
+    return { activate, deactivate, isActive };
 
 })();

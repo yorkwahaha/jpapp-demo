@@ -176,6 +176,7 @@ const _jpApp = Vue.createApp({
         const MENTOR_AUDIO_MAP = ref({});
 
         const isMonsterImageError = ref(false);
+        const failedMonsterImagePaths = new Set();
 
         const maxLevel = ref(35);
 
@@ -452,8 +453,8 @@ const _jpApp = Vue.createApp({
 
         const decorateSkillWithSpirit = (skill) => spiritCodexHelpers.decorateSkillWithSpirit ? spiritCodexHelpers.decorateSkillWithSpirit(spiritsBySkillId.value, skill) : skill;
 
-        const getSpiritImageSrc = (spirit) => window.JPAPPCodexDisplayUtils.getSpiritImageSrc(spirit);
-        const handleSpiritImageError = (event, spirit) => window.JPAPPCodexDisplayUtils.handleSpiritImageError(event, spirit);
+        const getSpiritImageSrc = (spirit, isWheel = false, isLocked = false) => window.JPAPPCodexDisplayUtils.getSpiritImageSrc(spirit, isWheel, isLocked);
+        const handleSpiritImageError = (event, spirit, isWheel = false, isLocked = false) => window.JPAPPCodexDisplayUtils.handleSpiritImageError(event, spirit, isWheel, isLocked);
 
         const getResultSpiritForLevel = (levelId) => {
             const pendingSpirit = pendingKnowledgeCards.value
@@ -1096,6 +1097,13 @@ const _jpApp = Vue.createApp({
             }
         };
 
+        const closeBattleConfirm = () => {
+            if (!isBattleConfirmOpen.value) return;
+            isBattleConfirmOpen.value = false;
+            selectedStageToConfirm.value = null;
+            playSfx('click');
+        };
+
         const selectStageFromMap = (n) => {
             const lvNum = Number(n);
             if (!isLevelUnlocked(lvNum)) {
@@ -1144,6 +1152,7 @@ const _jpApp = Vue.createApp({
             if (selectedStageToConfirm.value !== null) {
                 const lv = selectedStageToConfirm.value;
                 isBattleConfirmOpen.value = false;
+                selectedStageToConfirm.value = null;
                 if (typeof MapAmbient !== 'undefined') MapAmbient.deactivate();
                 startLevel(lv, false);
             }
@@ -1321,6 +1330,9 @@ const _jpApp = Vue.createApp({
             const shouldDelayMapAudio = monsterResultShown.value && !!activeResultFanfareAudio;
             const returnAudioToken = ++returnToMapAudioToken;
 
+            forceStopAllCodexWheelMotion();
+            closeCodex();
+
             resetBattleOutcomePresentation();
             resetStageClearMetrics();
             isFinished.value = true;
@@ -1411,7 +1423,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26051601";
+        const APP_VERSION = window.APP_VERSION || "26052101";
         const versionImageAsset = (path) => {
             if (!path || typeof path !== 'string' || /[?&]v=/.test(path)) return path;
             return `${path}${path.includes('?') ? '&' : '?'}v=${encodeURIComponent(String(APP_VERSION))}`;
@@ -1558,8 +1570,35 @@ const _jpApp = Vue.createApp({
         const codexDetailMode = ref(false);
         const codexDragStartX = ref(null);
         const codexSuppressClick = ref(false);
+        let codexWheelPhase = 0;
+        let codexWheelPhaseFloat = 0;
+        let codexWheelVelocity = 0;
+        const isCodexWheelAnimating = ref(false);
+        // Plain vars intentionally — NOT refs — to avoid per-frame Vue reactive overhead in RAF loop
+        let _codexWheelAnimationFrame = null;
+        let _codexWheelAnimationToken = 0;
+        const CODEX_WHEEL_ACCELERATION = 17;
+        const CODEX_WHEEL_DECELERATION = 9;
+        const CODEX_WHEEL_MAX_SPEED = 13;
+        const CODEX_WHEEL_SNAP_SPEED_THRESHOLD = 2.0;
+        const CODEX_WHEEL_INITIAL_KICK_SPEED = 1.5;
+        const CODEX_WHEEL_LONG_PRESS_MS = 300;
+        const CODEX_WHEEL_MAX_DETENTS_PER_FRAME = 3;
+        const CODEX_WHEEL_DETENT_SPACING_SECONDS = 0.016;
+        const CODEX_WHEEL_MIN_DETENT_INTERVAL_SECONDS = 0.016;
+        // spin state as plain vars — NOT Vue refs — to avoid reactive overhead in RAF loop
+        let _codexSpinRafId = null;
+        let _codexSpinDirection = 0;
+        let _codexSpinLastTime = null;
+        let _codexSpinThrottleActive = false;
+        let _codexLastDetentPhase = 0;
+        let _codexLastDetentAudioTime = 0;
+        // DOM cache for RAF spin path
+        let _codexOrbitEl = null;
+        let _codexSlotEls = null;
+        let _codexOrbitRect = null;
+        let _codexWheelStyleCache = [];
         const codexWheelArrowPressTimer = ref(null);
-        const codexWheelArrowRepeatTimer = ref(null);
         const codexWheelArrowDidRepeat = ref(false);
         const codexWheelArrowSuppressClick = ref(false);
         const isMonsterCodexOpen = ref(false);
@@ -2258,49 +2297,499 @@ const _jpApp = Vue.createApp({
             return skills[Math.min(Math.max(codexPage.value, 0), skills.length - 1)] || null;
         });
 
-        const normalizeCodexWheelOffset = (index) => {
+        const normalizeCodexWheelOffset = (index, phase = codexPage.value) => {
             const total = codexWheelSkills.value.length;
             if (!total) return 0;
-            let offset = index - codexPage.value;
-            if (offset > total / 2) offset -= total;
-            if (offset < -total / 2) offset += total;
-            return offset;
+            return (((index - phase + total / 2) % total) + total) % total - total / 2;
+        };
+
+        const normalizeCodexWheelIndex = (index) => {
+            const total = codexWheelSkills.value.length;
+            if (!total) return 0;
+            return ((index % total) + total) % total;
+        };
+
+        const normalizeCodexWheelPhase = (phase) => {
+            const total = codexWheelSkills.value.length;
+            if (!total) return 0;
+            return ((phase % total) + total) % total;
+        };
+
+        const getCodexWheelVisualState = (index, phase, rect) => {
+            const offset = normalizeCodexWheelOffset(index, phase);
+            const abs = Math.abs(offset);
+            const total = Math.max(1, codexWheelSkills.value.length);
+            const angle = (Math.PI / 2) + offset * ((Math.PI * 2) / total);
+            const frontDepth = (Math.sin(angle) + 1) / 2;
+            const centerFocus = Math.max(0, 1 - Math.min(abs, total - abs) / 2.5);
+            const radiusX = (rect?.width || 0) * 0.4;
+            const radiusY = (rect?.height || 0) * 0.22;
+            const centerOffsetY = (rect?.height || 0) * 0.088;
+            return {
+                x: Math.cos(angle) * radiusX,
+                y: centerOffsetY + Math.sin(angle) * radiusY,
+                scale: 0.42 + Math.pow(frontDepth, 1.32) * 0.62 + centerFocus * 0.3,
+                opacity: 0.36 + frontDepth * 0.42 + centerFocus * 0.22,
+                zIndex: Math.round(36 + frontDepth * 84 + centerFocus * 24),
+                pointerEvents: abs <= 2.6 ? 'auto' : 'none'
+            };
+        };
+
+        const setCodexWheelMotionClass = (isActive) => {
+            // Use cached orbit el if available, else query once
+            const orbit = _codexOrbitEl || document.querySelector('.codex-wheel-orbit');
+            if (orbit) orbit.classList.toggle('is-spinning', Boolean(isActive));
+        };
+
+        // Invalidate cached orbit rect (call on open or resize)
+        const invalidateCodexOrbitRect = () => {
+            _codexOrbitRect = null;
+            _codexOrbitEl = null;
+            _codexSlotEls = null;
+        };
+
+        // Lazily build DOM cache; only queries the DOM once per open session
+        const ensureCodexDomCache = () => {
+            if (!_codexOrbitEl) {
+                _codexOrbitEl = document.querySelector('.codex-wheel-orbit');
+            }
+            if (_codexOrbitEl && !_codexSlotEls) {
+                _codexSlotEls = Array.from(_codexOrbitEl.querySelectorAll('.codex-wheel-spirit'));
+            }
+            if (_codexOrbitEl && !_codexOrbitRect) {
+                const r = _codexOrbitEl.getBoundingClientRect();
+                if (r.width && r.height) _codexOrbitRect = r;
+            }
+        };
+
+        const updateCodexWheelDomStyles = () => {
+            // Guard: skip all DOM/style work when codex is closed or motion disabled
+            if (!isCodexWheelMotionAllowed()) return;
+            ensureCodexDomCache();
+            const orbit = _codexOrbitEl;
+            const slots = _codexSlotEls;
+            const rect = _codexOrbitRect;
+            if (!orbit || !slots || !rect) return;
+            const phase = normalizeCodexWheelPhase(codexWheelPhase);
+            const total = codexWheelSkills.value.length;
+            if (!total) return;
+            const radiusX = rect.width * 0.4;
+            const radiusY = rect.height * 0.22;
+            const centerOffsetY = rect.height * 0.088;
+            const TWO_PI_OVER_TOTAL = (Math.PI * 2) / total;
+            const nextStyleCache = [];
+            for (let index = 0; index < slots.length; index++) {
+                const slot = slots[index];
+                if (!slot) continue;
+                const offset = (((index - phase + total / 2) % total) + total) % total - total / 2;
+                const abs = Math.abs(offset);
+                const angle = (Math.PI / 2) + offset * TWO_PI_OVER_TOTAL;
+                const sinA = Math.sin(angle);
+                const cosA = Math.cos(angle);
+                const frontDepth = (sinA + 1) / 2;
+                const centerFocus = Math.max(0, 1 - Math.min(abs, total - abs) / 2.5);
+                const x = cosA * radiusX;
+                const y = centerOffsetY + sinA * radiusY;
+                const scale = 0.42 + Math.pow(frontDepth, 1.32) * 0.62 + centerFocus * 0.3;
+                const opacity = 0.36 + frontDepth * 0.42 + centerFocus * 0.22;
+                const zIndex = Math.round(36 + frontDepth * 84 + centerFocus * 24);
+                // Use translate3d(x,y,0) translate(-50%,-50%) to avoid calc() per-frame string building
+                const style = {
+                    left: '50%',
+                    top: '50%',
+                    transform: `translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) translate(-50%,-50%) scale(${scale.toFixed(4)})`,
+                    opacity: opacity.toFixed(3),
+                    zIndex: String(zIndex),
+                    pointerEvents: abs <= 2.6 ? 'auto' : 'none'
+                };
+                nextStyleCache[index] = style;
+                slot.style.transform = style.transform;
+                slot.style.opacity = style.opacity;
+                slot.style.zIndex = style.zIndex;
+                slot.style.pointerEvents = style.pointerEvents;
+            }
+            _codexWheelStyleCache = nextStyleCache;
+        };
+
+        const setCodexWheelPhase = (phase) => {
+            codexWheelPhaseFloat = Number.isFinite(phase) ? phase : 0;
+            codexWheelPhase = normalizeCodexWheelPhase(codexWheelPhaseFloat);
+            if (isCodexWheelMotionAllowed()) updateCodexWheelDomStyles();
+        };
+
+        const syncCodexWheelAfterRender = () => {
+            nextTick(() => {
+                // Re-query DOM after Vue re-renders (slot count may have changed)
+                _codexOrbitEl = null;
+                _codexSlotEls = null;
+                _codexOrbitRect = null;
+                updateCodexWheelDomStyles();
+            });
+        };
+
+        const getCodexWheelTargetPhase = (targetIndex, direction = 0) => {
+            const total = codexWheelSkills.value.length;
+            if (!total) return 0;
+            const currentPhase = codexWheelPhaseFloat;
+            const normalizedIndex = normalizeCodexWheelIndex(targetIndex);
+            const baseTurn = Math.floor(currentPhase / total);
+            const candidates = [baseTurn - 1, baseTurn, baseTurn + 1, baseTurn + 2]
+                .map(turn => normalizedIndex + turn * total);
+            if (direction > 0) {
+                return candidates.find(phase => phase > currentPhase + 0.001) ?? (normalizedIndex + (baseTurn + 1) * total);
+            }
+            if (direction < 0) {
+                return candidates.slice().reverse().find(phase => phase < currentPhase - 0.001) ?? (normalizedIndex + (baseTurn - 1) * total);
+            }
+            return candidates.reduce((best, phase) =>
+                Math.abs(phase - currentPhase) < Math.abs(best - currentPhase) ? phase : best
+            );
+        };
+
+        const isCodexWheelMotionAllowed = () => isCodexOpen.value;
+
+        const forceStopAllCodexWheelMotion = () => {
+            clearCodexWheelArrowTimers();
+            clearCodexWheelDetentTimers();
+            if (_codexSpinRafId !== null) {
+                window.cancelAnimationFrame(_codexSpinRafId);
+                _codexSpinRafId = null;
+            }
+            if (_codexWheelAnimationFrame !== null) {
+                window.cancelAnimationFrame(_codexWheelAnimationFrame);
+                _codexWheelAnimationFrame = null;
+            }
+            _codexWheelAnimationToken += 1;
+            _codexSpinDirection = 0;
+            _codexSpinLastTime = null;
+            _codexSpinThrottleActive = false;
+            codexWheelVelocity = 0;
+            isCodexWheelAnimating.value = false;
+            setCodexWheelMotionClass(false);
+        };
+
+        const cancelCodexWheelAnimation = () => {
+            clearCodexWheelDetentTimers();
+            if (_codexWheelAnimationFrame !== null) {
+                window.cancelAnimationFrame(_codexWheelAnimationFrame);
+                _codexWheelAnimationFrame = null;
+            }
+            _codexWheelAnimationToken += 1;
+            isCodexWheelAnimating.value = false;
+            setCodexWheelMotionClass(false);
+        };
+
+        const animateCodexWheelToIndex = (targetIndex, direction = 0, options = {}) => {
+            const total = codexWheelSkills.value.length;
+            if (!total) return false;
+            const normalizedIndex = normalizeCodexWheelIndex(targetIndex);
+            if (!isCodexSkillUnlocked(codexWheelSkills.value[normalizedIndex])) return false;
+
+            const targetPhase = Number.isFinite(options.targetPhase)
+                ? options.targetPhase
+                : getCodexWheelTargetPhase(normalizedIndex, direction);
+            const startPhase = codexWheelPhaseFloat;
+            const distance = targetPhase - startPhase;
+            if (Math.abs(distance) < 0.001) {
+                cancelCodexWheelAnimation();
+                codexPage.value = normalizedIndex;
+                setCodexWheelPhase(targetPhase);
+                return true;
+            }
+
+            cancelCodexWheelAnimation();
+            const animationToken = _codexWheelAnimationToken + 1;
+            _codexWheelAnimationToken = animationToken;
+            isCodexWheelAnimating.value = true;
+            setCodexWheelMotionClass(true);
+            const minDuration = options.minDuration ?? 420;
+            const maxDuration = options.maxDuration ?? 650;
+            const durationPerStep = options.durationPerStep ?? 64;
+            const duration = Math.min(maxDuration, Math.max(minDuration, Math.abs(distance) * durationPerStep));
+            const startedAt = performance.now();
+            const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
+            // Schedule detent clicks for integer boundaries crossed during ease-out animation
+            clearCodexWheelDetentTimers();
+            const crossedInts = [];
+            if (distance > 0) {
+                const startInt = Math.floor(startPhase) + 1;
+                const endInt = Math.floor(targetPhase);
+                for (let b = startInt; b <= endInt; b++) {
+                    crossedInts.push(b);
+                }
+            } else {
+                const startInt = Math.ceil(startPhase) - 1;
+                const endInt = Math.ceil(targetPhase);
+                for (let b = startInt; b >= endInt; b--) {
+                    crossedInts.push(b);
+                }
+            }
+
+            crossedInts.forEach(b => {
+                const R = (b - startPhase) / distance;
+                const clampedR = Math.max(0, Math.min(1, R));
+                // Inverse cubic easing: t = 1 - cbrt(1 - R)
+                const t = 1 - Math.cbrt(1 - clampedR);
+                const delayMs = t * duration;
+                const timer = window.setTimeout(() => {
+                    _playCodexDetentClickSynth();
+                }, delayMs);
+                _codexDetentTimers.push(timer);
+            });
+
+            const stepFrame = (now) => {
+                if (_codexWheelAnimationToken !== animationToken) return;
+                if (!isCodexWheelMotionAllowed()) {
+                    cancelCodexWheelAnimation();
+                    return;
+                }
+                const progress = Math.min(1, (now - startedAt) / duration);
+                const eased = easeOutCubic(progress);
+                setCodexWheelPhase(startPhase + distance * eased);
+                if (progress < 1) {
+                    _codexWheelAnimationFrame = window.requestAnimationFrame(stepFrame);
+                    return;
+                }
+                _codexWheelAnimationFrame = null;
+                codexPage.value = normalizedIndex;
+                setCodexWheelPhase(targetPhase);
+                isCodexWheelAnimating.value = false;
+                setCodexWheelMotionClass(false);
+            };
+
+            _codexWheelAnimationFrame = window.requestAnimationFrame(stepFrame);
+            return true;
+        };
+
+        let _codexDetentTimers = [];
+        const clearCodexWheelDetentTimers = () => {
+            _codexDetentTimers.forEach(timer => window.clearTimeout(timer));
+            _codexDetentTimers = [];
+        };
+
+        const _playCodexDetentClickSynth = (timeOffset = 0) => {
+            try {
+                if (!audioCtx.value) initAudioCtx();
+                const ctx = audioCtx.value;
+                if (!ctx) return;
+                if (ctx.state === 'suspended') {
+                    ctx.resume();
+                }
+                if (isMuted.value || masterVolume.value <= 0 || sfxVolume.value <= 0) return;
+
+                const playTime = ctx.currentTime + timeOffset;
+                if (playTime < _codexLastDetentAudioTime + CODEX_WHEEL_MIN_DETENT_INTERVAL_SECONDS) return;
+                _codexLastDetentAudioTime = playTime;
+                const osc = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+
+                osc.connect(gainNode);
+                gainNode.connect(sfxGain.value || masterGain.value || ctx.destination);
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(1200, playTime);
+                osc.frequency.exponentialRampToValueAtTime(500, playTime + 0.03);
+
+                const volume = (sfxVolume.value || 1.0) * 0.11;
+                gainNode.gain.setValueAtTime(0.0001, playTime);
+                gainNode.gain.exponentialRampToValueAtTime(volume, playTime + 0.002);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, playTime + 0.04);
+
+                osc.start(playTime);
+                osc.stop(playTime + 0.045);
+                osc.onended = () => {
+                    try {
+                        osc.disconnect();
+                        gainNode.disconnect();
+                    } catch (_) {}
+                };
+            } catch (e) {
+                // Detent is non-critical; avoid falling back to the older muffled file tick.
+            }
         };
 
         const setCodexSelectedIndex = (index) => {
             const total = codexWheelSkills.value.length;
             if (!total) return;
-            const normalizedIndex = (index + total) % total;
+            const normalizedIndex = normalizeCodexWheelIndex(index);
             if (!isCodexSkillUnlocked(codexWheelSkills.value[normalizedIndex])) return;
-            codexPage.value = normalizedIndex;
+            stopCodexWheelContinuousSpin(false);
+            animateCodexWheelToIndex(normalizedIndex);
         };
 
         const shiftCodexWheel = (step) => {
             const total = codexWheelSkills.value.length;
             const direction = step >= 0 ? 1 : -1;
             if (!total || !codexUnlockedWheelIndices.value.length) return false;
+            const anchorIndex = normalizeCodexWheelIndex(Math.round(codexWheelPhaseFloat));
             for (let i = 1; i <= total; i += 1) {
-                const nextIndex = (codexPage.value + direction * i + total) % total;
+                const nextIndex = (anchorIndex + direction * i + total) % total;
                 if (isCodexSkillUnlocked(codexWheelSkills.value[nextIndex])) {
-                    setCodexSelectedIndex(nextIndex);
-                    return true;
+                    return animateCodexWheelToIndex(nextIndex, direction);
                 }
             }
             return false;
         };
 
         const shiftCodexWheelWithClickSfx = (step) => {
-            if (shiftCodexWheel(step)) playSfx('click');
+            shiftCodexWheel(step);
         };
+
+        const getCodexWheelSnapTarget = (direction) => {
+            const total = codexWheelSkills.value.length;
+            if (!total || !codexUnlockedWheelIndices.value.length) return null;
+            const normalizedDirection = direction >= 0 ? 1 : -1;
+            let targetPhase = Math.round(codexWheelPhaseFloat);
+            let targetIndex = normalizeCodexWheelIndex(targetPhase);
+            let limit = total;
+            while (!isCodexSkillUnlocked(codexWheelSkills.value[targetIndex]) && limit > 0) {
+                targetPhase += normalizedDirection;
+                targetIndex = normalizeCodexWheelIndex(targetPhase);
+                limit -= 1;
+            }
+            return isCodexSkillUnlocked(codexWheelSkills.value[targetIndex])
+                ? { index: targetIndex, phase: targetPhase }
+                : null;
+        };
+
+        const emitCodexDetentsBetween = (prevPhase, nextPhase) => {
+            if (Math.abs(nextPhase - prevPhase) < 1e-9) return;
+            let count = 0;
+            if (nextPhase > prevPhase) {
+                let boundary = Math.floor(prevPhase) + 1;
+                while (boundary <= nextPhase + 1e-6 && count < CODEX_WHEEL_MAX_DETENTS_PER_FRAME) {
+                    count += 1;
+                    boundary += 1;
+                }
+            } else {
+                let boundary = Math.ceil(prevPhase) - 1;
+                while (boundary >= nextPhase - 1e-6 && count < CODEX_WHEEL_MAX_DETENTS_PER_FRAME) {
+                    count += 1;
+                    boundary -= 1;
+                }
+            }
+            for (let i = 0; i < count; i += 1) {
+                _playCodexDetentClickSynth(i * CODEX_WHEEL_DETENT_SPACING_SECONDS);
+            }
+            _codexLastDetentPhase = nextPhase;
+        };
+
+        const snapCodexWheelContinuousSpin = (direction) => {
+            if (_codexSpinRafId !== null) {
+                window.cancelAnimationFrame(_codexSpinRafId);
+                _codexSpinRafId = null;
+            }
+            const snapDirection = direction || (codexWheelVelocity >= 0 ? 1 : -1);
+            _codexSpinDirection = 0;
+            _codexSpinLastTime = null;
+            _codexSpinThrottleActive = false;
+            codexWheelVelocity = 0;
+            const snapTarget = getCodexWheelSnapTarget(snapDirection);
+            if (snapTarget) {
+                animateCodexWheelToIndex(snapTarget.index, snapDirection, {
+                    minDuration: 180,
+                    maxDuration: 300,
+                    durationPerStep: 72,
+                    targetPhase: snapTarget.phase
+                });
+                return;
+            }
+            isCodexWheelAnimating.value = false;
+            setCodexWheelMotionClass(false);
+        };
+
+        const stopCodexWheelContinuousSpin = (shouldSnap = true) => {
+            if (!isCodexWheelMotionAllowed()) {
+                forceStopAllCodexWheelMotion();
+                return;
+            }
+            const direction = _codexSpinDirection;
+            clearCodexWheelDetentTimers();
+            if (shouldSnap && direction && _codexSpinRafId !== null) {
+                _codexSpinThrottleActive = false;
+                return;
+            }
+            if (_codexSpinRafId !== null) {
+                window.cancelAnimationFrame(_codexSpinRafId);
+                _codexSpinRafId = null;
+            }
+            _codexSpinDirection = 0;
+            _codexSpinLastTime = null;
+            _codexSpinThrottleActive = false;
+            codexWheelVelocity = 0;
+            if (!shouldSnap || !direction) {
+                isCodexWheelAnimating.value = false;
+                setCodexWheelMotionClass(false);
+                return;
+            }
+            const snapTarget = getCodexWheelSnapTarget(direction);
+            if (snapTarget) {
+                animateCodexWheelToIndex(snapTarget.index, direction, {
+                    minDuration: 180,
+                    maxDuration: 300,
+                    durationPerStep: 72,
+                    targetPhase: snapTarget.phase
+                });
+            }
+        };
+
+        const startCodexWheelContinuousSpin = (step) => {
+            if (!isCodexWheelMotionAllowed()) return false;
+            const total = codexWheelSkills.value.length;
+            if (!total || !codexUnlockedWheelIndices.value.length) return false;
+            stopCodexWheelContinuousSpin(false);
+            cancelCodexWheelAnimation();
+            clearCodexWheelDetentTimers();
+            codexWheelArrowDidRepeat.value = true;
+            _codexSpinDirection = step >= 0 ? 1 : -1;
+            _codexSpinLastTime = null;
+            _codexSpinThrottleActive = true;
+            codexWheelVelocity = _codexSpinDirection * CODEX_WHEEL_INITIAL_KICK_SPEED;
+            _codexLastDetentPhase = codexWheelPhaseFloat;
+            isCodexWheelAnimating.value = true;
+            ensureCodexDomCache();
+            setCodexWheelMotionClass(true);
+            const spinLoop = (now) => {
+                if (!isCodexWheelMotionAllowed()) {
+                    forceStopAllCodexWheelMotion();
+                    return;
+                }
+                if (!_codexSpinDirection) return;
+                if (_codexSpinLastTime === null) {
+                    _codexSpinLastTime = now;
+                }
+                const deltaSeconds = Math.min(0.1, (now - _codexSpinLastTime) / 1000);
+                _codexSpinLastTime = now;
+
+                if (_codexSpinThrottleActive) {
+                    codexWheelVelocity += _codexSpinDirection * CODEX_WHEEL_ACCELERATION * deltaSeconds;
+                    if (Math.abs(codexWheelVelocity) > CODEX_WHEEL_MAX_SPEED) {
+                        codexWheelVelocity = _codexSpinDirection * CODEX_WHEEL_MAX_SPEED;
+                    }
+                } else {
+                    const velocityDirection = codexWheelVelocity >= 0 ? 1 : -1;
+                    codexWheelVelocity -= velocityDirection * CODEX_WHEEL_DECELERATION * deltaSeconds;
+                    if (Math.abs(codexWheelVelocity) <= CODEX_WHEEL_SNAP_SPEED_THRESHOLD) {
+                        snapCodexWheelContinuousSpin(velocityDirection);
+                        return;
+                    }
+                }
+
+                const nextPhase = codexWheelPhaseFloat + codexWheelVelocity * deltaSeconds;
+                emitCodexDetentsBetween(_codexLastDetentPhase, nextPhase);
+                setCodexWheelPhase(nextPhase);
+                _codexSpinRafId = window.requestAnimationFrame(spinLoop);
+            };
+            _codexSpinRafId = window.requestAnimationFrame(spinLoop);
+            return true;
+        };
+
 
         const clearCodexWheelArrowTimers = () => {
             if (codexWheelArrowPressTimer.value !== null) {
                 window.clearTimeout(codexWheelArrowPressTimer.value);
                 codexWheelArrowPressTimer.value = null;
-            }
-            if (codexWheelArrowRepeatTimer.value !== null) {
-                window.clearInterval(codexWheelArrowRepeatTimer.value);
-                codexWheelArrowRepeatTimer.value = null;
             }
         };
 
@@ -2311,16 +2800,13 @@ const _jpApp = Vue.createApp({
             event?.currentTarget?.setPointerCapture?.(event.pointerId);
             codexWheelArrowPressTimer.value = window.setTimeout(() => {
                 codexWheelArrowPressTimer.value = null;
-                codexWheelArrowDidRepeat.value = true;
-                shiftCodexWheelWithClickSfx(step);
-                codexWheelArrowRepeatTimer.value = window.setInterval(() => {
-                    shiftCodexWheelWithClickSfx(step);
-                }, 200);
-            }, 300);
+                startCodexWheelContinuousSpin(step);
+            }, CODEX_WHEEL_LONG_PRESS_MS);
         };
 
         const stopCodexWheelArrowPress = () => {
             clearCodexWheelArrowTimers();
+            stopCodexWheelContinuousSpin(true);
             if (codexWheelArrowDidRepeat.value) {
                 codexWheelArrowSuppressClick.value = true;
                 window.setTimeout(() => { codexWheelArrowSuppressClick.value = false; }, 180);
@@ -2337,87 +2823,56 @@ const _jpApp = Vue.createApp({
         };
 
         const getCodexWheelItemStyle = (index) => {
-            const offset = normalizeCodexWheelOffset(index);
-            const abs = Math.abs(offset);
-            const total = Math.max(1, codexWheelSkills.value.length);
-            const frontAngleStep = 0.36;
-            let angle = (Math.PI / 2) + offset * frontAngleStep;
-            let radiusX = 40;
-            let radiusY = 22;
-            let centerY = 58.8;
-            let scale = 1.34;
-            let opacity = 1;
-            let zIndex = 130;
-            let pointerEvents = 'auto';
-
-            if (abs === 1) {
-                scale = 0.96;
-                opacity = 0.82;
-                zIndex = 116;
-            } else if (abs === 2) {
-                scale = 0.72;
-                opacity = 0.68;
-                zIndex = 104;
-            } else if (abs >= 3 && abs <= 5) {
-                // Distance excludes selected C position: 3 = third spirit, 4 = fourth.
-                scale = abs === 3 ? 0.76 : 0.585 - (abs - 4) * 0.085;
-                opacity = abs === 3 ? 0.56 : 0.56 - (abs - 4) * 0.035;
-                zIndex = 86 - abs;
-            } else if (abs > 5) {
-                const halfSpan = Math.max(1, total / 2 - 5);
-                const t = Math.min(1, (abs - 5) / halfSpan);
-                const side = offset > 0 ? 1 : -1;
-                const midEdgeAngle = (Math.PI / 2) + side * 5 * frontAngleStep;
-                const topAngle = side > 0 ? Math.PI * 1.5 : -Math.PI / 2;
-                angle = midEdgeAngle + (topAngle - midEdgeAngle) * t;
-                radiusX = 40;
-                radiusY = 22;
-                centerY = 58.8;
-                scale = 0.48 - t * 0.08;
-                opacity = 0.5 - t * 0.08;
-                zIndex = Math.round(48 - t * 16);
-                pointerEvents = 'none';
-            }
-
-            const x = 50 + Math.cos(angle) * radiusX;
-            const y = centerY + Math.sin(angle) * radiusY;
-
+            if (_codexWheelStyleCache[index]) return _codexWheelStyleCache[index];
             return {
-                left: `${x}%`,
-                top: `${y}%`,
-                transform: `translate3d(-50%, -50%, 0) scale(${scale})`,
-                opacity,
-                zIndex,
-                pointerEvents
+                left: '50%',
+                top: '50%',
+                transform: 'translate3d(-50%, -50%, 0) scale(0.4)',
+                opacity: 0,
+                zIndex: 1,
+                pointerEvents: 'none'
             };
         };
 
         const getCodexSkillDisplayName = (skill) => getSpiritForSkill(skill)?.nameJa || skill?.name?.split('：')[1] || skill?.name || '???';
 
-        const getCodexWheelItemClass = (skill, index) => ({
-            'is-selected': normalizeCodexWheelOffset(index) === 0,
-            'is-foreground': Math.abs(normalizeCodexWheelOffset(index)) <= 2,
-            'is-midground': Math.abs(normalizeCodexWheelOffset(index)) >= 3 && Math.abs(normalizeCodexWheelOffset(index)) <= 5,
-            'is-background': Math.abs(normalizeCodexWheelOffset(index)) > 5,
-            'is-locked': !isCodexSkillUnlocked(skill),
-            'is-bond-max': isBondMaxSkill(skill?.id)
-        });
+        const getCodexWheelItemClass = (skill, index) => {
+            const abs = Math.abs(normalizeCodexWheelOffset(index, codexWheelPhase));
+            return {
+                'is-selected': !isCodexWheelAnimating.value && normalizeCodexWheelOffset(index, codexPage.value) === 0,
+                'is-foreground': abs <= 2.6,
+                'is-midground': abs > 2.6 && abs <= 5.6,
+                'is-background': abs > 5.6,
+                'is-locked': !isCodexSkillUnlocked(skill),
+                'is-bond-max': isBondMaxSkill(skill?.id)
+            };
+        };
 
         const openCodexDetail = (skill, index) => {
             if (codexSuppressClick.value) return;
             if (!skill) return;
             if (!isCodexSkillUnlocked(skill)) return;
-            if (normalizeCodexWheelOffset(index) !== 0) {
+            if (Math.abs(normalizeCodexWheelOffset(index, codexWheelPhase)) > 0.35 || codexPage.value !== index) {
                 setCodexSelectedIndex(index);
                 return;
             }
             clearCodexWheelArrowTimers();
+            stopCodexWheelContinuousSpin(false);
             codexDetailMode.value = true;
         };
 
         const closeCodexDetail = () => {
             clearCodexWheelArrowTimers();
+            stopCodexWheelContinuousSpin(false);
+            clearCodexWheelDetentTimers();
             codexDetailMode.value = false;
+            invalidateCodexOrbitRect();
+            setCodexWheelPhase(codexPage.value);
+            nextTick(() => {
+                window.requestAnimationFrame(() => {
+                    syncCodexWheelAfterRender();
+                });
+            });
         };
 
         const startCodexDrag = (event) => {
@@ -2503,6 +2958,9 @@ const _jpApp = Vue.createApp({
             }).sort((a, b) => a.sortLevel - b.sortLevel || a.name.localeCompare(b.name, 'zh-Hant'));
         });
 
+
+
+
         const selectedMonsterCodexEntry = computed(() => {
             if (!monsterCodexEntries.value.length) return null;
             return monsterCodexEntries.value.find(entry => entry.id === selectedMonsterCodexId.value) || monsterCodexEntries.value[0];
@@ -2527,6 +2985,10 @@ const _jpApp = Vue.createApp({
         };
         // [ /CODEX - COMPUTED ]
 
+        watch(isCodexOpen, (open) => {
+            if (!open) forceStopAllCodexWheelMotion();
+        });
+
         watch([isCodexOpen, codexWheelSkills, codexUnlockedWheelIndices], () => {
             if (!isCodexOpen.value) return;
             const total = codexWheelSkills.value.length;
@@ -2539,6 +3001,12 @@ const _jpApp = Vue.createApp({
                 clearCodexWheelArrowTimers();
                 codexDetailMode.value = false;
             }
+            stopCodexWheelContinuousSpin(false);
+            cancelCodexWheelAnimation();
+            // Invalidate DOM cache so it's rebuilt after Vue renders the wheel
+            invalidateCodexOrbitRect();
+            setCodexWheelPhase(codexPage.value);
+            syncCodexWheelAfterRender();
         });
 
         // [ CODEX - GLOBAL EVENTS ]
@@ -3787,7 +4255,7 @@ const _jpApp = Vue.createApp({
         };
 
         const closeCodex = () => {
-            clearCodexWheelArrowTimers();
+            forceStopAllCodexWheelMotion();
             isCodexOpen.value = false;
             codexDetailMode.value = false;
             codexDragStartX.value = null;
@@ -8091,6 +8559,10 @@ const _jpApp = Vue.createApp({
 
             const lv = Number(level) || parseInt(level, 10) || 1;
 
+            // Cancel any residual codex wheel motion / map ambient before entering battle
+            forceStopAllCodexWheelMotion();
+            if (typeof MapAmbient !== 'undefined') MapAmbient.deactivate();
+
             initAudioCtx();
 
             stopAllAudio();
@@ -10471,6 +10943,26 @@ const _jpApp = Vue.createApp({
                 let pauseUntil = 0;
                 let accumulatedPauseMs = 0;
 
+                const finishTallyUi = () => {
+                    if (hasLeveledUp.value && finalLevel > startLevel) {
+                        showLevelUpMessageAfterAnimation.value = true;
+                        scheduleResultMilestoneRewards();
+                    }
+                    scheduleBattleFlowTimeout(() => {
+                        const clearedLevelConfig = LEVEL_CONFIG.value[currentLevel.value];
+                        if (clearedLevelConfig?.rewardAbilityId) {
+                            const rewardedSkill = grantAbilityReward(clearedLevelConfig.rewardAbilityId);
+                            if (rewardedSkill) {
+                                pendingLevelUpAbility.value = rewardedSkill;
+                                saveProgression();
+                                isAbilityUnlockModalOpen.value = true;
+                                return;
+                            }
+                        }
+                        isNextBtnVisible.value = true;
+                    }, 300);
+                };
+
                 const getBoundaryGainForLevel = (targetLevel) => {
                     let level = startLevel;
                     let exp = startExp;
@@ -10560,36 +11052,7 @@ const _jpApp = Vue.createApp({
 
                         animatedExp.value = expTarget;
                         updateResultExpDisplay(expTarget);
-                        if (hasLeveledUp.value && finalLevel > startLevel) {
-                            showLevelUpMessageAfterAnimation.value = true;
-                            scheduleResultMilestoneRewards();
-                        }
-
-                        scheduleBattleFlowTimeout(() => {
-
-                            const clearedLevelConfig = LEVEL_CONFIG.value[currentLevel.value];
-
-                            if (clearedLevelConfig?.rewardAbilityId) {
-
-                                const rewardedSkill = grantAbilityReward(clearedLevelConfig.rewardAbilityId);
-
-                                if (rewardedSkill) {
-
-                                    pendingLevelUpAbility.value = rewardedSkill;
-
-                                    saveProgression();
-
-                                    isAbilityUnlockModalOpen.value = true;
-
-                                    return;
-
-                                }
-
-                            }
-
-                            isNextBtnVisible.value = true;
-
-                        }, 300);
+                        finishTallyUi();
 
                     }
 
@@ -10625,20 +11088,40 @@ const _jpApp = Vue.createApp({
 
         });
 
-        const handleMonsterImageError = () => {
+        const handleMonsterImageError = (event) => {
+            const img = event?.target;
+            if (!img) return;
+
+            // Clear inline onerror to prevent browser retry loops
+            img.onerror = null;
+
+            const failedSrc = img.src || '';
+            if (failedSrc) {
+                if (failedMonsterImagePaths.has(failedSrc)) {
+                    console.warn(`[MonsterImage] Repeated failure suppressed for: ${failedSrc}`);
+                    img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+                    return;
+                }
+                failedMonsterImagePaths.add(failedSrc);
+                console.warn(`[MonsterImage] Load failed once: ${failedSrc}`);
+            }
 
             // 如果是在嘗試播放受擊圖 (*2) 時出錯，則標記該怪物不支援受擊圖並恢復原圖
-
             if (monsterHit.value && !monsterHitImageFailed.value) {
-
                 monsterHitImageFailed.value = true;
-
+                console.warn('[MonsterImage] Fallback applied once: hit image failed, reverting to normal sprite');
                 return;
-
             }
 
             isMonsterImageError.value = true;
 
+            const fallbackSprite = DEFAULT_IMAGE_PATHS.monsterSprite || '';
+            if (failedMonsterImagePaths.has(fallbackSprite)) {
+                img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+            } else {
+                console.warn(`[MonsterImage] Fallback applied once: normal sprite failed, falling back to ${fallbackSprite}`);
+                img.src = fallbackSprite;
+            }
         };
 
         const handleMapImageError = (e) => {
@@ -11061,7 +11544,8 @@ const _jpApp = Vue.createApp({
             isAudioDebugEnabled, isAudioDebugOpen, isAudioDebugDragging, audioDebugOverlayStyle, audioDebugSections, refreshAudioDebugState, startAudioDebugDrag, debugResumeAudioContext, debugTestSfx, debugTestBgmPlay, debugPauseBgm, debugTestRawAudio, debugEnableHtmlAudioFallback, debugDisableHtmlAudioFallback, debugEnableFallbackAudioContextV2, debugDisableFallbackAudioContextV2, debugResumeFallbackAudioContext, debugTestFallbackContextBgm, debugTestFallbackBgm, debugTestFallbackSfx, debugShowAudioState,
             setDefaultAttackMode, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, levelPassiveVfx, counterSlashVfx, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, monsterHitGiragira, monsterGiraKnockActive, monsterGiraKnockStyle, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, codexPage, codexWheelSkills, codexSelectedSkill, codexDetailMode, getCodexWheelItemStyle, getCodexWheelItemClass, getCodexSkillDisplayName, setCodexSelectedIndex, shiftCodexWheel, startCodexWheelArrowPress, stopCodexWheelArrowPress, handleCodexWheelArrowClick, openCodexDetail, closeCodexDetail, startCodexDrag, endCodexDrag, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             handleEscapeToMap, escapeOverlayVisible, escapeOverlayOpacity, isEscaping,
-            heroBuffs, debugControls,
+            heroBuffs: (typeof heroBuffs !== 'undefined' && heroBuffs) ? heroBuffs : debugControls,
+            debugControls,
             // ぴったり: hide wrong choices for the next question
             skillList, castAbility, spState, settings, shouldShowNextButton, praiseToast, comboPopup, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG, getSkillTypeLabel, pittariActive, isPittariSealed, activeLevelPassiveBadges,
             formatParticleBadge, formatSkillSpiritName, formatSkillMeaning, formatSkillRule, formatUnlockLevel,
@@ -11085,7 +11569,7 @@ const _jpApp = Vue.createApp({
 
             mapChapters, activeChapter, getMapNodeStyle, selectedSegmentIdx, isSegmentUnlocked, handleMapTabClick, jumpToMapSegment, isMapDropdownOpen,
 
-            isBattleConfirmOpen, selectedStageToConfirm, stageConfirmSuspendedForMentor, confirmAndStartBattle,
+            isBattleConfirmOpen, selectedStageToConfirm, stageConfirmSuspendedForMentor, closeBattleConfirm, confirmAndStartBattle,
 
             isMapMentorOpen,
 

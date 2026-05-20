@@ -161,7 +161,7 @@
         DEFAULT_IMAGE_PATHS: {
             battleBg: 'assets/images/bg_01.jpg',
             mapFallback: 'assets/images/maps/chapter1.png',
-            monsterSprite: 'assets/images/monsters/slime.png'
+            monsterSprite: 'assets/images/monsters/slime.webp'
         },
 
         SKILL_TYPE_LABELS: {

@@ -6100,6 +6100,11 @@ body.lock-scroll {
     background: rgba(15, 23, 42, 0.25) !important;
 }
 
+/* Map stage confirm — avoid transition-all on overlay (slow backdrop-filter transitionend) */
+.battle-confirm-overlay {
+    transition: opacity 200ms ease;
+}
+
 .stage-confirm-modal {
     border-radius: 2rem !important;
     overflow: hidden !important;
