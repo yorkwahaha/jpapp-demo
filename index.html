@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26052101'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26052201'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -58,15 +58,15 @@
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/styles.css?v=26052101">
-    <link rel="stylesheet" href="assets/css/home.css?v=26052101">
-    <link rel="stylesheet" href="assets/css/settings.css?v=26052101">
-    <link rel="stylesheet" href="assets/css/mentor.css?v=26052101">
-    <link rel="stylesheet" href="assets/css/battle.css?v=26052101">
-    <link rel="stylesheet" href="assets/css/battle-vfx.css?v=26052101">
-    <link rel="stylesheet" href="assets/css/codex.css?v=26052101">
-    <link rel="stylesheet" href="assets/css/result-mistakes.css?v=26052101">
-    <link rel="stylesheet" href="assets/css/escape.css?v=26052101">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26052201">
+    <link rel="stylesheet" href="assets/css/home.css?v=26052201">
+    <link rel="stylesheet" href="assets/css/settings.css?v=26052201">
+    <link rel="stylesheet" href="assets/css/mentor.css?v=26052201">
+    <link rel="stylesheet" href="assets/css/battle.css?v=26052201">
+    <link rel="stylesheet" href="assets/css/battle-vfx.css?v=26052201">
+    <link rel="stylesheet" href="assets/css/codex.css?v=26052201">
+    <link rel="stylesheet" href="assets/css/result-mistakes.css?v=26052201">
+    <link rel="stylesheet" href="assets/css/escape.css?v=26052201">
 
 
 
@@ -76,7 +76,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26052101';
+            const v = window.APP_VERSION || '26052201';
 
 
 
@@ -2095,9 +2095,6 @@
                         <button @click="openSaveSlotPanel('select')" class="home-save-btn" type="button">
                             選擇存檔
                         </button>
-                        <button @click="requestNewGame" class="home-save-btn" type="button">
-                            新遊戲
-                        </button>
                     </div>
 
                 </div>
@@ -2726,8 +2723,10 @@
                         <div v-if="!codexDetailMode" class="codex-resonance-overview">
                             <div class="codex-wheel-stage"
                                 @pointerdown="startCodexDrag"
+                                @pointermove="moveCodexDrag"
                                 @pointerup="endCodexDrag"
-                                @pointercancel="endCodexDrag">
+                                @pointercancel="endCodexDrag"
+                                @contextmenu.prevent>
                                 <button class="codex-wheel-arrow codex-wheel-arrow--left" type="button"
                                     @pointerdown.stop="startCodexWheelArrowPress(-1, $event)"
                                     @pointerup.stop="stopCodexWheelArrowPress"
@@ -2746,6 +2745,8 @@
                                         role="listitem">
                                         <span class="codex-wheel-ring"></span>
                                         <img v-if="getSpiritForSkill(skill)" class="codex-wheel-img"
+                                            draggable="false"
+                                            @dragstart.prevent
                                             :src="getSpiritImageSrc(getSpiritForSkill(skill), true, !unlockedSkillIds.includes(skill.id))"
                                             :alt="unlockedSkillIds.includes(skill.id) ? getCodexSkillDisplayName(skill) : '尚未解鎖的小助靈'"
                                             @error="handleSpiritImageError($event, getSpiritForSkill(skill), true, !unlockedSkillIds.includes(skill.id))">
@@ -3603,7 +3604,9 @@
                     <div
                         class="glass-panel question-card rounded-2xl p-2 sm:p-3 shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-white/20 relative">
 
-                        <div id="question-area" class="w-full flex flex-col items-center justify-center min-h-[50px]">
+                        <div id="question-area"
+                            class="w-full flex flex-col items-center justify-center min-h-[50px]"
+                            :class="battleQuestionSizeClass">
 
                             <div
                                 class="battle-question-main-row flex flex-nowrap justify-center items-center gap-x-2 gap-y-1 leading-tight mb-2 sm:mb-3 w-full max-w-full min-w-0">
@@ -3687,7 +3690,8 @@
                                     <button v-for="(opt, i) in currentQuestion.choices"
                                         :key="'tap_' + opt + '_' + i" @click="selectChoice(opt, $event)"
                                         v-show="!isPittariSealed(opt)"
-                                        class="resonance-slot group" :class="getChoiceBtnClass(opt)"
+                                        class="resonance-slot group"
+                                        :class="[getChoiceBtnClass(opt), { 'resonance-slot--full-bond': isBattleChoiceBondMax(opt) }]"
                                         type="button" :aria-label="'選項 ' + opt">
 
                                         <div class="resonance-icon-wrap">
@@ -3718,7 +3722,7 @@
                                     <button v-for="(opt, i) in currentQuestion.choices" :key="'flick_' + opt + '_' + i"
                                         v-show="!isPittariSealed(opt)"
                                         class="resonance-slot"
-                                        :class="{ 'is-active': flickState.activeOpt === opt, 'is-correct': flickState.successOpt === opt }"
+                                        :class="{ 'is-active': flickState.activeOpt === opt, 'is-correct': flickState.successOpt === opt, 'resonance-slot--full-bond': isBattleChoiceBondMax(opt) }"
                                         type="button" :aria-label="'選項 ' + opt"
                                         @pointerdown="startFlick($event, opt)">
 
@@ -4337,8 +4341,10 @@
                         <div v-if="!codexDetailMode" class="codex-resonance-overview">
                             <div class="codex-wheel-stage"
                                 @pointerdown="startCodexDrag"
+                                @pointermove="moveCodexDrag"
                                 @pointerup="endCodexDrag"
-                                @pointercancel="endCodexDrag">
+                                @pointercancel="endCodexDrag"
+                                @contextmenu.prevent>
                                 <button class="codex-wheel-arrow codex-wheel-arrow--left" type="button"
                                     @pointerdown.stop="startCodexWheelArrowPress(-1, $event)"
                                     @pointerup.stop="stopCodexWheelArrowPress"
@@ -4357,6 +4363,8 @@
                                         role="listitem">
                                         <span class="codex-wheel-ring"></span>
                                         <img v-if="getSpiritForSkill(skill)" class="codex-wheel-img"
+                                            draggable="false"
+                                            @dragstart.prevent
                                             :src="getSpiritImageSrc(getSpiritForSkill(skill), true, !unlockedSkillIds.includes(skill.id))"
                                             :alt="unlockedSkillIds.includes(skill.id) ? getCodexSkillDisplayName(skill) : '尚未解鎖的小助靈'"
                                             @error="handleSpiritImageError($event, getSpiritForSkill(skill), true, !unlockedSkillIds.includes(skill.id))">

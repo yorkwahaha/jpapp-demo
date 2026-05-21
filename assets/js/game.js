@@ -1423,7 +1423,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26052101";
+        const APP_VERSION = window.APP_VERSION || "26052201";
         const versionImageAsset = (path) => {
             if (!path || typeof path !== 'string' || /[?&]v=/.test(path)) return path;
             return `${path}${path.includes('?') ? '&' : '?'}v=${encodeURIComponent(String(APP_VERSION))}`;
@@ -1570,6 +1570,13 @@ const _jpApp = Vue.createApp({
         const codexDetailMode = ref(false);
         const codexDragStartX = ref(null);
         const codexSuppressClick = ref(false);
+        let _codexDragLastX = null;
+        let _codexDragAccum = 0;
+        let _codexDragTotalDelta = 0;
+        let _codexDragLastTime = null;  // ms timestamp of last pointermove
+        let _codexDragVelocityX = 0;   // px/ms, EMA-smoothed
+        let _codexDragHistory = [];     // Array of { x, time } for precise flick velocity
+        let _codexInertiaTimers = [];   // setTimeout IDs for cancellable inertia steps
         let codexWheelPhase = 0;
         let codexWheelPhaseFloat = 0;
         let codexWheelVelocity = 0;
@@ -2376,21 +2383,24 @@ const _jpApp = Vue.createApp({
             const radiusX = rect.width * 0.4;
             const radiusY = rect.height * 0.22;
             const centerOffsetY = rect.height * 0.088;
-            const TWO_PI_OVER_TOTAL = (Math.PI * 2) / total;
+            const halfTotal = total / 2; // used for non-uniform angle stretch
             const nextStyleCache = [];
             for (let index = 0; index < slots.length; index++) {
                 const slot = slots[index];
                 if (!slot) continue;
                 const offset = (((index - phase + total / 2) % total) + total) % total - total / 2;
                 const abs = Math.abs(offset);
-                const angle = (Math.PI / 2) + offset * TWO_PI_OVER_TOTAL;
+                // Non-uniform angle: exponent < 1 stretches front spacing, compresses back
+                const t = offset / halfTotal;                                   // −1..+1
+                const stretchedT = Math.sign(t) * Math.pow(Math.abs(t), 0.8); // power-law stretch
+                const angle = Math.PI / 2 + stretchedT * Math.PI;
                 const sinA = Math.sin(angle);
                 const cosA = Math.cos(angle);
                 const frontDepth = (sinA + 1) / 2;
-                const centerFocus = Math.max(0, 1 - Math.min(abs, total - abs) / 2.5);
+                const centerFocus = Math.max(0, 1 - Math.min(abs, total - abs) / 2.0); // tighter focus: less boost for offset ±1,±2
                 const x = cosA * radiusX;
                 const y = centerOffsetY + sinA * radiusY;
-                const scale = 0.42 + Math.pow(frontDepth, 1.32) * 0.62 + centerFocus * 0.3;
+                const scale = 0.42 + Math.pow(frontDepth, 1.15) * 0.62 + centerFocus * 0.3; // flatter depth curve: back spirits less sparse
                 const opacity = 0.36 + frontDepth * 0.42 + centerFocus * 0.22;
                 const zIndex = Math.round(36 + frontDepth * 84 + centerFocus * 24);
                 // Use translate3d(x,y,0) translate(-50%,-50%) to avoid calc() per-frame string building
@@ -2479,6 +2489,11 @@ const _jpApp = Vue.createApp({
             setCodexWheelMotionClass(false);
         };
 
+        const cancelCodexInertia = () => {
+            _codexInertiaTimers.forEach(t => window.clearTimeout(t));
+            _codexInertiaTimers = [];
+        };
+
         const animateCodexWheelToIndex = (targetIndex, direction = 0, options = {}) => {
             const total = codexWheelSkills.value.length;
             if (!total) return false;
@@ -2498,6 +2513,7 @@ const _jpApp = Vue.createApp({
             }
 
             cancelCodexWheelAnimation();
+            codexPage.value = normalizedIndex; // update immediately so click checks match the target
             const animationToken = _codexWheelAnimationToken + 1;
             _codexWheelAnimationToken = animationToken;
             isCodexWheelAnimating.value = true;
@@ -2852,13 +2868,21 @@ const _jpApp = Vue.createApp({
             if (codexSuppressClick.value) return;
             if (!skill) return;
             if (!isCodexSkillUnlocked(skill)) return;
-            if (Math.abs(normalizeCodexWheelOffset(index, codexWheelPhase)) > 0.35 || codexPage.value !== index) {
-                setCodexSelectedIndex(index);
+            // Cancel any pending inertia steps so they cannot override this click
+            cancelCodexInertia();
+            // If the clicked spirit is the current page (or animation target), snap and open
+            if (codexPage.value === index) {
+                if (isCodexWheelAnimating.value) {
+                    cancelCodexWheelAnimation();
+                    setCodexWheelPhase(index);
+                }
+                clearCodexWheelArrowTimers();
+                stopCodexWheelContinuousSpin(false);
+                codexDetailMode.value = true;
                 return;
             }
-            clearCodexWheelArrowTimers();
-            stopCodexWheelContinuousSpin(false);
-            codexDetailMode.value = true;
+            // Otherwise, center the clicked spirit first (don't open detail yet)
+            setCodexSelectedIndex(index);
         };
 
         const closeCodexDetail = () => {
@@ -2875,19 +2899,110 @@ const _jpApp = Vue.createApp({
             });
         };
 
+        const CODEX_DRAG_STEP_PX = 62; // px of horizontal drag per one wheel step
         const startCodexDrag = (event) => {
             if (event?.target?.closest?.('.codex-wheel-arrow')) return;
-            codexDragStartX.value = event?.clientX ?? null;
+            cancelCodexInertia(); // stop any inertia from previous drag before starting a new one
+            const x = event?.clientX ?? null;
+            codexDragStartX.value = x;
+            _codexDragLastX = x;
+            _codexDragAccum = 0;
+            _codexDragTotalDelta = 0;
+            _codexDragLastTime = performance.now();
+            _codexDragVelocityX = 0;
+            _codexDragHistory = [{ x, time: _codexDragLastTime }];
+            // Capture pointer so pointermove fires even outside the element
+            try { event?.currentTarget?.setPointerCapture?.(event.pointerId); } catch (_) {}
+        };
+
+        const moveCodexDrag = (event) => {
+            if (codexDragStartX.value === null || _codexDragLastX === null) return;
+            if (event?.target?.closest?.('.codex-wheel-arrow')) return;
+            const x = event?.clientX ?? _codexDragLastX;
+            const now = performance.now();
+            const delta = x - _codexDragLastX;
+            _codexDragTotalDelta += delta;
+            _codexDragAccum += delta;
+
+            // Record position to history
+            _codexDragHistory.push({ x, time: now });
+            while (_codexDragHistory.length > 0 && now - _codexDragHistory[0].time > 150) {
+                _codexDragHistory.shift();
+            }
+
+            // Traditional EMA velocity tracking for fallback
+            if (_codexDragLastTime !== null) {
+                const dt = Math.max(1, now - _codexDragLastTime);
+                const instantV = delta / dt;
+                _codexDragVelocityX = _codexDragVelocityX * 0.7 + instantV * 0.3;
+            }
+            _codexDragLastTime = now;
+            // Each full CODEX_DRAG_STEP_PX of drag → one wheel step
+            // Drag right (delta > 0, steps > 0) → shiftCodexWheel(+1) = same as right arrow (逆時針)
+            // Drag left  (delta < 0, steps < 0) → shiftCodexWheel(-1) = same as left arrow  (順時針)
+            const steps = Math.trunc(_codexDragAccum / CODEX_DRAG_STEP_PX);
+            if (steps !== 0) {
+                _codexDragAccum -= steps * CODEX_DRAG_STEP_PX;
+                shiftCodexWheel(steps); // right drag = right arrow direction
+                if (Math.abs(_codexDragTotalDelta) >= 42) {
+                    codexSuppressClick.value = true;
+                }
+            }
+            _codexDragLastX = x;
         };
 
         const endCodexDrag = (event) => {
             if (codexDragStartX.value === null) return;
-            const deltaX = (event?.clientX ?? codexDragStartX.value) - codexDragStartX.value;
             codexDragStartX.value = null;
-            if (Math.abs(deltaX) < 42) return;
-            codexSuppressClick.value = true;
-            window.setTimeout(() => { codexSuppressClick.value = false; }, 140);
-            shiftCodexWheel(deltaX > 0 ? -1 : 1);
+            _codexDragLastX = null;
+
+            // Determine velocity over the last 150ms for realistic flick physics
+            const now = performance.now();
+            while (_codexDragHistory.length > 0 && now - _codexDragHistory[0].time > 150) {
+                _codexDragHistory.shift();
+            }
+
+            let velocity = 0;
+            if (_codexDragHistory.length >= 2) {
+                const oldest = _codexDragHistory[0];
+                const newest = _codexDragHistory[_codexDragHistory.length - 1];
+                const dt = newest.time - oldest.time;
+                if (dt > 10) {
+                    velocity = (newest.x - oldest.x) / dt;
+                }
+            } else {
+                velocity = _codexDragVelocityX;
+            }
+
+            _codexDragAccum = 0;
+            _codexDragLastTime = null;
+            _codexDragVelocityX = 0;
+            _codexDragHistory = [];
+            _codexInertiaTimers = []; // reset before scheduling new inertia
+
+            if (Math.abs(_codexDragTotalDelta) >= 42) {
+                codexSuppressClick.value = true;
+                window.setTimeout(() => { codexSuppressClick.value = false; }, 140);
+            }
+            _codexDragTotalDelta = 0;
+            // Inertia: project velocity * coasting window into extra steps
+            // Only fire if there was meaningful speed (> 0.13 px/ms ≈ fast swipe)
+            const INERTIA_COAST_MS = 480; // how far into the future we project
+            const INERTIA_MIN_SPEED = 0.13; // px/ms threshold
+            const INERTIA_MAX_EXTRA = 10;   // clamp extra steps
+            if (Math.abs(velocity) >= INERTIA_MIN_SPEED) {
+                const projected = velocity * INERTIA_COAST_MS;
+                const extraSteps = Math.round(projected / CODEX_DRAG_STEP_PX);
+                const clamped = Math.sign(extraSteps) * Math.min(Math.abs(extraSteps), INERTIA_MAX_EXTRA);
+                if (clamped !== 0) {
+                    // Stagger multiple extra steps so animateCodexWheelToIndex can chain
+                    const dir = Math.sign(clamped);
+                    const count = Math.abs(clamped);
+                    for (let i = 0; i < count; i++) {
+                        _codexInertiaTimers.push(window.setTimeout(() => { shiftCodexWheel(dir); }, i * 80));
+                    }
+                }
+            }
         };
 
         const getSkillMastery = (skillId) => {
@@ -2905,6 +3020,57 @@ const _jpApp = Vue.createApp({
         };
 
         const isCurrentQuestionBondMax = () => isBondMaxSkill(getCurrentQuestionSkillId());
+        const currentQuestionBondMax = computed(() => isCurrentQuestionBondMax());
+
+        const getBattleChoiceValue = (choice) => {
+            if (choice && typeof choice === 'object') {
+                return String(choice.value ?? choice.particle ?? choice.label ?? '').trim();
+            }
+            return String(choice || '').trim();
+        };
+
+        const findUniqueUnlockedSkillIdForParticle = (particle) => {
+            if (!particle) return '';
+            const matches = Object.values(skillsAll.value || {}).filter(skill =>
+                skill?.id &&
+                skill.particle === particle &&
+                !String(skill.particle || '').startsWith('複習') &&
+                unlockedSkillIds.value.includes(skill.id)
+            );
+            return matches.length === 1 ? matches[0].id : '';
+        };
+
+        const buildBattleChoiceSkillIds = (choices, answer, skillId) => {
+            const map = {};
+            const answerValue = String(answer || '').trim();
+            (Array.isArray(choices) ? choices : []).forEach(choice => {
+                const value = getBattleChoiceValue(choice);
+                if (!value || map[value]) return;
+                if (value === answerValue && skillId) {
+                    map[value] = skillId;
+                    return;
+                }
+                const uniqueSkillId = findUniqueUnlockedSkillIdForParticle(value);
+                if (uniqueSkillId) map[value] = uniqueSkillId;
+            });
+            return map;
+        };
+
+        const getBattleChoiceSkillId = (choice) => {
+            if (choice && typeof choice === 'object') {
+                const directSkillId = choice.skillId || choice.skillKey;
+                if (directSkillId && typeof directSkillId === 'string') return directSkillId;
+            }
+            const value = getBattleChoiceValue(choice);
+            const choiceSkillIds = currentQuestion.value?.choiceSkillIds || {};
+            const mappedSkillId = choiceSkillIds[value];
+            return (mappedSkillId && typeof mappedSkillId === 'string') ? mappedSkillId : '';
+        };
+
+        const isBattleChoiceBondMax = (choice) => {
+            const skillId = getBattleChoiceSkillId(choice);
+            return skillId ? isBondMaxSkill(skillId) : false;
+        };
 
         const getFullBondModifiedEnemyEvasionRate = (baseEvasionRate, isFullBondAttack) => {
             const normalizedBaseRate = Number(baseEvasionRate);
@@ -4255,6 +4421,7 @@ const _jpApp = Vue.createApp({
         };
 
         const closeCodex = () => {
+            cancelCodexInertia();
             forceStopAllCodexWheelMotion();
             isCodexOpen.value = false;
             codexDetailMode.value = false;
@@ -8831,6 +8998,8 @@ const _jpApp = Vue.createApp({
 
             };
 
+            q.choiceSkillIds = buildBattleChoiceSkillIds(q.choices, skillDef.particle || "の", skillId);
+
             return q;
 
         };
@@ -8921,7 +9090,9 @@ const _jpApp = Vue.createApp({
 
                     skillId,
 
-                    choices
+                    choices,
+
+                    choiceSkillIds: buildBattleChoiceSkillIds(choices, answer, skillId)
 
                 };
             };
@@ -9567,6 +9738,7 @@ const _jpApp = Vue.createApp({
                         const l5Choices = ["は", "の", "が", "を"].sort(() => Math.random() - 0.5);
 
                         q.choices = l5Choices;
+                        q.choiceSkillIds = buildBattleChoiceSkillIds(l5Choices, Array.isArray(q.answers?.[0]) ? q.answers[0][0] : q.answers?.[0], q.skillId);
 
                     }
 
@@ -11088,6 +11260,18 @@ const _jpApp = Vue.createApp({
 
         });
 
+        const battleQuestionSizeClass = computed(() => {
+            const visibleText = displaySegments.value.map(seg => {
+                if (!seg.isBlank) return seg.text || '';
+                return getAnswerForDisplay(seg.blankIndex) || '＿';
+            }).join('');
+            const length = Array.from(visibleText.replace(/[\s、。,.!?！？・「」『』（）()［］[\]＿_]/g, '')).length;
+            if (length > 19) return 'question-size-very-long';
+            if (length > 14) return 'question-size-long';
+            if (length > 10) return 'question-size-medium';
+            return 'question-size-short';
+        });
+
         const handleMonsterImageError = (event) => {
             const img = event?.target;
             if (!img) return;
@@ -11542,12 +11726,12 @@ const _jpApp = Vue.createApp({
             isNextBtnVisible,
             animatedExp, hasLeveledUp, displayedResultLevel, displayedResultExp, displayedResultNextExp, displayedResultExpPct, resultExpBarTransitionEnabled, showLevelUpMessageAfterAnimation, resultLevelUpStatText, resultUnlockedMilestones, showResultMilestoneRewards, dismissResultMilestoneRewards, playerStats, getExpRequiredForNextLevel,
             isAudioDebugEnabled, isAudioDebugOpen, isAudioDebugDragging, audioDebugOverlayStyle, audioDebugSections, refreshAudioDebugState, startAudioDebugDrag, debugResumeAudioContext, debugTestSfx, debugTestBgmPlay, debugPauseBgm, debugTestRawAudio, debugEnableHtmlAudioFallback, debugDisableHtmlAudioFallback, debugEnableFallbackAudioContextV2, debugDisableFallbackAudioContextV2, debugResumeFallbackAudioContext, debugTestFallbackContextBgm, debugTestFallbackBgm, debugTestFallbackSfx, debugShowAudioState,
-            setDefaultAttackMode, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, levelPassiveVfx, counterSlashVfx, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, monsterHitGiragira, monsterGiraKnockActive, monsterGiraKnockStyle, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, codexPage, codexWheelSkills, codexSelectedSkill, codexDetailMode, getCodexWheelItemStyle, getCodexWheelItemClass, getCodexSkillDisplayName, setCodexSelectedIndex, shiftCodexWheel, startCodexWheelArrowPress, stopCodexWheelArrowPress, handleCodexWheelArrowClick, openCodexDetail, closeCodexDetail, startCodexDrag, endCodexDrag, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
+            setDefaultAttackMode, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, currentQuestionBondMax, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, levelPassiveVfx, counterSlashVfx, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, monsterHitGiragira, monsterGiraKnockActive, monsterGiraKnockStyle, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, battleQuestionSizeClass, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, codexPage, codexWheelSkills, codexSelectedSkill, codexDetailMode, getCodexWheelItemStyle, getCodexWheelItemClass, getCodexSkillDisplayName, setCodexSelectedIndex, shiftCodexWheel, startCodexWheelArrowPress, stopCodexWheelArrowPress, handleCodexWheelArrowClick, openCodexDetail, closeCodexDetail, startCodexDrag, moveCodexDrag, endCodexDrag, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             handleEscapeToMap, escapeOverlayVisible, escapeOverlayOpacity, isEscaping,
             heroBuffs: (typeof heroBuffs !== 'undefined' && heroBuffs) ? heroBuffs : debugControls,
             debugControls,
             // ぴったり: hide wrong choices for the next question
-            skillList, castAbility, spState, settings, shouldShowNextButton, praiseToast, comboPopup, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG, getSkillTypeLabel, pittariActive, isPittariSealed, activeLevelPassiveBadges,
+            skillList, castAbility, spState, settings, shouldShowNextButton, praiseToast, comboPopup, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG, getSkillTypeLabel, pittariActive, isPittariSealed, isBattleChoiceBondMax, activeLevelPassiveBadges,
             formatParticleBadge, formatSkillSpiritName, formatSkillMeaning, formatSkillRule, formatUnlockLevel,
             skillMastery, skillCorrectCounts, getSkillMastery, getSkillMasteryStyle, isBondMaxSkill,
             isMonsterCodexOpen, openMonsterCodex, monsterCodexEntries, selectedMonsterCodexEntry, selectMonsterCodexEntry, handleMonsterCodexImageError,
