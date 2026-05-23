@@ -179,8 +179,9 @@
             3: 'combo-good',
             6: 'combo-great',
             9: 'combo-amazing',
-            12: 'combo-max',
-            15: 'combo-perfect',
+            12: 'combo-perfect',
+            15: 'combo-max',
+            20: 'combo-infinity',
         },
 
         FEEDBACK_VOICE_PATHS: {
@@ -189,6 +190,7 @@
             'combo-amazing': ['combo-amazing-01.m4a', 'combo-amazing-02.m4a'],
             'combo-max': ['combo-max-01.m4a', 'combo-max-02.m4a'],
             'combo-perfect': ['combo-perfect-01.m4a', 'combo-perfect-02.m4a'],
+            'combo-infinity': ['combo-infinity-01.m4a', 'combo-infinity-02.m4a'],
             correct: ['correct-01.m4a', 'correct-02.m4a'],
             wrong: ['wrong-01.m4a'],
             'low-hp': ['low-hp-01.m4a'],

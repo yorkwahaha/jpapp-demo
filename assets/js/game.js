@@ -1423,7 +1423,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26052202";
+        const APP_VERSION = window.APP_VERSION || "26052301";
         const versionImageAsset = (path) => {
             if (!path || typeof path !== 'string' || /[?&]v=/.test(path)) return path;
             return `${path}${path.includes('?') ? '&' : '?'}v=${encodeURIComponent(String(APP_VERSION))}`;
@@ -2912,7 +2912,9 @@ const _jpApp = Vue.createApp({
             _codexDragVelocityX = 0;
             _codexDragHistory = [{ x, time: _codexDragLastTime }];
             // Capture pointer so pointermove fires even outside the element
-            try { event?.currentTarget?.setPointerCapture?.(event.pointerId); } catch (_) {}
+            if (!event?.target?.closest?.('.codex-wheel-spirit')) {
+                try { event?.currentTarget?.setPointerCapture?.(event.pointerId); } catch (_) {}
+            }
         };
 
         const moveCodexDrag = (event) => {
@@ -3724,6 +3726,7 @@ const _jpApp = Vue.createApp({
         const isEscaping = ref(false);
         const escapeOverlayVisible = ref(false);
         const escapeOverlayOpacity = ref(0);
+        const retryTransitionActive = ref(false);
 
         // ---- [ STATE — GAME BATTLE CORE ] ----
         const player = ref({ hp: 100, maxHp: 100, exp: 0 });
@@ -5415,6 +5418,48 @@ const _jpApp = Vue.createApp({
                     }, 500);
                 });
             });
+        };
+
+        const waitForEscapeOverlayOpacity = (el, fallbackMs) => {
+            return new Promise(resolve => {
+                if (!el) return setTimeout(resolve, fallbackMs);
+                let resolved = false;
+                const complete = () => {
+                    if (resolved) return;
+                    resolved = true;
+                    el.removeEventListener('transitionend', onEnd);
+                    clearTimeout(fallbackId);
+                    resolve();
+                };
+                const onEnd = (e) => { if (e.propertyName === 'opacity') complete(); };
+                el.addEventListener('transitionend', onEnd);
+                const fallbackId = setTimeout(complete, fallbackMs);
+            });
+        };
+
+        const retryCurrentStageWithTransition = async () => {
+            if (isEscaping.value) return;
+            isEscaping.value = true;
+            retryTransitionActive.value = true;
+            isMenuOpen.value = false;
+            isMistakesOpen.value = false;
+            isAdvancedSettingsOpen.value = false;
+            stopResultFanfare({ fadeMs: 250 });
+            escapeOverlayVisible.value = true;
+
+            await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            const el = document.querySelector('.escape-fade-overlay');
+            escapeOverlayOpacity.value = 1;
+            await waitForEscapeOverlayOpacity(el, 550);
+
+            retryLevel();
+
+            await new Promise(resolve => setTimeout(resolve, 80));
+            escapeOverlayOpacity.value = 0;
+            await waitForEscapeOverlayOpacity(el, 550);
+            escapeOverlayVisible.value = false;
+            retryTransitionActive.value = false;
+            isEscaping.value = false;
         };
 
         const startRunAwayPress = (event) => {
@@ -11462,7 +11507,10 @@ const _jpApp = Vue.createApp({
             isBgmSuppressed.value = false; // Explicitly unlock on retry
             resetStageClearMetrics();
             stopAllAudio();
+            pickBattleBgm(currentLevel.value);
+            ensureBgmElementSync();
             initGame(currentLevel.value);
+            playBgm();
         };
 
         const revive = () => {
@@ -11727,7 +11775,7 @@ const _jpApp = Vue.createApp({
             animatedExp, hasLeveledUp, displayedResultLevel, displayedResultExp, displayedResultNextExp, displayedResultExpPct, resultExpBarTransitionEnabled, showLevelUpMessageAfterAnimation, resultLevelUpStatText, resultUnlockedMilestones, showResultMilestoneRewards, dismissResultMilestoneRewards, playerStats, getExpRequiredForNextLevel,
             isAudioDebugEnabled, isAudioDebugOpen, isAudioDebugDragging, audioDebugOverlayStyle, audioDebugSections, refreshAudioDebugState, startAudioDebugDrag, debugResumeAudioContext, debugTestSfx, debugTestBgmPlay, debugPauseBgm, debugTestRawAudio, debugEnableHtmlAudioFallback, debugDisableHtmlAudioFallback, debugEnableFallbackAudioContextV2, debugDisableFallbackAudioContextV2, debugResumeFallbackAudioContext, debugTestFallbackContextBgm, debugTestFallbackBgm, debugTestFallbackSfx, debugShowAudioState,
             setDefaultAttackMode, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, currentQuestionBondMax, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, levelPassiveVfx, counterSlashVfx, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, monsterHitGiragira, monsterGiraKnockActive, monsterGiraKnockStyle, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, battleQuestionSizeClass, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, codexPage, codexWheelSkills, codexSelectedSkill, codexDetailMode, getCodexWheelItemStyle, getCodexWheelItemClass, getCodexSkillDisplayName, setCodexSelectedIndex, shiftCodexWheel, startCodexWheelArrowPress, stopCodexWheelArrowPress, handleCodexWheelArrowClick, openCodexDetail, closeCodexDetail, startCodexDrag, moveCodexDrag, endCodexDrag, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
-            handleEscapeToMap, escapeOverlayVisible, escapeOverlayOpacity, isEscaping,
+            handleEscapeToMap, retryCurrentStageWithTransition, escapeOverlayVisible, escapeOverlayOpacity, isEscaping, retryTransitionActive,
             heroBuffs: (typeof heroBuffs !== 'undefined' && heroBuffs) ? heroBuffs : debugControls,
             debugControls,
             // ぴったり: hide wrong choices for the next question

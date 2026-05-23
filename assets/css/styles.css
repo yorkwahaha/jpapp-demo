@@ -463,6 +463,17 @@ rt {
 
 .battle-question-text {
     max-width: 100%;
+    align-items: baseline;
+}
+
+#question-area .blank-slot {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 auto;
+    white-space: nowrap !important;
+    line-height: 1.05 !important;
+    vertical-align: middle !important;
 }
 
 .level-badge {
@@ -2146,7 +2157,6 @@ body.lock-scroll {
     padding: 0px 12px 14px 12px !important;
     transition: transform 0.2s, border-color 0.2s !important;
     cursor: pointer;
-    display: inline-block;
     min-width: 50px;
     text-align: center;
     color: #fbbf24;

@@ -763,24 +763,14 @@
         if (isTrueResonance) {
             tail = document.createElement('div');
             tail.style.cssText = `
-                position: absolute; right: 22px; width: ${isBondMaxAttack ? 118 : 88}px; height: ${isBondMaxAttack ? 38 : 18}px; border-radius: 62% 999px 999px 62%;
-                background: ${isBondMaxAttack ? 'radial-gradient(ellipse at 96% 50%, rgba(255,247,237,0.98) 0%, rgba(248,113,113,0.72) 22%, transparent 46%), radial-gradient(ellipse at 58% 34%, rgba(239,68,68,0.56) 0%, transparent 48%), radial-gradient(ellipse at 28% 70%, rgba(220,38,38,0.4) 0%, transparent 62%), linear-gradient(90deg, transparent 0%, rgba(220,38,38,0.12) 22%, rgba(239,68,68,0.44) 58%, rgba(255,247,237,0.74) 100%)' : 'linear-gradient(90deg, transparent 0%, rgba(220,38,38,0.2) 18%, rgba(249,115,22,0.72) 58%, rgba(254,243,199,0.9) 100%)'};
-                filter: blur(${isBondMaxAttack ? 2.4 : 1}px); box-shadow: ${isBondMaxAttack ? '0 0 22px rgba(255,247,237,0.78), 0 0 48px rgba(239,68,68,0.58), 0 0 70px rgba(220,38,38,0.34)' : '0 0 18px rgba(249,115,22,0.86), 0 0 34px rgba(220,38,38,0.38)'};
+                position: absolute; right: 22px; width: ${isBondMaxAttack ? 46 : 88}px; height: ${isBondMaxAttack ? 34 : 18}px; border-radius: 999px;
+                background: ${isBondMaxAttack ? 'radial-gradient(ellipse at 72% 50%, rgba(255,247,237,0.78) 0%, rgba(248,113,113,0.42) 32%, rgba(220,38,38,0.18) 58%, transparent 78%)' : 'linear-gradient(90deg, transparent 0%, rgba(220,38,38,0.2) 18%, rgba(249,115,22,0.72) 58%, rgba(254,243,199,0.9) 100%)'};
+                filter: blur(${isBondMaxAttack ? 5.5 : 1}px); box-shadow: ${isBondMaxAttack ? '0 0 16px rgba(255,247,237,0.34), 0 0 30px rgba(239,68,68,0.28)' : '0 0 18px rgba(249,115,22,0.86), 0 0 34px rgba(220,38,38,0.38)'};
                 transform: rotate(${angle}rad); transform-origin: 100% 50%; z-index: 6; mix-blend-mode: screen;
             `;
             projectile.appendChild(tail);
         }
         let wake = null;
-        if (isBondMaxAttack) {
-            wake = document.createElement('div');
-            wake.style.cssText = `
-                position: absolute; right: 30px; width: 190px; height: 30px; border-radius: 999px 50% 50% 999px;
-                background: radial-gradient(ellipse at 78% 48%, rgba(255,247,237,0.5) 0%, transparent 36%), radial-gradient(ellipse at 48% 30%, rgba(248,113,113,0.34) 0%, transparent 56%), radial-gradient(ellipse at 20% 70%, rgba(220,38,38,0.24) 0%, transparent 60%);
-                filter: blur(6px); box-shadow: 0 0 30px rgba(239,68,68,0.46), 0 0 54px rgba(255,247,237,0.24);
-                transform: rotate(${angle}rad); transform-origin: 100% 50%; z-index: 5; mix-blend-mode: screen;
-            `;
-            projectile.appendChild(wake);
-        }
         const core = document.createElement('div');
         core.style.cssText = `
             position: absolute; width: ${isBondMaxAttack ? 46 : (isTrueResonance ? 34 : 28)}px; height: ${isBondMaxAttack ? 46 : (isTrueResonance ? 34 : 28)}px; border-radius: 50%;
@@ -816,6 +806,9 @@
             return { x, y, angle: Math.atan2(ty, tx) };
         };
         let startTime = null;
+        let lastProjectileX = fromX;
+        let lastProjectileY = fromY;
+        let lastProjectileAngle = angle;
         let preImpactFlashed = false;
         const animateTrail = (timestamp) => {
             if (!startTime) startTime = timestamp;
@@ -824,11 +817,17 @@
                 const point = getCurvePoint(progress);
                 const currentX = point.x;
                 const currentY = point.y;
+                const stepDx = currentX - lastProjectileX;
+                const stepDy = currentY - lastProjectileY;
+                const movementAngle = Math.hypot(stepDx, stepDy) > 0.4 ? Math.atan2(stepDy, stepDx) : lastProjectileAngle;
+                lastProjectileX = currentX;
+                lastProjectileY = currentY;
+                lastProjectileAngle = movementAngle;
                 if (isBondMaxAttack) {
                     const surge = progress > 0.72 ? (1 + (progress - 0.72) * 0.42) : 1;
                     projectile.style.transform = `translate(${currentX - fromX}px, ${currentY - fromY}px) scale(${(1 - progress * 0.22) * surge})`;
-                    if (tail) tail.style.transform = `rotate(${point.angle}rad)`;
-                    if (wake) wake.style.transform = `rotate(${point.angle}rad) scale(${1 + progress * 0.22}, ${1 + Math.sin(progress * Math.PI) * 0.18})`;
+                    if (tail) tail.style.transform = `rotate(${movementAngle}rad)`;
+                    if (wake) wake.style.transform = `rotate(${movementAngle}rad) scale(${1 + progress * 0.22}, ${1 + Math.sin(progress * Math.PI) * 0.18})`;
                     if (Math.random() < 0.68) {
                         const after = document.createElement('div');
                         const afterW = Math.random() * 54 + 48;
@@ -844,8 +843,8 @@
                         vfxLayer.appendChild(after);
                         const wobble = (Math.random() - 0.5) * 18;
                         after.animate([
-                            { opacity: 0.54, transform: `rotate(${point.angle + wobble * 0.01}rad) scale(1, 1)` },
-                            { opacity: 0, transform: `rotate(${point.angle + wobble * 0.01}rad) translate(${-18 - Math.random() * 22}px, ${(Math.random() - 0.5) * 18}px) scale(0.42, 1.7)` }
+                            { opacity: 0.54, transform: `rotate(${movementAngle + wobble * 0.01}rad) scale(1, 1)` },
+                            { opacity: 0, transform: `rotate(${movementAngle + wobble * 0.01}rad) translate(${-18 - Math.random() * 22}px, ${(Math.random() - 0.5) * 18}px) scale(0.42, 1.7)` }
                         ], { duration: Math.random() * 170 + 190, easing: 'ease-out', fill: 'forwards' });
                         setTimeout(() => { if (after.isConnected) after.remove(); }, 380);
                     }

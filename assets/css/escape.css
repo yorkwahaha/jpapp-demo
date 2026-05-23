@@ -8,3 +8,7 @@
     pointer-events: none;
     transition: opacity 1s linear;
 }
+
+.escape-fade-overlay--retry {
+    transition: opacity 350ms ease;
+}

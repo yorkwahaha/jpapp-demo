@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26052202'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26052301'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -58,15 +58,15 @@
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/styles.css?v=26052202">
-    <link rel="stylesheet" href="assets/css/home.css?v=26052202">
-    <link rel="stylesheet" href="assets/css/settings.css?v=26052202">
-    <link rel="stylesheet" href="assets/css/mentor.css?v=26052202">
-    <link rel="stylesheet" href="assets/css/battle.css?v=26052202">
-    <link rel="stylesheet" href="assets/css/battle-vfx.css?v=26052202">
-    <link rel="stylesheet" href="assets/css/codex.css?v=26052202">
-    <link rel="stylesheet" href="assets/css/result-mistakes.css?v=26052202">
-    <link rel="stylesheet" href="assets/css/escape.css?v=26052202">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26052301">
+    <link rel="stylesheet" href="assets/css/home.css?v=26052301">
+    <link rel="stylesheet" href="assets/css/settings.css?v=26052301">
+    <link rel="stylesheet" href="assets/css/mentor.css?v=26052301">
+    <link rel="stylesheet" href="assets/css/battle.css?v=26052301">
+    <link rel="stylesheet" href="assets/css/battle-vfx.css?v=26052301">
+    <link rel="stylesheet" href="assets/css/codex.css?v=26052301">
+    <link rel="stylesheet" href="assets/css/result-mistakes.css?v=26052301">
+    <link rel="stylesheet" href="assets/css/escape.css?v=26052301">
 
 
 
@@ -76,7 +76,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26052202';
+            const v = window.APP_VERSION || '26052301';
 
 
 
@@ -3887,10 +3887,6 @@
                             <span v-else class="result-spirit-trophy">🏆</span>
                         </div>
 
-                        <h2 class="text-2xl font-black text-amber-400 mb-4 tracking-widest">{{ currentLevel >= maxLevel
-
-                            ? '全章節破關！' : '戰鬥突破！' }}</h2>
-
                         <div class="result-star-summary" aria-label="通關星等與時間">
                             <div v-if="stageResultIsNewBest" class="result-new-best">NEW BEST</div>
                             <div class="result-star-row" :class="'stars-' + stageStarRating">{{ stageStarDisplay }}
@@ -3947,21 +3943,21 @@
 
                             查看題目</button>
 
-                        <button v-if="currentLevel < maxLevel" @click="returnToMap"
-                            class="w-full py-4 rounded-xl bg-amber-500 text-slate-900 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all mb-3"
-                            :class="{ 'opacity-0 pointer-events-none': !isNextBtnVisible }">
+                        <div class="result-action-row" :class="{ 'opacity-0 pointer-events-none': !isNextBtnVisible }">
+                            <button @click="retryCurrentStageWithTransition"
+                                class="result-action-btn result-action-btn--retry">
 
-                            返回地圖
+                                再次挑戰
 
-                        </button>
+                            </button>
 
-                        <button v-else @click="returnToMap"
-                            class="w-full py-4 rounded-xl bg-amber-500 text-slate-900 font-black text-lg shadow-[0_4px_0_#b45309] active:translate-y-1 active:shadow-none transition-all mb-3"
-                            :class="{ 'opacity-0 pointer-events-none': !isNextBtnVisible }">
+                            <button @click="returnToMap"
+                                class="result-action-btn result-action-btn--map">
 
-                            章節結算
+                                返回地圖
 
-                        </button>
+                            </button>
+                        </div>
 
                     </div>
 
@@ -4582,9 +4578,13 @@
                             </button>
                             <div v-else class="hidden"></div>
 
+                            <button @click="retryCurrentStageWithTransition"
+                                class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-300/25 text-amber-100 text-sm font-bold transition-all">
+                                重新挑戰
+                            </button>
 
                             <button v-if="isDevToolsVisible" @click="isLevelJumpOpen = true; isMenuOpen = false;"
-                                class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-400/20 text-purple-100 text-sm font-bold transition-all">
+                                class="col-span-2 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-400/20 text-purple-100 text-sm font-bold transition-all">
 
                                 ⏭️ 關卡
 
@@ -5148,6 +5148,7 @@
 
         <!-- [ESCAPE] Black Transition Overlay -->
         <div class="escape-fade-overlay"
+            :class="{ 'escape-fade-overlay--retry': retryTransitionActive }"
             :style="{ opacity: escapeOverlayOpacity, display: escapeOverlayVisible ? 'block' : 'none' }">
         </div>
 
