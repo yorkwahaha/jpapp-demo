@@ -64,17 +64,11 @@
                 if (isWheel) {
                     if (isLocked) {
                         img.onerror = function() {
-                            img.onerror = function() {
-                                img.onerror = function() {
-                                    img.onerror = null;
-                                    img.src = placeholder;
-                                };
-                                img.src = `${spirit.imageBase}.png`;
-                            };
-                            img.src = `${spirit.imageBase}.webp`;
+                            img.onerror = null;
+                            img.src = placeholder;
                         };
-                        const wheelBase = spirit.imageBase.replace('/display/', '/wheel/');
-                        img.src = `${wheelBase}.webp`;
+                        const lockedBase = spirit.imageBase.replace('/display/', '/wheel-locked/');
+                        img.src = `${lockedBase}.png`;
                         return;
                     }
                     img.onerror = function() {

@@ -2747,6 +2747,7 @@
                                         <img v-if="getSpiritForSkill(skill)" class="codex-wheel-img"
                                             draggable="false"
                                             @dragstart.prevent
+                                            @contextmenu.prevent
                                             :src="getSpiritImageSrc(getSpiritForSkill(skill), true, !unlockedSkillIds.includes(skill.id))"
                                             :alt="unlockedSkillIds.includes(skill.id) ? getCodexSkillDisplayName(skill) : '尚未解鎖的小助靈'"
                                             @error="handleSpiritImageError($event, getSpiritForSkill(skill), true, !unlockedSkillIds.includes(skill.id))">
@@ -2791,6 +2792,9 @@
                                 <img v-if="getSpiritForSkill(codexSelectedSkill)" class="codex-contract-img"
                                     :src="getSpiritImageSrc(getSpiritForSkill(codexSelectedSkill))"
                                     :alt="unlockedSkillIds.includes(codexSelectedSkill.id) ? getCodexSkillDisplayName(codexSelectedSkill) : '尚未解鎖的小助靈'"
+                                    draggable="false"
+                                    @dragstart.prevent
+                                    @contextmenu.prevent
                                     @error="handleSpiritImageError($event, getSpiritForSkill(codexSelectedSkill))">
                                 <span v-else class="codex-contract-particle">{{ (codexSelectedSkill.particle || '技').length <= 3 ? (codexSelectedSkill.particle || '技') : '技' }}</span>
                             </div>
@@ -2886,7 +2890,8 @@
                             <template v-if="selectedMonsterCodexEntry.isUnlocked">
                                 <div class="monster-codex-portrait-wrap">
                                     <img class="monster-codex-portrait" :src="selectedMonsterCodexEntry.image"
-                                        :alt="selectedMonsterCodexEntry.name" @error="handleMonsterCodexImageError">
+                                        :alt="selectedMonsterCodexEntry.name" draggable="false"
+                                        @dragstart.prevent @contextmenu.prevent @error="handleMonsterCodexImageError">
                                 </div>
                                 <div class="monster-codex-detail-copy">
                                     <p class="monster-codex-kicker">{{ selectedMonsterCodexEntry.stageText }}</p>
@@ -3425,6 +3430,7 @@
                                         <img v-if="monster.sprite && monster.sprite.includes('/')"
                                             :src="currentMonsterSprite" @error="handleMonsterImageError" alt="monster"
                                             class="relative z-[2] object-contain drop-shadow-2xl monster-breath"
+                                            draggable="false" @dragstart.prevent @contextmenu.prevent
                                             :class="currentLevel % 5 === 0 ? 'monster-img-boss' : 'monster-img-normal'"
                                             :style="{ transform: 'scale(' + (1 / (monster.attackRingScale || 1)) + ')' }">
 
@@ -3704,6 +3710,7 @@
                                             <img v-if="shouldShowSpiritIcon(opt)"
                                                 :src="getSpiritIconPath(opt)"
                                                 @error="handleSpiritIconError(opt)"
+                                                draggable="false" @dragstart.prevent @contextmenu.prevent
                                                 class="resonance-spirit-icon" alt="">
                                             <div v-else
                                                 class="resonance-spirit-rune">{{ String(opt || '').slice(0, 1) }}</div>
@@ -3736,6 +3743,7 @@
                                             <img v-if="shouldShowSpiritIcon(opt)"
                                                 :src="getSpiritIconPath(opt)"
                                                 @error="handleSpiritIconError(opt)"
+                                                draggable="false" @dragstart.prevent @contextmenu.prevent
                                                 class="resonance-spirit-icon" alt="">
                                             <div v-else
                                                 class="resonance-spirit-rune">{{ String(opt || '').slice(0, 1) }}</div>
@@ -3883,6 +3891,7 @@
 
                         <div class="result-spirit-hero" aria-hidden="true">
                             <img v-if="resultSpirit" :src="getSpiritImageSrc(resultSpirit)"
+                                draggable="false" @dragstart.prevent @contextmenu.prevent
                                 @error="handleSpiritImageError($event, resultSpirit)" alt="">
                             <span v-else class="result-spirit-trophy">🏆</span>
                         </div>
@@ -4156,6 +4165,7 @@
                                 <img class="spirit-unlock-img"
                                     :src="getSpiritImageSrc(getSpiritForKnowledgeCard(activeKnowledgeCard))"
                                     :alt="getSpiritForKnowledgeCard(activeKnowledgeCard).nameJa || getSpiritForKnowledgeCard(activeKnowledgeCard).nameZh"
+                                    draggable="false" @dragstart.prevent @contextmenu.prevent
                                     @error="handleSpiritImageError($event, getSpiritForKnowledgeCard(activeKnowledgeCard))">
                             </div>
                             <div class="spirit-unlock-copy">
@@ -4361,6 +4371,7 @@
                                         <img v-if="getSpiritForSkill(skill)" class="codex-wheel-img"
                                             draggable="false"
                                             @dragstart.prevent
+                                            @contextmenu.prevent
                                             :src="getSpiritImageSrc(getSpiritForSkill(skill), true, !unlockedSkillIds.includes(skill.id))"
                                             :alt="unlockedSkillIds.includes(skill.id) ? getCodexSkillDisplayName(skill) : '尚未解鎖的小助靈'"
                                             @error="handleSpiritImageError($event, getSpiritForSkill(skill), true, !unlockedSkillIds.includes(skill.id))">
@@ -4405,6 +4416,9 @@
                                 <img v-if="getSpiritForSkill(codexSelectedSkill)" class="codex-contract-img"
                                     :src="getSpiritImageSrc(getSpiritForSkill(codexSelectedSkill))"
                                     :alt="unlockedSkillIds.includes(codexSelectedSkill.id) ? getCodexSkillDisplayName(codexSelectedSkill) : '尚未解鎖的小助靈'"
+                                    draggable="false"
+                                    @dragstart.prevent
+                                    @contextmenu.prevent
                                     @error="handleSpiritImageError($event, getSpiritForSkill(codexSelectedSkill))">
                                 <span v-else class="codex-contract-particle">{{ (codexSelectedSkill.particle || '技').length <= 3 ? (codexSelectedSkill.particle || '技') : '技' }}</span>
                             </div>

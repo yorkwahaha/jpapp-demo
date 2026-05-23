@@ -680,7 +680,9 @@
     }
 
     .stage-record-main {
-        gap: 0.55rem;
+        display: grid;
+        grid-template-columns: 4.6rem minmax(0, 1fr);
+        gap: 0.45rem;
     }
 
     .stage-record-score {
@@ -688,8 +690,29 @@
         min-width: 0;
     }
 
+    .stage-record-no {
+        font-size: 0.68rem;
+        line-height: 1.05;
+        letter-spacing: 0.08em;
+    }
+
+    .stage-record-name {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        gap: 0.32rem;
+    }
+
+    .stage-record-particle {
+        font-size: 1.08rem;
+    }
+
     .stage-record-title {
-        font-size: 0.95rem;
+        overflow: visible;
+        font-size: 0.86rem;
+        line-height: 1.15;
+        text-overflow: clip;
+        white-space: normal;
     }
 
     .stage-record-rank {

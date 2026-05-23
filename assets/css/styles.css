@@ -5102,6 +5102,17 @@ body.lock-scroll {
     max-height: 9.5rem !important;
 }
 
+.monster-img-normal,
+.monster-img-boss,
+.monster-breath,
+.resonance-spirit-icon {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    user-drag: none;
+}
+
 @keyframes boss-impact-flash {
     0% {
         opacity: 0.8;
