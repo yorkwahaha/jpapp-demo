@@ -669,8 +669,20 @@
         padding: 1rem !important;
     }
 
+    .stage-records-modal .modal-header-row h2 {
+        font-size: 1.45rem !important;
+        letter-spacing: 0.08em;
+    }
+
+    .stage-records-modal .modal-header-row .modal-caption {
+        font-size: 0.82rem;
+        letter-spacing: 0.18em;
+        margin-left: 0.42rem;
+    }
+
     .stage-records-summary {
-        font-size: 0.7rem;
+        font-size: 0.82rem;
+        letter-spacing: 0.035em;
     }
 
     .stage-record-row {
@@ -691,7 +703,7 @@
     }
 
     .stage-record-no {
-        font-size: 0.68rem;
+        font-size: 0.74rem;
         line-height: 1.05;
         letter-spacing: 0.08em;
     }
@@ -704,31 +716,31 @@
     }
 
     .stage-record-particle {
-        font-size: 1.08rem;
+        font-size: 1rem;
     }
 
     .stage-record-title {
         overflow: visible;
-        font-size: 0.86rem;
+        font-size: 0.92rem;
         line-height: 1.15;
         text-overflow: clip;
         white-space: normal;
     }
 
     .stage-record-rank {
-        font-size: 1.42rem;
+        font-size: 1.18rem;
     }
 
     .stage-record-time {
-        font-size: 0.86rem;
+        font-size: 0.9rem;
     }
 
     .stage-record-stars {
-        font-size: 0.78rem;
+        font-size: 0.82rem;
     }
 
     .stage-record-status {
-        font-size: 0.9rem;
+        font-size: 0.94rem;
     }
 
     .stage-records-close {

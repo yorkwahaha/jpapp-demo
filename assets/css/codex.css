@@ -995,7 +995,16 @@
     }
 
     .monster-codex-header {
-        padding: 14px;
+        padding: 14px 15px;
+    }
+
+    .monster-codex-title {
+        font-size: 1.28rem;
+    }
+
+    .monster-codex-subtitle {
+        font-size: 0.8rem;
+        letter-spacing: 0.18em;
     }
 
     .monster-codex-body {
@@ -1020,11 +1029,22 @@
         flex: 0 0 178px;
     }
 
+    .monster-codex-card-main strong {
+        font-size: 1rem;
+    }
+
+    .monster-codex-card-main small,
+    .monster-codex-card-lock {
+        font-size: 0.78rem;
+    }
+
     .monster-codex-detail {
+        display: flex;
+        flex-direction: column;
         flex: 1 1 auto;
         min-height: 0;
         overscroll-behavior: contain;
-        padding: 14px;
+        padding: 20px 14px 14px;
     }
 
     .monster-codex-portrait-wrap {
@@ -1035,19 +1055,40 @@
         max-height: 180px;
     }
 
+    .monster-codex-detail-copy {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        margin-top: 12px;
+    }
+
+    .monster-codex-kicker {
+        font-size: 1.02rem;
+    }
+
+    .monster-codex-trait {
+        font-size: 1.08rem;
+        line-height: 1.58;
+    }
+
     .monster-codex-stats {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
         padding: 10px;
-        margin-top: 12px;
+        margin-top: clamp(18px, 2.8dvh, 28px);
     }
 
     .monster-codex-stats div {
         padding: 7px 8px;
     }
 
-    .monster-codex-stats strong {
+    .monster-codex-stats span {
         font-size: 0.9rem;
+        letter-spacing: 0.08em;
+    }
+
+    .monster-codex-stats strong {
+        font-size: 1.12rem;
     }
 
     .monster-codex-locked-detail {
@@ -2284,6 +2325,17 @@
     /* Push arrows down so they don't overlap the spirits */
     .codex-modal-overlay .codex-wheel-arrow {
         top: calc(50% + 45px) !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .codex-wheel-spirit.is-selected .codex-wheel-name {
+        color: #3f2a12;
+        -webkit-text-stroke: 0.35px rgba(255, 251, 235, 0.76);
+        text-shadow:
+            0 1px 0 rgba(255, 248, 220, 0.9),
+            0 2px 6px rgba(255, 255, 255, 0.52),
+            0 0 10px rgba(15, 23, 42, 0.2);
     }
 }
 

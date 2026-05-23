@@ -558,6 +558,38 @@ rt {
         inset 0 0 20px rgba(255, 255, 255, 0.02);
 }
 
+@media (max-width: 480px) {
+    .menu-modal-panel {
+        padding: 1.35rem !important;
+    }
+
+    .menu-modal-panel .modal-header-row h2 {
+        font-size: 1.55rem !important;
+    }
+
+    .menu-modal-panel .modal-caption {
+        font-size: 0.82rem !important;
+        letter-spacing: 0.18em;
+    }
+
+    .menu-modal-panel .modal-section-card,
+    .menu-modal-panel button {
+        font-size: 1rem !important;
+    }
+
+    .menu-modal-panel .volume-control-label,
+    .menu-modal-panel .text-xs,
+    .menu-modal-panel .text-\[11px\],
+    .menu-modal-panel .text-\[10px\],
+    .menu-modal-panel .text-\[9px\] {
+        font-size: 0.82rem !important;
+    }
+
+    .menu-modal-panel button {
+        min-height: 3.2rem;
+    }
+}
+
 
 .flash-card {
     animation: popPulsing 0.8s ease-out;
