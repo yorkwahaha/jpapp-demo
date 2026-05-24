@@ -516,19 +516,20 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 2.2rem;
+    min-height: 2.35rem;
 }
 
 .save-slot-delete-btn {
-    min-height: 1.75rem;
-    padding: 0.26rem 0.58rem;
+    min-height: 1.85rem;
+    min-width: 4.25rem;
+    padding: 0.25rem 0.85rem;
     border: 1px solid rgba(185, 28, 28, 0.26);
     border-radius: 999px;
     background:
         linear-gradient(180deg, rgba(127, 29, 29, 0.12), rgba(69, 10, 10, 0.2)),
         rgba(15, 23, 42, 0.34);
     color: rgba(254, 202, 202, 0.68);
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     font-weight: 700;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 5px 12px rgba(0, 0, 0, 0.14);
     cursor: pointer;
@@ -782,8 +783,8 @@
     }
 
     .save-slot-delete-btn {
-        min-width: 3.5rem;
-        padding-inline: 0.58rem;
+        min-width: 4.25rem;
+        padding-inline: 0.85rem;
     }
 
     .save-slot-delete-confirm {
