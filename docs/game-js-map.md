@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
 > **Last audited:** 2026-05-24 (release `26052401` context)
-> **Doc sync:** 2026-05-24 — §結算畫面責任地圖；`RESULT_LEVEL_MILESTONE_REWARDS` → `result-display-manager.js`
+> **Doc sync:** 2026-05-24 — §結算畫面責任地圖；§想改星等…速查；manager 內 `stageRecordRows` / `calculatedGrade` 邊界註解
 > **File:** `assets/js/game.js` — **~11,693 lines** (1-indexed；外移後略減)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -136,6 +136,24 @@
 **`createVueBindings` → 結算 modal 常用綁定：** `calculatedGrade`、`accuracyPct`、`stageStarDisplay`、`stageClearTimeText`；EXP 動畫欄位（`animatedExp`、`displayedResult*`）由 **#36** 驅動。
 
 **DO NOT TOUCH（結算相關）：** `grantRewards`、`processLevelUp`（#36 內）、`playResultFanfare`（#12/#36）、`checkAnswer` 勝利鏈、`saveProgression`（#36 內）。
+
+### 想改星等／成績／最佳紀錄／等級獎勵浮層 — 速查
+
+| 想改什麼 | 先看（優先順序） | 模板／樣式 | 勿碰 |
+|----------|------------------|------------|------|
+| **本場通關星等規則**（幾題錯、幾秒內 ★★★） | `result-display-manager.js` → `calculateStageStars`、`getDefaultStageStarTimeLimitSeconds`；關卡覆寫 `LEVEL_CONFIG[].starTimeLimitSeconds` | 結算 `index.html` L3898–3905（`stageStarRating` / `stageStarDisplay`） | `grantRewards` 內 EXP／升級 |
+| **★/☆ 字串長相** | `formatStageStarsRow`（同上檔） | 同上 + 選關確認 `getStageBestStarsDisplay` | — |
+| **本場 S–E 評價門檻** | `createVueBindings` → `calculatedGrade`（註解內門檻表） | 結算 L3910–3912；評價色 `game-utils.js` `getGradeColor` | `grantRewards` 內 `bestGrades` 寫入邏輯（除非連動測存檔） |
+| **本場正確率數字** | `accuracyPct`（同上 `createVueBindings`） | 結算 L3914–3916 | — |
+| **通關時間字串** | `game-utils.js` `formatStageClearTime`；`stageClearTimeText` computed | 結算 L3902–3905 | `stageClearElapsedSeconds` 計時起點在 `game.js` #36b |
+| **歷史最佳星／時間（單關）** | `formatStageBestStarsDisplay`、`formatStageBestTimeDisplay`、`getStageBest*` | 選關確認 L2565–2570；全關卡表 L3233–3237 | `updateStageBestRecord`、`isStageRecordBetter`（#38，`game.js`） |
+| **全關卡成績表列文案** | `buildStageRecordTableRows` → `stageRecordRows` | `index.html` L3198–3244、L4618+（地圖／戰鬥各一份 modal） | `bestGrades` 寫入（`grantRewards`）；`clearedLevels` 解鎖 |
+| **全關卡表「S Rank N 關」** | `sRankCount`（掃 `stageRecordRows[].rank === 'S'`） | 摘要 L3215–3217 | — |
+| **等級獎勵浮層卡片**（技能名／描述） | `RESULT_LEVEL_MILESTONE_REWARDS` | 浮層 L3984–4002；標題「等級獎勵解放」在 HTML | `grantRewards` 內 `resultUnlockedMilestones` **篩選**（哪幾級出現） |
+| **浮層「學會新技能／解放新被動」標題** | — | `index.html` L3996 `reward.type` 分支 | — |
+| **NEW BEST 標籤** | — | 結算 L3899（`stageResultIsNewBest` 由 `updateStageBestRecord` 設） | `updateStageBestRecord` 比較邏輯 |
+
+**符號對照：** `stageRecordRows` = 全關卡表列資料；`formatStageStarsRow` = 僅星等字串；`calculatedGrade` / `accuracyPct` = 本場結算卡；`bestGrades` = 各關歷史最佳字母（表內 `row.rank`）。
 
 ---
 

@@ -1,5 +1,12 @@
 /**
  * JPAPP — Result / stage record / ranking display (read + format only).
+ *
+ * 責任邊界（本檔）：
+ * - 星等字串、S–E 評價、正確率、通關時間字串、全關卡成績表列、歷史最佳星/時間「顯示」
+ * - 等級獎勵浮層卡片文案表 RESULT_LEVEL_MILESTONE_REWARDS（非解鎖邏輯）
+ * - buildCurrentStageRecordPayload / shouldUpdateBestGrade（純資料形狀與比較；寫入在 game.js）
+ *
+ * 不在本檔：grantRewards、EXP、processLevelUp、animateRewards、playResultFanfare、updateStageBestRecord 寫入時機
  */
 (function (global) {
     'use strict';
@@ -30,6 +37,7 @@
         return !!(cfg && cfg.boss) || Number(levelId) % 5 === 0 || Number(levelId) === 36;
     }
 
+    /** 本場通關星等 1–3（錯題數 + 時間上限）；結算卡 stageStarRating 與 buildCurrentStageRecordPayload 共用。 */
     function calculateStageStars(snapshot, ctx) {
         ctx = ctx || {};
         var LEVEL_CONFIG = ctx.LEVEL_CONFIG || {};
@@ -52,6 +60,7 @@
         return 1;
     }
 
+    /** 將 0–3 星數轉成「★/☆」字串。不讀存檔、不組表格列；結算卡與 formatStageBest* 共用。 */
     function formatStageStarsRow(stars) {
         var rating = Math.max(0, Math.min(3, Math.floor(Number(stars) || 0)));
         return '\u2605'.repeat(rating) + '\u2606'.repeat(3 - rating);
@@ -73,6 +82,12 @@
         return record ? formatStageClearTime(record.bestTimeSeconds) : '--.-- \u79d2';
     }
 
+    /**
+     * 全關卡成績 modal 的列資料（stageRecordRows computed 的來源）。
+     * 每列：關卡標題、焦點助詞、歷史 S–E（bestGrades）、最佳時間字串、通關狀態。
+     * 列內「★ 是否點亮」由模板 + getStageBestRecord / getStageBestStarsDisplay，非本函式字串。
+     * 星等規則與結算卡共用 calculateStageStars；寫入 stageBestRecords / bestGrades 在 game.js grantRewards 鏈。
+     */
     function buildStageRecordTableRows(snapshot) {
         var sm = global.JPAPPSettingsManager;
         var total = Math.max(0, Number(snapshot.total) || 0);
@@ -157,11 +172,17 @@
         var bestGrades = deps.bestGrades;
         var stageBestRecords = deps.stageBestRecords;
         var normalizeStageBestRecord = deps.normalizeStageBestRecord;
+        /** 本場正確率（%）；僅顯示用，結算 modal「正確率」列。 */
         var accuracyPct = computed(function () {
             if (totalQuestionsAnswered.value === 0) return 0;
             return Math.round((correctAnswersAmount.value / totalQuestionsAnswered.value) * 100);
         });
 
+        /**
+         * 本場 S–E 評價（依 accuracyPct 門檻）；結算 modal「評價」列。
+         * 門檻：100→S，≥90→A，≥80→B，≥60→C，≥40→D，否則 E；戰敗為 '-'。
+         * bestGrades 持久化在 game.js grantRewards（shouldUpdateBestGrade + GRADE_RANK）；改門檻須一併手測存檔與全關卡表。
+         */
         var calculatedGrade = computed(function () {
             if (playerDead.value) return '-';
             var acc = accuracyPct.value;
