@@ -152,6 +152,7 @@
 | `getMonsterStageText` local helper | 2026-05-24 | 僅 `monsterCodexEntries` 單次使用；改 inline IIFE。 |
 | `getLevelTitle` setup 薄封裝 | 2026-05-24 | 全 repo 無呼叫；函式與 Vue export 已刪。 |
 | Vue `return` → `handleMapTabClick` | 2026-05-24 | `index.html` 無引用；`jumpToMapSegment` 仍內部呼叫。 |
+| Vue `return` → `praiseToast` / `openMap` / `levelTitle` | 2026-05-24 | 模板無綁定；`praiseToast`/`openMap`/`levelTitle` 本體與內部流程保留；`levelTitle` 仍經 `__attachDebugTools` 直傳。 |
 
 ### SAFE
 
