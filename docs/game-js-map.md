@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
 > **Last audited:** 2026-05-24 (release `26052401` context)
-> **Doc sync:** 2026-05-24 — `skillCorrectCounts` dead state 已自 `game.js` 移除
+> **Doc sync:** 2026-05-24 — A1+A2+A3 dead code（`getStageRecordTimeMs` 解構、codex 五 formatter）已移除
 > **File:** `assets/js/game.js` — **~11,803 lines** (1-indexed；隨 cleanup 略減)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -141,6 +141,8 @@
 | `skillCorrectCounts` / `normalizeSkillCorrectCountsMap` | 2026-05-24 | 舊「累計答對次數／雙次制」（normalize `% 2`）殘留；現役親密度僅 **`skillMastery`**（答對 +1，`addSkillMasteryProgress`）。舊存檔 JSON 若含 `skillCorrectCounts`：**load 時忽略**，**save 不再寫回**。 |
 | Unused codex format Vue exports（`formatSkillMeaning` 等） | 2026-05-24 | 薄包裝已刪；模板改直接綁 `codexSelectedSkill.*`；保留 `getSkillTypeLabel`。 |
 | `hero-status.js` `isSpeedBuff` 分支 | 2026-05-24 | speed potion / speed buff 已退役；unreachable 分支已移除（全 repo 無 `isSpeedBuff` 定義）。`hasSpeedOrEvadeBuffBestEffort()` 現役仍檢查：`heroStatusTimers.speedUntil`、`isEvadeBuff` best-effort、`speedMultiplier > 1.01` best-effort。 |
+| `getStageRecordTimeMs` 解構（game.js） | 2026-05-24 | setup 未使用；`game-utils.js` 內實作保留。 |
+| Codex skill formatters（`formatParticleBadge` 等五項） | 2026-05-24 | 自 `codex-display-utils.js` 與 `index.html` boot stub 移除；UI 改 `codexSelectedSkill.*` / `getCodexSkillDisplayName`；`formatMonsterCodexValue` 等怪物圖鑑 helper 保留。 |
 
 ### SAFE
 
@@ -151,7 +153,6 @@
 
 | Symbol / area | Location | Evidence |
 |---------------|----------|----------|
-| `getStageRecordTimeMs` 解構 | game.js ~121 | 未使用；`game-utils.js` 內仍有用 |
 | `formatMonsterCodexValue` 區域別名 | ~3087 | 可 inline |
 | game.js L1–59 VFX shim 冗餘 | 1–59 | `vfx-helpers.js` 已載入；boot 保險 |
 | Inline module fallbacks | 441–446, 1433–1460, 1655–1714, 4271–4302 | 正式 script 已載入；防 boot 失敗 |

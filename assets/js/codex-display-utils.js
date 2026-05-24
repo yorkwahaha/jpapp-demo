@@ -175,56 +175,6 @@
         getSkillTypeLabel: function(type) {
             const labels = window.JPAPP_CONSTANTS?.SKILL_TYPE_LABELS || {};
             return labels[type] || 'BUFF';
-        },
-
-        /**
-         * Format Particle Badge text (max 3 chars or '技')
-         * @param {string} particle 
-         * @returns {string}
-         */
-        formatParticleBadge: function(particle) {
-            const p = particle || '技';
-            return p.length <= 3 ? p : '技';
-        },
-
-        /**
-         * Format Skill/Spirit name with fallback
-         * @param {Object} skill 
-         * @param {Object} spirit 
-         * @returns {string}
-         */
-        formatSkillSpiritName: function(skill, spirit) {
-            if (spirit?.nameJa) return spirit.nameJa;
-            if (!skill) return '未命名';
-            const name = skill.name || '';
-            return name.split('：')[1] || name || '未命名';
-        },
-
-        /**
-         * Format Skill Meaning with fallback
-         * @param {string} meaning 
-         * @returns {string}
-         */
-        formatSkillMeaning: function(meaning) {
-            return meaning || '—';
-        },
-
-        /**
-         * Format Skill Rule with fallback
-         * @param {string} rule 
-         * @returns {string}
-         */
-        formatSkillRule: function(rule) {
-            return rule || '—';
-        },
-
-        /**
-         * Format Unlock Level text
-         * @param {number|null} level 
-         * @returns {string}
-         */
-        formatUnlockLevel: function(level) {
-            return level ? `第 ${level} 關解鎖` : '探索中';
         }
     };
 

@@ -118,7 +118,6 @@ const _jpApp = Vue.createApp({
             getGradeColor = () => '',
             pickOne = (a) => (a ? a[0] : null),
             pickMany = (a, n) => (a ? a.slice(0, n) : []),
-            getStageRecordTimeMs = () => Infinity,
             isStageRecordBetter = () => false
         } = window.__JPAPP_UTILS || {};
 

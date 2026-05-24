@@ -279,12 +279,7 @@
                 handleMonsterImageError: () => {},
                 formatMonsterName: (n) => n || '未記錄',
                 formatMonsterTrait: (t, d) => d || t || '未記錄',
-                getSkillTypeLabel: (t) => t || 'BUFF',
-                formatParticleBadge: (p) => p || '技',
-                formatSkillSpiritName: (s, sp) => sp?.nameJa || s?.name || '未命名',
-                formatSkillMeaning: (m) => m || '—',
-                formatSkillRule: (r) => r || '—',
-                formatUnlockLevel: (l) => l ? `第 ${l} 關解鎖` : '探索中'
+                getSkillTypeLabel: (t) => t || 'BUFF'
             };
 
             const s10i = document.createElement('script');
