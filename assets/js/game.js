@@ -427,15 +427,24 @@ const _jpApp = Vue.createApp({
 
         // --- NEW: Spirit Icon Fallback Mechanism ---
         const failedSpiritIcons = ref({});
-        const getSpiritIconPath = (opt) => window.JPAPPCodexDisplayUtils.getSpiritIconPath(opt);
-
-        const shouldShowSpiritIcon = (opt) => {
-            return Boolean(getSpiritIconPath(opt)) && !failedSpiritIcons.value[opt];
+        const normalizeResonanceChoiceParticle = (choice) => {
+            if (choice && typeof choice === 'object') {
+                return String(choice.value ?? choice.particle ?? choice.label ?? '').trim();
+            }
+            return String(choice || '').trim();
         };
 
-        const handleSpiritIconError = (opt) => {
-            if (!opt) return;
-            failedSpiritIcons.value = { ...failedSpiritIcons.value, [opt]: true };
+        const getSpiritIconPath = (choice) => window.JPAPPCodexDisplayUtils.getSpiritIconPath(normalizeResonanceChoiceParticle(choice));
+
+        const shouldShowSpiritIcon = (choice) => {
+            const particle = normalizeResonanceChoiceParticle(choice);
+            return Boolean(getSpiritIconPath(choice)) && !failedSpiritIcons.value[particle];
+        };
+
+        const handleSpiritIconError = (choice) => {
+            const particle = normalizeResonanceChoiceParticle(choice);
+            if (!particle) return;
+            failedSpiritIcons.value = { ...failedSpiritIcons.value, [particle]: true };
         };
 
         const spiritCodexHelpers = window.JPAPPSpiritCodexHelpers || {
