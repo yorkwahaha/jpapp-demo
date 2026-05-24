@@ -4,9 +4,9 @@ window.__attachDebugTools = function (refs) {
     const {
         maxLevel, currentLevel, questions, userAnswers, selectedAnswers,
         currentQuestionIndex, questionIndex, hasSubmitted, isCorrect, showResult,
-        showLevelSelect, showMap, showHome, isFinished, levelConfig, LEVEL_CONFIG,
+        showLevelSelect, showMap, isFinished, levelConfig, LEVEL_CONFIG,
         levelTitle, player, monster, currentQuestion,
-        startLevel, retryLevel, initGame, goHome, generateQuestionBySkill,
+        startLevel, retryLevel, initGame, generateQuestionBySkill,
         mentorTutorialSeen, saveMentorState, skillsAll, setupMentorDialogue,
         pauseBattle, unlockedSkillIds, startBossQueue,
         playPrologueOpening, playMainEndingFinale,
@@ -103,8 +103,6 @@ window.__attachDebugTools = function (refs) {
                         currentLevel.value = lv;
 
                         showLevelSelect.value = false;
-
-                        showHome.value = false;
 
                         isFinished.value = false;
 
@@ -494,8 +492,6 @@ window.__attachDebugTools = function (refs) {
 
                     if (typeof showLevelSelect !== "undefined") showLevelSelect.value = false;
 
-                    if (typeof showHome !== "undefined") showHome.value = false;
-
                     if (typeof isFinished !== "undefined") isFinished.value = false;
 
 
@@ -553,10 +549,6 @@ window.__attachDebugTools = function (refs) {
                         typeof currentLevel !== "undefined" ? currentLevel.value : undefined,
 
                     maxLevel: safeMaxLevel(),
-
-                    showHome:
-
-                        typeof showHome !== "undefined" ? showHome.value : undefined,
 
                     showLevelSelect:
 
@@ -1465,23 +1457,9 @@ window.__attachDebugTools = function (refs) {
 
                     try {
 
-                        if (typeof goHome === "function") {
+                        if (typeof showLevelSelect !== "undefined") showLevelSelect.value = true;
 
-                            goHome();
-
-                        } else {
-
-                            if (typeof showLevelSelect !== "undefined") showLevelSelect.value = true;
-
-                            if (typeof showLevelSelect !== "undefined") {
-
-                                // Already setting showLevelSelect to true above
-
-                            }
-
-                            if (typeof isFinished !== "undefined") isFinished.value = false;
-
-                        }
+                        if (typeof isFinished !== "undefined") isFinished.value = false;
 
                         console.log("[jpDebug] go home");
 

@@ -157,6 +157,7 @@
 | Vue `return` → `stageBestRecords` | 2026-05-24 | 模板用 `stageRecordRows` / `getStageBest*`；ref 與 `result-display-manager` 注入保留。 |
 | Vue `return` → `stageConfirmSuspendedForMentor` | 2026-05-24 | 關卡說明導師流程內部使用；模板未綁定。 |
 | `saveSlotCards.clearedCountText` | 2026-05-24 | computed 欄位全 repo 無讀；存檔卡 UI 未顯示。 |
+| `debug.js` `showHome` / `goHome` refs | 2026-05-24 | `game.js` 從未傳入；`jpDebug.home()` 改僅用 `showLevelSelect` / `isFinished` fallback。 |
 
 ### SAFE
 
