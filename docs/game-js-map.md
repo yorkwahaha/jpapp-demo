@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
 > **Last audited:** 2026-05-24 (release `26052401` context)
-> **Doc sync:** 2026-05-24 — §地圖流程（return-to-map）；§地圖顯示層；§結算畫面；存檔卡邊界
+> **Doc sync:** 2026-05-24 — mentor×map 交叉參照；§地圖流程；§地圖顯示層；§結算／存檔卡
 > **File:** `assets/js/game.js` — **~11,693 lines** (1-indexed；外移後略減)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -168,6 +168,24 @@
 | **確認窗按鈕文案** | — | 「取消」/`closeBattleConfirm`；「出發！」/`confirmAndStartBattle` | **`confirmAndStartBattle` 本體** |
 | **首頁按鈕進地圖** | `index.html` `startActiveSaveSlot`（L2088） | `home.css` `.home-start-btn` | `selectSaveSlot` / `openMap` 流程（#9/#8） |
 | **破關回地圖捲動** | `scrollToStage` → `settings-manager` `scrollStageNodeIntoView` | — | `returnToMap` 全鏈（#12） |
+| **地圖首次點關卡導師** | `selectStageFromMap` + `mentorTutorialSeen` | — | [`mentor-dialogue-map.md`](./mentor-dialogue-map.md) §地圖觸發點 |
+| **關卡確認「姐姐引導」** | `startStageWithExplanation` | `.stage-confirm-mentor-*` | mentor runtime **DO NOT TOUCH** |
+| **序章（首次 openMap）** | `checkPrologueTrigger` | `.map-mentor-overlay` | 同 mentor 文件；含 BGM 邊界 |
+
+### Mentor × 地圖／關卡確認（交叉參照）
+
+> **邊界：** 改地圖**顯示**（節點、HUD、確認窗文案）見 §地圖顯示層；改導師**何時出現、說什麼、音訊**見 [`mentor-dialogue-map.md`](./mentor-dialogue-map.md)。本節只列交會點，**不重複** runtime 細節。
+
+| 交會 | `game.js`（約） | 地圖／UI | Mentor | 文件 |
+|------|----------------|----------|--------|------|
+| 進地圖序章 | #8 `openMap` → `checkPrologueTrigger` | `showMap` + special scene | `PROLOGUE_OPENING` | mentor §序章列 |
+| 點節點 | #10 `selectStageFromMap` | → `isBattleConfirmOpen` | 首次 `STAGE_INTRO_*` / `L36_FIRST_ENTRY` | mentor §地圖點關卡 |
+| 確認窗引導 | #11 `startStageWithExplanation` | 確認窗暫藏（mentor open） | `setupMentorDialogue(skill)` | mentor §姐姐引導 |
+| 開戰 | `confirmAndStartBattle` | 關確認窗 | — | **無導師**；#33 |
+| 回地圖 | #12 `returnToMap` | `showMap` | — | **無導師**；§地圖流程 |
+| Overlay 分流 | `setupMentorDialogue` #16 | `isMapMentorOpen` if `showMap` | 否則 `isMentorModalOpen` | mentor §setupMentorDialogue |
+
+**DO NOT TOUCH（mentor×map）：** `setupMentorDialogue`、`finishMentorDialogue`、`playMentorAudioForCurrentPage`、`mentor-dialogues.v1.json`、`_resumeAfterMentor` 回調內容。
 
 ### 地圖流程（Map flow / return-to-map）
 
@@ -281,6 +299,7 @@
 | 設定／changelog | `openChangelog`, `createChangelogState` | #13 | `changelog-manager.js` |
 | 地圖 UI／HUD／確認窗文案 | `getStageFocusLabel`, `getStageNodeClass`, `map-chapters.json` | **§地圖顯示層** | `settings-manager.js`, `index.html`, `map-chapters.json` |
 | 回地圖／首頁↔地圖流程 | `returnToMap`, `openMap`, `handleEscapeToMap` | **§地圖流程** | **DO NOT TOUCH**（BGM／fanfare／旗標） |
+| 地圖／確認窗導師出現時機 | `checkPrologueTrigger`, `selectStageFromMap`, `startStageWithExplanation` | **mentor-dialogue-map** §地圖觸發點 | mentor runtime／JSON／audio **DO NOT TOUCH** |
 | 地圖／選關（流程） | `selectStageFromMap`, `confirmAndStartBattle` | #8–11 | **DO NOT TOUCH** 除非任務明示進關 |
 | 共鳴輪圖鑑 | `codexWheelSkills`, `setCodexWheelPhase` | #14, #17–19 | `spirit-codex-helpers.js`, `codex.css` |
 | 怪物圖鑑 | `monsterCodexEntries`, `buildMonsterCodexEntries` | #18 | `codex-display-utils.js` |

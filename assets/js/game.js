@@ -694,6 +694,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ NEW: PROLOGUE TRIGGER ] ----
+        /** First openMap: mentor + special scene. Resume → map BGM (see mentor-dialogue-map.md). Map-flow doc only — do not edit. */
         const checkPrologueTrigger = () => {
             if (!getStoryFlag('jpapp_seen_prologue_opening')) {
                 // Determine background
@@ -1086,7 +1087,7 @@ const _jpApp = Vue.createApp({
                 return;
             }
 
-            // [Auto-Mentor] First-time interaction trigger
+            // [Auto-Mentor] First-time map node click → mentor, then battle-confirm (mentor-dialogue-map.md).
             const stageKey = `STAGE_INTRO_${lvNum}`;
             const isManualReview = (lvNum === 36); // Special case for hidden stage
             const tutorialKey = isManualReview ? 'L36_FIRST_ENTRY' : stageKey;
@@ -1134,6 +1135,7 @@ const _jpApp = Vue.createApp({
             }
         };
 
+        /** Stage-confirm「姐姐引導」— manual mentor from confirm modal; not map-node auto-intro. */
         const startStageWithExplanation = (n) => {
             const lvNum = Number(n);
             if (!isLevelUnlocked(lvNum)) return;

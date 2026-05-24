@@ -2,7 +2,7 @@
 
 > **Purpose:** 跨檔責任邊界與 `index.html` 載入順序，搭配 [`game-js-map.md`](./game-js-map.md) 使用。  
 > **Last updated:** 2026-05-24
-> **Doc sync:** 2026-05-24 — §地圖流程（return-to-map 速查）；地圖顯示層；結算／存檔卡
+> **Doc sync:** 2026-05-24 — §想改導師在地圖／確認窗出現；地圖流程；地圖顯示層
 
 ## Script 載入順序（`index.html` → `game.js` 前）
 
@@ -61,6 +61,9 @@
 | 只改回地圖路徑（結算／逃跑／首頁進地圖） | `game-js-map.md` §地圖流程 → **§想改回地圖路徑** | `returnToMap`, `openMap`, `handleEscapeToMap` |
 | 只改地圖進關／開戰 | — | **不要**；需任務明示 `confirmAndStartBattle` / `startLevel` |
 | 只改地圖 BGM／fanfare 時序 | — | **不要**；`openMap` / `playResultFanfare` / `playBgm` 屬 audio freeze |
+| 只改導師在地圖／關卡確認出現 | [`mentor-dialogue-map.md`](./mentor-dialogue-map.md) §地圖／關卡確認觸發點 | `checkPrologueTrigger`, `selectStageFromMap`, `startStageWithExplanation` |
+| 只改導師台詞／語音／分頁 | `mentor-dialogues.v1.json` + #16 runtime | **DO NOT TOUCH** runtime／TTS／audio 除非明示 |
+| 只改導師 overlay 視覺 | `mentor.css` + `index.html` `.map-mentor-*` / `.stage-confirm-mentor-*` | 見 `css-map.md`；勿改 `setupMentorDialogue` |
 | 只改樣式 | [`css-map.md`](./css-map.md) | class 名自 `index.html` |
 
 ## 所有權矩陣（誰擁有什麼）
@@ -77,7 +80,7 @@
 | **Map display** | `map-chapters.json` + `settings-manager.js` + `index.html`（`showMap`）+ `result-display-manager`（確認窗最佳紀錄） | `game.js` 薄封裝；速查見 `game-js-map.md` §想改地圖… | **yes** — 顯示／資料／文案 |
 | **Map flow (home ↔ map ↔ result)** | `game.js` #8 `openMap`、#12 `returnToMap`、~L5225 `handleEscapeToMap` | `showLevelSelect`, `showMap`, `isFinished`；速查 §想改回地圖路徑 | **DO NOT TOUCH**（旗標＋BGM＋`saveProgression` 觸點） |
 | **Map progression / enter battle** | `game.js` #11 + #33 | `confirmAndStartBattle`, `startLevel` | **DO NOT TOUCH**（開戰） |
-| **Mentor** | `game.js` + `mentor-dialogue-helpers` + data JSON | runtime | DO NOT TOUCH |
+| **Mentor** | `game.js` #15–16 + `mentor-dialogue-helpers.js` + `mentor-dialogues.v1.json` | 地圖觸發見 `mentor-dialogue-map.md` §地圖觸發點；與 #8/#10/#11 交會 | **DO NOT TOUCH** runtime／audio |
 | **Codex wheel** | `game.js` + `spirit-codex-helpers` + `codex.css` | UI 狀態 + 動畫；**輪上技能順序**在 helpers | 改排序改 `spirit-codex-helpers.js`；RAF/拖曳仍在 game.js |
 | **Monster codex** | `codex-display-utils.js` + `game.js` computed/handlers + `enemies.v1.json` | computed 薄封裝；純組裝在 utils | 改顯示優先 utils；Vue 狀態留 game.js |
 | **Battle loop** | `game.js` | 唯一實作 | DO NOT TOUCH |
