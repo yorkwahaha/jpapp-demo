@@ -500,6 +500,9 @@ const _jpApp = Vue.createApp({
 
         const getMapNodeStyle = (node) => window.JPAPPSettingsManager.getMapNodePositionStyle(node);
 
+        // Map display helpers below delegate to settings-manager / result-display-manager.
+        // Battle entry is NOT here — see confirmAndStartBattle → startLevel (#33).
+
         let _pendingAbilityIds = null;
         let applyUnlockedAbilityIds = (ids) => { _pendingAbilityIds = Array.isArray(ids) ? ids : []; };
         const normalizeUnlockedSkillIdList = (ids = []) => {
@@ -1005,6 +1008,8 @@ const _jpApp = Vue.createApp({
             isSaveSlotPanelOpen.value = true;
         };
 
+        // --- Map display bindings (scroll / node class / stage focus labels) ---
+
         const scrollToStage = (n) => window.JPAPPSettingsManager.scrollStageNodeIntoView(n, Vue.nextTick);
 
         const isLevelUnlocked = (n) => unlockedLevels.value.includes(Number(n));
@@ -1068,6 +1073,7 @@ const _jpApp = Vue.createApp({
             playSfx('click');
         };
 
+        /** Map node click: opens battle-confirm overlay only (may intercept mentor). Does not call startLevel. */
         const selectStageFromMap = (n) => {
             const lvNum = Number(n);
             if (!isLevelUnlocked(lvNum)) {
@@ -1112,6 +1118,7 @@ const _jpApp = Vue.createApp({
             isBattleConfirmOpen.value = true;
         };
 
+        /** Battle entry from map — DO NOT TOUCH for display-only / map-docs tasks. */
         const confirmAndStartBattle = () => {
             if (selectedStageToConfirm.value !== null) {
                 const lv = selectedStageToConfirm.value;

@@ -2,7 +2,7 @@
 
 > **Purpose:** 跨檔責任邊界與 `index.html` 載入順序，搭配 [`game-js-map.md`](./game-js-map.md) 使用。  
 > **Last updated:** 2026-05-24
-> **Doc sync:** 2026-05-24 — 結算速查列（`game-js-map.md` §想改星等…）；Result display 寫入邊界註記
+> **Doc sync:** 2026-05-24 — 地圖顯示層速查（`game-js-map.md` §想改地圖…）；結算／存檔卡邊界
 
 ## Script 載入順序（`index.html` → `game.js` 前）
 
@@ -17,7 +17,7 @@
 | early | `hero-status.js` | `heroBuffs`, DOM pills | 擬聲詞 buff UI |
 | early | `battle-log.js` | `pushBattleLog` (global) | 戰鬥訊息列 |
 | early | `audio-tts.js` | TTS / `playTtsKey` | 題目朗讀、WebSpeech |
-| before game | `settings-manager.js` | `JPAPPSettingsManager` | 設定、地圖 UI、音量曲線 |
+| before game | `settings-manager.js` | `JPAPPSettingsManager` | 設定、**地圖顯示**（節點 class／焦點字／座標）、音量曲線 |
 | before game | `storage-manager.js` | `JPAPPStorageManager` | mentor seen、mistakes、audio debug pos |
 | before game | `codex-display-utils.js` | `JPAPPCodexDisplayUtils` | 圖鑑格式化、怪物圖鑑 entries 組裝（`buildMonsterCodexEntries`）、圖片 fallback |
 | before game | `spirit-codex-helpers.js` | `JPAPPSpiritCodexHelpers` | 共鳴輪視覺排序（`orderCodexWheelSkillsForResonance`）、mastery 樣式 |
@@ -57,6 +57,8 @@
 | 只改全關卡成績表列 | `buildStageRecordTableRows` + `index.html` stage-records modal | 勿改 `bestGrades` 寫入（#36） |
 | 只改等級獎勵浮層文案 | `RESULT_LEVEL_MILESTONE_REWARDS` + `index.html` L3984–4002 | 勿改 `grantRewards` 內 milestone 篩選 |
 | 只改結算 EXP 動畫／發獎 | — | **不要**；需任務明示 `grantRewards` |
+| 只改地圖顯示（背景／節點／HUD／確認窗） | `game-js-map.md` §地圖顯示層 → **§想改地圖…速查** | `map-chapters.json`, `getStageFocusLabel`, `getStageNodeClass` |
+| 只改地圖進關／BGM／回地圖流程 | — | **不要**；需任務明示 `openMap` / `confirmAndStartBattle` / `returnToMap` |
 | 只改樣式 | [`css-map.md`](./css-map.md) | class 名自 `index.html` |
 
 ## 所有權矩陣（誰擁有什麼）
@@ -70,7 +72,8 @@
 | **Global SP** | `game.js` L61–97 | 唯一實作 | defer 外移 |
 | **Save / slots** | `game.js` + `storage-manager`（部分 key） | 主邏輯 | high-risk |
 | **Spirit affinity (`skillMastery`)** | `game.js` #5, `addSkillMasteryProgress` | `jpapp_progression_v1` 欄位 `skillMastery`；codex 顯示經 `spirit-codex-helpers` | high-risk（規則）；欄位已精簡 |
-| **Map progression** | `game.js` + `settings-manager` | 整合 | high-risk |
+| **Map display** | `map-chapters.json` + `settings-manager.js` + `index.html`（`showMap`）+ `result-display-manager`（確認窗最佳紀錄） | `game.js` 薄封裝；速查見 `game-js-map.md` §想改地圖… | **yes** — 顯示／資料／文案 |
+| **Map progression / enter battle** | `game.js` #8–11 + #33 | `selectStageFromMap`, `openMap`, `confirmAndStartBattle`, `startLevel` | **DO NOT TOUCH**（流程＋BGM＋開戰） |
 | **Mentor** | `game.js` + `mentor-dialogue-helpers` + data JSON | runtime | DO NOT TOUCH |
 | **Codex wheel** | `game.js` + `spirit-codex-helpers` + `codex.css` | UI 狀態 + 動畫；**輪上技能順序**在 helpers | 改排序改 `spirit-codex-helpers.js`；RAF/拖曳仍在 game.js |
 | **Monster codex** | `codex-display-utils.js` + `game.js` computed/handlers + `enemies.v1.json` | computed 薄封裝；純組裝在 utils | 改顯示優先 utils；Vue 狀態留 game.js |

@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
 > **Last audited:** 2026-05-24 (release `26052401` context)
-> **Doc sync:** 2026-05-24 — §結算畫面責任地圖；§想改星等…速查；manager 內 `stageRecordRows` / `calculatedGrade` 邊界註解
+> **Doc sync:** 2026-05-24 — §地圖顯示層 + §想改地圖…速查；§結算畫面；存檔卡／result display 邊界
 > **File:** `assets/js/game.js` — **~11,693 lines** (1-indexed；外移後略減)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -117,6 +117,58 @@
 | 刪槽 | `clearSaveSlotStorage`, `confirmDeleteSaveSlot` |
 | 選槽／新開局 | `selectSaveSlot`, `startNewGameFromSlot`, `setActiveSaveSlotId` |
 
+### 地圖顯示層（Map display / HUD / stage confirm）
+
+> **邊界：** 本節涵蓋 `showMap` 畫面、章節背景、節點外觀、地圖 HUD、關卡確認視窗的**顯示與文案**。**勿**把顯示任務擴散到 `confirmAndStartBattle` → `startLevel`（#33）、`initGame`、BGM lifecycle（`openMap` / `playBgm`）、`saveProgression` 寫入、導師 runtime（#16）。
+
+| 層 | 位置 | 責任 | 可改？ |
+|----|------|------|--------|
+| **章節／區段資料** | `assets/data/map-chapters.json` | 各 `segment.background`、`title`、`nodes` 座標、`landmark`、`themeKey`、`mapBgm` 路徑 | **yes**（資料） |
+| **關卡 meta（焦點文案來源）** | `levels.v1.json` + `skills.v1.json` | `focusParticle` / `focusLabel` / boss 旗標；供確認窗與節點顯示 | **yes**（data） |
+| **地圖顯示 helper（優先改這裡）** | `settings-manager.js` | `getMapNodePositionStyle`、`getStageNodeClassForMap`、`computeStageFocus*Display`、`isMapSegmentIndexUnlocked`、`scrollStageNodeIntoView` | **yes**（節點 class、焦點字、座標樣式） |
+| **歷史最佳（確認窗）** | `result-display-manager.js` | `getStageBestRecord`、`getStageBestStarsDisplay`、`getStageBestTimeText` | **yes**（顯示）；寫入在 `updateStageBestRecord`（#38） |
+| **Vue 薄封裝** | `game.js` ~L484–501、~L1008–1032 | `getMapNodeStyle`、`getStageNodeClass`、`getStageFocus*`、`scrollToStage`、`activeSegment` | **yes**（接線）；勿順手改下方流程函式 |
+| **地圖 UI state** | `game.js` #6 refs | `showMap`、`mapChapters`、`activeChapter`、`selectedSegmentIdx`、`isBattleConfirmOpen`、`selectedStageToConfirm` | 顯示綁定 **defer**；進度 ref **no** |
+| **地圖模板** | `index.html` `v-else-if="showMap"` ~L2178+ | 背景圖、節點、`map-hud-*`、章節下拉、行動版 HUD | **yes**（結構／文案／a11y） |
+| **關卡確認窗模板** | `index.html` `isBattleConfirmOpen` ~L2548–2633 | STAGE 標題、焦點助詞、最佳紀錄、取消／出發 | **yes**（文案／a11y）；「出發」仍綁 `confirmAndStartBattle` |
+| **氛圍動畫** | `assets/js/map-ambient.js` | `MapAmbient.activate/deactivate`（背景 sway class） | defer（與章節切換耦合） |
+| **樣式** | `index.html` 內嵌 `.map-*`（~L348+）+ `styles.css` `.map-*` / `.stage-confirm-*` | 節點、HUD、確認窗玻璃態 | 見 `css-map.md`；本輪不改視覺 |
+
+**畫面切換（非純 display，僅對照）：**
+
+| 旗標 | 玩家看到 | 常見進入點 |
+|------|----------|------------|
+| `showLevelSelect` | 首頁／封面 | 預設、戰敗、部分設定返回 |
+| `showMap` | 世界地圖 | `openMap`（#8）、破關 `returnToMap`（#12）、選槽後 `startActiveSaveSlot` 鏈 |
+| 戰鬥中 | 戰鬥 HUD | `!showLevelSelect && !showMap && currentLevel > 0` |
+
+**顯示 vs 進關流程（符號分界）：**
+
+| 符號 | 類型 | 說明 |
+|------|------|------|
+| `selectStageFromMap` | 流程＋顯示觸發 | 點節點 → 可能插導師 → 開 `isBattleConfirmOpen`；**不開戰** |
+| `closeBattleConfirm` | 純 UI | 關確認窗 |
+| `confirmAndStartBattle` | **進關入口** | `startLevel`；顯示任務 **DO NOT TOUCH** |
+| `handleMapTabClick` / `jumpToMapSegment` | 流程 | 切區段 + `saveProgression` + `playBgm`；非純 display |
+| `openMap` | 流程＋BGM | 進地圖；含 map BGM 首播（#8） |
+
+### 想改地圖背景／HUD／關卡確認／首頁進地圖 — 速查
+
+| 想改什麼 | 先看（優先順序） | 模板／樣式 | 勿碰 |
+|----------|------------------|------------|------|
+| **區段背景圖** | `map-chapters.json` → `segments[].background` | `index.html` `.map-base-img` `:src` | `openMap` BGM 邏輯 |
+| **節點座標／地標字** | `map-chapters.json` → `nodes`（`desktopX/Y`、`landmark`） | 節點 `getMapNodeStyle(node)` | — |
+| **節點鎖／當前／已通關 class** | `settings-manager.js` `getStageNodeClassForMap`；模板亦用 `state-unopened/opened/current` | `.map-stage-node.*`（`index.html` 內嵌 + `styles.css`） | `unlockedLevels` 寫入（#6／`grantRewards`） |
+| **節點上 S 評價徽章** | `bestGrades` + `getGradeColor`（`game-utils.js`） | 節點 `grade-badge` L2231+ | `bestGrades` 寫入（#36） |
+| **L36 封印字樣** | — | `index.html` `sRankCount/35 封印` | `isAllStagesSRank` 解鎖邏輯 |
+| **章節下拉標題／鎖定文案** | `map-chapters.json` `segments[].title` | `.map-dropdown-*` L2314+ | `jumpToMapSegment` 內 `saveProgression` |
+| **地圖 HUD（HP/SP/等級/按鈕）** | `index.html` `.map-hud-*`（desktop L2369+、mobile L2434+） | 同上 + `styles.css` | 戰鬥 HUD `#hud` |
+| **關卡確認窗標題／焦點助詞** | `settings-manager.js` `computeStageFocus*`；`levels.v1.json` | `.stage-confirm-*` L2556+ | `startStageWithExplanation` 導師鏈 |
+| **確認窗歷史最佳星／時間** | `result-display-manager.js` `getStageBest*` | `.stage-confirm-record` | `updateStageBestRecord` |
+| **確認窗按鈕文案** | — | 「取消」/`closeBattleConfirm`；「出發！」/`confirmAndStartBattle` | **`confirmAndStartBattle` 本體** |
+| **首頁按鈕進地圖** | `index.html` `startActiveSaveSlot`（L2088） | `home.css` `.home-start-btn` | `selectSaveSlot` / `openMap` 流程（#9/#8） |
+| **破關回地圖捲動** | `scrollToStage` → `settings-manager` `scrollStageNodeIntoView` | — | `returnToMap` 全鏈（#12） |
+
 ### 結算畫面（Result display）責任地圖
 
 > **邊界：** 本節涵蓋破關後 `monsterResultShown` 結算 modal、關卡紀錄表、等級獎勵浮層。**勿**改 `grantRewards` 內 EXP／`processLevelUp`／進度寫入／知識卡排程／`playResultFanfare` 時序（#36）。
@@ -167,7 +219,8 @@
 | 存檔卡顯示（四行摘要、共鳴率文案） | `saveSlotCards`, `calculateSaveSlotResonanceText` | **#5b** | `index.html`, `home.css`, `game-utils.js` |
 | 存檔槽流程／新開局／刪檔 | `openSaveSlotPanel`, `selectSaveSlot` | #5, #7, #9 | `game.js`（高風險） |
 | 設定／changelog | `openChangelog`, `createChangelogState` | #13 | `changelog-manager.js` |
-| 地圖／選關 | `selectStageFromMap`, `openMap` | #8–11 | `map-chapters.json`, `settings-manager.js` |
+| 地圖 UI／HUD／確認窗文案 | `getStageFocusLabel`, `getStageNodeClass`, `map-chapters.json` | **§地圖顯示層** | `settings-manager.js`, `index.html`, `map-chapters.json` |
+| 地圖／選關（流程） | `selectStageFromMap`, `openMap`, `confirmAndStartBattle` | #8–11 | **DO NOT TOUCH** 除非任務明示進關／BGM |
 | 共鳴輪圖鑑 | `codexWheelSkills`, `setCodexWheelPhase` | #14, #17–19 | `spirit-codex-helpers.js`, `codex.css` |
 | 怪物圖鑑 | `monsterCodexEntries`, `buildMonsterCodexEntries` | #18 | `codex-display-utils.js` |
 | 結算卡文案（評價、星等、時間字串） | `calculatedGrade`, `stageStarDisplay`, `formatStageClearTime` | **#38**, `result-display-manager.js` | `result-display-manager.js`, `game-utils.js` |
@@ -187,7 +240,8 @@
 | 首頁 UI／版本顯示 | #13, #22 | `index.html`, `home.css`, `changelog-manager.js` | 低風險；勿動 `showLevelSelect` 切換邏輯除非任務要求 |
 | 存檔卡顯示格式 | #5b | `game-utils.js`, `home.css` | 勿碰 #5/#9 寫入與刪槽 |
 | 存檔 / 多槽 / 新開局（流程） | #5, #7, #9 | `storage-manager.js` | **high-risk** |
-| 地圖 / 選關 / 回地圖 | #8–11 | `map-chapters.json`, `settings-manager.js` | 導師觸發鏈結 |
+| 地圖顯示（背景／節點／HUD／確認窗） | §地圖顯示層 | `map-chapters.json`, `settings-manager.js`, `index.html` | 勿改 `confirmAndStartBattle` / `startLevel` |
+| 地圖 / 選關 / 回地圖（流程） | #8–11 | `map-chapters.json`, `mentor-dialogues` | 導師／BGM／存檔寫入 — **high-risk** |
 | 知識卡 / 解鎖演出 | #12 | `index.html` overlay | 與 `grantRewards` 串接 |
 | 共鳴輪（小助靈圖鑑） | #14, #17–19 | `spirit-codex-helpers.js` | 輪上技能順序：`orderCodexWheelSkillsForResonance`（已外移） |
 | 怪物圖鑑 | #18 | `codex-display-utils.js`, `enemies.v1.json` | 顯示優先 utils |

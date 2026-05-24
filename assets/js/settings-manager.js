@@ -183,6 +183,8 @@
             segmentIdxRef.value = Math.floor((maxUnlocked - 1) / 5);
         },
 
+        // --- Map display (read-only formatting for map HUD / stage-confirm; no battle start) ---
+
         computeStageFocusParticleDisplay: function(n, LEVEL_CONFIG, skillsAll) {
             var nm = Number(n);
             var conf = LEVEL_CONFIG[nm];

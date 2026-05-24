@@ -2548,6 +2548,7 @@
             <div v-if="isBattleConfirmOpen"
                 class="battle-confirm-overlay fixed inset-0 z-[100] flex items-center justify-center px-8 bg-slate-950/[0.05] backdrop-blur-[2px]"
                 :class="{ 'opacity-0 pointer-events-none': isMapMentorOpen || isMentorModalOpen }"
+                role="dialog" aria-modal="true" aria-labelledby="stage-confirm-heading"
                 @click="closeBattleConfirm">
 
                 <div class="w-full max-w-xs confirm-modal-glass stage-confirm-modal rounded-[2rem] overflow-hidden" @click.stop
@@ -2558,7 +2559,8 @@
                             <div
                                 class="stage-confirm-stage-label inline-block px-2.5 py-0.5 bg-amber-500/10 rounded-lg border border-amber-500/20 mb-1">
 
-                                <p class="text-amber-400 text-[10px] font-black uppercase tracking-[0.2em]">STAGE {{
+                                <p id="stage-confirm-heading" class="text-amber-400 text-[10px] font-black uppercase tracking-[0.2em]">
+                                    <span class="sr-only">關卡 </span>STAGE {{
 
                                     String(selectedStageToConfirm).padStart(2, '0') }}</p>
 
@@ -2571,10 +2573,12 @@
 
                             </div>
 
-                            <p class="stage-confirm-focus-label">{{ getStageFocusLabel(selectedStageToConfirm) }}</p>
+                            <p class="stage-confirm-focus-label">
+                                <span class="sr-only">本關焦點：</span>{{ getStageFocusLabel(selectedStageToConfirm) }}</p>
 
                             <div class="stage-confirm-record"
-                                :class="{ 'is-empty': !getStageBestRecord(selectedStageToConfirm) }">
+                                :class="{ 'is-empty': !getStageBestRecord(selectedStageToConfirm) }"
+                                aria-label="本關最佳紀錄">
                                 <template v-if="getStageBestRecord(selectedStageToConfirm)">
                                     <div class="stage-confirm-stars">{{
                                         getStageBestStarsDisplay(selectedStageToConfirm) }}</div>
@@ -2612,15 +2616,17 @@
 
                         <div class="flex items-center p-4 gap-2 bg-black/10">
 
-                            <button @click="closeBattleConfirm"
-                                class="basis-1/3 px-6 py-2.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 rounded-xl text-white/60 text-xs font-black transition-all active:scale-95 uppercase tracking-widest">
+                            <button @click="closeBattleConfirm" type="button"
+                                class="basis-1/3 px-6 py-2.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 rounded-xl text-white/60 text-xs font-black transition-all active:scale-95 uppercase tracking-widest"
+                                aria-label="取消，關閉關卡確認">
 
                                 取消
 
                             </button>
 
-                            <button @click="confirmAndStartBattle"
-                                class="basis-2/3 px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-sm font-black rounded-xl transition-all active:scale-95 shadow-[0_4px_15px_rgba(245,158,11,0.3)] border border-amber-400/60">
+                            <button @click="confirmAndStartBattle" type="button"
+                                class="basis-2/3 px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-sm font-black rounded-xl transition-all active:scale-95 shadow-[0_4px_15px_rgba(245,158,11,0.3)] border border-amber-400/60"
+                                aria-label="出發，開始本關戰鬥">
 
                                 出發！
 
