@@ -2,7 +2,7 @@
 
 > **Purpose:** 跨檔責任邊界與 `index.html` 載入順序，搭配 [`game-js-map.md`](./game-js-map.md) 使用。  
 > **Last updated:** 2026-05-24
-> **Doc sync:** 2026-05-24 — `skillCorrectCounts` 已自 runtime 清除；現役為 `skillMastery`
+> **Doc sync:** 2026-05-24 — 怪物圖鑑 entries 組裝移至 `codex-display-utils.js`
 
 ## Script 載入順序（`index.html` → `game.js` 前）
 
@@ -19,7 +19,7 @@
 | early | `audio-tts.js` | TTS / `playTtsKey` | 題目朗讀、WebSpeech |
 | before game | `settings-manager.js` | `JPAPPSettingsManager` | 設定、地圖 UI、音量曲線 |
 | before game | `storage-manager.js` | `JPAPPStorageManager` | mentor seen、mistakes、audio debug pos |
-| before game | `codex-display-utils.js` | `JPAPPCodexDisplayUtils` | 圖鑑格式化、圖片 fallback |
+| before game | `codex-display-utils.js` | `JPAPPCodexDisplayUtils` | 圖鑑格式化、怪物圖鑑 entries 組裝（`buildMonsterCodexEntries`）、圖片 fallback |
 | before game | `spirit-codex-helpers.js` | `JPAPPSpiritCodexHelpers` | 共鳴輪排序、mastery 樣式 |
 | before game | `audio-debug-manager.js` | `JPAPPAudioDebugManager` | 音訊診斷 overlay |
 | before game | `dev-tools.js` | `JPAPPDevToolsManager` | DevTools / FPS |
@@ -55,7 +55,7 @@
 | **Map progression** | `game.js` + `settings-manager` | 整合 | high-risk |
 | **Mentor** | `game.js` + `mentor-dialogue-helpers` + data JSON | runtime | DO NOT TOUCH |
 | **Codex wheel** | `game.js` + `spirit-codex-helpers` + `codex.css` | UI 狀態 + 動畫 | wheel 可拆；template 在 HTML |
-| **Monster codex** | `game.js` computed + `enemies.v1.json` | 列表組裝 | 易拆 helper |
+| **Monster codex** | `codex-display-utils.js` + `game.js` computed/handlers + `enemies.v1.json` | computed 薄封裝；純組裝在 utils | 改顯示優先 utils；Vue 狀態留 game.js |
 | **Battle loop** | `game.js` | 唯一實作 | DO NOT TOUCH |
 | **Question content** | `earlyGamePools.v1.js` | 消費 pool | 改 data，不改 gen 除非允許 |
 | **Question generation** | `game.js` L7961+ | 唯一實作 | DO NOT TOUCH |

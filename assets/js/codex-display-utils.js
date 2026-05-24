@@ -168,6 +168,75 @@
         },
 
         /**
+         * Format monster spawn stage line for codex detail.
+         * @param {number[]} spawnLevels
+         * @param {Object} levelConfig keyed by stage number
+         * @returns {string}
+         */
+        formatMonsterSpawnStageText: function(spawnLevels, levelConfig) {
+            const levels = Array.isArray(spawnLevels) ? spawnLevels : [];
+            if (!levels.length) return '出現關卡：未記錄';
+            const configMap = levelConfig && typeof levelConfig === 'object' ? levelConfig : {};
+            return `出現關卡：${levels.map(lv => {
+                const config = configMap[Number(lv)];
+                const label = config?.levelName || config?.name || `Stage ${lv}`;
+                return `Lv.${lv} ${label}`;
+            }).join(' / ')}`;
+        },
+
+        /**
+         * Build one monster codex list/detail entry (pure; no Vue).
+         * @param {Object} enemy
+         * @param {number} idx
+         * @param {{ clearedLevels?: number[], levelConfig?: Object, defaultMonsterSprite?: string }} options
+         * @returns {Object}
+         */
+        buildMonsterCodexEntry: function(enemy, idx, options = {}) {
+            const {
+                clearedLevels = [],
+                levelConfig = {},
+                defaultMonsterSprite = window.JPAPP_CONSTANTS?.DEFAULT_IMAGE_PATHS?.monsterSprite || ''
+            } = options;
+            const spawnLevels = Array.isArray(enemy?.spawnLevels) ? enemy.spawnLevels : [];
+            const enemyStats = enemy?.enemyStats || {};
+            const damage = enemyStats.damage || {};
+            const hp = enemyStats.hp ?? enemy?.hpMax ?? null;
+            const damageMin = typeof damage === 'number' ? damage : (damage.min ?? enemy?.attackDamageMin ?? null);
+            const damageMax = typeof damage === 'number' ? damage : (damage.max ?? enemy?.attackDamageMax ?? null);
+            const attackIntervalMs = enemyStats.attackIntervalMs ?? enemy?.attackIntervalMs ?? null;
+            const evasionRate = enemyStats.evasionRate ?? enemy?.evasionRate ?? null;
+            const cleared = Array.isArray(clearedLevels) ? clearedLevels : [];
+            const isUnlocked = spawnLevels.some(lv => cleared.includes(Number(lv)));
+
+            return {
+                id: enemy?.id || `monster-${idx}`,
+                sortLevel: spawnLevels[0] ?? 999,
+                isUnlocked,
+                name: this.formatMonsterName(enemy?.name),
+                image: enemy?.image || defaultMonsterSprite,
+                spawnLevels,
+                stageText: this.formatMonsterSpawnStageText(spawnLevels, levelConfig),
+                traitText: this.formatMonsterTrait(enemy?.trait, enemy?.description),
+                hpText: this.formatMonsterCodexValue(hp),
+                damageText: this.formatMonsterDamageRange(damageMin, damageMax),
+                evasionText: this.formatMonsterEvasion(evasionRate),
+                intervalText: this.formatMonsterAttackInterval(attackIntervalMs)
+            };
+        },
+
+        /**
+         * Build sorted monster codex entries for the map HUD modal.
+         * @param {Object[]} enemies
+         * @param {{ clearedLevels?: number[], levelConfig?: Object, defaultMonsterSprite?: string }} options
+         * @returns {Object[]}
+         */
+        buildMonsterCodexEntries: function(enemies, options = {}) {
+            return (Array.isArray(enemies) ? enemies : [])
+                .map((enemy, idx) => this.buildMonsterCodexEntry(enemy, idx, options))
+                .sort((a, b) => a.sortLevel - b.sortLevel || a.name.localeCompare(b.name, 'zh-Hant'));
+        },
+
+        /**
          * Get Skill Type Label
          * @param {string} type 
          * @returns {string}

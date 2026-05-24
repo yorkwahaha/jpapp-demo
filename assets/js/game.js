@@ -3070,45 +3070,15 @@ const _jpApp = Vue.createApp({
         const getSkillMasteryStyle = (skillId) => spiritCodexHelpers.getMasteryStyle(getSkillMastery(skillId));
 
         const monsterCodexEntries = computed(() => {
-            return (ENEMIES.value || []).map((enemy, idx) => {
-                const spawnLevels = Array.isArray(enemy.spawnLevels) ? enemy.spawnLevels : [];
-                const enemyStats = enemy.enemyStats || {};
-                const damage = enemyStats.damage || {};
-                const hp = enemyStats.hp ?? enemy.hpMax ?? null;
-                const damageMin = typeof damage === 'number' ? damage : (damage.min ?? enemy.attackDamageMin ?? null);
-                const damageMax = typeof damage === 'number' ? damage : (damage.max ?? enemy.attackDamageMax ?? null);
-                const attackIntervalMs = enemyStats.attackIntervalMs ?? enemy.attackIntervalMs ?? null;
-                const evasionRate = enemyStats.evasionRate ?? enemy.evasionRate ?? null;
-                const isUnlocked = spawnLevels.some(lv =>
-                    clearedLevels.value.includes(Number(lv))
-                );
-
-                return {
-                    id: enemy.id || `monster-${idx}`,
-                    sortLevel: spawnLevels[0] ?? 999,
-                    isUnlocked,
-                    name: window.JPAPPCodexDisplayUtils.formatMonsterName(enemy.name),
-                    image: enemy.image || DEFAULT_IMAGE_PATHS.monsterSprite,
-                    spawnLevels,
-                    stageText: (() => {
-                        if (!spawnLevels.length) return '出現關卡：未記錄';
-                        return `出現關卡：${spawnLevels.map(lv => {
-                            const config = LEVEL_CONFIG.value?.[Number(lv)];
-                            const label = config?.levelName || config?.name || `Stage ${lv}`;
-                            return `Lv.${lv} ${label}`;
-                        }).join(' / ')}`;
-                    })(),
-                    traitText: window.JPAPPCodexDisplayUtils.formatMonsterTrait(enemy.trait, enemy.description),
-                    hpText: window.JPAPPCodexDisplayUtils.formatMonsterCodexValue(hp),
-                    damageText: window.JPAPPCodexDisplayUtils.formatMonsterDamageRange(damageMin, damageMax),
-                    evasionText: window.JPAPPCodexDisplayUtils.formatMonsterEvasion(evasionRate),
-                    intervalText: window.JPAPPCodexDisplayUtils.formatMonsterAttackInterval(attackIntervalMs)
-                };
-            }).sort((a, b) => a.sortLevel - b.sortLevel || a.name.localeCompare(b.name, 'zh-Hant'));
+            const codexDisplay = window.JPAPPCodexDisplayUtils;
+            const buildEntries = codexDisplay?.buildMonsterCodexEntries;
+            if (typeof buildEntries !== 'function') return [];
+            return buildEntries.call(codexDisplay, ENEMIES.value, {
+                clearedLevels: clearedLevels.value,
+                levelConfig: LEVEL_CONFIG.value,
+                defaultMonsterSprite: DEFAULT_IMAGE_PATHS.monsterSprite
+            });
         });
-
-
-
 
         const selectedMonsterCodexEntry = computed(() => {
             if (!monsterCodexEntries.value.length) return null;

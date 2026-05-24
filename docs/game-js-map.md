@@ -1,8 +1,8 @@
 # JPAPP `game.js` Code Map
 
 > **Last audited:** 2026-05-24 (release `26052401` context)
-> **Doc sync:** 2026-05-24 — `mapFallback` 常數已自 `game-constants.js` 移除
-> **File:** `assets/js/game.js` — **~11,803 lines** (1-indexed；隨 cleanup 略減)
+> **Doc sync:** 2026-05-24 — 怪物圖鑑 entries 組裝外移至 `codex-display-utils.js`
+> **File:** `assets/js/game.js` — **~11,771 lines** (1-indexed；隨 cleanup 略減)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
 
@@ -40,7 +40,7 @@
 | 13 | **Mentor — state & fallbacks** | 1614–1882 | mentor refs、inline `mentorDialogueHelpers` fallback | **High** | `mentorTutorialSeen`, `isMentorModalOpen` | `mentor-dialogue-helpers.js` | **no** | — |
 | 14 | **Mentor — dialogue runtime** | 1883–2239 | setup/play/stop、typing、skip、video | **DO NOT TOUCH** | `setupMentorDialogue`, `playMentorAudioForCurrentPage`, `finishMentorDialogue` | `audio-tts.js`, `mentor-dialogue-map.md` | **no** | 導師全流程、iOS 音訊 |
 | 15 | **Codex — wheel logic & UI** | 2240–3086 | computed、動畫、拖曳、detail 頁 | Low–Med | `codexWheelSkills`, `setCodexWheelPhase`, `openCodexDetail` | `codex.css`, `index.html` codex modal | defer | 共鳴輪旋轉、詳情、鎖定 |
-| 16 | **Codex — monster index** | 3087–3154 | `monsterCodexEntries`、選取 | Low | `monsterCodexEntries`, `openMonsterCodex` | `enemies.v1.json`, `codex-display-utils.js` | **yes** | 怪物圖鑑列表/詳情 |
+| 16 | **Codex — monster index** | 3072–3104 | `monsterCodexEntries` computed（薄）、選取／開關 | Low | `monsterCodexEntries`, `openMonsterCodex`, `buildMonsterCodexEntries` | `enemies.v1.json`, `codex-display-utils.js` | **yes** | 怪物圖鑑列表/詳情 |
 | 17 | **Codex — global keys** | 3180–3190 | Escape 關閉 codex | Low | `isCodexOpen`, `keydown` | — | **yes** | Esc 關閉 |
 | 18 | **Data load & abilities** | 3192–3399 | `loadGameData`、abilities fetch、codex format 薄封裝 | Low–Med | `loadGameData`, `skillsAll`, `formatSkill` | `skills.v1.json`, `abilities.v1.json` | defer | 開局資料齊全 |
 | 19 | **Battle skills (onomatope)** | 3400–3730 | `castAbility`, turn buffs、`applyTurnLogic` | Med | `castAbility`, `heroBuffs`, `pittariActive` | `hero-status.js`, `abilities.v1.json` | defer | 技能施放、buff 回合 |
@@ -101,7 +101,7 @@
 | Item | game.js lines | Proposed file | Est. lines | Depends on |
 |------|---------------|---------------|------------|------------|
 | ~~移除未使用 codex format 薄封裝~~ | — | — | — | **已完成**（2026-05-24） |
-| Monster codex computed | 3087–3154 | `monster-codex-helpers.js` | ~70 | `ENEMIES`, `LEVEL_CONFIG`, `clearedLevels` |
+| ~~Monster codex entries builder~~ | — | `codex-display-utils.js` | ~75 | **已完成**（2026-05-24）：`buildMonsterCodexEntries` / `buildMonsterCodexEntry` / `formatMonsterSpawnStageText`；game.js 保留 Vue computed + UI handlers |
 | Codex wheel 排序純函式 | 2281–2318 | 併入 `spirit-codex-helpers.js` | ~40 | skills 陣列 |
 | `formatAudioDebugValue` + debug actions | 8246–8571 | 擴 `audio-debug-manager.js` | ~150 | audio refs（**不**動播放核心） |
 
@@ -159,6 +159,7 @@
 | `saveSlotCards.clearedCountText` | 2026-05-24 | computed 欄位全 repo 無讀；存檔卡 UI 未顯示。 |
 | `debug.js` `showHome` / `goHome` refs | 2026-05-24 | `game.js` 從未傳入；`jpDebug.home()` 改僅用 `showLevelSelect` / `isFinished` fallback。 |
 | `debug.js` 舊 skill reset refs | 2026-05-24 | 移除 `selectedAnswers`、`currentQuestionIndex`、`questionIndex`、`isCorrect`、`showResult` 解構與 no-op 重置；現役為 `userAnswers` / `hasSubmitted` / `questions`。 |
+| Monster codex inline map/sort | 2026-05-24 | `monsterCodexEntries` 內 ~35 行組裝邏輯外移；`game.js` computed 改呼叫 `JPAPPCodexDisplayUtils.buildMonsterCodexEntries`。 |
 
 ### SAFE
 
