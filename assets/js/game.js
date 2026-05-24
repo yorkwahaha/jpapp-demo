@@ -384,7 +384,6 @@ const _jpApp = Vue.createApp({
                 statusText: isEmpty ? '空存檔' : '已有進度',
                 playerLevelText: isEmpty ? '-' : `Lv.${slot.playerLevel || 1}`,
                 highestUnlockedText: isEmpty ? '-' : `第 ${slot.highestUnlockedLevel || 1} 關`,
-                clearedCountText: isEmpty ? '-' : `${slot.clearedCount || 0}`,
                 resonanceText: calculateSaveSlotResonanceText(slotId, isEmpty),
                 lastPlayedText: isEmpty ? '尚未遊玩' : formatSaveSlotTime(slot.lastPlayedAt)
             };
@@ -11763,11 +11762,11 @@ const _jpApp = Vue.createApp({
 
             selectStageFromMap, startStageWithExplanation, returnToMap,
 
-            newUnlockLv, bestGrades, stageBestRecords, getGradeColor, sRankCount,
+            newUnlockLv, bestGrades, getGradeColor, sRankCount,
 
             mapChapters, activeChapter, getMapNodeStyle, selectedSegmentIdx, isSegmentUnlocked, jumpToMapSegment, isMapDropdownOpen,
 
-            isBattleConfirmOpen, selectedStageToConfirm, stageConfirmSuspendedForMentor, closeBattleConfirm, confirmAndStartBattle,
+            isBattleConfirmOpen, selectedStageToConfirm, closeBattleConfirm, confirmAndStartBattle,
 
             isMapMentorOpen,
 
