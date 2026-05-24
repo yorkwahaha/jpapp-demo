@@ -62,7 +62,7 @@
 | 只改地圖進關／開戰 | — | **不要**；需任務明示 `confirmAndStartBattle` / `startLevel` |
 | 只改地圖 BGM／fanfare 時序 | — | **不要**；`openMap` / `playResultFanfare` / `playBgm` 屬 audio freeze |
 | 只改導師在地圖／關卡確認出現 | `mentor-dialogue-map.md` §地圖觸發點 + §觸發路由 | `checkPrologueTrigger`, `selectStageFromMap`, `startStageWithExplanation` |
-| 只改導師台詞（JSON key） | `mentor-dialogues.v1.json` §台詞資料來源 | 對照 `MAIN_ENDING_FINALE` vs `FINAL_ENDING` 等待確認項 |
+| 只改導師台詞（JSON key） | `mentor-dialogues.v1.json` §台詞資料來源 | **已確認** key mismatch：`MAIN_ENDING_FINALE`（程式）↔ `FINAL_ENDING`（JSON）；見 `mentor-dialogue-map.md` §已確認 |
 | 只改結局／開戰前導師 | `mentor-dialogue-map.md` §Ending／§initGame | `checkGlobalEndingTriggers`, `triggerMentorDialogue` |
 | 只改導師台詞／語音／分頁 runtime | #16 + audio | **DO NOT TOUCH** runtime／TTS／audio 除非明示 |
 | 只改導師 overlay 視覺 | `mentor.css` + `index.html` `.map-mentor-*` / `.stage-confirm-mentor-*` | 見 `css-map.md`；勿改 `setupMentorDialogue` |

@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
 > **Last audited:** 2026-05-24 (release `26052401` context)
-> **Doc sync:** 2026-05-24 — mentor 觸發路由見 `mentor-dialogue-map.md` §觸發路由總表；§地圖流程；§結算／存檔卡
+> **Doc sync:** 2026-05-24 — mentor 觸發路由見 `mentor-dialogue-map.md` §觸發路由總表；§已確認（`MAIN_ENDING_FINALE`／`triggerMentorDialogue`）；§地圖流程；§結算／存檔卡
 > **File:** `assets/js/game.js` — **~11,693 lines** (1-indexed；外移後略減)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -187,7 +187,9 @@
 
 **DO NOT TOUCH（mentor×map）：** `setupMentorDialogue`、`finishMentorDialogue`、`playMentorAudioForCurrentPage`、`mentor-dialogues.v1.json`、`_resumeAfterMentor` 回調內容。
 
-**完整導師入口／結局／initGame／result 對照：** [`mentor-dialogue-map.md`](./mentor-dialogue-map.md) §觸發路由總表、§Ending／initGame／Result、§台詞資料來源。
+**完整導師入口／結局／initGame／result 對照：** [`mentor-dialogue-map.md`](./mentor-dialogue-map.md) §觸發路由總表、§Ending／initGame／Result、§台詞資料來源、§已確認。
+
+**2026-05-24 已確認（靜態）：** L36 真結局 id `MAIN_ENDING_FINALE` ↔ JSON `FINAL_ENDING` miss；`initGame` 內 `triggerMentorDialogue` 因 `skills.v1.json` 無 `mentorDialogue` 永不觸發。修法見 mentor 文件 §已確認。
 
 ### 地圖流程（Map flow / return-to-map）
 
