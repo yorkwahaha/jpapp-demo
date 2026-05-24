@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
 > **Last audited:** 2026-05-24 (release `26052401` context)
-> **Doc sync:** 2026-05-24 — mentor 觸發路由見 `mentor-dialogue-map.md`；L36 `MAIN_ENDING_FINALE`→`FINAL_ENDING` alias **已修正**；`triggerMentorDialogue` **未修**
+> **Doc sync:** 2026-05-24 — mentor 路由見 `mentor-dialogue-map.md`；L36 alias 已修正；battle `triggerMentorDialogue` 已改 deprecated no-op
 > **File:** `assets/js/game.js` — **~11,693 lines** (1-indexed；外移後略減)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -189,7 +189,7 @@
 
 **完整導師入口／結局／initGame／result 對照：** [`mentor-dialogue-map.md`](./mentor-dialogue-map.md) §觸發路由總表、§Ending／initGame／Result、§台詞資料來源、§已確認。
 
-**2026-05-24：** L36 真結局 `getMentorDialogueEntry` alias → `FINAL_ENDING`（**已修正**）。`initGame` 內 `triggerMentorDialogue` 仍為死路徑（**未修**）。見 mentor 文件 §已確認／已修正。
+**2026-05-24：** L36 alias 已修正；`triggerMentorDialogue` 判定為 legacy battle mentor path，已改 deprecated no-op。地圖開戰仍 `skipMentor=true`。手測見 mentor §`triggerMentorDialogue` 結論。
 
 ### 地圖流程（Map flow / return-to-map）
 

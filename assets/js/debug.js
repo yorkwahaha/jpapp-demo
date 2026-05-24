@@ -8,7 +8,7 @@ window.__attachDebugTools = function (refs) {
         levelTitle, player, monster, currentQuestion,
         startLevel, retryLevel, initGame, generateQuestionBySkill,
         mentorTutorialSeen, saveMentorState, skillsAll, setupMentorDialogue,
-        pauseBattle, unlockedSkillIds, startBossQueue,
+        unlockedSkillIds, startBossQueue,
         playPrologueOpening, playMainEndingFinale,
         mapChapters, activeChapter, selectedSegmentIdx, getMapNodeStyle,
         MENTOR_AUDIO_MAP,
@@ -791,21 +791,29 @@ window.__attachDebugTools = function (refs) {
 
 
                 replayMentor(skillId) {
+                    if (!showMap?.value) {
+                        console.warn('[jpDebug.replayMentor] mentor playback is map-only. Return to the map before replaying mentor dialogue.');
+                        return false;
+                    }
                     const skill = skillsAll.value[skillId];
                     if (!skill) {
                         console.warn(`[jpDebug] Skill ID "${skillId}" not found.`);
-                        return;
+                        return false;
                     }
                     if (!skill.mentorDialogue) {
                         console.warn(`[jpDebug] Skill "${skillId}" has no mentor dialogue.`);
-                        return;
+                        return false;
                     }
                     setupMentorDialogue(skill);
-                    pauseBattle();
                     console.log(`[jpDebug] Replaying mentor dialogue for: ${skillId}`);
+                    return true;
                 },
 
                 playMentor(id) {
+                    if (!showMap?.value) {
+                        console.warn('[jpDebug.playMentor] mentor playback is map-only. Return to the map before playing mentor dialogue.');
+                        return false;
+                    }
                     const key = String(id || '').trim();
                     const mentorMap = MENTOR_AUDIO_MAP?.value || {};
                     if (!key || !mentorMap[key]) {
@@ -813,7 +821,6 @@ window.__attachDebugTools = function (refs) {
                         return false;
                     }
                     setupMentorDialogue({ id: key, name: '導師・優依' });
-                    if (typeof pauseBattle === 'function') pauseBattle();
                     console.log(`[jpDebug] Playing mentor dialogue: ${key}`);
                     return true;
                 },

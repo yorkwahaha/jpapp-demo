@@ -1878,24 +1878,9 @@ const _jpApp = Vue.createApp({
 
         };
 
-        const triggerMentorDialogue = (skillId, force = false) => {
-
-            const skill = skillsAll.value[skillId];
-
-            if (!skill || !skill.mentorDialogue) return false;
-
-            // If NOT forced, check if already seen
-
-            if (!force && mentorTutorialSeen.value.includes(skillId)) {
-
-                return false;
-
-            }
-
-            setupMentorDialogue(skill);
-
-            return true;
-
+        const triggerMentorDialogue = () => {
+            // Deprecated battle mentor path. Current mentor playback is map-only.
+            return false;
         };
 
         const startMentorTyping = (text) => {
@@ -9475,6 +9460,11 @@ const _jpApp = Vue.createApp({
 
                             window._resumeAfterMentor = () => {
                                 if (_mentorResumeToken !== _myMentorToken) return;
+                                if (!window._battlePopPlayed) {
+                                    playSfx('uiPop');
+                                    window._battlePopPlayed = true;
+                                }
+                                startTimer();
                             };
 
                         } else {
