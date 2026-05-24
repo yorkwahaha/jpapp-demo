@@ -1,8 +1,8 @@
 # JPAPP `game.js` Code Map
 
 > **Last audited:** 2026-05-24 (release `26052401` context)
-> **Doc sync:** 2026-05-24 — 怪物圖鑑 entries 組裝外移至 `codex-display-utils.js`
-> **File:** `assets/js/game.js` — **~11,771 lines** (1-indexed；隨 cleanup 略減)
+> **Doc sync:** 2026-05-24 — changelog 接線薄化、`appendVersionQuery` 外移至 `changelog-manager.js`
+> **File:** `assets/js/game.js` — **~11,728 lines** (1-indexed；隨 cleanup 略減)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
 
@@ -35,7 +35,7 @@
 | 8 | **Save slot UI** | 907–1040 | 選槽、刪槽、`startNewGameFromSlot` | **High** | `selectSaveSlot`, `confirmDeleteSaveSlot` | — | **no** | 存檔面板全流程 |
 | 9 | **Map stage pick & endings** | 1041–1274 | `selectStageFromMap`, L35/L36 結局 | **High** | `checkGlobalEndingTriggers`, `playMainEndingFinale` | `mentor-dialogue-map.md` | **no** | 關卡說明、結局觸發 |
 | 10 | **Result fanfare & knowledge cards** | 1275–1424 | 結算 fanfare、知識卡佇列 | **High** | `triggerNextKnowledgeCard`, `_afterKnowledgeCards` | `index.html` knowledge overlay | **no** | 破關後卡冊、接回 tally |
-| 11 | **Settings & changelog** | 1425–1546 | 版本、`JPAPPChangelogManager`、settings、devTools | Low | `openChangelog`, `isDevToolsVisible` | `changelog-manager.js`, `dev-tools.js` | **yes** | 設定頁、changelog 彈窗 |
+| 11 | **Settings & changelog** | 1411–1520 | `APP_VERSION`、`appVersion`、changelog 薄接線、`versionImageAsset` 薄封裝、settings、devTools | Low | `openChangelog`, `appendVersionQuery`, `isDevToolsVisible` | `changelog-manager.js`, `dev-tools.js` | **yes** | 設定頁、changelog 彈窗、版本快取圖 |
 | 12 | **Codex — wheel state** | 1547–1613 | 共鳴輪 phase、拖曳、RAF 常數 | Low | `codexWheelPhase`, `CODEX_WHEEL_` | `spirit-codex-helpers.js` | defer | 開共鳴輪不卡頓 |
 | 13 | **Mentor — state & fallbacks** | 1614–1882 | mentor refs、inline `mentorDialogueHelpers` fallback | **High** | `mentorTutorialSeen`, `isMentorModalOpen` | `mentor-dialogue-helpers.js` | **no** | — |
 | 14 | **Mentor — dialogue runtime** | 1883–2239 | setup/play/stop、typing、skip、video | **DO NOT TOUCH** | `setupMentorDialogue`, `playMentorAudioForCurrentPage`, `finishMentorDialogue` | `audio-tts.js`, `mentor-dialogue-map.md` | **no** | 導師全流程、iOS 音訊 |
@@ -86,7 +86,7 @@
 | 親密度 / `skillMastery` | #5, #31 | save key `skillMastery`；答對 +1 見 `addSkillMasteryProgress` | 存檔相容；**勿**與已移除的 `skillCorrectCounts` 混淆 |
 | 導師對話 | #13–14 | `mentor-dialogue-helpers.js`, `mentor-dialogues.v1.json` | **DO NOT TOUCH**（音訊） |
 | 音訊 / BGM / TTS | #22–24 | `audio-tts.js`, `audio-debug-manager.js` | **DO NOT TOUCH** 除非任務明示 |
-| Changelog / 版本 | #11 | `changelog-manager.js`, `index.html` `APP_VERSION` | 低風險 |
+| Changelog / 版本 | #11 | `changelog-manager.js`（state + `appendVersionQuery` + storage policy）、`index.html` `APP_VERSION` | 低風險；`game.js` 勿還原 inline fallback |
 | Dev / debug | #11, #35, #36 | `debug.js`, `dev-tools.js` | 僅 dev 環境 |
 | 題庫文案 / 正解 | —（**不要**先改 game.js） | `assets/data/earlyGamePools.v1.js` 等 | 題庫凍結時只改 data |
 
@@ -160,6 +160,9 @@
 | `debug.js` `showHome` / `goHome` refs | 2026-05-24 | `game.js` 從未傳入；`jpDebug.home()` 改僅用 `showLevelSelect` / `isFinished` fallback。 |
 | `debug.js` 舊 skill reset refs | 2026-05-24 | 移除 `selectedAnswers`、`currentQuestionIndex`、`questionIndex`、`isCorrect`、`showResult` 解構與 no-op 重置；現役為 `userAnswers` / `hasSubmitted` / `questions`。 |
 | Monster codex inline map/sort | 2026-05-24 | `monsterCodexEntries` 內 ~35 行組裝邏輯外移；`game.js` computed 改呼叫 `JPAPPCodexDisplayUtils.buildMonsterCodexEntries`。 |
+| `game.js` changelog inline fallback | 2026-05-24 | 與 `changelog-manager.js` 重複的 `createChangelogState` 副本已刪；與 `settings-manager` 相同，假設 script 已載入。 |
+| `changelog-manager.js` `Array.prototype.random` | 2026-05-24 | 全 repo 無 `.random()` 陣列呼叫；與 changelog 無關。 |
+| `versionImageAsset` inline 實作 | 2026-05-24 | 改薄封裝 `JPAPPChangelogManager.appendVersionQuery`（導師圖等仍經 `versionImageAsset` 別名）。 |
 
 ### SAFE
 

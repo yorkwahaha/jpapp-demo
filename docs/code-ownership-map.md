@@ -2,7 +2,7 @@
 
 > **Purpose:** 跨檔責任邊界與 `index.html` 載入順序，搭配 [`game-js-map.md`](./game-js-map.md) 使用。  
 > **Last updated:** 2026-05-24
-> **Doc sync:** 2026-05-24 — 怪物圖鑑 entries 組裝移至 `codex-display-utils.js`
+> **Doc sync:** 2026-05-24 — changelog 版本快取與 `game.js` 薄接線（`appendVersionQuery`）
 
 ## Script 載入順序（`index.html` → `game.js` 前）
 
@@ -24,7 +24,7 @@
 | before game | `audio-debug-manager.js` | `JPAPPAudioDebugManager` | 音訊診斷 overlay |
 | before game | `dev-tools.js` | `JPAPPDevToolsManager` | DevTools / FPS |
 | before game | `mentor-dialogue-helpers.js` | `JPAPPMentorDialogueHelpers` | 導師分頁、emotion 圖 |
-| before game | `changelog-manager.js` | `JPAPPChangelogManager` | changelog modal |
+| before game | `changelog-manager.js` | `JPAPPChangelogManager` | changelog modal、版本 reload policy、`appendVersionQuery` |
 | before game | `result-display-manager.js` | `JPAPPResultDisplayManager` | 結算 UI、關卡紀錄列 |
 | **last** | **`game.js`** | Vue app、`debugJumpToLevel`, `__debugQMix` | 主 runtime |
 | after | `global-hooks.js` | — | 全域 error / keydown |

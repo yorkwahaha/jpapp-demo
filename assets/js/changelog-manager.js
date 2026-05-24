@@ -38,6 +38,13 @@
         return { isChangelogOpen, changelogData, changelogError, openChangelog };
     }
 
+    /** Append cache-bust `v=` query for static image/asset paths. */
+    function appendVersionQuery(path, appVersion) {
+        if (!path || typeof path !== 'string' || /[?&]v=/.test(path)) return path;
+        const version = appVersion != null ? String(appVersion) : '';
+        return `${path}${path.includes('?') ? '&' : '?'}v=${encodeURIComponent(version)}`;
+    }
+
     /** First-run stamps version; mismatched versions alert + reload. */
     function applyVersionStoragePolicy(APP_VERSION, localStorageLike) {
         const ls = localStorageLike || global.localStorage;
@@ -51,14 +58,9 @@
         }
     }
 
-    if (!Array.prototype.random) {
-        Array.prototype.random = function() {
-            return this[Math.floor(Math.random() * this.length)];
-        };
-    }
-
     global.JPAPPChangelogManager = {
         createChangelogState,
-        applyVersionStoragePolicy
+        applyVersionStoragePolicy,
+        appendVersionQuery
     };
 })(typeof window !== 'undefined' ? window : globalThis);

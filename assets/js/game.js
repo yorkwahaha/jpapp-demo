@@ -1410,40 +1410,13 @@ const _jpApp = Vue.createApp({
 
         // ---- [ CONSTANTS & SETTINGS ] ----
         const APP_VERSION = window.APP_VERSION || "26052401";
+        const changelogManager = window.JPAPPChangelogManager;
         const versionImageAsset = (path) => {
-            if (!path || typeof path !== 'string' || /[?&]v=/.test(path)) return path;
-            return `${path}${path.includes('?') ? '&' : '?'}v=${encodeURIComponent(String(APP_VERSION))}`;
+            const append = changelogManager?.appendVersionQuery;
+            return typeof append === 'function' ? append(path, APP_VERSION) : path;
         };
 
         const appVersion = ref(APP_VERSION);
-        const changelogManager = window.JPAPPChangelogManager || {
-            createChangelogState: ({ ref, APP_VERSION, fetch: fetchFn }) => {
-                const isChangelogOpen = ref(false);
-                const changelogData = ref([]);
-                const changelogError = ref(false);
-                const openChangelog = async () => {
-                    isChangelogOpen.value = true;
-                    if (changelogData.value.length > 0 || changelogError.value) return;
-                    if (typeof fetchFn !== 'function') {
-                        changelogError.value = true;
-                        return;
-                    }
-                    try {
-                        const res = await fetchFn('assets/data/changelog.json?v=' + encodeURIComponent(String(APP_VERSION)));
-                        if (!res.ok) {
-                            changelogError.value = true;
-                            return;
-                        }
-                        changelogData.value = await res.json();
-                        changelogError.value = false;
-                    } catch (_) {
-                        changelogError.value = true;
-                    }
-                };
-                return { isChangelogOpen, changelogData, changelogError, openChangelog };
-            },
-            applyVersionStoragePolicy: () => { }
-        };
         const { isChangelogOpen, changelogData, changelogError, openChangelog } = changelogManager.createChangelogState({
             ref,
             APP_VERSION,
