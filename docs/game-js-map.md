@@ -146,6 +146,12 @@
 | Vue `return` → `debugControls` | 2026-05-24 | 模板未引用；`debugControls` 常數仍作 `heroBuffs` fallback。 |
 | `handleMapImageError` | 2026-05-24 | 無 `index.html` `@error` 綁定；函式與 Vue export 已刪。 |
 | `DEFAULT_IMAGE_PATHS.mapFallback` | 2026-05-24 | 僅 `game-constants.js` 定義；`handleMapImageError` 移除後無 runtime 引用；地圖背景走 `map-chapters.json`。 |
+| `formatMonsterCodexValue` setup 別名 | 2026-05-24 | 單次使用；`monsterCodexEntries` 改直接呼叫 `JPAPPCodexDisplayUtils.formatMonsterCodexValue`。 |
+| Vue `return` → `currentQuestionBondMax` | 2026-05-24 | `index.html` 無引用；戰鬥滿絆仍用內部 `isCurrentQuestionBondMax()`。 |
+| Vue `return` → `codexPage` / `setCodexSelectedIndex` / `shiftCodexWheel` | 2026-05-24 | `index.html` 無引用；共鳴輪仍用內部 ref／函式。 |
+| `getMonsterStageText` local helper | 2026-05-24 | 僅 `monsterCodexEntries` 單次使用；改 inline IIFE。 |
+| `getLevelTitle` setup 薄封裝 | 2026-05-24 | 全 repo 無呼叫；函式與 Vue export 已刪。 |
+| Vue `return` → `handleMapTabClick` | 2026-05-24 | `index.html` 無引用；`jumpToMapSegment` 仍內部呼叫。 |
 
 ### SAFE
 
@@ -156,7 +162,6 @@
 
 | Symbol / area | Location | Evidence |
 |---------------|----------|----------|
-| `formatMonsterCodexValue` 區域別名 | ~3087 | 可 inline |
 | game.js L1–59 VFX shim 冗餘 | 1–59 | `vfx-helpers.js` 已載入；boot 保險 |
 | Inline module fallbacks | 441–446, 1433–1460, 1655–1714, 4271–4302 | 正式 script 已載入；防 boot 失敗 |
 | `window.__debugQMix` | ~8009 | 僅 dev console |

@@ -1045,8 +1045,6 @@ const _jpApp = Vue.createApp({
             clearedLevels.value
         );
 
-        const getLevelTitle = (n) => window.JPAPPSettingsManager.getLevelTitleForConfig(n, LEVEL_CONFIG.value);
-
         const getStageFocusParticle = (n) => window.JPAPPSettingsManager.computeStageFocusParticleDisplay(
             n,
             LEVEL_CONFIG.value,
@@ -3016,7 +3014,6 @@ const _jpApp = Vue.createApp({
         };
 
         const isCurrentQuestionBondMax = () => isBondMaxSkill(getCurrentQuestionSkillId());
-        const currentQuestionBondMax = computed(() => isCurrentQuestionBondMax());
 
         const getBattleChoiceValue = (choice) => {
             if (choice && typeof choice === 'object') {
@@ -3078,17 +3075,6 @@ const _jpApp = Vue.createApp({
 
         const getSkillMasteryStyle = (skillId) => spiritCodexHelpers.getMasteryStyle(getSkillMastery(skillId));
 
-        const formatMonsterCodexValue = (v, s) => window.JPAPPCodexDisplayUtils.formatMonsterCodexValue(v, s);
-
-        const getMonsterStageText = (levels = []) => {
-            if (!Array.isArray(levels) || !levels.length) return '出現關卡：未記錄';
-            return `出現關卡：${levels.map(lv => {
-                const config = LEVEL_CONFIG.value?.[Number(lv)];
-                const label = config?.levelName || config?.name || `Stage ${lv}`;
-                return `Lv.${lv} ${label}`;
-            }).join(' / ')}`;
-        };
-
         const monsterCodexEntries = computed(() => {
             return (ENEMIES.value || []).map((enemy, idx) => {
                 const spawnLevels = Array.isArray(enemy.spawnLevels) ? enemy.spawnLevels : [];
@@ -3110,9 +3096,16 @@ const _jpApp = Vue.createApp({
                     name: window.JPAPPCodexDisplayUtils.formatMonsterName(enemy.name),
                     image: enemy.image || DEFAULT_IMAGE_PATHS.monsterSprite,
                     spawnLevels,
-                    stageText: getMonsterStageText(spawnLevels),
+                    stageText: (() => {
+                        if (!spawnLevels.length) return '出現關卡：未記錄';
+                        return `出現關卡：${spawnLevels.map(lv => {
+                            const config = LEVEL_CONFIG.value?.[Number(lv)];
+                            const label = config?.levelName || config?.name || `Stage ${lv}`;
+                            return `Lv.${lv} ${label}`;
+                        }).join(' / ')}`;
+                    })(),
                     traitText: window.JPAPPCodexDisplayUtils.formatMonsterTrait(enemy.trait, enemy.description),
-                    hpText: formatMonsterCodexValue(hp),
+                    hpText: window.JPAPPCodexDisplayUtils.formatMonsterCodexValue(hp),
                     damageText: window.JPAPPCodexDisplayUtils.formatMonsterDamageRange(damageMin, damageMax),
                     evasionText: window.JPAPPCodexDisplayUtils.formatMonsterEvasion(evasionRate),
                     intervalText: window.JPAPPCodexDisplayUtils.formatMonsterAttackInterval(attackIntervalMs)
@@ -11754,7 +11747,7 @@ const _jpApp = Vue.createApp({
             isNextBtnVisible,
             animatedExp, hasLeveledUp, displayedResultLevel, displayedResultExp, displayedResultNextExp, displayedResultExpPct, resultExpBarTransitionEnabled, showLevelUpMessageAfterAnimation, resultLevelUpStatText, resultUnlockedMilestones, showResultMilestoneRewards, dismissResultMilestoneRewards, playerStats, getExpRequiredForNextLevel,
             isAudioDebugEnabled, isAudioDebugOpen, isAudioDebugDragging, audioDebugOverlayStyle, audioDebugSections, refreshAudioDebugState, startAudioDebugDrag, debugResumeAudioContext, debugTestSfx, debugTestBgmPlay, debugPauseBgm, debugTestRawAudio, debugEnableHtmlAudioFallback, debugDisableHtmlAudioFallback, debugEnableFallbackAudioContextV2, debugDisableFallbackAudioContextV2, debugResumeFallbackAudioContext, debugTestFallbackContextBgm, debugTestFallbackBgm, debugTestFallbackSfx, debugShowAudioState,
-            setDefaultAttackMode, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, currentQuestionBondMax, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, levelPassiveVfx, counterSlashVfx, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, monsterHitGiragira, monsterGiraKnockActive, monsterGiraKnockStyle, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, battleQuestionSizeClass, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, codexPage, codexWheelSkills, codexSelectedSkill, codexDetailMode, getCodexWheelItemStyle, getCodexWheelItemClass, getCodexSkillDisplayName, setCodexSelectedIndex, shiftCodexWheel, startCodexWheelArrowPress, stopCodexWheelArrowPress, handleCodexWheelArrowClick, openCodexDetail, closeCodexDetail, startCodexDrag, moveCodexDrag, endCodexDrag, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
+            setDefaultAttackMode, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, levelPassiveVfx, counterSlashVfx, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, monsterHitGiragira, monsterGiraKnockActive, monsterGiraKnockStyle, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, battleQuestionSizeClass, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, codexWheelSkills, codexSelectedSkill, codexDetailMode, getCodexWheelItemStyle, getCodexWheelItemClass, getCodexSkillDisplayName, startCodexWheelArrowPress, stopCodexWheelArrowPress, handleCodexWheelArrowClick, openCodexDetail, closeCodexDetail, startCodexDrag, moveCodexDrag, endCodexDrag, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             handleEscapeToMap, retryCurrentStageWithTransition, escapeOverlayVisible, escapeOverlayOpacity, isEscaping, retryTransitionActive,
             heroBuffs: (typeof heroBuffs !== 'undefined' && heroBuffs) ? heroBuffs : debugControls,
             // ぴったり: hide wrong choices for the next question
@@ -11771,13 +11764,13 @@ const _jpApp = Vue.createApp({
             isMentorSkipPressing, startMentorSkipPress, cancelMentorSkipPress,
             isMonsterImageError, handleMonsterImageError, currentMonsterSprite, monsterPositionStyle, monsterIsEntering, monsterIsDying, monsterTrulyDead, monsterResultShown, bossDeathVfxActive, bossDeathStage, monsterAttackLunge,
             showMap, unlockedLevels, clearedLevels,
-            openMap, startActiveSaveSlot, openSaveSlotPanel, requestNewGame, selectSaveSlot, requestDeleteSaveSlot, cancelDeleteSaveSlot, confirmDeleteSaveSlot, pendingDeleteSaveSlotId, isSaveSlotPanelOpen, saveSlotCards, activeSaveSlotId, saveSlotPanelMode, isLevelUnlocked, isLevelCleared, getStageNodeClass, getLevelTitle, getStageFocusParticle, getStageFocusLabel, hasMentor,
+            openMap, startActiveSaveSlot, openSaveSlotPanel, requestNewGame, selectSaveSlot, requestDeleteSaveSlot, cancelDeleteSaveSlot, confirmDeleteSaveSlot, pendingDeleteSaveSlotId, isSaveSlotPanelOpen, saveSlotCards, activeSaveSlotId, saveSlotPanelMode, isLevelUnlocked, isLevelCleared, getStageNodeClass, getStageFocusParticle, getStageFocusLabel, hasMentor,
 
             selectStageFromMap, startStageWithExplanation, returnToMap,
 
             newUnlockLv, bestGrades, stageBestRecords, getGradeColor, sRankCount,
 
-            mapChapters, activeChapter, getMapNodeStyle, selectedSegmentIdx, isSegmentUnlocked, handleMapTabClick, jumpToMapSegment, isMapDropdownOpen,
+            mapChapters, activeChapter, getMapNodeStyle, selectedSegmentIdx, isSegmentUnlocked, jumpToMapSegment, isMapDropdownOpen,
 
             isBattleConfirmOpen, selectedStageToConfirm, stageConfirmSuspendedForMentor, closeBattleConfirm, confirmAndStartBattle,
 
