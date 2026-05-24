@@ -449,7 +449,8 @@ const _jpApp = Vue.createApp({
             getSpiritForSkillId: () => null,
             getSpiritForSkill: () => null,
             getSpiritForKnowledgeCard: () => null,
-            decorateSkillWithSpirit: (s) => s
+            decorateSkillWithSpirit: (s) => s,
+            orderCodexWheelSkillsForResonance: (skills) => (Array.isArray(skills) ? skills : [])
         };
 
         const getSpiritForSkillId = (skillId) => spiritCodexHelpers.getSpiritForSkillId ? spiritCodexHelpers.getSpiritForSkillId(spiritsBySkillId.value, skillId) : null;
@@ -2206,48 +2207,9 @@ const _jpApp = Vue.createApp({
             spiritCodexHelpers.getCodexBaseSkills(skillsWithUnlockLevel.value)
         );
 
-        const SPIRIT_RESONANCE_VISUAL_ORDER = Object.freeze([
-            'WA_TOPIC_BASIC',
-            'NI_TIME',
-            'KARA_SOURCE_START',
-            'GA_EXIST_SUBJECT',
-            'TO_AND',
-            'DE_ACTION_PLACE',
-            'NO_POSSESSIVE',
-            'NI_EXIST_PLACE',
-            'MADE_LIMIT_END',
-            'MO_ALSO_BASIC',
-            'DE_TOOL_MEANS',
-            'TO_WITH',
-            'GA_INTRANSITIVE',
-            'NI_DESTINATION',
-            'YORI_COMPARE',
-            'YA_AND_OTHERS',
-            'WO_OBJECT_BASIC',
-            'NI_TARGET',
-            'KARA_REASON',
-            'GA_BUT',
-            'DE_SCOPE',
-            'TO_QUOTE',
-            'HE_DIRECTION',
-            'NI_PURPOSE',
-            'MO_COMPLETE_NEGATION',
-            'TO_CONDITIONAL',
-            'NI_FREQUENCY',
-            'DE_MATERIAL'
-        ]);
-
-        const orderCodexWheelSkillsForResonance = (skills) => {
-            const skillList = Array.isArray(skills) ? skills : [];
-            const byId = new Map(skillList.map(skill => [skill.id, skill]));
-            const ordered = SPIRIT_RESONANCE_VISUAL_ORDER
-                .map(id => byId.get(id))
-                .filter(Boolean);
-            const orderedIds = new Set(ordered.map(skill => skill.id));
-            return ordered.concat(skillList.filter(skill => !orderedIds.has(skill.id)));
-        };
-
-        const codexWheelSkills = computed(() => orderCodexWheelSkillsForResonance(codexBaseSkills.value));
+        const codexWheelSkills = computed(() =>
+            spiritCodexHelpers.orderCodexWheelSkillsForResonance(codexBaseSkills.value)
+        );
 
         const isCodexSkillUnlocked = (skill) => Boolean(skill?.id && unlockedSkillIds.value.includes(skill.id));
 

@@ -2,7 +2,7 @@
 
 > **Purpose:** 跨檔責任邊界與 `index.html` 載入順序，搭配 [`game-js-map.md`](./game-js-map.md) 使用。  
 > **Last updated:** 2026-05-24
-> **Doc sync:** 2026-05-24 — changelog 版本快取與 `game.js` 薄接線（`appendVersionQuery`）
+> **Doc sync:** 2026-05-24 — `orderCodexWheelSkillsForResonance` 歸 `spirit-codex-helpers.js`
 
 ## Script 載入順序（`index.html` → `game.js` 前）
 
@@ -20,7 +20,7 @@
 | before game | `settings-manager.js` | `JPAPPSettingsManager` | 設定、地圖 UI、音量曲線 |
 | before game | `storage-manager.js` | `JPAPPStorageManager` | mentor seen、mistakes、audio debug pos |
 | before game | `codex-display-utils.js` | `JPAPPCodexDisplayUtils` | 圖鑑格式化、怪物圖鑑 entries 組裝（`buildMonsterCodexEntries`）、圖片 fallback |
-| before game | `spirit-codex-helpers.js` | `JPAPPSpiritCodexHelpers` | 共鳴輪排序、mastery 樣式 |
+| before game | `spirit-codex-helpers.js` | `JPAPPSpiritCodexHelpers` | 共鳴輪視覺排序（`orderCodexWheelSkillsForResonance`）、mastery 樣式 |
 | before game | `audio-debug-manager.js` | `JPAPPAudioDebugManager` | 音訊診斷 overlay |
 | before game | `dev-tools.js` | `JPAPPDevToolsManager` | DevTools / FPS |
 | before game | `mentor-dialogue-helpers.js` | `JPAPPMentorDialogueHelpers` | 導師分頁、emotion 圖 |
@@ -44,27 +44,37 @@
 | `assets/data/changelog.json` | changelog manager | 低 |
 | `assets/data/map-chapters.json` | `onMounted` fetch | 地圖章節 |
 
+## Before modifying — 先搜這裡
+
+| 任務 | 先讀 | 第一個 `rg` |
+|------|------|-------------|
+| 任何 `game.js` 改動 | [`game-js-map.md`](./game-js-map.md) §B | 見該表「第一個 rg 目標」欄 |
+| 只改題庫文案 | 本檔「Question content」列 | —（**不要**開 `generateQuestionBySkill`） |
+| 只改首頁/版本 | 本檔「Home screen」列 | `appVersion`, `showLevelSelect` |
+| 只改樣式 | [`css-map.md`](./css-map.md) | class 名自 `index.html` |
+
 ## 所有權矩陣（誰擁有什麼）
 
 | Domain | Owner file(s) | game.js role | Edit policy |
 |--------|---------------|--------------|-------------|
+| **Home screen** | `index.html`, `assets/css/home.css` | `showLevelSelect`, `appVersion`（§A #13, #22）；存檔面板 §A #9 | UI/文案改 HTML/CSS；槽邏輯 **high-risk** |
 | **Vue UI template** | `index.html` | 提供 `setup()` return 綁定 | UI 文案/結構改 HTML；邏輯改 game.js |
 | **Global SP** | `game.js` L61–97 | 唯一實作 | defer 外移 |
 | **Save / slots** | `game.js` + `storage-manager`（部分 key） | 主邏輯 | high-risk |
 | **Spirit affinity (`skillMastery`)** | `game.js` #5, `addSkillMasteryProgress` | `jpapp_progression_v1` 欄位 `skillMastery`；codex 顯示經 `spirit-codex-helpers` | high-risk（規則）；欄位已精簡 |
 | **Map progression** | `game.js` + `settings-manager` | 整合 | high-risk |
 | **Mentor** | `game.js` + `mentor-dialogue-helpers` + data JSON | runtime | DO NOT TOUCH |
-| **Codex wheel** | `game.js` + `spirit-codex-helpers` + `codex.css` | UI 狀態 + 動畫 | wheel 可拆；template 在 HTML |
+| **Codex wheel** | `game.js` + `spirit-codex-helpers` + `codex.css` | UI 狀態 + 動畫；**輪上技能順序**在 helpers | 改排序改 `spirit-codex-helpers.js`；RAF/拖曳仍在 game.js |
 | **Monster codex** | `codex-display-utils.js` + `game.js` computed/handlers + `enemies.v1.json` | computed 薄封裝；純組裝在 utils | 改顯示優先 utils；Vue 狀態留 game.js |
 | **Battle loop** | `game.js` | 唯一實作 | DO NOT TOUCH |
 | **Question content** | `earlyGamePools.v1.js` | 消費 pool | 改 data，不改 gen 除非允許 |
-| **Question generation** | `game.js` L7961+ | 唯一實作 | DO NOT TOUCH |
-| **Audio playback** | `game.js` L4435+ + `audio-tts.js` | 主體在 game.js | DO NOT TOUCH |
+| **Question generation** | `game.js` L7880–9339（§A #31） | 唯一實作 | DO NOT TOUCH |
+| **Audio playback** | `game.js` L4108–6731, L8165–8687（§A #24–26, #32）+ `audio-tts.js` | 主體在 game.js；gesture tail 與出題區檔案順序交錯 | DO NOT TOUCH |
 | **Audio debug UI** | `audio-debug-manager.js` + game 接線 | 薄整合 | Phase 1 可外移接線 |
 | **Result screen** | `result-display-manager.js` + game `grantRewards` | 分工 | 動畫改 manager；流程改 game 需小心 |
 | **VFX** | `vfx-helpers.js`, `skill-vfx.js`, game 內 boss VFX | 混合 | 新特效優先放 helpers |
 | **Hero buff pills** | `hero-status.js` | 讀 `heroBuffs` | 改顯示改 hero-status |
-| **Dev tools** | `dev-tools.js`, `debug.js`, game L11674+ | 注入 refs | dev-only |
+| **Dev tools** | `dev-tools.js`, `debug.js`, game L11584+（§A #40） | 注入 refs | dev-only |
 | **Styles** | `assets/css/*.css` | class 名由 HTML/game 使用 | 見 `css-map.md` |
 
 ## `window` 匯出（除錯用）
@@ -106,8 +116,9 @@
 
 ```
 任務進入
-  → 讀 code-ownership-map（本檔）確認該改哪個檔
-  → 讀 game-js-map 定位行號區塊
+  → 讀 game-js-map §B「search here first」+ 本檔「Before modifying」
+  → 讀 code-ownership-map 確認該改哪個檔
+  → 讀 game-js-map §A 定位行號區塊（互不重疊）
   → 若只改 data：earlyGamePools / levels / skills / mentor-dialogues
   → 若改 UI：index.html + 對應 css-map 區塊
   → 若改 codex 顯示：優先 codex-display-utils / spirit-codex-helpers

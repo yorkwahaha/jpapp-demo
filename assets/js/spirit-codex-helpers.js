@@ -69,6 +69,47 @@
 
     const isMasteryMax = (value) => normalizeMasteryPercent(value) >= 100;
 
+    const SPIRIT_RESONANCE_VISUAL_ORDER = Object.freeze([
+        'WA_TOPIC_BASIC',
+        'NI_TIME',
+        'KARA_SOURCE_START',
+        'GA_EXIST_SUBJECT',
+        'TO_AND',
+        'DE_ACTION_PLACE',
+        'NO_POSSESSIVE',
+        'NI_EXIST_PLACE',
+        'MADE_LIMIT_END',
+        'MO_ALSO_BASIC',
+        'DE_TOOL_MEANS',
+        'TO_WITH',
+        'GA_INTRANSITIVE',
+        'NI_DESTINATION',
+        'YORI_COMPARE',
+        'YA_AND_OTHERS',
+        'WO_OBJECT_BASIC',
+        'NI_TARGET',
+        'KARA_REASON',
+        'GA_BUT',
+        'DE_SCOPE',
+        'TO_QUOTE',
+        'HE_DIRECTION',
+        'NI_PURPOSE',
+        'MO_COMPLETE_NEGATION',
+        'TO_CONDITIONAL',
+        'NI_FREQUENCY',
+        'DE_MATERIAL'
+    ]);
+
+    const orderCodexWheelSkillsForResonance = (skills) => {
+        const skillList = Array.isArray(skills) ? skills : [];
+        const byId = new Map(skillList.map(skill => [skill.id, skill]));
+        const ordered = SPIRIT_RESONANCE_VISUAL_ORDER
+            .map(id => byId.get(id))
+            .filter(Boolean);
+        const orderedIds = new Set(ordered.map(skill => skill.id));
+        return ordered.concat(skillList.filter(skill => !orderedIds.has(skill.id)));
+    };
+
     global.JPAPPSpiritCodexHelpers = {
         getSpiritForSkillId,
         getSpiritForSkill,
@@ -78,6 +119,7 @@
         getCodexBaseSkills,
         normalizeMasteryPercent,
         getMasteryStyle,
-        isMasteryMax
+        isMasteryMax,
+        orderCodexWheelSkillsForResonance
     };
 })(window);
