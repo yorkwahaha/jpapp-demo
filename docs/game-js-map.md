@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
 > **Last audited:** 2026-05-24 (release `26052401` context)
-> **Doc sync:** 2026-05-24 — mentor 路由見 `mentor-dialogue-map.md`；L36 alias 已修正；battle `triggerMentorDialogue` 已改 deprecated no-op
+> **Doc sync:** 2026-05-24 — mentor 路由見 `mentor-dialogue-map.md`；battle mentor 已移除（無 `triggerMentorDialogue`）
 > **File:** `assets/js/game.js` — **~11,693 lines** (1-indexed；外移後略減)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -44,7 +44,7 @@
 | 13 | **Home — version, settings, changelog** | 1411–1524 | `APP_VERSION`、`appVersion`、`openChangelog`、`versionImageAsset`、settings、devTools | Low | `appVersion`, `openChangelog`, `isDevToolsVisible` | `changelog-manager.js`, `home.css`, `index.html` | **yes** | 首頁版本字、changelog、設定 |
 | 14 | **Codex — wheel state (RAF vars)** | 1526–1572 | 共鳴輪 phase、拖曳、RAF 常數（非 ref） | Low | `codexWheelPhase`, `CODEX_WHEEL_` | `spirit-codex-helpers.js` | defer | 開共鳴輪不卡頓 |
 | 15 | **Mentor — state & fallbacks** | 1574–1841 | mentor refs、inline `mentorDialogueHelpers` fallback、`loadMentorState` | **High** | `mentorTutorialSeen`, `isMapMentorOpen` | `mentor-dialogue-helpers.js` | **no** | — |
-| 16 | **Mentor — dialogue runtime** | 1842–2198 | `setupMentorDialogue`、typing、skip、video、audio page | **DO NOT TOUCH** | `setupMentorDialogue`, `playMentorAudioForCurrentPage`, `finishMentorDialogue` | `audio-tts.js`, `mentor-dialogue-map.md` | **no** | 導師全流程、iOS 音訊 |
+| 16 | **Mentor — dialogue runtime** | 1842–2198 | `setupMentorDialogue`、typing、video、audio page | **DO NOT TOUCH** | `setupMentorDialogue`, `playMentorAudioForCurrentPage`, `finishMentorDialogue` | `audio-tts.js`, `mentor-dialogue-map.md` | **no** | 導師全流程、iOS 音訊 |
 | 17 | **Codex — wheel logic & UI** | 2200–3005 | `codexWheelSkills`（排序經 helper）、拖曳／動畫、`openCodexDetail` | Low–Med | `codexWheelSkills`, `setCodexWheelPhase`, `openCodexDetail` | `spirit-codex-helpers.js`, `codex.css` | defer | 共鳴輪旋轉、詳情 |
 | 18 | **Codex — monster index** | 3045–3077 | `monsterCodexEntries` computed（薄）、開關／選取 | Low | `monsterCodexEntries`, `openMonsterCodex` | `codex-display-utils.js`, `enemies.v1.json` | **yes** | 怪物圖鑑列表/詳情 |
 | 19 | **Codex — watches & Escape** | 3080–3114 | codex watch、`Escape` 關閉共鳴輪／怪物圖鑑 | Low | `isCodexOpen`, `keydown` | — | **yes** | Esc 關閉、開輪同步 |
@@ -189,7 +189,7 @@
 
 **完整導師入口／結局／initGame／result 對照：** [`mentor-dialogue-map.md`](./mentor-dialogue-map.md) §觸發路由總表、§Ending／initGame／Result、§台詞資料來源、§已確認。
 
-**2026-05-24：** L36 alias 已修正；battle `.mentor-overlay`／`isMentorModalOpen` 已移除；`setupMentorDialogue` map-only。地圖開戰仍 `skipMentor=true`。
+**2026-05-24：** battle mentor 已移除；`setupMentorDialogue` map-only；`initGame` 不播導師。
 
 ### 地圖流程（Map flow / return-to-map）
 

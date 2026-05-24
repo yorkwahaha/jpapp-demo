@@ -1134,7 +1134,7 @@ const _jpApp = Vue.createApp({
                 isBattleConfirmOpen.value = false;
                 selectedStageToConfirm.value = null;
                 if (typeof MapAmbient !== 'undefined') MapAmbient.deactivate();
-                startLevel(lv, false);
+                startLevel(lv);
             }
         };
 
@@ -1601,10 +1601,6 @@ const _jpApp = Vue.createApp({
 
         const failedMentorImagePaths = ref({});
 
-        const isMentorSkipPressing = ref(false);
-
-        const mentorSkipPressTimer = ref(null);
-
         let typingTimerMentor = null;
 
         let currentMentorAudio = null;
@@ -1692,8 +1688,6 @@ const _jpApp = Vue.createApp({
 
         const MENTOR_FALLBACK_SCENE_IMAGE = versionImageAsset('assets/images/ui/mentor-cover-fullbody.png');
         const MENTOR_EMOTION_IMAGE_PATHS = Object.freeze(GAME_CONSTANTS.MENTOR_EMOTION_IMAGE_PATHS || {});
-        const MENTOR_DEFAULT_MODAL_IMAGE = versionImageAsset(MENTOR_EMOTION_IMAGE_PATHS.gentle);
-
         const currentMentorDialogueItem = computed(() => ({
             text: currentMentorLine.value || '',
             emotion: mentorPageEmotions.value[mentorDialogueIndex.value] || 'gentle'
@@ -1708,7 +1702,7 @@ const _jpApp = Vue.createApp({
         };
 
         const currentMentorSceneImage = computed(() => getMentorEmotionImage(currentMentorDialogueItem.value.emotion) || MENTOR_FALLBACK_SCENE_IMAGE);
-        const handleMentorImageError = (event, fallbackPath = MENTOR_DEFAULT_MODAL_IMAGE) => {
+        const handleMentorImageError = (event, fallbackPath = MENTOR_FALLBACK_SCENE_IMAGE) => {
             const failedPath = event?.target?.getAttribute('src') || '';
             if (failedPath && failedPath !== fallbackPath) {
                 failedMentorImagePaths.value = { ...failedMentorImagePaths.value, [failedPath]: true };
@@ -1868,11 +1862,6 @@ const _jpApp = Vue.createApp({
             playMentorVideo();
 
             return true;
-        };
-
-        const triggerMentorDialogue = () => {
-            // Deprecated battle mentor path. Current mentor playback is map-only.
-            return false;
         };
 
         const startMentorTyping = (text) => {
@@ -2136,38 +2125,6 @@ const _jpApp = Vue.createApp({
                 window._resumeAfterMentor = null;
 
                 callback();
-
-            }
-
-        };
-
-        const startMentorSkipPress = () => {
-
-            isMentorSkipPressing.value = true;
-
-            if (mentorSkipPressTimer.value) clearTimeout(mentorSkipPressTimer.value);
-
-            mentorSkipPressTimer.value = setTimeout(() => {
-
-                isMentorSkipPressing.value = false;
-
-                playSfx('click');
-
-                finishMentorDialogue();
-
-            }, 3000);
-
-        };
-
-        const cancelMentorSkipPress = () => {
-
-            isMentorSkipPressing.value = false;
-
-            if (mentorSkipPressTimer.value) {
-
-                clearTimeout(mentorSkipPressTimer.value);
-
-                mentorSkipPressTimer.value = null;
 
             }
 
@@ -8622,8 +8579,8 @@ const _jpApp = Vue.createApp({
 
         };
 
-        /** 載入並啟動指定關卡：停止舊音效、選播 BGM、呼叫 initGame。withMentor=true 時由導師圖示觸發。 */
-        const startLevel = async (level, withMentor = false) => {
+        /** 載入並啟動指定關卡：停止舊音效、選播 BGM、呼叫 initGame。 */
+        const startLevel = async (level) => {
 
             const lv = Number(level) || parseInt(level, 10) || 1;
 
@@ -8649,11 +8606,7 @@ const _jpApp = Vue.createApp({
 
             currentLevel.value = lv;
 
-            // withMentor = true means user clicked the "Mentor Icon" -> forceMentor = true
-
-            // withMentor = false means user clicked the "Stage Card" -> skipMentor = true
-
-            initGame(lv, !withMentor, withMentor);
+            initGame(lv);
 
             playBgm();
 
@@ -9279,10 +9232,7 @@ const _jpApp = Vue.createApp({
 
         // ================= [ BATTLE INIT ] =================
         /** 主戰鬥初始化：依關卡 ID 生成題庫、配置怪物、重置所有 battle state、啟動計時器。 */
-        let _mentorResumeToken = 0;
-        const initGame = (level, skipMentor = false, forceMentor = false) => {
-
-            const _myMentorToken = ++_mentorResumeToken;
+        const initGame = (level) => {
 
             isBgmSuppressed.value = false;
 
@@ -9296,8 +9246,6 @@ const _jpApp = Vue.createApp({
             resetSP();
 
             if (window.__AUTO_ADVANCE_TIMEOUT) { clearTimeout(window.__AUTO_ADVANCE_TIMEOUT); window.__AUTO_ADVANCE_TIMEOUT = null; }
-
-            let triggeredMentor = false;
 
             answerMode.value = getDefaultAttackMode();
             flickState.isArmed = false;
@@ -9430,67 +9378,8 @@ const _jpApp = Vue.createApp({
                 if (newUnlocks.length > 0) {
                     _progressionHadPersistedUnlockedSkillIds = true;
 
-                    if (window._disableMentorAutoTrigger || skipMentor) {
-
-                        // Skip mentor and popup for debug jump or direct map card entry
-
-                    } else {
-
-                        const firstNewSkillId = newUnlocks[0];
-
-                        if (triggerMentorDialogue(firstNewSkillId, forceMentor)) {
-
-                            triggeredMentor = true;
-
-                            // Pause and wait for mentor to finish
-
-                            window._resumeAfterMentor = () => {
-                                if (_mentorResumeToken !== _myMentorToken) return;
-                                if (!window._battlePopPlayed) {
-                                    playSfx('uiPop');
-                                    window._battlePopPlayed = true;
-                                }
-                                startTimer();
-                            };
-
-                        } else {
-                        }
-
-                    }
-
                     // [Knowledge Card 1.0] Stage these for post-battle reward (複習類對戰卡不顯示)
                     pendingKnowledgeCards.value.push(...newUnlocks.map(id => decorateSkillWithSpirit(skillsAll.value[id])).filter(s => s && s.particle !== '複習'));
-
-                }
-
-            }
-
-            // Instruction mentor logic
-
-            if (!skipMentor && !triggeredMentor && config.skillId && !window._disableMentorAutoTrigger) {
-
-                if (triggerMentorDialogue(config.skillId, forceMentor)) {
-
-                    triggeredMentor = true;
-
-                    // Ensure battle starts after mentor
-
-                    if (window._resumeAfterMentor) console.warn('[initGame] _resumeAfterMentor already set before instruction mentor; overwriting.');
-                    window._resumeAfterMentor = () => {
-
-                        if (_mentorResumeToken !== _myMentorToken) return;
-
-                        if (!window._battlePopPlayed) {
-
-                            playSfx('uiPop');
-
-                            window._battlePopPlayed = true;
-
-                        }
-
-                        startTimer();
-
-                    };
 
                 }
 
@@ -9990,19 +9879,15 @@ const _jpApp = Vue.createApp({
 
             hpBarDanger.value = false;
 
-            if (!triggeredMentor) {
+            if (!window._battlePopPlayed) {
 
-                if (!window._battlePopPlayed) {
+                playSfx('battlePop');
 
-                    playSfx('battlePop');
-
-                    window._battlePopPlayed = true;
-
-                }
-
-                startTimer();
+                window._battlePopPlayed = true;
 
             }
+
+            startTimer();
 
             voicePlayedForCurrentQuestion.value = false;
 

@@ -3,9 +3,9 @@
 本文件盤點 `assets/js/game.js` 內導師對話相關區塊，作為未來模組化前的風險邊界。此輪不做正式外移，不改玩家可見行為，不碰音訊、TTS、mentor audio、BGM/SFX/fanfare/iOS resume。
 
 > **Doc sync:** 2026-05-24 — §觸發路由總表、§台詞資料來源、ending／initGame／result 分支（`rg setupMentorDialogue` 實測）
-> **實證排查：** 2026-05-24 — `triggerMentorDialogue` 會開戰鬥中舊版 `.mentor-overlay`。
-> **修法實作：** 2026-05-24 — battle mentor modal 判定為 legacy；`triggerMentorDialogue` 改 deprecated no-op，debug mentor playback 改 map-only。
-> **Markup cleanup：** 2026-05-24 — 移除 `index.html` `.mentor-overlay`／`isMentorModalOpen`；`setupMentorDialogue` map-only（非地圖 `console.warn` + `false`）。
+> **Battle mentor removed（2026-05-24）：** 戰鬥中 `.mentor-overlay`／`isMentorModalOpen`／`triggerMentorDialogue`／長按 skip 已刪。現役導師僅 `.map-mentor-overlay` + `setupMentorDialogue`（`showMap` 必要）。
+> **Markup cleanup：** 2026-05-24 — 移除 battle mentor template／state；`setupMentorDialogue` 非地圖 `console.warn` + `false`。
+> **Dead-code cleanup：** 2026-05-24 — 移除 `startMentorSkipPress`／`initGame` 內 legacy mentor 分支；`jpDebug.playMentor` 仍 map-only。
 > **L36 真結局：** 2026-05-24 — **已修正**：`getMentorDialogueEntry('MAIN_ENDING_FINALE')` alias → `FINAL_ENDING`（`game.js`，未改 JSON）
 > **行號：** 下列 `game.js` 行號以當次 `rg` 為準，會漂移；改動前請再 `rg "setupMentorDialogue|finishMentorDialogue"`。
 
@@ -26,13 +26,11 @@
 | `game.js` L1164-L1255 | mentor video helpers | video source 解析、元素取得、播放/停止、錯誤處理，包含 `stopAllAudio()` 與 `masterVolume`。 | C | 高 | 不可在低風險整理輪碰；需等 audio/video lifecycle 專輪。 |
 | `game.js` L1257-L1267 | mentor seen state persistence | 載入與儲存 `mentorTutorialSeen`。 | B | 中 | 綁 `JPAPPStorageManager` 與首次觀看邏輯，暫不外移。 |
 | `game.js` ~L1838+ | `setupMentorDialogue` | 設定目前導師資料、讀 `MENTOR_AUDIO_MAP` fallback、僅在地圖開 `isMapMentorOpen`、typing、mentor audio、mentor video。 | B/C/D | 高 | 非 `showMap` 回 `false`；見 §地圖／關卡確認觸發點。 |
-| `game.js` L1306-L1324 | `triggerMentorDialogue` | **Deprecated no-op**；舊戰鬥中導師 modal 入口，現役導師只在地圖 overlay 播放。 | B/D | 中 | 保留函式避免打斷 `initGame` 舊呼叫；不可恢復 battle modal。 |
 | `game.js` L1326-L1358 | `startMentorTyping` | 打字機效果與 timer。 | B | 中 | 可讀性上獨立，但涉及 UI timing 與 skip 行為，需謹慎。 |
 | `game.js` L1360-L1374 | `getMentorAudioPath` | 從 `MENTOR_AUDIO_MAP` 取 page audio path，保留 `WA_TOPIC_BASIC` legacy fallback。 | C | 高 | 雖像純 lookup，但屬 mentor audio 合約，不可在本輪碰。 |
 | `game.js` L1376-L1487 | `stopMentorAudio` / `playMentorAudioForCurrentPage` | 停止 TTS/WebSpeech、停止目前 mentor audio、HEAD 檢查 mp3、播放、duck/restore map BGM、stale token guard。 | C | 高 | 明確不可在低風險整理輪碰；需 audio lifecycle 專輪。 |
 | `game.js` L1489-L1543 | `completeMentorLine` / `restartMentorDialogue` / `nextMentorLine` | 完成當前頁、重播對話、下一頁或結束，並觸發 page audio/video。 | B/C | 中-高 | paging 狀態可分析，但因每頁切換會播放 mentor audio，不在本輪外移。 |
 | `game.js` ~L2113+ | `finishMentorDialogue` | 寫入 seen state、停止 mentor audio/video、關閉 overlay、解除 stage suspend、更新音量、執行 `_resumeAfterMentor`。 | B/C/D | 高 | 不可在低風險整理輪碰；地圖／確認窗 resume 入口。 |
-| `game.js` L1595-L1625 | long-press skip helpers | 長按 skip 狀態、timer、SFX、呼叫 `finishMentorDialogue`。 | B/C | 中-高 | UI 行為與結束 lifecycle 相連，暫不外移。 |
 
 ## `setupMentorDialogue` 入口總表（2026-05-24 `rg`）
 
@@ -47,8 +45,7 @@
 | 5 | 同上 L36 已通關分支 | L1205–L1208 | `MAIN_ENDING_FINALE`（僅 id／name） | **無**（`return` 前設 flag） |
 | 6 | `checkGlobalEndingTriggers` L35 全 S | L1227–L1228 | `ENDING_L35_ALL_S` 或 `ENDING_L35_ALL_S_AT_35` | **無** |
 | 7 | 同上 L35 一般結局 | L1231 | `ENDING_L35_NORMAL` | **無** |
-| 8 | `initGame` → `triggerMentorDialogue` | L1890 | — | **Deprecated no-op**；不再開戰鬥中 `.mentor-overlay` |
-| 9 | `playMainEndingFinale`（dev／debug） | L1240–L1246 | 間接 #4 | 同 #4 |
+| 8 | `playMainEndingFinale`（dev／debug） | L1240–L1246 | 間接 #4 | 同 #4 |
 
 **未呼叫 `setupMentorDialogue`（對照）：** `grantRewards`／結算 tally（僅 `triggerNextKnowledgeCard`、`playResultFanfare`）、`returnToMap`、`handleEscapeToMap`、`confirmAndStartBattle`。
 
@@ -64,7 +61,7 @@
 | 6 | `updateGainVolumes()` |
 | 7 | 若有 `window._resumeAfterMentor` → 執行後清空 |
 
-**誰會呼叫 `finishMentorDialogue`：** `nextMentorLine` 最後一頁（~L2101）；長按 skip 3 秒（~L2177）。UI：`nextMentorLine` 綁定地圖 overlay 點擊等（`index.html` `.map-mentor-overlay`）。
+**誰會呼叫 `finishMentorDialogue`：** `nextMentorLine` 最後一頁；地圖 overlay「跳過」按鈕。UI：`index.html` `.map-mentor-overlay`。
 
 **seen key 注意：** 地圖 Auto-Mentor 在進入前已 `push` `STAGE_INTRO_n`／`L36_FIRST_ENTRY`（~L1101）；`finishMentorDialogue` 另可能 `push` **`currentMentorSkill.id`**（skill id，如 `WA_TOPIC_BASIC`）。兩者 key 不同屬**現行設計**；改 seen 邏輯前需手測重播。
 
@@ -81,7 +78,7 @@ dialogueSource = centralizedData?.dialogue || skill.mentorDialogue || []
 |------|--------|----------|------|
 | **A. 集中化 JSON** | `assets/data/mentor-dialogues.v1.json` | 頂層 key = `skill.id` 或結局 id | 序章、關卡 intro、結局、L36；`getMentorDialogueEntry` alias：`PROLOGUE_OPENING`→`PROLOGUE`、`MAIN_ENDING_FINALE`→`FINAL_ENDING` |
 | **B. 呼叫端內聯** | — | — | `checkPrologueTrigger` fallback 三行；L36 首通內聯 `getMentorDialogueEntry('MAIN_ENDING_FINALE')?.dialogue` |
-| **C. skill 物件欄位** | 理論上 `skills.v1.json` | `skill.mentorDialogue` | `setupMentorDialogue` 仍保留 `skill.mentorDialogue` 作 inline fallback；`triggerMentorDialogue` 已改 deprecated no-op，不再 gate 或播放。 |
+| **C. skill 物件欄位** | 理論上 `skills.v1.json` | `skill.mentorDialogue` | `setupMentorDialogue` 仍保留 `skill.mentorDialogue` 作 inline fallback。 |
 | **D. 程式組裝 id** | — | `STAGE_INTRO_{n}` 僅用於 **seen**，非 JSON key | 地圖首次點關；台詞仍走 A（skill.id） |
 
 **JSON 頂層 key 一覽（2026-05-24，`rg '^  \"[A-Z]' mentor-dialogues`）：**
@@ -99,12 +96,12 @@ dialogueSource = centralizedData?.dialogue || skill.mentorDialogue || []
 | 項目 | 狀態 | 備註 |
 |------|------|------|
 | **`MAIN_ENDING_FINALE` vs `FINAL_ENDING`** | **已修正** | `getMentorDialogueEntry`：`MAIN_ENDING_FINALE` → `mentorMap.FINAL_ENDING`；L36 首通內聯改 `getMentorDialogueEntry('MAIN_ENDING_FINALE')?.dialogue`。`setupMentorDialogue`／`getMentorAudioPath` 沿用程式 id `MAIN_ENDING_FINALE`，資料來自 JSON `FINAL_ENDING`。 |
-| **`triggerMentorDialogue` + 戰鬥中 modal** | **已移除** | `.mentor-overlay` template／`isMentorModalOpen` 已刪；`initGame` 仍呼叫 deprecated no-op → `startTimer()`。 |
+| **戰鬥中 mentor** | **已移除** | 無 `.mentor-overlay`、無 `triggerMentorDialogue`、`initGame` 不播導師；開局直接 `startTimer()`。 |
 | **仍會播導師的 `initGame` 外路徑** | 不變 | 地圖 Auto-Mentor、`startStageWithExplanation`、L35/L36 結局等直接 `setupMentorDialogue`。 |
 
-## `triggerMentorDialogue` 結論（2026-05-24；**deprecated no-op**）
+## 戰鬥中導師（已移除）
 
-`triggerMentorDialogue` 只由 `initGame` 的 unlock／instruction 分支呼叫；固定回 `false`。舊版 `.mentor-overlay` markup／`isMentorModalOpen` 已移除；`setupMentorDialogue` 僅在 `showMap` 時開 `.map-mentor-overlay`，否則 `console.warn` 並回 `false`。
+舊「戰鬥中暫停查看助詞用法」modal（`.mentor-overlay`）與 `triggerMentorDialogue` 已自程式刪除。`initGame` 僅處理 knowledge card 佇列與開局 `startTimer()`；導師教學改由地圖／確認窗觸發。
 
 現役導師入口：
 
@@ -115,7 +112,7 @@ dialogueSource = centralizedData?.dialogue || skill.mentorDialogue || []
 | `startStageWithExplanation` | `isMapMentorOpen` / `.map-mentor-overlay` | 確認窗「姐姐引導」，仍在地圖狀態 |
 | L35/L36 ending | map-style overlay | 由地圖／回地圖流程觸發 |
 
-`jpDebug.playMentor` / `jpDebug.replayMentor` 同步改為 map-only；在 battle 中呼叫會 `console.warn` 並回 `false`，不再 `pauseBattle()` 或開 `.mentor-overlay`。
+`jpDebug.playMentor` / `jpDebug.replayMentor` 為 map-only；戰鬥中呼叫 `setupMentorDialogue` 會 warn 並回 `false`。
 
 **資料對照（靜態）：** `skills.v1.json` 37 id；`mentor-dialogues.v1.json` 36 個 skill id 有台詞；關卡 L1–L4 僅 `unlockSkills`，L6+ 多為 `skillId` + 同 id `unlockSkills`。
 
@@ -132,15 +129,9 @@ dialogueSource = centralizedData?.dialogue || skill.mentorDialogue || []
 
 **Boss 戰鬥中：** `grantRewards` 內 `playSfx('bossClear')`（魔王）／`win` — **非** mentor dialogue。
 
-### `initGame`（~L9437+；開戰前）
+### `initGame`（開戰前）
 
-| 分支 | 條件 | 機制 | `_resumeAfterMentor` |
-|------|------|------|----------------------|
-| 新 unlock 技能 | `config.unlockSkills` 新增、`skipMentor=false` | `triggerMentorDialogue(firstNewSkillId)` no-op | 不設 mentor resume；落到 `!triggeredMentor` → `startTimer()` |
-| 關卡 instruction | `config.skillId`、未 skip | `triggerMentorDialogue(config.skillId)` no-op | 不設 mentor resume；落到 `!triggeredMentor` → `startTimer()` |
-| 跳過 | `_disableMentorAutoTrigger`／`skipMentor` | 不呼叫 | 地圖 `confirmAndStartBattle` → `startLevel(lv,false)` → **skipMentor=true**（主流程） |
-
-同關 **knowledge card**（非 mentor overlay）：`pendingKnowledgeCards` → 勝利後 `grantRewards` → `triggerNextKnowledgeCard`（獨立流程）。
+**不播導師 overlay。** 新 unlock 技能只佇列 `pendingKnowledgeCards`（勝利後知識卡）；開局結尾直接 `startTimer()`。地圖進關：`confirmAndStartBattle` → `startLevel(lv)`。
 
 ### Result／破關（`grantRewards` #36）
 
@@ -161,7 +152,7 @@ dialogueSource = centralizedData?.dialogue || skill.mentorDialogue || []
 | **地圖點關卡（首次）** | `selectStageFromMap` Auto-Mentor | L1082–1117 | `STAGE_INTRO_{n}` 或 L36：`L36_FIRST_ENTRY` | 開 `isBattleConfirmOpen` | `game-js-map` §地圖顯示層 確認窗 |
 | **關卡確認窗「姐姐引導」** | `startStageWithExplanation` | L1137–1154 | 關卡 `skillId` / `unlockSkills[0]` → `setupMentorDialogue(skill)` | （無固定 resume；`stageConfirmSuspendedForMentor`） | `index.html` `.stage-confirm-mentor-*` |
 | **L35/L36 結局** | `checkGlobalEndingTriggers` | L1163+ | 見 §Ending 表 | 部分分支 `openMap` | §觸發路由 #4–7 |
-| **戰鬥開局** | `initGame` → `triggerMentorDialogue` | ~L9464、L9490 | — | **no-op**；直接 `startTimer` | §`triggerMentorDialogue` 結論 |
+| **戰鬥開局** | `initGame` | — | — | **無導師**；`startTimer` | §`initGame` |
 | **破關回地圖** | `returnToMap` | ~L1308+ | — | — | **不播導師** |
 
 **`setupMentorDialogue` overlay（~L1842）：** 僅 `showMap` → `isMapMentorOpen` + `.map-mentor-overlay`；非地圖不回開 overlay。
@@ -175,7 +166,7 @@ dialogueSource = centralizedData?.dialogue || skill.mentorDialogue || []
 | `game.js` ~L1137–1154 | `startStageWithExplanation` | 關卡確認窗「姐姐引導」；`stageConfirmSuspendedForMentor`。 | B/D | 高 | 模板 `index.html` L2596+。 |
 | `game.js` ~L1161+ | ending dialogue triggers | L35/L36 結局、special scene、BGM override、呼叫 `setupMentorDialogue`。 | C/D | 高 | L35 走 JSON id 正常；L36 alias **已修正** §已確認／已修正。 |
 | `game.js` L168-L172, L899-L933, L9370-L9384 | knowledge card queue | 新技能 knowledge card 排程、顯示、吸收動畫、接回結算 tally。 | D | 高 | 與 unlock reward/victory flow 綁定，不在 mentor 低風險輪處理。 |
-| `game.js` L7666-L7864 | `initGame` legacy mentor branch | 新技能 unlock／instruction 仍呼叫 `triggerMentorDialogue`，但該函式已 deprecated no-op；pending knowledge card 不變。 | D | 中 | 不恢復 battle mentor modal；`!triggeredMentor` 後備會啟動 timer。 |
+| `game.js` `initGame` | 開局初始化 | unlock 只佇列 knowledge card；不播 battle mentor。 | D | 低 | 已移除 `triggerMentorDialogue` 分支。 |
 | `game.js` L8395-L8663 | TTS / feedback voice | Web Speech、feedback mp3、combo/correct praise voice。 | C | 高 | 明確不可在低風險整理輪碰；屬 TTS/voice/audio。 |
 | `game.js` L9768-L9868 | mounted audio unlock and debug jump cleanup | user gesture audio unlock、debug jump 時清 typing timer 與 mentor audio、關 overlay。 | C | 高 | 不可在低風險整理輪碰；與 iOS resume/audio lifecycle 相關。 |
 
@@ -186,20 +177,18 @@ dialogueSource = centralizedData?.dialogue || skill.mentorDialogue || []
 1. 已外移：純文字分頁計算 `paginateMentorDialogue(dialogues)`，回傳 `{ pages, emotions }`。
 2. 已外移：emotion image path lookup `resolveMentorEmotionImage(emotion, imagePaths, failedPaths)`，error handler 與 Vue state 寫入仍在 `game.js`。
 3. 已外移：最後一頁判斷 `isLastMentorLine(pageCount, pageIndex)`，Vue computed wrapper 仍在 `game.js`。
-4. `triggerMentorDialogue` 不再是外移候選；它保留為 deprecated no-op，以避免 `initGame` 舊呼叫打開 battle modal。
-
 ## 不可在低風險整理輪碰
 
 - `stopMentorAudio`、`playMentorAudioForCurrentPage`、`getMentorAudioPath`，以及任何 mentor mp3 fallback、HEAD 檢查、stale token guard。
 - `stopTtsAudio`、`stopWebSpeech`、`window.playTtsKey`、feedback voice、combo voice、correct voice。
 - `duckMapBgmForVoice`、`restoreMapBgmAfterVoice`、`stopAllAudio`、`playBgm`、`playSfx`、fanfare、iOS gesture resume。
 - `setupMentorDialogue`、`finishMentorDialogue`、`nextMentorLine` 中會觸發 audio/video/lifecycle 的行為。
-- `checkPrologueTrigger`、`checkGlobalEndingTriggers`、`selectStageFromMap`、`startStageWithExplanation`、`initGame` 的 unlock/instruction mentor branch。
+- `checkPrologueTrigger`、`checkGlobalEndingTriggers`、`selectStageFromMap`、`startStageWithExplanation`。
 - knowledge card queue 與 victory tally 接續流程。
 
 ## 建議下一輪
 
-下一輪若繼續整理，範圍仍應只限「無播放、無 Vue state 寫入、無 `_resumeAfterMentor`、無 localStorage 寫入」的函式。不要恢復 `triggerMentorDialogue` 的 battle modal；現役導師入口維持 map-only。
+下一輪若繼續整理，範圍仍應只限「無播放、無 Vue state 寫入、無 `_resumeAfterMentor`、無 localStorage 寫入」的函式。勿恢復戰鬥中 mentor modal。
 
 ## 相關文件
 

@@ -62,8 +62,8 @@
 | 只改地圖進關／開戰 | — | **不要**；需任務明示 `confirmAndStartBattle` / `startLevel` |
 | 只改地圖 BGM／fanfare 時序 | — | **不要**；`openMap` / `playResultFanfare` / `playBgm` 屬 audio freeze |
 | 只改導師在地圖／關卡確認出現 | `mentor-dialogue-map.md` §地圖觸發點 + §觸發路由 | `checkPrologueTrigger`, `selectStageFromMap`, `startStageWithExplanation` |
-| 只改導師台詞（JSON key） | `mentor-dialogues.v1.json` §台詞資料來源 | L36：`FINAL_ENDING`（JSON）；程式 id `MAIN_ENDING_FINALE` 經 alias 命中（**已修正**）；`triggerMentorDialogue` 是 deprecated no-op |
-| 只改結局／開戰前導師 | `mentor-dialogue-map.md` §Ending／§initGame／§`triggerMentorDialogue` 結論 | battle `triggerMentorDialogue` 不恢復；地圖 Auto-Mentor 仍 `skipMentor` |
+| 只改導師台詞（JSON key） | `mentor-dialogues.v1.json` §台詞資料來源 | L36：`FINAL_ENDING`（JSON）；程式 id `MAIN_ENDING_FINALE` 經 alias 命中（**已修正**） |
+| 只改結局／開戰前導師 | `mentor-dialogue-map.md` §Ending／§地圖觸發點 | 戰鬥中無導師；地圖 Auto-Mentor／確認窗「姐姐引導」 |
 | 只改導師台詞／語音／分頁 runtime | #16 + audio | **DO NOT TOUCH** runtime／TTS／audio 除非明示 |
 | 只改導師 overlay 視覺 | `mentor.css` + `index.html` `.map-mentor-overlay` / `.stage-confirm-mentor-*` | 無 `.mentor-overlay` battle template（已移除 2026-05-24） |
 | 只改樣式 | [`css-map.md`](./css-map.md) | class 名自 `index.html` |
