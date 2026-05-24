@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
 > **Last audited:** 2026-05-24 (release `26052401` context)
-> **Doc sync:** 2026-05-24 — §地圖顯示層 + §想改地圖…速查；§結算畫面；存檔卡／result display 邊界
+> **Doc sync:** 2026-05-24 — §地圖流程（return-to-map）；§地圖顯示層；§結算畫面；存檔卡邊界
 > **File:** `assets/js/game.js` — **~11,693 lines** (1-indexed；外移後略減)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -169,6 +169,66 @@
 | **首頁按鈕進地圖** | `index.html` `startActiveSaveSlot`（L2088） | `home.css` `.home-start-btn` | `selectSaveSlot` / `openMap` 流程（#9/#8） |
 | **破關回地圖捲動** | `scrollToStage` → `settings-manager` `scrollStageNodeIntoView` | — | `returnToMap` 全鏈（#12） |
 
+### 地圖流程（Map flow / return-to-map）
+
+> **邊界：** 本節說明「如何從首頁／戰鬥／結算／逃跑進到地圖」以及三個主旗標的分工。**文件化 only**；改流程需任務明示且手測音訊＋存檔。與 §地圖顯示層（節點／HUD 長相）分開查。
+
+#### 主畫面旗標（`game.js`）
+
+| 旗標 | 預設 | 為 true 時玩家看到 | 常見設為 true |
+|------|------|-------------------|---------------|
+| `showLevelSelect` | `true`（#22） | 首頁／封面／存檔入口 | 啟動、`defeatReturn`、`debugJumpToLevel` 回封面 |
+| `showMap` | `false`（#6） | 世界地圖（`index.html` `v-else-if="showMap"`） | `openMap`、`returnToMap` |
+| `isFinished` | `false`（#22） | 隱藏戰鬥主舞台（`v-else-if="!isFinished"` 的 `#stageWrap`） | **`returnToMap` 會設 `true`**；`openMap` **不**改此旗標 |
+| `monsterResultShown` | `false` | 結算 modal（#36b） | `grantRewards` 勝利鏈；`returnToMap`／`openMap` 會清掉 |
+
+**互斥關係（簡化）：** 首頁 = `showLevelSelect`；地圖 = `showMap && !showLevelSelect`；結算 = `monsterResultShown`（戰鬥 DOM 可能仍在底下）；戰鬥進行 ≈ `!showLevelSelect && !showMap && !isFinished`（另看 `currentLevel`）。`getAudioDebugSnapshot`（~L8254）用 `home` / `map` / `result` / `battle` 字串對照。
+
+#### `openMap`（#8，~L759+）
+
+| 項目 | 說明 |
+|------|------|
+| **責任** | 序章攔截 → **map BGM 首播**（user gesture 內）→ `showLevelSelect=false` → 區段選擇／`saveProgression` → `showMap=true` → 清結算殘留 → `scrollToStage` → `stopAllAudio` + `playBgm` → 結局檢查 → `MapAmbient` |
+| **典型呼叫** | `startActiveSaveSlot`（#9）、`selectSaveSlot` 有進度時、`checkPrologueTrigger` 結束回調、debug 進地圖 |
+| **與 `returnToMap` 差異** | 含 **手勢內** map.m4a 同步 `play()`；**不**設 `isFinished`；**不**處理結算 fanfare 延遲 |
+| **文件任務可改？** | **no**（BGM／存檔／旗標） |
+
+#### `returnToMap`（#12，~L1300+）
+
+| 項目 | 說明 |
+|------|------|
+| **責任** | 關共鳴輪 → `resetBattleOutcomePresentation` → **`isFinished=true`** → `showLevelSelect=false` → 區段／`saveProgression` → `showMap=true` → 清結算／VFX → `scrollToStage` → `stopAllAudio` → **若結算 fanfare 尚在則延遲 500ms 再 `playBgm`**（`returnToMapAudioToken`）→ 結局檢查 → `MapAmbient` |
+| **典型呼叫** | 結算 modal「返回地圖」（`index.html` `@click="returnToMap"`）；**逃跑** `handleEscapeToMap`（#35 區，fade 後呼叫） |
+| **不重複做** | 不播 `bossClear`／不跑 `grantRewards`；知識卡已在勝利當下排程（註：#12 `triggerNextKnowledgeCards` 註解） |
+| **文件任務可改？** | **no** |
+
+#### 音訊／fanfare 邊界（僅對照，#12 + #26 + #36）
+
+| 符號 | 區塊 | 與回地圖的關係 |
+|------|------|----------------|
+| `playResultFanfare` | #12 ~L1279 | **`grantRewards` 勝利後**（知識卡後）播放；`returnToMap` 可 `stopResultFanfare` 並延遲 map BGM |
+| `bossClear` / `win` | #36 `grantRewards` | 魔王／一般勝利 SFX；**在回地圖之前**；不是 map BGM |
+| `playBgm` | #26 | 地圖／戰鬥 BGM 切換；`openMap`／`returnToMap`／`handleMapTabClick` 都會觸及 |
+| `stopAllAudio` | #26 | `openMap`／`returnToMap`／逃跑中段都會呼叫 |
+| `handleEscapeToMap` | ~L5225 | `playSfx('escape')` + `.escape-fade-overlay`（`escape.css`）→ **`returnToMap()`** |
+| `defeatReturn` | ~L5190 | 戰敗 overlay → **`showLevelSelect=true`**（回首頁，**不是**地圖） |
+
+#### `saveProgression` 觸點（回地圖路徑上，#7 — **勿改**）
+
+`openMap`、`returnToMap`、`handleMapTabClick`、`jumpToMapSegment` 內皆有 `saveProgression()`；勝利寫入在 **`grantRewards`**（#36）先於玩家按「返回地圖」。
+
+### 想改回地圖路徑 — 速查
+
+| 玩家路徑 | 入口 UI | 第一個 `rg` 目標 | 實際進地圖函式 | 勿當 display 改 |
+|----------|---------|------------------|----------------|-----------------|
+| **首頁開始／繼續** | `startActiveSaveSlot` | `startActiveSaveSlot` → `openMap` | `openMap` | `loadProgression`、`openMap` BGM |
+| **選槽有進度** | `selectSaveSlot` | `selectSaveSlot` | `openMap` | #9 全流程 |
+| **破關後回地圖** | 結算「返回地圖」`returnToMap` | `returnToMap` | `returnToMap` | `grantRewards`、`playResultFanfare` 時序 |
+| **戰鬥中逃跑** | 設定／選單 `handleEscapeToMap` | `handleEscapeToMap` | `returnToMap`（經 fade） | `escape.css` 動畫、`isEscaping` |
+| **戰敗回封面** | 戰敗 overlay `defeatReturn` | `defeatReturn` | **無**（`showLevelSelect=true`） | `handleGameOver` |
+| **魔王／Boss 通關音效** | （自動，結算前） | `bossClear`、`grantRewards` | 仍要玩家按返回才 `returnToMap` | #36 全鏈 |
+| **破關捲到剛解鎖關** | 地圖節點 `new-unlock-glow` | `newUnlockLv`、`scrollToStage` | `openMap` 或 `returnToMap` 內 | `unlockedLevels.push` 在 #36 |
+
 ### 結算畫面（Result display）責任地圖
 
 > **邊界：** 本節涵蓋破關後 `monsterResultShown` 結算 modal、關卡紀錄表、等級獎勵浮層。**勿**改 `grantRewards` 內 EXP／`processLevelUp`／進度寫入／知識卡排程／`playResultFanfare` 時序（#36）。
@@ -220,7 +280,8 @@
 | 存檔槽流程／新開局／刪檔 | `openSaveSlotPanel`, `selectSaveSlot` | #5, #7, #9 | `game.js`（高風險） |
 | 設定／changelog | `openChangelog`, `createChangelogState` | #13 | `changelog-manager.js` |
 | 地圖 UI／HUD／確認窗文案 | `getStageFocusLabel`, `getStageNodeClass`, `map-chapters.json` | **§地圖顯示層** | `settings-manager.js`, `index.html`, `map-chapters.json` |
-| 地圖／選關（流程） | `selectStageFromMap`, `openMap`, `confirmAndStartBattle` | #8–11 | **DO NOT TOUCH** 除非任務明示進關／BGM |
+| 回地圖／首頁↔地圖流程 | `returnToMap`, `openMap`, `handleEscapeToMap` | **§地圖流程** | **DO NOT TOUCH**（BGM／fanfare／旗標） |
+| 地圖／選關（流程） | `selectStageFromMap`, `confirmAndStartBattle` | #8–11 | **DO NOT TOUCH** 除非任務明示進關 |
 | 共鳴輪圖鑑 | `codexWheelSkills`, `setCodexWheelPhase` | #14, #17–19 | `spirit-codex-helpers.js`, `codex.css` |
 | 怪物圖鑑 | `monsterCodexEntries`, `buildMonsterCodexEntries` | #18 | `codex-display-utils.js` |
 | 結算卡文案（評價、星等、時間字串） | `calculatedGrade`, `stageStarDisplay`, `formatStageClearTime` | **#38**, `result-display-manager.js` | `result-display-manager.js`, `game-utils.js` |
@@ -241,7 +302,8 @@
 | 存檔卡顯示格式 | #5b | `game-utils.js`, `home.css` | 勿碰 #5/#9 寫入與刪槽 |
 | 存檔 / 多槽 / 新開局（流程） | #5, #7, #9 | `storage-manager.js` | **high-risk** |
 | 地圖顯示（背景／節點／HUD／確認窗） | §地圖顯示層 | `map-chapters.json`, `settings-manager.js`, `index.html` | 勿改 `confirmAndStartBattle` / `startLevel` |
-| 地圖 / 選關 / 回地圖（流程） | #8–11 | `map-chapters.json`, `mentor-dialogues` | 導師／BGM／存檔寫入 — **high-risk** |
+| 回地圖路徑（結算／逃跑／首頁） | §地圖流程 | `index.html` 返回地圖鈕、`escape.css` | **DO NOT TOUCH** `returnToMap`／`openMap` 除非明示 |
+| 地圖 / 選關（流程） | #8–11 | `map-chapters.json`, `mentor-dialogues` | 導師／進關 — **high-risk** |
 | 知識卡 / 解鎖演出 | #12 | `index.html` overlay | 與 `grantRewards` 串接 |
 | 共鳴輪（小助靈圖鑑） | #14, #17–19 | `spirit-codex-helpers.js` | 輪上技能順序：`orderCodexWheelSkillsForResonance`（已外移） |
 | 怪物圖鑑 | #18 | `codex-display-utils.js`, `enemies.v1.json` | 顯示優先 utils |

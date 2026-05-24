@@ -16,7 +16,7 @@ This document maps `assets/css/styles.css` and proposes a safe CSS split plan. L
 8. `assets/css/result-mistakes.css?v=26050901`
 9. `assets/css/escape.css?v=26050901`
 
-Future split files should preserve cascade intent by keeping broad/base rules first, feature rules next, RWD overrides late, and `escape.css` last unless its scope is audited separately.
+Future split files should preserve cascade intent by keeping broad/base rules first, feature rules next, RWD overrides late, and `escape.css` last unless its scope is audited separately. **逃跑回地圖：** `.escape-fade-overlay`（`index.html` ~L5181+）由 `handleEscapeToMap` → `returnToMap`；流程見 `game-js-map.md` §地圖流程。
 
 Recommended future order:
 

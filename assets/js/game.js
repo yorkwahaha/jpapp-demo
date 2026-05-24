@@ -756,6 +756,10 @@ const _jpApp = Vue.createApp({
             return false; // Already seen
         };
 
+        /**
+         * Home / slot-continue → map. Sets showMap; map BGM in user-gesture path.
+         * Map-flow docs only — do not refactor for display tasks. Not the same as returnToMap (no isFinished / fanfare delay).
+         */
         const openMap = () => {
             resetBattleOutcomePresentation();
             clearDefeatBgmSuppression();
@@ -763,6 +767,7 @@ const _jpApp = Vue.createApp({
             if (checkPrologueTrigger()) return;
 
             // 在能確定屬於 user gesture 的 handler 中先解鎖並首播 map BGM (第二版修正)
+            // --- audio lifecycle boundary: map-flow doc tasks must not edit this block ---
 
             try {
 
@@ -1239,6 +1244,7 @@ const _jpApp = Vue.createApp({
             checkGlobalEndingTriggers();
         };
 
+        // --- Result fanfare + return-to-map audio (grantRewards → playResultFanfare; returnToMap may delay playBgm) ---
         const RESULT_FANFARE_PATH = 'assets/audio/sfx/fanfare.mp3';
         let activeResultFanfareAudio = null;
         let returnToMapAudioToken = 0;
@@ -1297,6 +1303,10 @@ const _jpApp = Vue.createApp({
             }
         };
 
+        /**
+         * Battle result / escape → map. Sets isFinished + showMap; may delay playBgm if fanfare still playing.
+         * Victory progression already saved in grantRewards — do not add save logic here for display-only tasks.
+         */
         const returnToMap = () => {
             const shouldDelayMapAudio = monsterResultShown.value && !!activeResultFanfareAudio;
             const returnAudioToken = ++returnToMapAudioToken;
@@ -3572,6 +3582,7 @@ const _jpApp = Vue.createApp({
             return BASE_MAX_DAMAGE + Math.max(0, combo - (COMBO_DAMAGE_START - 1)) * COMBO_DAMAGE_BONUS_PER_STACK;
         };
 
+        /** true = home/cover (`index.html` v-if="showLevelSelect"). false when openMap or during battle/result. */
         const showLevelSelect = ref(true);
 
         const runAwayPressTimer = ref(null);
@@ -5222,6 +5233,7 @@ const _jpApp = Vue.createApp({
             playSfx('gameover');
         };
 
+        /** Escape overlay → returnToMap (map flow). Do not change for map-display-only tasks. */
         const handleEscapeToMap = () => {
             if (isEscaping.value) return;
             isEscaping.value = true;
