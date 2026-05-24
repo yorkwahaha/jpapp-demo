@@ -1,5 +1,16 @@
 [
     {
+        "version": "26052401",
+        "date": "2026-05-24",
+        "title": "普通關卡題庫收尾",
+        "changes": [
+            "更新 Stage 24、26～29、31～34 題庫內容，改為更有畫面、有記憶點的句子。",
+            "全 normal pool 維持每組 25 題，普通關卡題庫已完成收尾盤點。",
+            "Stage 35 final boss 與 Stage 36 hidden boss 不新增普通 pool，維持現有 review / all-pool 機制。",
+            "完成題庫二次安全審校，降低助詞多解與中文翻譯不自然的風險。"
+        ]
+    },
+    {
         "version": "26052301",
         "date": "2026-05-23",
         "title": "戰鬥體驗與 Combo 語音更新",
