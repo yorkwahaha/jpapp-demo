@@ -101,6 +101,20 @@
     background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4) 0%, transparent 40%, transparent 60%, rgba(0, 0, 0, 0.6) 100%);
 }
 
+.home-app-version {
+    position: absolute;
+    top: max(0.75rem, env(safe-area-inset-top, 0px));
+    right: max(1rem, env(safe-area-inset-right, 0px));
+    z-index: 4;
+    font-size: 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: rgba(148, 163, 184, 0.88);
+    pointer-events: none;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.85);
+}
+
 .home-title-box {
     animation: fade-down 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
