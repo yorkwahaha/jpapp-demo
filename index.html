@@ -2101,10 +2101,10 @@
 
                 <div v-if="isSaveSlotPanelOpen" class="save-slot-overlay"
                     @click.self="isSaveSlotPanelOpen = false; cancelDeleteSaveSlot()">
-                    <div class="save-slot-panel">
+                    <div class="save-slot-panel" role="dialog" aria-modal="true" aria-labelledby="save-slot-panel-title">
                         <div class="save-slot-panel-header">
                             <div>
-                                <h3 class="save-slot-title">選擇存檔</h3>
+                                <h3 id="save-slot-panel-title" class="save-slot-title">選擇存檔</h3>
                             </div>
                             <button @click="isSaveSlotPanelOpen = false; cancelDeleteSaveSlot()" class="save-slot-close" type="button"
                                 aria-label="關閉存檔選擇">×</button>
@@ -2120,11 +2120,23 @@
                                         <span class="save-slot-name">存檔 {{ slot.id }}</span>
                                         <span class="save-slot-status">{{ slot.isActive ? '目前選擇中' : slot.statusText }}</span>
                                     </div>
-                                <div class="save-slot-summary">
-                                    <span><strong>{{ slot.playerLevelText }}</strong></span>
-                                    <span><strong>{{ slot.highestUnlockedText }}</strong></span>
-                                    <span><strong>{{ slot.resonanceText }}</strong></span>
-                                    <span><strong>{{ slot.lastPlayedText }}</strong></span>
+                                <div class="save-slot-summary" role="list" aria-label="存檔摘要">
+                                    <span class="save-slot-stat" role="listitem">
+                                        <span class="sr-only">等級：</span>
+                                        <strong>{{ slot.playerLevelText }}</strong>
+                                    </span>
+                                    <span class="save-slot-stat" role="listitem">
+                                        <span class="sr-only">最高解鎖：</span>
+                                        <strong>{{ slot.highestUnlockedText }}</strong>
+                                    </span>
+                                    <span class="save-slot-stat" role="listitem">
+                                        <span class="sr-only">小助靈共鳴率：</span>
+                                        <strong>{{ slot.resonanceText }}</strong>
+                                    </span>
+                                    <span class="save-slot-stat" role="listitem">
+                                        <span class="sr-only">最後遊玩：</span>
+                                        <strong>{{ slot.lastPlayedText }}</strong>
+                                    </span>
                                 </div>
                                 <div class="save-slot-actions-panel">
                                     <button v-if="!slot.isEmpty" @click.stop="requestDeleteSaveSlot(slot.id)"

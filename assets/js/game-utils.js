@@ -44,6 +44,38 @@
         return `${safeSeconds.toFixed(2)} 秒`;
     };
 
+    /**
+     * 首頁存檔卡「小助靈共鳴率」字串；僅讀取 progression JSON 做顯示，不寫入。
+     * @param {boolean} isEmpty - 空槽時固定回傳占位
+     * @param {string} [progressionStorageKey] - 槽位 progression 的 localStorage key（由 game.js 組裝）
+     */
+    utils.calculateSaveSlotResonanceText = (isEmpty, progressionStorageKey) => {
+        if (isEmpty) return '--% 共鳴率';
+        try {
+            const raw = typeof localStorage !== 'undefined' && progressionStorageKey
+                ? localStorage.getItem(progressionStorageKey)
+                : null;
+            if (!raw) return '--% 共鳴率';
+            const parsed = JSON.parse(raw);
+            const cleared = new Set((Array.isArray(parsed?.clearedLevels) ? parsed.clearedLevels : []).map(Number));
+            const grades = parsed?.bestGrades || {};
+            const records = parsed?.stageBestRecords || {};
+            if (cleared.size === 0 && Object.keys(records).length === 0) return '--% 共鳴率';
+            let score = 0;
+            for (let stage = 1; stage <= 36; stage++) {
+                const record = records[String(stage)] || records[stage];
+                const isCleared = cleared.has(stage) || !!record;
+                if (!isCleared) continue;
+                score += 0.5;
+                if (grades[String(stage)] === 'S' || grades[stage] === 'S') score += 0.3;
+                if (Number(record?.bestStars) >= 3) score += 0.2;
+            }
+            return `${((score / 36) * 100).toFixed(1)}% 共鳴率`;
+        } catch (_) {
+            return '--% 共鳴率';
+        }
+    };
+
     /** 首頁存檔卡「最後遊玩」時間；空值回傳「尚未遊玩」。 */
     utils.formatSaveSlotTime = (value) => {
         if (!value) return '尚未遊玩';

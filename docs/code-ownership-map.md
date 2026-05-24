@@ -11,7 +11,7 @@
 | Order (approx.) | File | `window` export | Consumed by game.js for |
 |-----------------|------|-----------------|-------------------------|
 | early | `game-constants.js` | `JPAPP_CONSTANTS` | 路徑、等級、語音、圖片常數 |
-| early | `game-utils.js` | `JPAPP_UTILS`, `__JPAPP_UTILS` | 紀錄正規化、`pickOne`、`formatSaveSlotTime`（存檔卡時間） |
+| early | `game-utils.js` | `JPAPP_UTILS`, `__JPAPP_UTILS` | 紀錄正規化、`pickOne`、`formatSaveSlotTime`、`calculateSaveSlotResonanceText`（存檔卡顯示） |
 | early | `skill-vfx.js` | VFX spawn fns | 技能啟動特效 |
 | early | `vfx-helpers.js` | `JPAPPVfxHelpers`, `JPAPP_VFX` | 投射物、浮字、圖層 |
 | early | `hero-status.js` | `heroBuffs`, DOM pills | 擬聲詞 buff UI |
@@ -51,7 +51,7 @@
 | 任何 `game.js` 改動 | [`game-js-map.md`](./game-js-map.md) §B | 見該表「第一個 rg 目標」欄 |
 | 只改題庫文案 | 本檔「Question content」列 | —（**不要**開 `generateQuestionBySkill`） |
 | 只改首頁/版本 | 本檔「Home screen」列 | `appVersion`, `showLevelSelect` |
-| 只改存檔卡顯示 | 本檔「Save slot card display」+ `game-js-map.md` §首頁存檔卡 | `saveSlotCards`, `formatSaveSlotTime` |
+| 只改存檔卡顯示 | 本檔「Save slot card display」+ `game-js-map.md` §首頁存檔卡 | `saveSlotCards`, `formatSaveSlotTime`, `calculateSaveSlotResonanceText` |
 | 只改結算顯示（評價／星等／紀錄表） | `game-js-map.md` §結算畫面 → **§想改星等…速查** | `calculatedGrade`, `stageRecordRows`, `formatStageStarsRow` |
 | 只改星等字串或本場評價門檻 | `result-display-manager.js`（`formatStageStarsRow` / `calculatedGrade`） | 勿改 `grantRewards`；改評價門檻需手測 `bestGrades` |
 | 只改全關卡成績表列 | `buildStageRecordTableRows` + `index.html` stage-records modal | 勿改 `bestGrades` 寫入（#36） |
@@ -64,7 +64,7 @@
 | Domain | Owner file(s) | game.js role | Edit policy |
 |--------|---------------|--------------|-------------|
 | **Home screen** | `index.html`, `assets/css/home.css` | `showLevelSelect`, `appVersion`（§A #13, #22） | 封面/CTA/版本：**yes** |
-| **Save slot card display** | `game.js` §A #5b + `game-utils.js` + `home.css` + `index.html` L2113–2147 | `saveSlotCards`, `formatSaveSlotTime`, `calculateSaveSlotResonanceText` | 卡面四行、共鳴率字串、`.save-slot-*`：**yes**；metadata 寫入見下行 |
+| **Save slot card display** | `game.js` §A #5b + `game-utils.js` + `home.css` + `index.html` L2102–2149 | `saveSlotCards`（computed）；`formatSaveSlotTime` / `calculateSaveSlotResonanceText` 在 utils | 卡面四行、共鳴率公式、`.save-slot-*` / `sr-only` 標籤：**yes**；`isSlotProgressionReadable` 仍 #5 |
 | **Save slots (core)** | `game.js` §A #5, #7, #9 | migration、read/write metadata、`saveProgression`、`selectSaveSlot` | **high-risk** — 勿與顯示任務混改 |
 | **Vue UI template** | `index.html` | 提供 `setup()` return 綁定 | UI 文案/結構改 HTML；邏輯改 game.js |
 | **Global SP** | `game.js` L61–97 | 唯一實作 | defer 外移 |

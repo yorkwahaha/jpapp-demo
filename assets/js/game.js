@@ -128,6 +128,7 @@ const _jpApp = Vue.createApp({
                     hourCycle: 'h23'
                 });
             },
+            calculateSaveSlotResonanceText = (isEmpty) => (isEmpty ? '--% 共鳴率' : '--% 共鳴率'),
             getGradeColor = () => '',
             pickOne = (a) => (a ? a[0] : null),
             pickMany = (a, n) => (a ? a.slice(0, n) : []),
@@ -349,30 +350,6 @@ const _jpApp = Vue.createApp({
             writeSaveSlotsMetadata(metadata);
             refreshSaveSlotsMetadata();
         };
-        const calculateSaveSlotResonanceText = (slotId, isEmpty) => {
-            if (isEmpty) return '--% 共鳴率';
-            try {
-                const raw = localStorage.getItem(slotProgressionKey(slotId));
-                if (!raw) return '--% 共鳴率';
-                const parsed = JSON.parse(raw);
-                const cleared = new Set((Array.isArray(parsed?.clearedLevels) ? parsed.clearedLevels : []).map(Number));
-                const grades = parsed?.bestGrades || {};
-                const records = parsed?.stageBestRecords || {};
-                if (cleared.size === 0 && Object.keys(records).length === 0) return '--% 共鳴率';
-                let score = 0;
-                for (let stage = 1; stage <= 36; stage++) {
-                    const record = records[String(stage)] || records[stage];
-                    const isCleared = cleared.has(stage) || !!record;
-                    if (!isCleared) continue;
-                    score += 0.5;
-                    if (grades[String(stage)] === 'S' || grades[stage] === 'S') score += 0.3;
-                    if (Number(record?.bestStars) >= 3) score += 0.2;
-                }
-                return `${((score / 36) * 100).toFixed(1)}% 共鳴率`;
-            } catch (_) {
-                return '--% 共鳴率';
-            }
-        };
         const saveSlotCards = computed(() => SAVE_SLOT_IDS.map(slotId => {
             const slot = saveSlotsMetadata.value?.slots?.[String(slotId)] || buildEmptySaveSlotsMetadata().slots[String(slotId)];
             const isEmpty = slot.isEmpty || !isSlotProgressionReadable(slotId);
@@ -384,7 +361,7 @@ const _jpApp = Vue.createApp({
                 statusText: isEmpty ? '空存檔' : '已有進度',
                 playerLevelText: isEmpty ? '-' : `Lv.${slot.playerLevel || 1}`,
                 highestUnlockedText: isEmpty ? '-' : `第 ${slot.highestUnlockedLevel || 1} 關`,
-                resonanceText: calculateSaveSlotResonanceText(slotId, isEmpty),
+                resonanceText: calculateSaveSlotResonanceText(isEmpty, slotProgressionKey(slotId)),
                 lastPlayedText: isEmpty ? '尚未遊玩' : formatSaveSlotTime(slot.lastPlayedAt)
             };
         }));
