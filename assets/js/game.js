@@ -11776,7 +11776,7 @@ const _jpApp = Vue.createApp({
             currentMentorDialogueItem, currentMentorSceneImage, currentMentorModalImage, handleMentorSceneImageError, handleMentorModalImageError,
             mentorVideoEl, mentorVideoSources, shouldUseMentorVideo, shouldMuteMentorVideo, mentorVideoPoster, handleMentorVideoError,
             playPrologueOpening, playMainEndingFinale,
-            handleSpiritIconError, getSpiritIconPath, shouldShowSpiritIcon, failedSpiritIcons,
+            handleSpiritIconError, getSpiritIconPath, shouldShowSpiritIcon,
             isMentorSkipPressing, startMentorSkipPress, cancelMentorSkipPress,
             isMonsterImageError, handleMonsterImageError, handleMapImageError, currentMonsterSprite, monsterPositionStyle, monsterIsEntering, monsterIsDying, monsterTrulyDead, monsterResultShown, bossDeathVfxActive, bossDeathStage, monsterAttackLunge,
             showMap, unlockedLevels, clearedLevels,
@@ -11792,7 +11792,7 @@ const _jpApp = Vue.createApp({
 
             isMapMentorOpen,
 
-            pendingKnowledgeCards, activeKnowledgeCard, isKnowledgeCardShowing, isKnowledgeCardAbsorbing, triggerNextKnowledgeCard, closeKnowledgeCard,
+            activeKnowledgeCard, isKnowledgeCardShowing, isKnowledgeCardAbsorbing, closeKnowledgeCard,
             getSpiritForSkill, getSpiritForKnowledgeCard, getSpiritImageSrc, handleSpiritImageError,
             isSpecialSceneActive, specialSceneBg,
             isForegroundSettling,
