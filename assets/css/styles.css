@@ -6497,15 +6497,6 @@ body.lock-scroll {
         align-self: center !important;
     }
 
-    /* 導師面板位置微調：確保開場流程入口清晰 */
-    .mentor-overlay {
-        align-items: center !important;
-        /* 回歸置中或微調 */
-    }
-
-    .mentor-panel {
-        margin: auto !important;
-    }
 }
 
 /* --- Stage Map v1 Styles --- */

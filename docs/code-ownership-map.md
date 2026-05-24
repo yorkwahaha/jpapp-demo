@@ -65,7 +65,7 @@
 | 只改導師台詞（JSON key） | `mentor-dialogues.v1.json` §台詞資料來源 | L36：`FINAL_ENDING`（JSON）；程式 id `MAIN_ENDING_FINALE` 經 alias 命中（**已修正**）；`triggerMentorDialogue` 是 deprecated no-op |
 | 只改結局／開戰前導師 | `mentor-dialogue-map.md` §Ending／§initGame／§`triggerMentorDialogue` 結論 | battle `triggerMentorDialogue` 不恢復；地圖 Auto-Mentor 仍 `skipMentor` |
 | 只改導師台詞／語音／分頁 runtime | #16 + audio | **DO NOT TOUCH** runtime／TTS／audio 除非明示 |
-| 只改導師 overlay 視覺 | `mentor.css` + `index.html` `.map-mentor-*` / `.stage-confirm-mentor-*` | 見 `css-map.md`；勿改 `setupMentorDialogue` |
+| 只改導師 overlay 視覺 | `mentor.css` + `index.html` `.map-mentor-overlay` / `.stage-confirm-mentor-*` | 無 `.mentor-overlay` battle template（已移除 2026-05-24） |
 | 只改樣式 | [`css-map.md`](./css-map.md) | class 名自 `index.html` |
 
 ## 所有權矩陣（誰擁有什麼）

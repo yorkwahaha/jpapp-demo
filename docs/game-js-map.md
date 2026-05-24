@@ -43,7 +43,7 @@
 | 12 | **Map — return & knowledge cards** | 1257–1409 | `returnToMap`、result fanfare、`triggerNextKnowledgeCard` | **High** | `returnToMap`, `triggerNextKnowledgeCard`, `_afterKnowledgeCards` | `index.html` knowledge overlay | **no** | 破關回地圖、知識卡 |
 | 13 | **Home — version, settings, changelog** | 1411–1524 | `APP_VERSION`、`appVersion`、`openChangelog`、`versionImageAsset`、settings、devTools | Low | `appVersion`, `openChangelog`, `isDevToolsVisible` | `changelog-manager.js`, `home.css`, `index.html` | **yes** | 首頁版本字、changelog、設定 |
 | 14 | **Codex — wheel state (RAF vars)** | 1526–1572 | 共鳴輪 phase、拖曳、RAF 常數（非 ref） | Low | `codexWheelPhase`, `CODEX_WHEEL_` | `spirit-codex-helpers.js` | defer | 開共鳴輪不卡頓 |
-| 15 | **Mentor — state & fallbacks** | 1574–1841 | mentor refs、inline `mentorDialogueHelpers` fallback、`loadMentorState` | **High** | `mentorTutorialSeen`, `isMentorModalOpen` | `mentor-dialogue-helpers.js` | **no** | — |
+| 15 | **Mentor — state & fallbacks** | 1574–1841 | mentor refs、inline `mentorDialogueHelpers` fallback、`loadMentorState` | **High** | `mentorTutorialSeen`, `isMapMentorOpen` | `mentor-dialogue-helpers.js` | **no** | — |
 | 16 | **Mentor — dialogue runtime** | 1842–2198 | `setupMentorDialogue`、typing、skip、video、audio page | **DO NOT TOUCH** | `setupMentorDialogue`, `playMentorAudioForCurrentPage`, `finishMentorDialogue` | `audio-tts.js`, `mentor-dialogue-map.md` | **no** | 導師全流程、iOS 音訊 |
 | 17 | **Codex — wheel logic & UI** | 2200–3005 | `codexWheelSkills`（排序經 helper）、拖曳／動畫、`openCodexDetail` | Low–Med | `codexWheelSkills`, `setCodexWheelPhase`, `openCodexDetail` | `spirit-codex-helpers.js`, `codex.css` | defer | 共鳴輪旋轉、詳情 |
 | 18 | **Codex — monster index** | 3045–3077 | `monsterCodexEntries` computed（薄）、開關／選取 | Low | `monsterCodexEntries`, `openMonsterCodex` | `codex-display-utils.js`, `enemies.v1.json` | **yes** | 怪物圖鑑列表/詳情 |
@@ -183,13 +183,13 @@
 | 確認窗引導 | #11 `startStageWithExplanation` | 確認窗暫藏（mentor open） | `setupMentorDialogue(skill)` | mentor §姐姐引導 |
 | 開戰 | `confirmAndStartBattle` | 關確認窗 | — | **無導師**；#33 |
 | 回地圖 | #12 `returnToMap` | `showMap` | — | **無導師**；§地圖流程 |
-| Overlay 分流 | `setupMentorDialogue` #16 | `isMapMentorOpen` if `showMap` | 否則 `isMentorModalOpen` | mentor §setupMentorDialogue |
+| Overlay | `setupMentorDialogue` #16 | `isMapMentorOpen` only if `showMap` | 否則 warn + `false` | mentor §setupMentorDialogue |
 
 **DO NOT TOUCH（mentor×map）：** `setupMentorDialogue`、`finishMentorDialogue`、`playMentorAudioForCurrentPage`、`mentor-dialogues.v1.json`、`_resumeAfterMentor` 回調內容。
 
 **完整導師入口／結局／initGame／result 對照：** [`mentor-dialogue-map.md`](./mentor-dialogue-map.md) §觸發路由總表、§Ending／initGame／Result、§台詞資料來源、§已確認。
 
-**2026-05-24：** L36 alias 已修正；`triggerMentorDialogue` 判定為 legacy battle mentor path，已改 deprecated no-op。地圖開戰仍 `skipMentor=true`。手測見 mentor §`triggerMentorDialogue` 結論。
+**2026-05-24：** L36 alias 已修正；battle `.mentor-overlay`／`isMentorModalOpen` 已移除；`setupMentorDialogue` map-only。地圖開戰仍 `skipMentor=true`。
 
 ### 地圖流程（Map flow / return-to-map）
 

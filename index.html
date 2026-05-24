@@ -2547,7 +2547,7 @@
 
             <div v-if="isBattleConfirmOpen"
                 class="battle-confirm-overlay fixed inset-0 z-[100] flex items-center justify-center px-8 bg-slate-950/[0.05] backdrop-blur-[2px]"
-                :class="{ 'opacity-0 pointer-events-none': isMapMentorOpen || isMentorModalOpen }"
+                :class="{ 'opacity-0 pointer-events-none': isMapMentorOpen }"
                 role="dialog" aria-modal="true" aria-labelledby="stage-confirm-heading"
                 @click="closeBattleConfirm">
 
@@ -4071,99 +4071,6 @@
 
             <!-- New Dedicated Buff Overlay Layer (Above HUD but below Modals) -->
             <div id="battleBuffOverlay" v-if="!isFinished" class="battle-buff-overlay"></div>
-
-            <!-- Mentor Modal -->
-
-            <div v-if="isMentorModalOpen" class="mentor-overlay" style="z-index: 5000;">
-
-                <div class="mentor-panel shadow-2xl">
-
-                    <div class="mentor-header">
-
-                        <span class="mentor-name">傳說中的導師</span>
-
-                        <div class="mentor-page-indicator" v-if="mentorPages.length > 1">
-
-                            {{ mentorDialogueIndex + 1 }} / {{ mentorPages.length }}
-
-                        </div>
-
-                    </div>
-
-                    <div class="mentor-body flex gap-6">
-
-                        <div class="mentor-portrait-container">
-
-                            <video v-if="shouldUseMentorVideo" ref="mentorVideoEl" :autoplay="shouldMuteMentorVideo" :muted="shouldMuteMentorVideo" loop playsinline
-                                preload="metadata" :poster="mentorVideoPoster" @error="handleMentorVideoError"
-                                class="mentor-portrait-video rounded-full">
-                                <source v-for="source in mentorVideoSources" :key="source.src" :src="source.src"
-                                    :type="source.type">
-                            </video>
-
-                            <img v-else-if="!isMentorPortraitError" :src="currentMentorModalImage"
-                                @error="handleMentorModalImageError" class="mentor-portrait-img rounded-full">
-
-                            <div v-else class="mentor-portrait-placeholder">
-
-                                <span class="text-4xl">👤</span>
-
-                            </div>
-
-                        </div>
-
-                        <div class="mentor-text flex-1">{{ displayedMentorText }}</div>
-
-                    </div>
-
-                    <div class="mentor-footer">
-
-                        <button @pointerdown="startMentorSkipPress" @pointerup="cancelMentorSkipPress"
-                            @pointerleave="cancelMentorSkipPress" @pointercancel="cancelMentorSkipPress"
-                            @contextmenu.prevent class="mentor-skip-btn"
-                            :class="{ 'is-pressing': isMentorSkipPressing }">
-
-                            <div class="mentor-skip-progress" :style="{ width: isMentorSkipPressing ? '100%' : '0%' }">
-
-                            </div>
-
-                            <span>長按 3 秒略過對話</span>
-
-                        </button>
-
-
-
-                        <div v-if="isLastMentorLine && !isTypingMentor" class="flex gap-4">
-
-                            <button @click="restartMentorDialogue"
-                                class="mentor-btn btn-secondary text-sm sm:text-base px-4 sm:px-10">
-
-                                再看一次
-
-                            </button>
-
-                            <button @click="nextMentorLine" class="mentor-btn text-sm sm:text-base px-4 sm:px-10">
-
-                                開始戰鬥
-
-                            </button>
-
-                        </div>
-
-                        <button v-else @click="nextMentorLine" class="mentor-btn">
-
-                            {{ isTypingMentor ? '▶ 快進' : '下一句' }}
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-
 
             <!-- Knowledge Card Animation Overlay -->
             <transition name="fade">

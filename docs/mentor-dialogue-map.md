@@ -5,6 +5,7 @@
 > **Doc sync:** 2026-05-24 — §觸發路由總表、§台詞資料來源、ending／initGame／result 分支（`rg setupMentorDialogue` 實測）
 > **實證排查：** 2026-05-24 — `triggerMentorDialogue` 會開戰鬥中舊版 `.mentor-overlay`。
 > **修法實作：** 2026-05-24 — battle mentor modal 判定為 legacy；`triggerMentorDialogue` 改 deprecated no-op，debug mentor playback 改 map-only。
+> **Markup cleanup：** 2026-05-24 — 移除 `index.html` `.mentor-overlay`／`isMentorModalOpen`；`setupMentorDialogue` map-only（非地圖 `console.warn` + `false`）。
 > **L36 真結局：** 2026-05-24 — **已修正**：`getMentorDialogueEntry('MAIN_ENDING_FINALE')` alias → `FINAL_ENDING`（`game.js`，未改 JSON）
 > **行號：** 下列 `game.js` 行號以當次 `rg` 為準，會漂移；改動前請再 `rg "setupMentorDialogue|finishMentorDialogue"`。
 
@@ -18,13 +19,13 @@
 
 | 位置 | 區塊 | 用途 | 類型 | 風險 | 外移判斷 |
 | --- | --- | --- | --- | --- | --- |
-| `game.js` ~L1569+ | Mentor reactive state | `mentorTutorialSeen`、modal/map overlay 狀態、頁面 index、typing 狀態、portrait/video/audio token 等。 | B/C | 中-高 | 不建議低風險輪外移。這些是 Vue state 與 audio token 的根。 |
+| `game.js` ~L1569+ | Mentor reactive state | `mentorTutorialSeen`、`isMapMentorOpen`、頁面 index、typing 狀態、portrait/video/audio token 等。 | B/C | 中-高 | 不建議低風險輪外移。這些是 Vue state 與 audio token 的根。 |
 | `game.js` L1056-L1106 | `fragmentMentorDialogue` | 將集中化對話資料切成顯示頁，並同步建立 `mentorPageEmotions`。 | A | 低-中 | 純分頁計算已外移為 `paginateMentorDialogue`；`game.js` 保留寫入 Vue emotion state 的薄整合層。 |
 | `game.js` L1108-L1154 | current line / emotion image helpers | 取得目前文字、emotion、modal/scene image fallback，處理圖片載入失敗。 | A/B | 低-中 | 純 path lookup 已外移為 `resolveMentorEmotionImage`；computed 與 error handler 仍留在 `game.js`，因為會讀寫 Vue state 與 DOM event target。 |
 | `game.js` L1156-L1162 | `isLastMentorLine` | 判斷目前是否最後一頁。 | A | 低 | 純判斷已外移為 `isLastMentorLine`；Vue computed wrapper 留在 `game.js`。 |
 | `game.js` L1164-L1255 | mentor video helpers | video source 解析、元素取得、播放/停止、錯誤處理，包含 `stopAllAudio()` 與 `masterVolume`。 | C | 高 | 不可在低風險整理輪碰；需等 audio/video lifecycle 專輪。 |
 | `game.js` L1257-L1267 | mentor seen state persistence | 載入與儲存 `mentorTutorialSeen`。 | B | 中 | 綁 `JPAPPStorageManager` 與首次觀看邏輯，暫不外移。 |
-| `game.js` ~L1838+ | `setupMentorDialogue` | 設定目前導師資料、讀 `MENTOR_AUDIO_MAP` fallback、依 `showMap` 開 map/modal overlay、typing、mentor audio、mentor video。 | B/C/D | 高 | 不可在低風險整理輪碰；見 §地圖／關卡確認觸發點。 |
+| `game.js` ~L1838+ | `setupMentorDialogue` | 設定目前導師資料、讀 `MENTOR_AUDIO_MAP` fallback、僅在地圖開 `isMapMentorOpen`、typing、mentor audio、mentor video。 | B/C/D | 高 | 非 `showMap` 回 `false`；見 §地圖／關卡確認觸發點。 |
 | `game.js` L1306-L1324 | `triggerMentorDialogue` | **Deprecated no-op**；舊戰鬥中導師 modal 入口，現役導師只在地圖 overlay 播放。 | B/D | 中 | 保留函式避免打斷 `initGame` 舊呼叫；不可恢復 battle modal。 |
 | `game.js` L1326-L1358 | `startMentorTyping` | 打字機效果與 timer。 | B | 中 | 可讀性上獨立，但涉及 UI timing 與 skip 行為，需謹慎。 |
 | `game.js` L1360-L1374 | `getMentorAudioPath` | 從 `MENTOR_AUDIO_MAP` 取 page audio path，保留 `WA_TOPIC_BASIC` legacy fallback。 | C | 高 | 雖像純 lookup，但屬 mentor audio 合約，不可在本輪碰。 |
@@ -58,7 +59,7 @@
 | 1 | 清除打字 timer |
 | 2 | 若 `currentMentorSkill.id` 不在 `mentorTutorialSeen` → `push` + `saveMentorState()` |
 | 3 | `stopMentorAudio` / `stopMentorVideo` |
-| 4 | `isMentorModalOpen` / `isMapMentorOpen` → false |
+| 4 | `isMapMentorOpen` → false |
 | 5 | `stageConfirmSuspendedForMentor` → false |
 | 6 | `updateGainVolumes()` |
 | 7 | 若有 `window._resumeAfterMentor` → 執行後清空 |
@@ -98,14 +99,12 @@ dialogueSource = centralizedData?.dialogue || skill.mentorDialogue || []
 | 項目 | 狀態 | 備註 |
 |------|------|------|
 | **`MAIN_ENDING_FINALE` vs `FINAL_ENDING`** | **已修正** | `getMentorDialogueEntry`：`MAIN_ENDING_FINALE` → `mentorMap.FINAL_ENDING`；L36 首通內聯改 `getMentorDialogueEntry('MAIN_ENDING_FINALE')?.dialogue`。`setupMentorDialogue`／`getMentorAudioPath` 沿用程式 id `MAIN_ENDING_FINALE`，資料來自 JSON `FINAL_ENDING`。 |
-| **`triggerMentorDialogue` + 戰鬥中 modal** | **已停用** | 舊版 `.mentor-overlay` 判定為 legacy；現役導師只走地圖 overlay。`initGame` 會因 no-op 回 false 而直接 `startTimer()`。 |
+| **`triggerMentorDialogue` + 戰鬥中 modal** | **已移除** | `.mentor-overlay` template／`isMentorModalOpen` 已刪；`initGame` 仍呼叫 deprecated no-op → `startTimer()`。 |
 | **仍會播導師的 `initGame` 外路徑** | 不變 | 地圖 Auto-Mentor、`startStageWithExplanation`、L35/L36 結局等直接 `setupMentorDialogue`。 |
 
 ## `triggerMentorDialogue` 結論（2026-05-24；**deprecated no-op**）
 
-`triggerMentorDialogue` 只由 `initGame` 的 unlock／instruction 分支呼叫。該時機已進入 battle runtime，`showMap=false`，因此 `setupMentorDialogue` 會打開舊版 `.mentor-overlay` / `isMentorModalOpen`。
-
-使用者已確認舊版 battle mentor modal 來自已移除的「戰鬥中暫停、查看助詞用法」功能；現役導師對話只應在地圖介面觀看。因此本入口保留函式名稱但固定回 `false`，讓 `initGame` 的既有後備流程直接 `startTimer()`，避免戰鬥中彈出 legacy UI。
+`triggerMentorDialogue` 只由 `initGame` 的 unlock／instruction 分支呼叫；固定回 `false`。舊版 `.mentor-overlay` markup／`isMentorModalOpen` 已移除；`setupMentorDialogue` 僅在 `showMap` 時開 `.map-mentor-overlay`，否則 `console.warn` 並回 `false`。
 
 現役導師入口：
 
@@ -165,7 +164,7 @@ dialogueSource = centralizedData?.dialogue || skill.mentorDialogue || []
 | **戰鬥開局** | `initGame` → `triggerMentorDialogue` | ~L9464、L9490 | — | **no-op**；直接 `startTimer` | §`triggerMentorDialogue` 結論 |
 | **破關回地圖** | `returnToMap` | ~L1308+ | — | — | **不播導師** |
 
-**`setupMentorDialogue` 選 overlay（~L1852）：** `showMap` → `isMapMentorOpen`；否則 `isMentorModalOpen`。詳見 §台詞資料來源。
+**`setupMentorDialogue` overlay（~L1842）：** 僅 `showMap` → `isMapMentorOpen` + `.map-mentor-overlay`；非地圖不回開 overlay。
 
 ## 關聯入口與綁定
 

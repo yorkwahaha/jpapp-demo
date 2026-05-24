@@ -1574,7 +1574,6 @@ const _jpApp = Vue.createApp({
 
         const mentorTutorialSeen = ref([]);
 
-        const isMentorModalOpen = ref(false);
 
         const isLevelJumpOpen = ref(false);
 
@@ -1709,8 +1708,6 @@ const _jpApp = Vue.createApp({
         };
 
         const currentMentorSceneImage = computed(() => getMentorEmotionImage(currentMentorDialogueItem.value.emotion) || MENTOR_FALLBACK_SCENE_IMAGE);
-        const currentMentorModalImage = computed(() => getMentorEmotionImage(currentMentorDialogueItem.value.emotion) || MENTOR_DEFAULT_MODAL_IMAGE);
-
         const handleMentorImageError = (event, fallbackPath = MENTOR_DEFAULT_MODAL_IMAGE) => {
             const failedPath = event?.target?.getAttribute('src') || '';
             if (failedPath && failedPath !== fallbackPath) {
@@ -1727,7 +1724,6 @@ const _jpApp = Vue.createApp({
         };
 
         const handleMentorSceneImageError = (event) => handleMentorImageError(event, MENTOR_FALLBACK_SCENE_IMAGE);
-        const handleMentorModalImageError = (event) => handleMentorImageError(event, MENTOR_DEFAULT_MODAL_IMAGE);
 
         const isLastMentorLine = computed(() => {
 
@@ -1843,6 +1839,11 @@ const _jpApp = Vue.createApp({
         // ================= [ MENTOR DIALOGUE ] =================
         /** Entry router: see docs/mentor-dialogue-map.md §觸發路由總表. Dialogue: mentor-dialogues.v1.json via getMentorDialogueEntry(skill.id). */
         const setupMentorDialogue = (skill) => {
+            if (!showMap.value) {
+                console.warn('[setupMentorDialogue] mentor playback is map-only.');
+                return false;
+            }
+
             currentMentorSkill.value = skill;
 
             // 優先讀取集中化 JSON 內的對話資料，保留原有 skill 內的作為 fallback
@@ -1854,17 +1855,7 @@ const _jpApp = Vue.createApp({
 
             mentorDialogueIndex.value = 0;
 
-            if (showMap.value) {
-
-                isMapMentorOpen.value = true;
-
-                isMentorModalOpen.value = false;
-
-            } else {
-                playSfx('uiPop'); // Added sound for mentor modal
-                isMentorModalOpen.value = true;
-                isMapMentorOpen.value = false;
-            }
+            isMapMentorOpen.value = true;
 
             isMentorPortraitError.value = false;
 
@@ -1876,6 +1867,7 @@ const _jpApp = Vue.createApp({
 
             playMentorVideo();
 
+            return true;
         };
 
         const triggerMentorDialogue = () => {
@@ -2129,15 +2121,11 @@ const _jpApp = Vue.createApp({
 
             stopMentorVideo();
 
-            isMentorModalOpen.value = false;
-
             isMapMentorOpen.value = false;
 
             if (stageConfirmSuspendedForMentor.value) {
                 stageConfirmSuspendedForMentor.value = false;
             }
-
-            // 立即刷新音量 (因 isMentorModalOpen 已設為 false)
 
             updateGainVolumes();
 
@@ -4258,7 +4246,7 @@ const _jpApp = Vue.createApp({
 
         const resumeBattle = () => {
 
-            if (isMenuOpen.value || isCodexOpen.value || isMentorModalOpen.value || isMistakesOpen.value) return;
+            if (isMenuOpen.value || isCodexOpen.value || isMistakesOpen.value) return;
 
             // NEW: Ensure battle starts if logically in battle but timer not running (e.g. after mentor/skill tutorial)
 
@@ -4598,7 +4586,7 @@ const _jpApp = Vue.createApp({
         const getNormalizedSfxVolume = () => normalizeVolumeValue(sfxVolume.value);
 
         const getBgmUiDuckScale = () => {
-            let scale = (isMenuOpen.value || isCodexOpen.value || isMonsterCodexOpen.value || isMentorModalOpen.value || isMistakesOpen.value) ? 0.35 : 1.0;
+            let scale = (isMenuOpen.value || isCodexOpen.value || isMonsterCodexOpen.value || isMistakesOpen.value) ? 0.35 : 1.0;
 
             if (isMentorVoicePlaying.value) {
                 scale = (scale === 1.0) ? 0.25 : 0.15;
@@ -5611,7 +5599,7 @@ const _jpApp = Vue.createApp({
 
         };
 
-        watch([isMenuOpen, isCodexOpen, isMonsterCodexOpen, isMentorModalOpen, isMistakesOpen, bgmVolume, masterVolume, isMuted, sfxVolume], () => {
+        watch([isMenuOpen, isCodexOpen, isMonsterCodexOpen, isMistakesOpen, bgmVolume, masterVolume, isMuted, sfxVolume], () => {
 
             updateGainVolumes();
 
@@ -6985,8 +6973,6 @@ const _jpApp = Vue.createApp({
         };
 
         const runTimerLogic = () => {
-
-            if (isMentorModalOpen.value) return;
 
             if (isFinished.value || monsterDead.value || playerDead.value || showLevelSelect.value) {
 
@@ -11577,7 +11563,7 @@ const _jpApp = Vue.createApp({
 
             isMenuOpen.value = false;
 
-            isMentorModalOpen.value = false;
+            isMapMentorOpen.value = false;
 
             isLevelJumpOpen.value = false;
 
@@ -11648,13 +11634,12 @@ const _jpApp = Vue.createApp({
             skillMastery, getSkillMastery, getSkillMasteryStyle, isBondMaxSkill,
             isMonsterCodexOpen, openMonsterCodex, monsterCodexEntries, selectedMonsterCodexEntry, selectMonsterCodexEntry, handleMonsterCodexImageError,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
-            isMentorModalOpen, isLevelJumpOpen, isAdvancedSettingsOpen, isStageRecordsOpen, stageRecordRows, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
+            isLevelJumpOpen, isAdvancedSettingsOpen, isStageRecordsOpen, stageRecordRows, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
             displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,
-            currentMentorDialogueItem, currentMentorSceneImage, currentMentorModalImage, handleMentorSceneImageError, handleMentorModalImageError,
+            currentMentorDialogueItem, currentMentorSceneImage, handleMentorSceneImageError,
             mentorVideoEl, mentorVideoSources, shouldUseMentorVideo, shouldMuteMentorVideo, mentorVideoPoster, handleMentorVideoError,
             playPrologueOpening, playMainEndingFinale,
             handleSpiritIconError, getSpiritIconPath, shouldShowSpiritIcon,
-            isMentorSkipPressing, startMentorSkipPress, cancelMentorSkipPress,
             isMonsterImageError, handleMonsterImageError, currentMonsterSprite, monsterPositionStyle, monsterIsEntering, monsterIsDying, monsterTrulyDead, monsterResultShown, bossDeathVfxActive, bossDeathStage, monsterAttackLunge,
             showMap, unlockedLevels, clearedLevels,
             startActiveSaveSlot, openSaveSlotPanel, selectSaveSlot, requestDeleteSaveSlot, cancelDeleteSaveSlot, confirmDeleteSaveSlot, pendingDeleteSaveSlotId, isSaveSlotPanelOpen, saveSlotCards, activeSaveSlotId, saveSlotPanelMode, isLevelUnlocked, isLevelCleared, getStageNodeClass, getStageFocusParticle, getStageFocusLabel, hasMentor,

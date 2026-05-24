@@ -134,7 +134,7 @@ Confirmed:
 1. `index.html` loads split CSS in the documented order: `styles.css`, `home.css`, `settings.css`, `mentor.css`, `battle.css`, `battle-vfx.css`, `codex.css`, `result-mistakes.css`, then `escape.css`, all with `v=26050901`.
 2. High-risk selectors remain in `styles.css`: `#hud`, `.battle-hud-*`, `#heroAvatar`, `.resonance-*`, `#flickLayer`, `.hud-tap-mode`, and the four-mode RWD override blocks.
 3. Split files do not contain the prohibited battle HUD / resonance / flick / TAP selectors.
-4. Extracted selector families are not duplicated as base definitions across split files and `styles.css`. Remaining intersections are intentional retained overrides: `.mentor-overlay` / `.mentor-panel` desktop polish in `styles.css`, and `.monster-codex-*` rules inside the four-mode RWD blocks.
+4. Extracted selector families are not duplicated as base definitions across split files and `styles.css`. Remaining intersections: `.monster-codex-*` in four-mode RWD blocks. Legacy battle `.mentor-overlay` desktop polish removed 2026-05-24.
 5. Extracted animation references have matching `@keyframes`; no missing keyframes were found in the CSS set.
 6. `assets/js/game.js` has an empty content diff. `git status --short` may still report it as modified because of stat metadata; `git update-index --refresh assets/js/game.js` can clear that when the environment permits writing Git index/object metadata.
 
@@ -196,7 +196,7 @@ Classification key:
 | Stage confirm modal | L6103-L6287 | B | recommended future owner: `map.css` or dedicated `stage-flow.css`; not `result-mistakes.css` | Triggered from stage selection, contains best record display, and includes mentor entry. It belongs to map/stage flow, not pure result, settings, or mentor. |
 | Disabled rune pointer-events and old corner FAB forced-hide | L6288-L6314 | C/B mixed | keep in `styles.css` until corner-menu policy is finalized | Rune disabled behavior is battle/TAP/Flick adjacent. Corner forced-hide is bounded but directly overrides the earlier corner menu block; the two blocks should be audited and moved (or removed) as one policy unit. |
 | Home leftovers after Phase 1-E | L6315-L6341 | C | Frozen | Phase 1-E moved `.home-*`; remaining local block is mobile battle fixes such as `#battleLog`, `#heroAvatar`, `.tap-mode-controls`. |
-| HUD stabilization and desktop modal/mentor polish | L6342-L6434 | C/B mixed | Frozen / layout audit | Includes `.hud-interactive-rows`, `#hud`, `.modal-overlay`, `.modal-panel`, `.mentor-overlay`, `.mentor-panel`. Cascade-sensitive and cross-domain. |
+| HUD stabilization and desktop modal polish | L6342-L6424 | C/B mixed | Frozen / layout audit | Includes `.hud-interactive-rows`, `#hud`, `.modal-overlay`, `.modal-panel`. Legacy battle `.mentor-overlay` removed 2026-05-24. |
 | Map structure, map HUD, nodes, ambience | L6435-L7986 | C | Frozen | `map.css` remains deferred. It needs dedicated visual QA for map HUD, dropdown, nodes, mentor overlay, chapter ambience, and later four-mode map overrides. |
 | Battle HUD utility buttons, floating damage, buffs/debuffs/defeat | L7987-L8685 | C | Frozen | Battle HUD and battle state VFX. Keep with battle/HUD audit. |
 | `.modal-caption` and changelog text polish | L8686-L8812 | Done (Phase 1-F) | `settings.css` | Mechanically moved to `settings.css` after ownership decision. No battle/map/RWD/audio selectors were moved with this block. |
@@ -317,7 +317,7 @@ Manual visual checks by extraction type:
 - `battle-vfx.css`: monster hit, boss attacks, boss death, GIRAGIRA, full bond attack.
 - `codex.css`: monster codex, spirit codex, book tabs, unlock overlay.
 - `settings.css`: system menu, settings modal, changelog, volume controls.
-- `mentor.css`: prologue, mentor modal paging, skip behavior, portrait/video clipping.
+- `mentor.css`: map prologue iOS tweaks, `.mentor-scene-video` clipping (legacy battle modal rules removed 2026-05-24).
 - `rwd.css`: iPhone portrait, iPad portrait, iPad landscape, desktop.
 
 ## Notes
