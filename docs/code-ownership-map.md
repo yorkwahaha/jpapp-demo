@@ -2,7 +2,7 @@
 
 > **Purpose:** 跨檔責任邊界與 `index.html` 載入順序，搭配 [`game-js-map.md`](./game-js-map.md) 使用。  
 > **Last updated:** 2026-05-24
-> **Doc sync:** 2026-05-24 — `orderCodexWheelSkillsForResonance` 歸 `spirit-codex-helpers.js`
+> **Doc sync:** 2026-05-24 — 首頁存檔卡顯示（`saveSlotCards` / `home.css`）；`formatSaveSlotTime` 歸 `game-utils.js`
 
 ## Script 載入順序（`index.html` → `game.js` 前）
 
@@ -11,7 +11,7 @@
 | Order (approx.) | File | `window` export | Consumed by game.js for |
 |-----------------|------|-----------------|-------------------------|
 | early | `game-constants.js` | `JPAPP_CONSTANTS` | 路徑、等級、語音、圖片常數 |
-| early | `game-utils.js` | `JPAPP_UTILS`, `__JPAPP_UTILS` | 紀錄正規化、`pickOne`, `parseAcceptableAnswers` |
+| early | `game-utils.js` | `JPAPP_UTILS`, `__JPAPP_UTILS` | 紀錄正規化、`pickOne`、`formatSaveSlotTime`（存檔卡時間） |
 | early | `skill-vfx.js` | VFX spawn fns | 技能啟動特效 |
 | early | `vfx-helpers.js` | `JPAPPVfxHelpers`, `JPAPP_VFX` | 投射物、浮字、圖層 |
 | early | `hero-status.js` | `heroBuffs`, DOM pills | 擬聲詞 buff UI |
@@ -51,13 +51,16 @@
 | 任何 `game.js` 改動 | [`game-js-map.md`](./game-js-map.md) §B | 見該表「第一個 rg 目標」欄 |
 | 只改題庫文案 | 本檔「Question content」列 | —（**不要**開 `generateQuestionBySkill`） |
 | 只改首頁/版本 | 本檔「Home screen」列 | `appVersion`, `showLevelSelect` |
+| 只改存檔卡顯示 | 本檔「Save slot card display」+ `game-js-map.md` §首頁存檔卡 | `saveSlotCards`, `formatSaveSlotTime` |
 | 只改樣式 | [`css-map.md`](./css-map.md) | class 名自 `index.html` |
 
 ## 所有權矩陣（誰擁有什麼）
 
 | Domain | Owner file(s) | game.js role | Edit policy |
 |--------|---------------|--------------|-------------|
-| **Home screen** | `index.html`, `assets/css/home.css` | `showLevelSelect`, `appVersion`（§A #13, #22）；存檔面板 §A #9 | UI/文案改 HTML/CSS；槽邏輯 **high-risk** |
+| **Home screen** | `index.html`, `assets/css/home.css` | `showLevelSelect`, `appVersion`（§A #13, #22） | 封面/CTA/版本：**yes** |
+| **Save slot card display** | `game.js` §A #5b + `game-utils.js` + `home.css` + `index.html` L2113–2147 | `saveSlotCards`, `formatSaveSlotTime`, `calculateSaveSlotResonanceText` | 卡面四行、共鳴率字串、`.save-slot-*`：**yes**；metadata 寫入見下行 |
+| **Save slots (core)** | `game.js` §A #5, #7, #9 | migration、read/write metadata、`saveProgression`、`selectSaveSlot` | **high-risk** — 勿與顯示任務混改 |
 | **Vue UI template** | `index.html` | 提供 `setup()` return 綁定 | UI 文案/結構改 HTML；邏輯改 game.js |
 | **Global SP** | `game.js` L61–97 | 唯一實作 | defer 外移 |
 | **Save / slots** | `game.js` + `storage-manager`（部分 key） | 主邏輯 | high-risk |

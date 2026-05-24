@@ -115,6 +115,19 @@ const _jpApp = Vue.createApp({
             normalizeStageBestRecords = (s) => s,
             parseAcceptableAnswers = (a) => (Array.isArray(a) ? a : [a]),
             formatStageClearTime = (s) => (s + 's'),
+            formatSaveSlotTime = (value) => {
+                if (!value) return '尚未遊玩';
+                const date = new Date(value);
+                if (Number.isNaN(date.getTime())) return '尚未遊玩';
+                return date.toLocaleString('zh-TW', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false,
+                    hourCycle: 'h23'
+                });
+            },
             getGradeColor = () => '',
             pickOne = (a) => (a ? a[0] : null),
             pickMany = (a, n) => (a ? a.slice(0, n) : []),
@@ -335,19 +348,6 @@ const _jpApp = Vue.createApp({
             metadata.activeSlot = normalized;
             writeSaveSlotsMetadata(metadata);
             refreshSaveSlotsMetadata();
-        };
-        const formatSaveSlotTime = (value) => {
-            if (!value) return '尚未遊玩';
-            const date = new Date(value);
-            if (Number.isNaN(date.getTime())) return '尚未遊玩';
-            return date.toLocaleString('zh-TW', {
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false,
-                hourCycle: 'h23'
-            });
         };
         const calculateSaveSlotResonanceText = (slotId, isEmpty) => {
             if (isEmpty) return '--% 共鳴率';

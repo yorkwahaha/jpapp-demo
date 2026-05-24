@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
 > **Last audited:** 2026-05-24 (release `26052401` context)
-> **Doc sync:** 2026-05-24 — `orderCodexWheelSkillsForResonance` 外移至 `spirit-codex-helpers.js`
+> **Doc sync:** 2026-05-24 — 首頁存檔卡 `saveSlotCards` 責任地圖；`formatSaveSlotTime` → `game-utils.js`
 > **File:** `assets/js/game.js` — **~11,693 lines** (1-indexed；外移後略減)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -32,11 +32,12 @@
 | 2 | **Global — SP HUD** | 61–97 | `window.__sp`, `updateSpUI`, `canAffordSP` | Med | `__sp`, `spendSP`, `regenSP` | `index.html` `#spFill` | defer | 施放技能扣 SP、答對回 SP |
 | 3 | **Vue bootstrap** | 99–159 | `createApp`, `setup` 開頭、首個 `onMounted` 載入 `map-chapters` | Med | `mapChapters`, `createApp` | `map-chapters.json` | defer | 進地圖章節是否載入 |
 | 4 | **Setup — data refs** | 160–183 | `EARLY_GAME_POOLS`、`LEVEL_CONFIG`、`SKILLS` 等 ref 宣告 | Low | `EARLY_GAME_POOLS`, `LEVEL_CONFIG` | `earlyGamePools.v1.js` | defer | 開局前 ref 存在 |
-| 5 | **Save slots & story flags** | 184–390 | 三槽 metadata、migration、`saveSlotCards`、story flag keys | **High** | `PROGRESSION_KEY`, `ensureSaveSlotMigration`, `saveSlotCards` | `storage-manager.js` | **no** | 切槽、新開局、舊存檔 |
+| 5 | **Save slots — storage & metadata** | 184–351 | keys、migration、metadata 讀寫、`setActiveSaveSlotId`、`isSlotProgressionReadable` | **High** | `PROGRESSION_KEY`, `ensureSaveSlotMigration`, `writeSaveSlotsMetadata` | `storage-manager.js` | **no** | 切槽、migration、metadata |
+| 5b | **Home — saveSlotCards display** | 352–390 | `saveSlotCards` computed、共鳴率字串（**非** save/load 寫入） | Low–Med | `saveSlotCards`, `calculateSaveSlotResonanceText` | `game-utils.js`, `index.html`, `home.css` | **yes**（顯示） | 見 §首頁存檔卡 |
 | 6 | **Map / progression state** | 392–553 | `showMap`、`unlockedLevels`、知識卡佇列、spirit 薄封裝、**`skillMastery`** | **High** | `unlockedLevels`, `skillMastery`, `pendingKnowledgeCards` | `spirit-codex-helpers.js` | **no** | 地圖節點、親密度 |
 | 7 | **Player leveling & save I/O** | 554–715 | `processLevelUp`、`saveProgression`、`loadProgression`、開局 `loadProgression()` | **High** | `saveProgression`, `loadProgression`, `playerStats` | `levels.v1.json` | **no** | 升級、EXP、存檔欄位 |
 | 8 | **Prologue & map open** | 716–898 | `checkPrologueTrigger`、`openMap`、序章／結局場景回調 | **High** | `checkPrologueTrigger`, `openMap`, `_resumeAfterMentor` | `mentor-dialogues.v1.json` | **no** | 首次進地圖序章 |
-| 9 | **Home — save slot UI** | 900–1029 | 存檔面板、`openSaveSlotPanel`、`selectSaveSlot`、`startNewGameFromSlot` | **High** | `openSaveSlotPanel`, `selectSaveSlot`, `startNewGameFromSlot` | `index.html` `showLevelSelect` | **no** | 首頁選槽／新開局 |
+| 9 | **Home — save slot actions** | 900–1029 | 面板開關、選槽、新開局、刪槽確認（流程） | **High** | `openSaveSlotPanel`, `selectSaveSlot`, `confirmDeleteSaveSlot` | `index.html` `showLevelSelect` | **no** | 選槽／刪檔／新開局；卡面資料改 #5b |
 | 10 | **Map — stage pick & HUD helpers** | 1030–1091 | `scrollToStage`、`selectStageFromMap` 前置、地圖 tab | **High** | `handleMapTabClick`, `jumpToMapSegment` | `settings-manager.js` | **no** | 地圖導覽、鎖關提示 |
 | 11 | **Map — battle confirm & endings** | 1092–1255 | `selectStageFromMap`、`confirmAndStartBattle`、L35/L36 結局 | **High** | `checkGlobalEndingTriggers`, `playMainEndingFinale` | `mentor-dialogue-map.md` | **no** | 關卡說明、結局觸發 |
 | 12 | **Map — return & knowledge cards** | 1257–1409 | `returnToMap`、result fanfare、`triggerNextKnowledgeCard` | **High** | `returnToMap`, `triggerNextKnowledgeCard`, `_afterKnowledgeCards` | `index.html` knowledge overlay | **no** | 破關回地圖、知識卡 |
@@ -78,8 +79,42 @@
 | 玩家看到的 | 主要 `game.js` | 主要其他檔 |
 |------------|----------------|------------|
 | 封面／開始／版本字 `v{{ appVersion }}` | #13 `appVersion`；#22 `showLevelSelect` | `index.html`（`v-if="showLevelSelect"`）、`assets/css/home.css` |
-| 三槽存檔面板 | #9 | `index.html` save-slot UI |
+| 三槽存檔面板（流程） | #9 | `index.html` L2102–2148 |
+| 存檔卡四行摘要 | #5b `saveSlotCards` | 見 §首頁存檔卡 |
 | 進地圖（非首頁） | #8 `openMap`；#22 `showMap` | `settings-manager.js` 地圖節點樣式 |
+
+### 首頁存檔卡（`saveSlotCards`）責任地圖
+
+> **邊界：** 本節只涵蓋「卡上顯示什麼、怎麼排版」。**勿**改 `saveProgression` / `loadProgression` / migration / `clearSaveSlotStorage` / `confirmDeleteSaveSlot`（#5、#7、#9）。
+
+| 層 | 位置 | 責任 | 可改？ |
+|----|------|------|--------|
+| **Vue computed** | `game.js` L376–390 `saveSlotCards` | 合併 metadata + 顯示欄位：`statusText`, `playerLevelText`, `highestUnlockedText`, `resonanceText`, `lastPlayedText`, `isEmpty`, `isActive` | 文案/欄位名可改；`isEmpty` 依 #5 `isSlotProgressionReadable`（慎改） |
+| **顯示 helper** | `game.js` L352–375 `calculateSaveSlotResonanceText` | 讀槽內 progression **僅供**共鳴率字串（不寫入） | 可改公式/文案；**勿**改 `localStorage` key |
+| **時間格式** | `game-utils.js` `formatSaveSlotTime` | `lastPlayedAt` → `zh-TW` 日期時間 | **yes** |
+| **metadata 來源** | `game.js` L198–213 `buildEmptySaveSlotsMetadata` 等 | `playerLevel`, `highestUnlockedLevel`, `lastPlayedAt` 由 `updateActiveSaveSlotMetadata` 寫入 | **no**（屬 #5 核心） |
+| **模板** | `index.html` L2113–2147 | `v-for="slot in saveSlotCards"`、四個 `<strong>`、刪除鈕 | **yes**（結構/文案） |
+| **樣式** | `assets/css/home.css` L257–617（RWD L674+） | `.save-slot-*` 面板、格線、卡面、刪除確認 | **yes**；見 `css-map.md` Phase 1-E |
+
+**`saveSlotCards` 各欄位 → 模板綁定：**
+
+| 欄位 | 空槽 | 有進度 | 資料來源 |
+|------|------|--------|----------|
+| `statusText` | `空存檔` | `已有進度` | computed（模板 active 時改顯示「目前選擇中」） |
+| `playerLevelText` | `-` | `Lv.N` | metadata `playerLevel` |
+| `highestUnlockedText` | `-` | `第 N 關` | metadata `highestUnlockedLevel` |
+| `resonanceText` | `--% 共鳴率` | 依 progression 計算 | `calculateSaveSlotResonanceText` |
+| `lastPlayedText` | `尚未遊玩` | 時間字串 | `formatSaveSlotTime(lastPlayedAt)` |
+
+**與 save/load 核心的分界（DO NOT TOUCH 除非任務明示）：**
+
+| 區塊 | 符號（`rg`） |
+|------|----------------|
+| 寫入 progression | `saveProgression`, `loadProgression` |
+| 槽 metadata 持久化 | `writeSaveSlotsMetadata`, `updateActiveSaveSlotMetadata` |
+| Migration | `ensureSaveSlotMigration`, `copyStorageValue` |
+| 刪槽 | `clearSaveSlotStorage`, `confirmDeleteSaveSlot` |
+| 選槽／新開局 | `selectSaveSlot`, `startNewGameFromSlot`, `setActiveSaveSlotId` |
 
 ---
 
@@ -90,7 +125,8 @@
 | 任務類型 | 第一個 `rg` 目標 | §A 區塊 | 優先改檔 |
 |----------|------------------|---------|----------|
 | 首頁／封面／版本字 | `showLevelSelect`, `appVersion` | #13, #22 | `index.html`, `home.css` |
-| 存檔槽／新開局 | `openSaveSlotPanel`, `saveProgression` | #5, #7, #9 | `game.js`（高風險） |
+| 存檔卡顯示（四行摘要、共鳴率文案） | `saveSlotCards`, `calculateSaveSlotResonanceText` | **#5b** | `index.html`, `home.css`, `game-utils.js` |
+| 存檔槽流程／新開局／刪檔 | `openSaveSlotPanel`, `selectSaveSlot` | #5, #7, #9 | `game.js`（高風險） |
 | 設定／changelog | `openChangelog`, `createChangelogState` | #13 | `changelog-manager.js` |
 | 地圖／選關 | `selectStageFromMap`, `openMap` | #8–11 | `map-chapters.json`, `settings-manager.js` |
 | 共鳴輪圖鑑 | `codexWheelSkills`, `setCodexWheelPhase` | #14, #17–19 | `spirit-codex-helpers.js`, `codex.css` |
@@ -107,7 +143,8 @@
 | 任務 | 先看 game.js 區塊 | 也看 | 風險備註 |
 |------|-------------------|------|----------|
 | 首頁 UI／版本顯示 | #13, #22 | `index.html`, `home.css`, `changelog-manager.js` | 低風險；勿動 `showLevelSelect` 切換邏輯除非任務要求 |
-| 存檔 / 多槽 / 新開局 | #5, #7, #9 | `storage-manager.js` | **high-risk** |
+| 存檔卡顯示格式 | #5b | `game-utils.js`, `home.css` | 勿碰 #5/#9 寫入與刪槽 |
+| 存檔 / 多槽 / 新開局（流程） | #5, #7, #9 | `storage-manager.js` | **high-risk** |
 | 地圖 / 選關 / 回地圖 | #8–11 | `map-chapters.json`, `settings-manager.js` | 導師觸發鏈結 |
 | 知識卡 / 解鎖演出 | #12 | `index.html` overlay | 與 `grantRewards` 串接 |
 | 共鳴輪（小助靈圖鑑） | #14, #17–19 | `spirit-codex-helpers.js` | 輪上技能順序：`orderCodexWheelSkillsForResonance`（已外移） |
@@ -139,6 +176,8 @@
 | ~~移除未使用 codex format 薄封裝~~ | — | — | — | **已完成**（2026-05-24） |
 | ~~Monster codex entries builder~~ | — | `codex-display-utils.js` | ~75 | **已完成**（2026-05-24）：`buildMonsterCodexEntries` / `buildMonsterCodexEntry` / `formatMonsterSpawnStageText`；game.js 保留 Vue computed + UI handlers |
 | ~~Codex wheel 排序純函式~~ | — | `spirit-codex-helpers.js` | ~40 | **已完成**（2026-05-24）：`orderCodexWheelSkillsForResonance` + `SPIRIT_RESONANCE_VISUAL_ORDER` |
+| ~~`formatSaveSlotTime`~~ | — | `game-utils.js` | ~15 | **已完成**（2026-05-24）：首頁存檔卡時間字串；`game.js` 經 `__JPAPP_UTILS` |
+| `calculateSaveSlotResonanceText` | 352–375 | `game-utils.js` 或 `save-slot-display-utils.js` | ~25 | 仍讀 progression 顯示用；外移時勿連同 `isSlotProgressionReadable` |
 | `formatAudioDebugValue` + debug state | 8165–8190 | 擴 `audio-debug-manager.js` | ~30 | 接線已在 L4223；**不**動 `playBgm`/`playSfx` |
 
 ### Phase 2 — Codex wheel / result helper
@@ -176,6 +215,7 @@
 |---------------|--------|----------|
 | `skillCorrectCounts` / `normalizeSkillCorrectCountsMap` | 2026-05-24 | 舊「累計答對次數／雙次制」（normalize `% 2`）殘留；現役親密度僅 **`skillMastery`**（答對 +1，`addSkillMasteryProgress`）。舊存檔 JSON 若含 `skillCorrectCounts`：**load 時忽略**，**save 不再寫回**。 |
 | `orderCodexWheelSkillsForResonance` + `SPIRIT_RESONANCE_VISUAL_ORDER` | 2026-05-24 | 外移至 `spirit-codex-helpers.js`；`game.js` `codexWheelSkills` computed 改呼叫 helper；boot fallback 為 identity 陣列。 |
+| `formatSaveSlotTime` | 2026-05-24 | 外移至 `game-utils.js`；`saveSlotCards.lastPlayedText` 仍經 `__JPAPP_UTILS` + setup fallback。 |
 | Unused codex format Vue exports（`formatSkillMeaning` 等） | 2026-05-24 | 薄包裝已刪；模板改直接綁 `codexSelectedSkill.*`；保留 `getSkillTypeLabel`。 |
 | `hero-status.js` `isSpeedBuff` 分支 | 2026-05-24 | speed potion / speed buff 已退役；unreachable 分支已移除（全 repo 無 `isSpeedBuff` 定義）。`hasSpeedOrEvadeBuffBestEffort()` 現役仍檢查：`heroStatusTimers.speedUntil`、`isEvadeBuff` best-effort、`speedMultiplier > 1.01` best-effort。 |
 | `getStageRecordTimeMs` 解構（game.js） | 2026-05-24 | setup 未使用；`game-utils.js` 內實作保留。 |

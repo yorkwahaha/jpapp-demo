@@ -44,6 +44,21 @@
         return `${safeSeconds.toFixed(2)} 秒`;
     };
 
+    /** 首頁存檔卡「最後遊玩」時間；空值回傳「尚未遊玩」。 */
+    utils.formatSaveSlotTime = (value) => {
+        if (!value) return '尚未遊玩';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return '尚未遊玩';
+        return date.toLocaleString('zh-TW', {
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+            hourCycle: 'h23'
+        });
+    };
+
     utils.getGradeColor = (grade) => {
         const colors = {
             'S': 'text-purple-400 drop-shadow-[0_0_8px_rgba(192,132,252,0.8)] [text-shadow:0_0_2px_#000,0_0_4px_#000]',
