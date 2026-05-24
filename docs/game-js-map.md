@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
 > **Last audited:** 2026-05-24 (release `26052401` context)
-> **Doc sync:** 2026-05-24 — `debugControls` Vue export、`handleMapImageError` 已移除
+> **Doc sync:** 2026-05-24 — `mapFallback` 常數已自 `game-constants.js` 移除
 > **File:** `assets/js/game.js` — **~11,803 lines** (1-indexed；隨 cleanup 略減)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -145,6 +145,7 @@
 | Codex skill formatters（`formatParticleBadge` 等五項） | 2026-05-24 | 自 `codex-display-utils.js` 與 `index.html` boot stub 移除；UI 改 `codexSelectedSkill.*` / `getCodexSkillDisplayName`；`formatMonsterCodexValue` 等怪物圖鑑 helper 保留。 |
 | Vue `return` → `debugControls` | 2026-05-24 | 模板未引用；`debugControls` 常數仍作 `heroBuffs` fallback。 |
 | `handleMapImageError` | 2026-05-24 | 無 `index.html` `@error` 綁定；函式與 Vue export 已刪。 |
+| `DEFAULT_IMAGE_PATHS.mapFallback` | 2026-05-24 | 僅 `game-constants.js` 定義；`handleMapImageError` 移除後無 runtime 引用；地圖背景走 `map-chapters.json`。 |
 
 ### SAFE
 
