@@ -193,6 +193,7 @@ const _jpApp = Vue.createApp({
 
         const maxLevel = ref(35);
 
+        // ================= [ PROGRESSION / SAVE SLOTS ] =================
         // --- Stage Map / Progression State ---
 
         const PROGRESSION_KEY = 'jpapp_progression_v1';
@@ -696,6 +697,7 @@ const _jpApp = Vue.createApp({
             return mentorMap[skillId];
         };
 
+        // ================= [ MAP FLOW & MENTOR TRIGGERS ] =================
         // ---- [ NEW: PROLOGUE TRIGGER ] ----
         /** First openMap: mentor + special scene. Resume → map BGM (see mentor-dialogue-map.md). Map-flow doc only — do not edit. */
         const checkPrologueTrigger = () => {
@@ -4186,7 +4188,7 @@ const _jpApp = Vue.createApp({
 
         };
 
-        // ---- [ BATTLE CONTROL — PAUSE / RESUME ] ----
+        // ================= [ BATTLE — PAUSE / RESUME ] =================
         const pauseBattle = () => {
 
             wasTimerRunning = wasTimerRunning || !!timerId;
@@ -6927,6 +6929,7 @@ const _jpApp = Vue.createApp({
 
         };
 
+        // ================= [ BATTLE — ATB TIMER ] =================
         const runTimerLogic = () => {
 
             if (isFinished.value || monsterDead.value || playerDead.value || showLevelSelect.value) {
@@ -10340,7 +10343,8 @@ const _jpApp = Vue.createApp({
 
         };
 
-        /** 答案判定入口：計算是否正確、處理傘害 / combo 計數、觸發自動推進郏輯。 */
+        // ================= [ BATTLE — CHECK ANSWER ] =================   // DO NOT REFACTOR CASUALLY
+        /** 答案判定入口：計算是否正確、處理傷害 / combo 計數、觸發自動推進郏輯。 */
         const checkAnswer = () => {
 
             if (hasSubmitted.value) return;

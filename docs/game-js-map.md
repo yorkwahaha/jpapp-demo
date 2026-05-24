@@ -1,8 +1,8 @@
 # JPAPP `game.js` Code Map
 
-> **Last audited:** 2026-05-24 (release `26052401` context)
-> **Doc sync:** 2026-05-24 — mentor 見 `mentor-dialogue-map.md` §導師 UI 現況（map-only；battle mentor 已移除）
-> **File:** `assets/js/game.js` — **~11,693 lines** (1-indexed；外移後略減)
+> **Last audited:** 2026-05-24 (release `26052401` context；§A 行號 `rg` 校正)
+> **Doc sync:** 2026-05-24 — mentor 見 [`mentor-dialogue-map.md`](./mentor-dialogue-map.md) §導師 UI 現況（**map-only**；battle mentor 已移除）
+> **File:** `assets/js/game.js` — **~11,549 lines** (1-indexed；外移後略減)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
 
@@ -10,9 +10,9 @@
 
 1. 用 **Section name** 或 **Keywords** 在 `game.js` 內 `rg`（例：`rg "saveProgression" assets/js/game.js`）。
 2. 對照 **Risk** 與 **Safe to edit?**；高風險區除非任務明確要求，否則不動。
-3. 題庫內容只改 `assets/data/*.js|json`，不要改出題核心（§A #31, L7880+）除非任務允許。
-4. 行號會隨編輯漂移；以區塊註解（見文末 [Section header 建議](#f-section-header-建議草案)）為準。
-5. **檔案順序 ≠ 邏輯邊界**：例如 `formatAudioDebugValue` / `onUserGesture` 實體位置在 L8165+（§A #32），落在出題區 **之後**，語意仍屬音訊 lifecycle。
+3. 題庫內容只改 `assets/data/*.js|json`，不要改出題核心（§A #31，`rg generateQuestionBySkill`）除非任務允許。
+4. **行號僅供粗定位**；編輯後優先 `rg` 表中 **Keywords (rg)** 錨點，勿只依行號切割區塊。區塊註解見文末 [Section header 建議](#f-section-header-建議草案)。
+5. **檔案順序 ≠ 邏輯邊界**：例如 `formatAudioDebugValue` / `onUserGesture` 實體在 §A #32（約 L8057+），落在出題區 **之後**，語意仍屬音訊 lifecycle。
 
 ## 核心原則
 
@@ -24,53 +24,57 @@
 
 ## A. 大區塊地圖
 
-> 行號區間**互不重疊**（2026-05-24 以 `rg` 對 `game.js` 實測）。邏輯上相關但檔案順序交錯者，見各列 **Notes**。
+> 行號區間**互不重疊**（2026-05-24 `rg` 對 `game.js` 實測；檔案約 11,549 行）。#32、#36b、#37 等為**檔案順序**與邏輯區塊交錯者，見 **Notes**／**Keywords**。
+>
+> **Mentor 現況：** 僅 **map** overlay（`isMapMentorOpen`、`.map-mentor-overlay`）；**無** battle mentor modal。詳見 [`mentor-dialogue-map.md`](./mentor-dialogue-map.md) §導師 UI 現況。
+>
+> **親密度存檔：** 現役僅 **`skillMastery`**；`skillCorrectCounts` 已退役（§E 已完成），勿當現役欄位。
 
 | # | Section name | Lines (approx.) | Responsibility | Risk | Keywords (rg) | Related files | Safe? | Validation |
 |---|--------------|-----------------|----------------|------|---------------|---------------|-------|------------|
-| 1 | **Global — VFX shims** | 1–59 | `rectCenter`, `getVfxLayer`, `spawnProjectile` 開機 fallback | Med | `rectCenter`, `getVfxLayer` | `vfx-helpers.js`, `skill-vfx.js` | defer | 戰鬥投射物、滿絆特效 |
-| 2 | **Global — SP HUD** | 61–97 | `window.__sp`, `updateSpUI`, `canAffordSP` | Med | `__sp`, `spendSP`, `regenSP` | `index.html` `#spFill` | defer | 施放技能扣 SP、答對回 SP |
-| 3 | **Vue bootstrap** | 99–159 | `createApp`, `setup` 開頭、首個 `onMounted` 載入 `map-chapters` | Med | `mapChapters`, `createApp` | `map-chapters.json` | defer | 進地圖章節是否載入 |
-| 4 | **Setup — data refs** | 160–183 | `EARLY_GAME_POOLS`、`LEVEL_CONFIG`、`SKILLS` 等 ref 宣告 | Low | `EARLY_GAME_POOLS`, `LEVEL_CONFIG` | `earlyGamePools.v1.js` | defer | 開局前 ref 存在 |
-| 5 | **Save slots — storage & metadata** | 184–351 | keys、migration、metadata 讀寫、`setActiveSaveSlotId`、`isSlotProgressionReadable` | **High** | `PROGRESSION_KEY`, `ensureSaveSlotMigration`, `writeSaveSlotsMetadata` | `storage-manager.js` | **no** | 切槽、migration、metadata |
-| 5b | **Home — saveSlotCards display** | 352–366 | `saveSlotCards` computed；共鳴率經 `__JPAPP_UTILS`（**非** save/load 寫入） | Low–Med | `saveSlotCards`, `calculateSaveSlotResonanceText` | `game-utils.js`, `index.html`, `home.css` | **yes**（顯示） | 見 §首頁存檔卡 |
-| 6 | **Map / progression state** | 392–553 | `showMap`、`unlockedLevels`、知識卡佇列、spirit 薄封裝、**`skillMastery`** | **High** | `unlockedLevels`, `skillMastery`, `pendingKnowledgeCards` | `spirit-codex-helpers.js` | **no** | 地圖節點、親密度 |
-| 7 | **Player leveling & save I/O** | 554–715 | `processLevelUp`、`saveProgression`、`loadProgression`、開局 `loadProgression()` | **High** | `saveProgression`, `loadProgression`, `playerStats` | `levels.v1.json` | **no** | 升級、EXP、存檔欄位 |
-| 8 | **Prologue & map open** | 716–898 | `checkPrologueTrigger`、`openMap`、序章／結局場景回調 | **High** | `checkPrologueTrigger`, `openMap`, `_resumeAfterMentor` | `mentor-dialogues.v1.json` | **no** | 首次進地圖序章 |
-| 9 | **Home — save slot actions** | 900–1029 | 面板開關、選槽、新開局、刪槽確認（流程） | **High** | `openSaveSlotPanel`, `selectSaveSlot`, `confirmDeleteSaveSlot` | `index.html` `showLevelSelect` | **no** | 選槽／刪檔／新開局；卡面資料改 #5b |
-| 10 | **Map — stage pick & HUD helpers** | 1030–1091 | `scrollToStage`、`selectStageFromMap` 前置、地圖 tab | **High** | `handleMapTabClick`, `jumpToMapSegment` | `settings-manager.js` | **no** | 地圖導覽、鎖關提示 |
-| 11 | **Map — battle confirm & endings** | 1092–1255 | `selectStageFromMap`、`confirmAndStartBattle`、L35/L36 結局 | **High** | `checkGlobalEndingTriggers`, `playMainEndingFinale` | `mentor-dialogue-map.md` | **no** | 關卡說明、結局觸發 |
-| 12 | **Map — return & knowledge cards** | 1257–1409 | `returnToMap`、result fanfare、`triggerNextKnowledgeCard` | **High** | `returnToMap`, `triggerNextKnowledgeCard`, `_afterKnowledgeCards` | `index.html` knowledge overlay | **no** | 破關回地圖、知識卡 |
-| 13 | **Home — version, settings, changelog** | 1411–1524 | `APP_VERSION`、`appVersion`、`openChangelog`、`versionImageAsset`、settings、devTools | Low | `appVersion`, `openChangelog`, `isDevToolsVisible` | `changelog-manager.js`, `home.css`, `index.html` | **yes** | 首頁版本字、changelog、設定 |
-| 14 | **Codex — wheel state (RAF vars)** | 1526–1572 | 共鳴輪 phase、拖曳、RAF 常數（非 ref） | Low | `codexWheelPhase`, `CODEX_WHEEL_` | `spirit-codex-helpers.js` | defer | 開共鳴輪不卡頓 |
-| 15 | **Mentor — state & fallbacks** | 1574–1841 | mentor refs、inline `mentorDialogueHelpers` fallback、`loadMentorState` | **High** | `mentorTutorialSeen`, `isMapMentorOpen` | `mentor-dialogue-helpers.js` | **no** | — |
-| 16 | **Mentor — dialogue runtime** | 1842–2198 | `setupMentorDialogue`、typing、video、audio page | **DO NOT TOUCH** | `setupMentorDialogue`, `playMentorAudioForCurrentPage`, `finishMentorDialogue` | `audio-tts.js`, `mentor-dialogue-map.md` | **no** | 導師全流程、iOS 音訊 |
-| 17 | **Codex — wheel logic & UI** | 2200–3005 | `codexWheelSkills`（排序經 helper）、拖曳／動畫、`openCodexDetail` | Low–Med | `codexWheelSkills`, `setCodexWheelPhase`, `openCodexDetail` | `spirit-codex-helpers.js`, `codex.css` | defer | 共鳴輪旋轉、詳情 |
-| 18 | **Codex — monster index** | 3045–3077 | `monsterCodexEntries` computed（薄）、開關／選取 | Low | `monsterCodexEntries`, `openMonsterCodex` | `codex-display-utils.js`, `enemies.v1.json` | **yes** | 怪物圖鑑列表/詳情 |
-| 19 | **Codex — watches & Escape** | 3080–3114 | codex watch、`Escape` 關閉共鳴輪／怪物圖鑑 | Low | `isCodexOpen`, `keydown` | — | **yes** | Esc 關閉、開輪同步 |
-| 20 | **Data load & abilities** | 3116–3414 | `loadGameData`、`abilities` fetch、`applyTurnLogic` 前段 | Low–Med | `loadGameData`, `skillsAll` | `skills.v1.json`, `abilities.v1.json` | defer | 開局資料齊全 |
-| 21 | **Battle — onomatope skills** | 3416–3614 | `castAbility`、`playSkillSfx`、技能 overlay；含 `onMounted(loadGameData)` | Med | `castAbility`, `heroBuffs` | `hero-status.js`, `abilities.v1.json` | defer | 擬聲詞施放 |
-| 22 | **Battle — core refs & combo UI** | 3616–3888 | 戰鬥常數、`showLevelSelect`（首頁旗標）、`player`/`monster` refs | Med | `showLevelSelect`, `currentLevel`, `comboPopup` | `index.html` battle/home | defer | 首頁↔戰鬥切換 |
-| 23 | **Battle — boss death VFX** | 3889–4106 | `bossDeathVfxActive`、`spawnBossDeathBurst` 序列 | Med | `bossDeathVfxActive`, `spawnBossDeathBurst` | `vfx-helpers.js`, `battle.css` | defer | 魔王死亡演出 |
-| 24 | **Audio — refs & debug wiring** | 4108–4294 | `bgmAudio`、`audioCtx`、`JPAPPAudioDebugManager` 接線 | **High** | `audioDebug`, `bgmAudio`, `audioCtx` | `audio-debug-manager.js` | **no** | `?audioDebug=1` |
-| 25 | **Battle — pause / resume** | 4296–4318 | `pauseBattle`、`resumeBattle`（開圖鑑／導師時） | Med | `pauseBattle`, `resumeBattle` | — | defer | 開圖鑑不推進 ATB |
-| 26 | **Audio — core (init / BGM / SFX)** | 4320–6731 | `initAudioCtx`、`initAudio`、`playBgm`、`playSfx`、pool、duck | **DO NOT TOUCH** | `initAudio`, `playBgm`, `stopAllAudio`, `playSfx` | `audio-tts.js`, `game-constants.js` | **no** | iOS 手勢、BGM 切換 |
-| 27 | **Battle — Flick engine** | 6733–7034 | `handleRuneClick`、`startFlick`、`resolveFlickShot` | **High** | `flickState`, `FLICK_MIN`, `resolveFlickShot` | `vfx-helpers.js` | **no** | Flick 命中/擦過 |
-| 28 | **Battle — ATB & monster attack** | 7036–7112 | `runTimerLogic`（含 pause timer 呼叫鏈開頭） | **High** | `runTimerLogic`, `timeLeft` | `hero-status.js` | **no** | 倒數、超時 |
-| 29 | **Battle — boss attack VFX** | 7114–7601 | `playBossVineAttackVfx`、`playBossSmashAttackVfx` 等 | Low | `playBossVineAttackVfx`, `playBossSmashAttackVfx` | `battle.css` | **yes** | Boss 特殊攻擊畫面 |
-| 30 | **Battle — applyMonsterAttack & mistakes** | 7603–7878 | `applyMonsterAttack`、`playMistakeVoice`、`clearMistakes` | **High** | `applyMonsterAttack`, `playMistakeVoice` | — | **no** | 怪物攻擊、錯題本 |
-| 31 | **Question generation** | 7880–9339 | `QUESTION_MIX_CONFIG`、`pickSkillForNormalLevel`、`generateQuestionBySkill`、`getChoices` | **DO NOT TOUCH** | `generateQuestionBySkill`, `startBossQueue`, `__debugQMix` | `earlyGamePools.v1.js`, `levels.v1.json` | **no** | 關卡題型分布 |
-| 32 | **Audio — debug format & gesture tail** *(file-order)* | 8165–8687 | `formatAudioDebugValue`、`onUserGesture`、`ensureBgmElementSync` | **DO NOT TOUCH** | `onUserGesture`, `formatAudioDebugValue` | `audio-debug-manager.js` | **no** | 實體在 #31 之後；語意屬音訊 |
-| 33 | **Battle — startLevel & initGame** | 8689–10207 | `startLevel`、`initGame`、題庫組裝、戰鬥 mentor 分支 | **High** | `initGame`, `startLevel`, `questions` | — | **no** | 開戰、教學關 |
-| 34 | **Battle — feedback voice** | 10209–10517 | `playFeedbackVoice`、`playCorrectFeedback` | **High** | `playFeedbackVoice`, `playCorrectFeedback` | `FEEDBACK_VOICE_PATHS` | **no** | 稱讚語音 |
-| 35 | **Battle — checkAnswer & nextQuestion** | 10519–10913 | 判定、傷害、combo、`nextQuestion` | **DO NOT TOUCH** | `checkAnswer`, `nextQuestion`, `addSkillMasteryProgress` | — | **no** | 答對/答錯全流程 |
-| 36 | **Victory — grantRewards** *(core)* | 10877–11162 | EXP 發放、`processLevelUp`、勝利流程、EXP 條動畫、`playResultFanfare` 觸發 | **DO NOT TOUCH** | `grantRewards`, `processLevelUp`, `animateRewards` | `result-display-manager.js`（讀取用） | **no** | 獎勵／升級／結束流程；見 §結算畫面 |
-| 36b | **Result — UI state & timers** | 3745–3817 | `animatedExp`、`displayedResult*`、通關計時、`resultUnlockedMilestones` 顯示狀態 | Low–Med | `monsterResultShown`, `stageClearElapsedSeconds` | `index.html` result modal | defer | 改 ref 預設值需小心 |
-| 37 | **Handlers — retry / revive / potion** | 11415–11468 | `retryLevel`、`revive`、`usePotion` | Med | `retryLevel`, `revive`, `usePotion` | — | defer | 重試關、喝藥 |
-| 38 | **Result — display bindings** | 11432–11494 | `createVueBindings`、`updateStageBestRecord` | Med | `accuracyPct`, `calculatedGrade`, `stageRecordRows` | `result-display-manager.js` | **yes**（顯示） | 評價／星等／紀錄表；見 §結算畫面 |
-| 39 | **Boot hooks (2nd onMounted)** | 11539–11570 | changelog 版本 policy、音訊 unlock、`installTapChoicesLayoutHooks` | Med | `applyVersionStoragePolicy`, `unlockAudioOnce` | `changelog-manager.js` | defer | 首屏手勢後音訊 |
-| 40 | **Debug — level jump** | 11584–11655 | `debugJumpToLevel`、`window.debugJumpToLevel` | Low | `debugJumpToLevel`, `isLevelJumpOpen` | `debug.js` | **yes** (dev) | Dev 關卡跳轉 |
-| 41 | **Vue return & mount** | 11683–11731 | `return {…}`、`__attachDebugTools`、`_jpApp.mount` | Low–Med | `return {`, `_jpApp.mount` | `debug.js`, `index.html` | defer | 啟動不報錯 |
+| 1 | **Global — VFX shims** | 1–60 | `rectCenter`, `getVfxLayer`, `spawnProjectile` 開機 fallback | Med | `rectCenter`, `getVfxLayer` | `vfx-helpers.js`, `skill-vfx.js` | defer | 戰鬥投射物、滿絆特效 |
+| 2 | **Global — SP HUD** | 61–100 | `window.__sp`, `updateSpUI`, `canAffordSP` | Med | `__sp`, `spendSP`, `regenSP` | `index.html` `#spFill` | defer | 施放技能扣 SP、答對回 SP |
+| 3 | **Vue bootstrap** | 101–173 | `createApp`, `setup` 開頭、首個 `onMounted` 載入 `map-chapters` | Med | `mapChapters`, `createApp` | `map-chapters.json` | defer | 進地圖章節是否載入 |
+| 4 | **Setup — data refs** | 174–197 | `EARLY_GAME_POOLS`、`LEVEL_CONFIG`、`SKILLS` 等 ref 宣告 | Low | `EARLY_GAME_POOLS`, `LEVEL_CONFIG` | `earlyGamePools.v1.js` | defer | 開局前 ref 存在 |
+| 5 | **Save slots — storage & metadata** | 198–352 | keys、migration、metadata 讀寫、`setActiveSaveSlotId`、`isSlotProgressionReadable` | **High** | `PROGRESSION_KEY`, `ensureSaveSlotMigration`, `writeSaveSlotsMetadata` | `storage-manager.js` | **no** | 切槽、migration、metadata |
+| 5b | **Home — saveSlotCards display** | 353–368 | `saveSlotCards` computed；共鳴率經 `__JPAPP_UTILS`（**非** save/load 寫入） | Low–Med | `saveSlotCards`, `calculateSaveSlotResonanceText` | `game-utils.js`, `index.html`, `home.css` | **yes**（顯示） | 見 §首頁存檔卡 |
+| 6 | **Map / progression state** | 369–541 | `showMap`、`unlockedLevels`、知識卡佇列、spirit 薄封裝、**`skillMastery`**（非 `skillCorrectCounts`） | **High** | `unlockedLevels`, `skillMastery`, `pendingKnowledgeCards` | `spirit-codex-helpers.js` | **no** | 地圖節點、親密度 |
+| 7 | **Player leveling & save I/O** | 542–700 | `processLevelUp`、`saveProgression`、`loadProgression`、開局 `loadProgression()` | **High** | `saveProgression`, `loadProgression`, `playerStats` | `levels.v1.json` | **no** | 升級、EXP、存檔欄位 |
+| 8 | **Prologue & map open** | 701–889 | `checkPrologueTrigger`、`openMap`、序章／結局場景回調（map mentor） | **High** | `checkPrologueTrigger`, `openMap`, `_resumeAfterMentor` | `mentor-dialogues.v1.json`, `mentor-dialogue-map.md` | **no** | 首次進地圖序章 |
+| 9 | **Home — save slot actions** | 890–1021 | 面板開關、選槽、新開局、刪槽確認（流程） | **High** | `openSaveSlotPanel`, `selectSaveSlot`, `confirmDeleteSaveSlot` | `index.html` `showLevelSelect` | **no** | 選槽／刪檔／新開局；卡面資料改 #5b |
+| 10 | **Map — stage pick & HUD helpers** | 1022–1085 | `scrollToStage`、地圖 tab／區段切換 | **High** | `handleMapTabClick`, `jumpToMapSegment` | `settings-manager.js` | **no** | 地圖導覽、鎖關提示 |
+| 11 | **Map — battle confirm & endings** | 1086–1315 | `selectStageFromMap`、`confirmAndStartBattle`、L35/L36 結局、`playResultFanfare` 定義 | **High** | `selectStageFromMap`, `checkGlobalEndingTriggers`, `playMainEndingFinale` | `mentor-dialogue-map.md` | **no** | 關卡確認、結局 mentor |
+| 12 | **Map — return & knowledge cards** | 1316–1411 | `returnToMap`、知識卡吸收、`triggerNextKnowledgeCard` | **High** | `returnToMap`, `triggerNextKnowledgeCard`, `_afterKnowledgeCards` | `index.html` knowledge overlay | **no** | 破關回地圖、知識卡 |
+| 13 | **Home — version, settings, changelog** | 1412–1526 | `APP_VERSION`、`appVersion`、`openChangelog`、`versionImageAsset`、settings、devTools | Low | `appVersion`, `openChangelog`, `isDevToolsVisible` | `changelog-manager.js`, `home.css`, `index.html` | **yes** | 首頁版本字、changelog、設定 |
+| 14 | **Codex — wheel state (RAF vars)** | 1527–1574 | 共鳴輪 phase、拖曳、RAF 常數（非 ref） | Low | `codexWheelPhase`, `CODEX_WHEEL_` | `spirit-codex-helpers.js` | defer | 開共鳴輪不卡頓 |
+| 15 | **Mentor — state & fallbacks** | 1575–1834 | map mentor refs、`isMapMentorOpen`、helpers fallback、`loadMentorState` | **High** | `mentorTutorialSeen`, `isMapMentorOpen` | `mentor-dialogue-helpers.js`, `mentor-dialogue-map.md` | **no** | map-only；無 battle modal |
+| 16 | **Mentor — dialogue runtime** | 1835–2139 | `setupMentorDialogue`（**`showMap` 必須**）、typing、video、mentor audio | **DO NOT TOUCH** | `setupMentorDialogue`, `playMentorAudioForCurrentPage`, `finishMentorDialogue` | `audio-tts.js`, `mentor-dialogue-map.md` | **no** | 地圖／確認窗導師；iOS 音訊 |
+| 17 | **Codex — wheel logic & UI** | 2140–2936 | `codexWheelSkills`（排序經 helper）、拖曳／動畫、`openCodexDetail` | Low–Med | `codexWheelSkills`, `setCodexWheelPhase`, `openCodexDetail` | `spirit-codex-helpers.js`, `codex.css` | defer | 共鳴輪旋轉、詳情 |
+| 18 | **Codex — monster index** | 2937–2995 | `monsterCodexEntries` computed（薄）、開關／選取 | Low | `monsterCodexEntries`, `openMonsterCodex` | `codex-display-utils.js`, `enemies.v1.json` | **yes** | 怪物圖鑑列表/詳情 |
+| 19 | **Codex — watches & Escape** | 2996–3007 | `Escape` 關閉共鳴輪／怪物圖鑑 | Low | `isCodexOpen`, `keydown` | — | **yes** | Esc 關閉、開輪同步 |
+| 20 | **Data load & abilities** | 3008–3309 | `loadGameData`、`abilities` fetch | Low–Med | `loadGameData`, `skillsAll` | `skills.v1.json`, `abilities.v1.json` | defer | 開局資料齊全 |
+| 21 | **Battle — onomatope skills** | 3310–3521 | `castAbility`、`playSkillSfx`、技能 overlay；含 `onMounted(loadGameData)` | Med | `castAbility`, `heroBuffs` | `hero-status.js`, `abilities.v1.json` | defer | 擬聲詞施放 |
+| 22 | **Battle — core refs & combo UI** | 3522–3783 | 戰鬥常數、`showLevelSelect`、`player`/`monster`、結算 UI refs（含 #36b） | Med | `showLevelSelect`, `monsterResultShown`, `comboPopup` | `index.html` battle/home | defer | 首頁↔戰鬥切換 |
+| 23 | **Battle — boss death VFX** | 3784–4005 | `bossDeathVfxActive`、`spawnBossDeathBurst` 序列 | Med | `bossDeathVfxActive`, `spawnBossDeathBurst` | `vfx-helpers.js`, `battle.css` | defer | 魔王死亡演出 |
+| 24 | **Audio — refs & debug wiring** | 4006–4189 | `bgmAudio`、`audioCtx`、`JPAPPAudioDebugManager` 接線 | **High** | `audioDebug`, `bgmAudio`, `audioCtx` | `audio-debug-manager.js` | **no** | `?audioDebug=1` |
+| 25 | **Battle — pause / resume** | 4190–4246 | `pauseBattle`、`resumeBattle`（開圖鑑／**map** mentor 時） | Med | `pauseBattle`, `resumeBattle`, `closeCodex` | — | defer | 開圖鑑不推進 ATB |
+| 26 | **Audio — core (init / BGM / SFX)** | 4247–6626 | `initAudioCtx`、`initAudio`、`playBgm`、`playSfx`、pool、duck | **DO NOT TOUCH** | `initAudio`, `playBgm`, `stopAllAudio`, `playSfx` | `audio-tts.js`, `game-constants.js` | **no** | iOS 手勢、BGM 切換 |
+| 27 | **Battle — Flick engine** | 6627–6929 | `handleRuneClick`、`startFlick`、`resolveFlickShot` | **High** | `flickState`, `FLICK_MIN`, `resolveFlickShot` | `vfx-helpers.js` | **no** | Flick 命中/擦過 |
+| 28 | **Battle — ATB & timer** | 6930–7005 | `runTimerLogic`、`startTimer`（開局計時；**無** battle mentor） | **High** | `runTimerLogic`, `startTimer`, `timeLeft` | `hero-status.js` | **no** | 倒數、超時 |
+| 29 | **Battle — boss attack VFX** | 7006–7512 | `playBossVineAttackVfx`、`playBossSmashAttackVfx` 等 | Low | `playBossVineAttackVfx`, `playBossSmashAttackVfx` | `battle.css` | **yes** | Boss 特殊攻擊畫面 |
+| 30 | **Battle — applyMonsterAttack & mistakes** | 7513–7778 | `applyMonsterAttack`、`playMistakeVoice`、`clearMistakes` | **High** | `applyMonsterAttack`, `playMistakeVoice` | — | **no** | 怪物攻擊、錯題本 |
+| 31 | **Question generation** | 7779–8056 | `QUESTION_MIX_CONFIG`、`generateQuestionBySkill`、`getChoices`、`startBossQueue` | **DO NOT TOUCH** | `generateQuestionBySkill`, `startBossQueue`, `__debugQMix` | `earlyGamePools.v1.js`, `levels.v1.json` | **no** | 關卡題型分布 |
+| 32 | **Audio — debug format & gesture tail** *(file-order)* | 8057–8580 | `formatAudioDebugValue`、`onUserGesture`、`ensureBgmElementSync` | **DO NOT TOUCH** | `onUserGesture`, `formatAudioDebugValue` | `audio-debug-manager.js` | **no** | 實體在 #31 之後；語意屬音訊 |
+| 33 | **Battle — startLevel & initGame** | 8581–10033 | `startLevel`、`initGame`、題庫組裝、knowledge card 佇列（**無** battle mentor） | **High** | `initGame`, `startLevel`, `questions` | `mentor-dialogue-map.md` §initGame | **no** | 開戰 → knowledge card → `startTimer` |
+| 34 | **Battle — feedback voice** | 10034–10343 | `playFeedbackVoice`、`playCorrectFeedback` | **High** | `playFeedbackVoice`, `playCorrectFeedback` | `FEEDBACK_VOICE_PATHS` | **no** | 稱讚語音 |
+| 35 | **Battle — checkAnswer & nextQuestion** | 10344–10739 | 判定、傷害、combo、`nextQuestion`、`addSkillMasteryProgress` | **DO NOT TOUCH** | `checkAnswer`, `nextQuestion`, `addSkillMasteryProgress` | — | **no** | 答對/答錯全流程 |
+| 36 | **Victory — grantRewards** *(core)* | 10740–11025 | EXP 發放、勝利流程、EXP 條 `animateRewards`、`playResultFanfare` 觸發 | **DO NOT TOUCH** | `grantRewards`, `animateRewards`, `playResultFanfare` | `result-display-manager.js`（讀取用） | **no** | 獎勵／升級；見 §結算畫面 |
+| 36b | **Result — UI state & timers** *(file-order)* | 3678–3748 | `animatedExp`、`displayedResult*`、通關計時、`resultUnlockedMilestones` | Low–Med | `animatedExp`, `stageClearElapsedSeconds`, `monsterResultShown` | `index.html` result modal | defer | 宣告在 #22；邏輯耦合 #36 |
+| 37 | **Handlers — retry / revive / potion** *(file-order)* | 8613, 11240–11294 | `usePotion`（音訊區）、`retryLevel`、`revive` | Med | `retryLevel`, `revive`, `usePotion` | — | defer | 重試關、喝藥 |
+| 38 | **Result — display bindings** | 11295–11363 | `createVueBindings`、`updateStageBestRecord` | Med | `calculatedGrade`, `stageRecordRows`, `createVueBindings` | `result-display-manager.js` | **yes**（顯示） | 評價／星等／紀錄表 |
+| 39 | **Boot hooks (2nd onMounted)** | 11364–11408 | changelog 版本 policy、音訊 unlock、`installTapChoicesLayoutHooks` | Med | `applyVersionStoragePolicy`, `unlockAudioOnce` | `changelog-manager.js` | defer | 首屏手勢後音訊 |
+| 40 | **Debug — level jump** | 11410–11476 | `debugJumpToLevel`、`window.debugJumpToLevel` | Low | `debugJumpToLevel`, `isLevelJumpOpen` | `debug.js` | **yes** (dev) | Dev 關卡跳轉 |
+| 41 | **Vue return & mount** | 11502–11549 | `return {…}`、`__attachDebugTools`、`_jpApp.mount` | Low–Med | `return {`, `_jpApp.mount` | `debug.js`, `index.html` | defer | 啟動不報錯 |
 
 **區塊數量：** 41（含 #32 檔案順序備註列）
 **High-risk / DO NOT TOUCH 區塊：** #5–12, #15–16, #24, #26–28, #30–32, #35–36
@@ -90,10 +94,10 @@
 
 | 層 | 位置 | 責任 | 可改？ |
 |----|------|------|--------|
-| **Vue computed** | `game.js` L352–366 `saveSlotCards` | 合併 metadata + 顯示欄位：`statusText`, `playerLevelText`, `highestUnlockedText`, `resonanceText`, `lastPlayedText`, `isEmpty`, `isActive` | 文案/欄位名可改；`isEmpty` 依 #5 `isSlotProgressionReadable`（慎改） |
+| **Vue computed** | `game.js` L353–368 `saveSlotCards` | 合併 metadata + 顯示欄位：`statusText`, `playerLevelText`, `highestUnlockedText`, `resonanceText`, `lastPlayedText`, `isEmpty`, `isActive` | 文案/欄位名可改；`isEmpty` 依 #5 `isSlotProgressionReadable`（慎改） |
 | **顯示 helper** | `game-utils.js` `calculateSaveSlotResonanceText(isEmpty, progressionStorageKey)` | 讀槽內 progression **僅供**共鳴率字串；key 由 `game.js` `slotProgressionKey(slotId)` 傳入（不寫入） | 可改公式/文案；**勿**改 `PROGRESSION_KEY` / migration |
 | **時間格式** | `game-utils.js` `formatSaveSlotTime` | `lastPlayedAt` → `zh-TW` 日期時間 | **yes** |
-| **metadata 來源** | `game.js` L198–213 `buildEmptySaveSlotsMetadata` 等 | `playerLevel`, `highestUnlockedLevel`, `lastPlayedAt` 由 `updateActiveSaveSlotMetadata` 寫入 | **no**（屬 #5 核心） |
+| **metadata 來源** | `game.js` L212+ `buildEmptySaveSlotsMetadata` 等 | `playerLevel`, `highestUnlockedLevel`, `lastPlayedAt` 由 `updateActiveSaveSlotMetadata` 寫入 | **no**（屬 #5 核心） |
 | **模板** | `index.html` L2102–2149 | `v-for="slot in saveSlotCards"`、四欄摘要（`sr-only` 標籤 + `<strong>`）、刪除鈕 | **yes**（結構/文案/a11y） |
 | **樣式** | `assets/css/home.css` L257–617（RWD L674+） | `.save-slot-*` 面板、格線、卡面、刪除確認 | **yes**；見 `css-map.md` Phase 1-E |
 
@@ -204,9 +208,9 @@
 | `isFinished` | `false`（#22） | 隱藏戰鬥主舞台（`v-else-if="!isFinished"` 的 `#stageWrap`） | **`returnToMap` 會設 `true`**；`openMap` **不**改此旗標 |
 | `monsterResultShown` | `false` | 結算 modal（#36b） | `grantRewards` 勝利鏈；`returnToMap`／`openMap` 會清掉 |
 
-**互斥關係（簡化）：** 首頁 = `showLevelSelect`；地圖 = `showMap && !showLevelSelect`；結算 = `monsterResultShown`（戰鬥 DOM 可能仍在底下）；戰鬥進行 ≈ `!showLevelSelect && !showMap && !isFinished`（另看 `currentLevel`）。`getAudioDebugSnapshot`（~L8254）用 `home` / `map` / `result` / `battle` 字串對照。
+**互斥關係（簡化）：** 首頁 = `showLevelSelect`；地圖 = `showMap && !showLevelSelect`；結算 = `monsterResultShown`（戰鬥 DOM 可能仍在底下）；戰鬥進行 ≈ `!showLevelSelect && !showMap && !isFinished`（另看 `currentLevel`）。音訊 debug 面板區段見 §A #32（`rg formatAudioDebugValue`）。
 
-#### `openMap`（#8，~L759+）
+#### `openMap`（#8，~L767+）
 
 | 項目 | 說明 |
 |------|------|
@@ -215,7 +219,7 @@
 | **與 `returnToMap` 差異** | 含 **手勢內** map.m4a 同步 `play()`；**不**設 `isFinished`；**不**處理結算 fanfare 延遲 |
 | **文件任務可改？** | **no**（BGM／存檔／旗標） |
 
-#### `returnToMap`（#12，~L1300+）
+#### `returnToMap`（#12，~L1316+）
 
 | 項目 | 說明 |
 |------|------|
@@ -228,11 +232,11 @@
 
 | 符號 | 區塊 | 與回地圖的關係 |
 |------|------|----------------|
-| `playResultFanfare` | #12 ~L1279 | **`grantRewards` 勝利後**（知識卡後）播放；`returnToMap` 可 `stopResultFanfare` 並延遲 map BGM |
+| `playResultFanfare` | #11 ~L1291 | **`grantRewards` 勝利後**（知識卡後）播放；`returnToMap` 可 `stopResultFanfare` 並延遲 map BGM |
 | `bossClear` / `win` | #36 `grantRewards` | 魔王／一般勝利 SFX；**在回地圖之前**；不是 map BGM |
 | `playBgm` | #26 | 地圖／戰鬥 BGM 切換；`openMap`／`returnToMap`／`handleMapTabClick` 都會觸及 |
 | `stopAllAudio` | #26 | `openMap`／`returnToMap`／逃跑中段都會呼叫 |
-| `handleEscapeToMap` | ~L5225 | `playSfx('escape')` + `.escape-fade-overlay`（`escape.css`）→ **`returnToMap()`** |
+| `handleEscapeToMap` | ~L5173 | `playSfx('escape')` + `.escape-fade-overlay`（`escape.css`）→ **`returnToMap()`** |
 | `defeatReturn` | ~L5190 | 戰敗 overlay → **`showLevelSelect=true`**（回首頁，**不是**地圖） |
 
 #### `saveProgression` 觸點（回地圖路徑上，#7 — **勿改**）
@@ -260,7 +264,7 @@
 | **顯示格式化（優先改這裡）** | `assets/js/result-display-manager.js` | `accuracyPct`、`calculatedGrade`（S–E）、`stageStarRating` / `stageStarDisplay`（★☆）、`stageClearTimeText`、`stageRecordRows`、`formatStageBest*`、`buildCurrentStageRecordPayload` | **yes**（評價規則、星等、表格列） |
 | **時間字串** | `game-utils.js` `formatStageClearTime` | 通關秒數 → `X.XX 秒` | **yes** |
 | **等級獎勵卡片文案** | `result-display-manager.js` `RESULT_LEVEL_MILESTONE_REWARDS` | Lv5/10/20/25/30 浮層 `type` / `name` / `desc` | **yes** |
-| **Vue 注入** | `game.js` L11432–11494 | `createVueBindings` 接線、`updateStageBestRecord` | 紀錄比較：**defer** |
+| **Vue 注入** | `game.js` L11295–11363 | `createVueBindings` 接線、`updateStageBestRecord` | 紀錄比較：**defer** |
 | **結算 UI state** | `game.js` L3745–3817 | `animatedExp`、`displayedResult*`、`scheduleResultMilestoneRewards` | 動畫 state / 排程：**no**／defer |
 | **結算模板** | `index.html` L3884–3970 | `v-if="monsterResultShown"` 內評價、EXP、按鈕 | **yes** |
 | **等級獎勵浮層** | `index.html` L3984–4002 | `resultUnlockedMilestones` | **yes** |
@@ -361,7 +365,7 @@
 | ~~Codex wheel 排序純函式~~ | — | `spirit-codex-helpers.js` | ~40 | **已完成**（2026-05-24）：`orderCodexWheelSkillsForResonance` + `SPIRIT_RESONANCE_VISUAL_ORDER` |
 | ~~`formatSaveSlotTime`~~ | — | `game-utils.js` | ~15 | **已完成**（2026-05-24）：首頁存檔卡時間字串；`game.js` 經 `__JPAPP_UTILS` |
 | ~~`calculateSaveSlotResonanceText`~~ | — | `game-utils.js` | ~30 | **已完成**（2026-05-24）：`game.js` 傳 `slotProgressionKey`；`isSlotProgressionReadable` 仍留 #5 |
-| `formatAudioDebugValue` + debug state | 8165–8190 | 擴 `audio-debug-manager.js` | ~30 | 接線已在 L4223；**不**動 `playBgm`/`playSfx` |
+| `formatAudioDebugValue` + debug state | 8057–8580（§A #32） | 擴 `audio-debug-manager.js` | ~30 | 接線 ~L4116；**不**動 `playBgm`/`playSfx` |
 
 ### Phase 2 — Codex wheel / result helper
 
@@ -369,9 +373,9 @@
 |------|---------------|---------------|------------|
 | ~~`RESULT_LEVEL_MILESTONE_REWARDS` 文案表~~ | — | `result-display-manager.js` | ~6 | **已完成**（2026-05-24） |
 | `resultLevelUpStatText` 字串組裝 | #36 內 | `result-display-manager.js` | ~15 | 仍耦合 `getDerivedMax*`；需與 #36 一併規劃 |
-| 共鳴輪動畫 / 拖曳 / RAF | 2250–3043 | `codex-wheel-controller.js` | 500–650 |
-| Boss death VFX 序列 | 3889–4106 | `boss-death-vfx.js` 或 `vfx-helpers.js` | ~220 |
-| Boss 攻擊 VFX | 7114–7601 | `boss-attack-vfx.js` | ~490 |
+| 共鳴輪動畫 / 拖曳 / RAF | 2140–2936 | `codex-wheel-controller.js` | 500–650 |
+| Boss death VFX 序列 | 3784–4005 | `boss-death-vfx.js` 或 `vfx-helpers.js` | ~220 |
+| Boss 攻擊 VFX | 7006–7512 | `boss-attack-vfx.js` | ~490 |
 
 ### Phase 3 — Save / debug manager
 
@@ -384,11 +388,11 @@
 
 | Item | game.js lines | Note |
 |------|---------------|------|
-| Question engine | 7880–9339 | 題庫 wrap-up 凍結；拆檔需專項 + 回歸 |
-| Audio core | 4108–6731, 8165–8687 | iOS Safari 高風險；含檔案順序交錯的 gesture tail |
-| Mentor manager | 1842–2198 | 與 TTS/BGM lifecycle 綁死 |
-| Battle judgment | 10519–10913 | 與 `initGame`、教學流程耦合 |
-| Vue `setup()` 主體 | 103–11681 | 最終整合層，不拆 |
+| Question engine | 7779–8056（§A #31） | 題庫 wrap-up 凍結；拆檔需專項 + 回歸 |
+| Audio core | 4006–6626, 8057–8580（§A #24–26, #32） | iOS Safari 高風險；含檔案順序交錯的 gesture tail |
+| Mentor manager | 1835–2139 | map-only；與 TTS/BGM lifecycle 綁死 |
+| Battle judgment | 10344–10739 | 與 `initGame`、knowledge card 耦合 |
+| Vue `setup()` 主體 | 103–11501 | 最終整合層，不拆 |
 
 ---
 
@@ -409,7 +413,7 @@
 | Codex skill formatters（`formatParticleBadge` 等五項） | 2026-05-24 | 自 `codex-display-utils.js` 與 `index.html` boot stub 移除；UI 改 `codexSelectedSkill.*` / `getCodexSkillDisplayName`；`formatMonsterCodexValue` 等怪物圖鑑 helper 保留。 |
 | Vue `return` → `debugControls` | 2026-05-24 | 模板未引用；`debugControls` 常數仍作 `heroBuffs` fallback。 |
 | `handleMapImageError` | 2026-05-24 | 無 `index.html` `@error` 綁定；函式與 Vue export 已刪。 |
-| `DEFAULT_IMAGE_PATHS.mapFallback` | 2026-05-24 | 僅 `game-constants.js` 定義；`handleMapImageError` 移除後無 runtime 引用；地圖背景走 `map-chapters.json`。 |
+| `DEFAULT_IMAGE_PATHS.mapFallback` | 2026-05-24 | **已自 `game-constants.js` 移除**；`handleMapImageError` 已刪。地圖背景走 `map-chapters.json`。**非**待清理項。 |
 | `formatMonsterCodexValue` setup 別名 | 2026-05-24 | 單次使用；`monsterCodexEntries` 改直接呼叫 `JPAPPCodexDisplayUtils.formatMonsterCodexValue`。 |
 | Vue `return` → `currentQuestionBondMax` | 2026-05-24 | `index.html` 無引用；戰鬥滿絆仍用內部 `isCurrentQuestionBondMax()`。 |
 | Vue `return` → `codexPage` / `setCodexSelectedIndex` / `shiftCodexWheel` | 2026-05-24 | `index.html` 無引用；共鳴輪仍用內部 ref／函式。 |
@@ -438,8 +442,8 @@
 | Symbol / area | Location | Evidence |
 |---------------|----------|----------|
 | game.js L1–59 VFX shim 冗餘 | 1–59 | `vfx-helpers.js` 已載入；boot 保險 |
-| Inline module fallbacks | 441–446, 1433–1460, 1655–1714, 4271–4302 | 正式 script 已載入；防 boot 失敗 |
-| `window.__debugQMix` | ~8009 | 僅 dev console |
+| Inline module fallbacks | ~113–136, ~1443–1460, ~1655–1714, ~4086–4114 | 正式 script 已載入；防 boot 失敗 |
+| `window.__debugQMix` | ~7820 | 僅 dev console |
 
 ### RISKY
 
@@ -462,32 +466,34 @@
 
 ---
 
-## F. Section header 建議草案
+## F. Section header（`game.js` 內錨點）
 
-> **本輪不插入 `game.js`**。之後小步加入時，優先補在已有註解稀疏的邊界。
+> **用途：** `rg "\[ .* \]" assets/js/game.js` 或下表 **Keywords** 定位；行號會漂移，以註解文字為準。
+> **2026-05-24 L2：** 本輪新增 5 個 header（僅註解）；其餘為先前既有。
+
+| Header 文字（`rg`） | 約略行 | §A 對照 | 備註 |
+|--------------------|--------|---------|------|
+| `[ GLOBAL — VFX SHIMS ]` | （見檔首 `rectCenter`） | #1 | 檔首無正式 header；可 `rg rectCenter` |
+| `[ VUE APP — MAIN COMPONENT ]` | ~99 | #3 | **既有**（`createApp` 前） |
+| `[ CONFIG & STATE — VUE REACTIVE SETUP ]` | ~174 | #4 | **既有** |
+| `[ PROGRESSION / SAVE SLOTS ]` | ~196 | #5–7 | **2026-05-24 L2 新增**（`PROGRESSION_KEY` 前） |
+| `[ MAP FLOW & MENTOR TRIGGERS ]` | ~700 | #8–12 | **2026-05-24 L2 新增**（`checkPrologueTrigger` / `openMap` 區） |
+| `[ MENTOR DIALOGUE ]` | ~1835 | #16 | **既有**（`setupMentorDialogue` 前；map-only） |
+| `[ QUESTION GENERATION ]` | ~7775 | #31 | **既有** |
+| `[ BATTLE — PAUSE / RESUME ]` | ~4191 | #25 | **2026-05-24 L2 新增**（取代舊 `BATTLE CONTROL` 一行註解） |
+| `[ BATTLE — ATB TIMER ]` | ~6932 | #28 | **2026-05-24 L2 新增**（`runTimerLogic` 前） |
+| `[ BATTLE — CHECK ANSWER ]` | ~10346 | #35 | **2026-05-24 L2 新增**；DO NOT REFACTOR CASUALLY |
+
+**下一批候選（尚未插入）：** `[ VICTORY — GRANT REWARDS ]`（`grantRewards` 前）、`[ AUDIO — CORE ]`、`[ CODEX — RESONANCE WHEEL ]`、`[ VUE RETURN ]`。
 
 ```javascript
-// ================= [ GLOBAL — VFX SHIMS ] =================
-// ================= [ GLOBAL — SP ] =================
-// ================= [ VUE SETUP — SAVE SLOTS ] =================
-// ================= [ VUE SETUP — MAP & PROGRESSION ] =================
-// ================= [ VUE SETUP — MENTOR STATE ] =================
-// ================= [ MENTOR DIALOGUE — RUNTIME ] =================   // DO NOT REFACTOR CASUALLY
-// ================= [ CODEX — RESONANCE WHEEL ] =================
-// ================= [ CODEX — MONSTER INDEX ] =================
-// ================= [ DATA LOAD — SKILLS / SPIRITS / LEVELS ] =================
-// ================= [ BATTLE — ONOMATOPE SKILLS ] =================
-// ================= [ BATTLE — STATE & BOSS DEATH VFX ] =================
-// ================= [ BATTLE — PAUSE RESUME ] =================
-// ================= [ AUDIO — CORE ] =================                 // DO NOT REFACTOR CASUALLY
-// ================= [ BATTLE — FLICK ] =================
+// ================= [ PROGRESSION / SAVE SLOTS ] =================
+// ================= [ MAP FLOW & MENTOR TRIGGERS ] =================
+// ================= [ MENTOR DIALOGUE — RUNTIME ] =================   // 檔內為 [ MENTOR DIALOGUE ]
+// ================= [ BATTLE — PAUSE / RESUME ] =================
 // ================= [ BATTLE — ATB TIMER ] =================
-// ================= [ BATTLE — BOSS ATTACK VFX ] =================
 // ================= [ QUESTION GENERATION ] =================           // DO NOT REFACTOR CASUALLY
-// ================= [ BATTLE — INIT ] =================
 // ================= [ BATTLE — CHECK ANSWER ] =================         // DO NOT REFACTOR CASUALLY
-// ================= [ VICTORY — GRANT REWARDS ] =================
-// ================= [ VUE RETURN ] =================
 ```
 
 ---
@@ -504,4 +510,4 @@
 - 驗證預設：`node --check assets/js/game.js`；音訊/iOS 變更需實機。
 - `docs/game-js-map.md` 舊版行號（~L10000 時代）已作廢，請以本版為準。
 - **親密度存檔：** 僅 `skillMastery`；`skillCorrectCounts` 已退役（見 §E 已完成）。
-- **行號校正：** `rg -n "const saveProgression|const generateQuestionBySkill|const checkAnswer|_jpApp.mount" assets/js/game.js`
+- **行號校正：** `rg -n "const saveProgression|setupMentorDialogue|const generateQuestionBySkill|const checkAnswer|const grantRewards|_jpApp.mount" assets/js/game.js`
