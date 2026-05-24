@@ -2,7 +2,7 @@
 
 > **Purpose:** 跨檔責任邊界與 `index.html` 載入順序，搭配 [`game-js-map.md`](./game-js-map.md) 使用。  
 > **Last updated:** 2026-05-24
-> **Doc sync:** 2026-05-24 — 首頁存檔卡顯示（`saveSlotCards` / `home.css`）；`formatSaveSlotTime` 歸 `game-utils.js`
+> **Doc sync:** 2026-05-24 — 結算畫面責任地圖（`game-js-map.md` §結算畫面）；里程碑文案歸 `result-display-manager.js`
 
 ## Script 載入順序（`index.html` → `game.js` 前）
 
@@ -25,7 +25,7 @@
 | before game | `dev-tools.js` | `JPAPPDevToolsManager` | DevTools / FPS |
 | before game | `mentor-dialogue-helpers.js` | `JPAPPMentorDialogueHelpers` | 導師分頁、emotion 圖 |
 | before game | `changelog-manager.js` | `JPAPPChangelogManager` | changelog modal、版本 reload policy、`appendVersionQuery` |
-| before game | `result-display-manager.js` | `JPAPPResultDisplayManager` | 結算 UI、關卡紀錄列 |
+| before game | `result-display-manager.js` | `JPAPPResultDisplayManager` | 結算評價／星等／`stageRecordRows`／`RESULT_LEVEL_MILESTONE_REWARDS` 文案 |
 | **last** | **`game.js`** | Vue app、`debugJumpToLevel`, `__debugQMix` | 主 runtime |
 | after | `global-hooks.js` | — | 全域 error / keydown |
 | parallel | `debug.js` | `jpDebug` | 開發者 console API（需 game mount 後） |
@@ -52,6 +52,8 @@
 | 只改題庫文案 | 本檔「Question content」列 | —（**不要**開 `generateQuestionBySkill`） |
 | 只改首頁/版本 | 本檔「Home screen」列 | `appVersion`, `showLevelSelect` |
 | 只改存檔卡顯示 | 本檔「Save slot card display」+ `game-js-map.md` §首頁存檔卡 | `saveSlotCards`, `formatSaveSlotTime` |
+| 只改結算顯示（評價／星等／紀錄表） | `game-js-map.md` §結算畫面 + 本檔「Result display」 | `calculatedGrade`, `stageRecordRows` |
+| 只改結算 EXP 動畫／發獎 | — | **不要**；需任務明示 `grantRewards` |
 | 只改樣式 | [`css-map.md`](./css-map.md) | class 名自 `index.html` |
 
 ## 所有權矩陣（誰擁有什麼）
@@ -74,7 +76,9 @@
 | **Question generation** | `game.js` L7880–9339（§A #31） | 唯一實作 | DO NOT TOUCH |
 | **Audio playback** | `game.js` L4108–6731, L8165–8687（§A #24–26, #32）+ `audio-tts.js` | 主體在 game.js；gesture tail 與出題區檔案順序交錯 | DO NOT TOUCH |
 | **Audio debug UI** | `audio-debug-manager.js` + game 接線 | 薄整合 | Phase 1 可外移接線 |
-| **Result screen** | `result-display-manager.js` + game `grantRewards` | 分工 | 動畫改 manager；流程改 game 需小心 |
+| **Result display** | `result-display-manager.js` + `game-utils.js` + `index.html` L3884–4002 + `result-mistakes.css` | §A #38 `createVueBindings`；評價／星等／紀錄表 | **yes** — 見 `game-js-map.md` §結算畫面 |
+| **Result rewards / EXP tally** | `game.js` §A #36 `grantRewards` | 發獎、`processLevelUp`、EXP 條 `requestAnimationFrame` 動畫 | **DO NOT TOUCH** |
+| **Result fanfare audio** | `game.js` #12 `playResultFanfare` + #36 呼叫 | 結算音效 | **DO NOT TOUCH** |
 | **VFX** | `vfx-helpers.js`, `skill-vfx.js`, game 內 boss VFX | 混合 | 新特效優先放 helpers |
 | **Hero buff pills** | `hero-status.js` | 讀 `heroBuffs` | 改顯示改 hero-status |
 | **Dev tools** | `dev-tools.js`, `debug.js`, game L11584+（§A #40） | 注入 refs | dev-only |

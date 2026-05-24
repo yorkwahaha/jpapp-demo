@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
 > **Last audited:** 2026-05-24 (release `26052401` context)
-> **Doc sync:** 2026-05-24 — 首頁存檔卡 `saveSlotCards` 責任地圖；`formatSaveSlotTime` → `game-utils.js`
+> **Doc sync:** 2026-05-24 — §結算畫面責任地圖；`RESULT_LEVEL_MILESTONE_REWARDS` → `result-display-manager.js`
 > **File:** `assets/js/game.js` — **~11,693 lines** (1-indexed；外移後略減)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -64,15 +64,16 @@
 | 33 | **Battle — startLevel & initGame** | 8689–10207 | `startLevel`、`initGame`、題庫組裝、戰鬥 mentor 分支 | **High** | `initGame`, `startLevel`, `questions` | — | **no** | 開戰、教學關 |
 | 34 | **Battle — feedback voice** | 10209–10517 | `playFeedbackVoice`、`playCorrectFeedback` | **High** | `playFeedbackVoice`, `playCorrectFeedback` | `FEEDBACK_VOICE_PATHS` | **no** | 稱讚語音 |
 | 35 | **Battle — checkAnswer & nextQuestion** | 10519–10913 | 判定、傷害、combo、`nextQuestion` | **DO NOT TOUCH** | `checkAnswer`, `nextQuestion`, `addSkillMasteryProgress` | — | **no** | 答對/答錯全流程 |
-| 36 | **Victory — grantRewards** | 10915–11413 | 結算 EXP、升級、知識卡排程、`proceedToTally` | Med–High | `grantRewards`, `proceedToTally` | `result-display-manager.js` | defer | 破關結算 |
+| 36 | **Victory — grantRewards** *(core)* | 10877–11162 | EXP 發放、`processLevelUp`、勝利流程、EXP 條動畫、`playResultFanfare` 觸發 | **DO NOT TOUCH** | `grantRewards`, `processLevelUp`, `animateRewards` | `result-display-manager.js`（讀取用） | **no** | 獎勵／升級／結束流程；見 §結算畫面 |
+| 36b | **Result — UI state & timers** | 3745–3817 | `animatedExp`、`displayedResult*`、通關計時、`resultUnlockedMilestones` 顯示狀態 | Low–Med | `monsterResultShown`, `stageClearElapsedSeconds` | `index.html` result modal | defer | 改 ref 預設值需小心 |
 | 37 | **Handlers — retry / revive / potion** | 11415–11468 | `retryLevel`、`revive`、`usePotion` | Med | `retryLevel`, `revive`, `usePotion` | — | defer | 重試關、喝藥 |
-| 38 | **Result display bindings** | 11470–11532 | `JPAPPResultDisplayManager.createVueBindings`、`updateStageBestRecord` | Med | `stageRecordRows`, `animatedExp` | `result-display-manager.js` | defer | 結算動畫、紀錄 |
+| 38 | **Result — display bindings** | 11432–11494 | `createVueBindings`、`updateStageBestRecord` | Med | `accuracyPct`, `calculatedGrade`, `stageRecordRows` | `result-display-manager.js` | **yes**（顯示） | 評價／星等／紀錄表；見 §結算畫面 |
 | 39 | **Boot hooks (2nd onMounted)** | 11539–11570 | changelog 版本 policy、音訊 unlock、`installTapChoicesLayoutHooks` | Med | `applyVersionStoragePolicy`, `unlockAudioOnce` | `changelog-manager.js` | defer | 首屏手勢後音訊 |
 | 40 | **Debug — level jump** | 11584–11655 | `debugJumpToLevel`、`window.debugJumpToLevel` | Low | `debugJumpToLevel`, `isLevelJumpOpen` | `debug.js` | **yes** (dev) | Dev 關卡跳轉 |
 | 41 | **Vue return & mount** | 11683–11731 | `return {…}`、`__attachDebugTools`、`_jpApp.mount` | Low–Med | `return {`, `_jpApp.mount` | `debug.js`, `index.html` | defer | 啟動不報錯 |
 
 **區塊數量：** 41（含 #32 檔案順序備註列）
-**High-risk / DO NOT TOUCH 區塊：** #5–12, #15–16, #24, #26–28, #30–32, #35
+**High-risk / DO NOT TOUCH 區塊：** #5–12, #15–16, #24, #26–28, #30–32, #35–36
 
 ### 首頁／存檔入口（跨檔）
 
@@ -116,6 +117,26 @@
 | 刪槽 | `clearSaveSlotStorage`, `confirmDeleteSaveSlot` |
 | 選槽／新開局 | `selectSaveSlot`, `startNewGameFromSlot`, `setActiveSaveSlotId` |
 
+### 結算畫面（Result display）責任地圖
+
+> **邊界：** 本節涵蓋破關後 `monsterResultShown` 結算 modal、關卡紀錄表、等級獎勵浮層。**勿**改 `grantRewards` 內 EXP／`processLevelUp`／進度寫入／知識卡排程／`playResultFanfare` 時序（#36）。
+
+| 層 | 位置 | 責任 | 可改？ |
+|----|------|------|--------|
+| **顯示格式化（優先改這裡）** | `assets/js/result-display-manager.js` | `accuracyPct`、`calculatedGrade`（S–E）、`stageStarRating` / `stageStarDisplay`（★☆）、`stageClearTimeText`、`stageRecordRows`、`formatStageBest*`、`buildCurrentStageRecordPayload` | **yes**（評價規則、星等、表格列） |
+| **時間字串** | `game-utils.js` `formatStageClearTime` | 通關秒數 → `X.XX 秒` | **yes** |
+| **等級獎勵卡片文案** | `result-display-manager.js` `RESULT_LEVEL_MILESTONE_REWARDS` | Lv5/10/20/25/30 浮層 `type` / `name` / `desc` | **yes** |
+| **Vue 注入** | `game.js` L11432–11494 | `createVueBindings` 接線、`updateStageBestRecord` | 紀錄比較：**defer** |
+| **結算 UI state** | `game.js` L3745–3817 | `animatedExp`、`displayedResult*`、`scheduleResultMilestoneRewards` | 動畫 state / 排程：**no**／defer |
+| **結算模板** | `index.html` L3884–3970 | `v-if="monsterResultShown"` 內評價、EXP、按鈕 | **yes** |
+| **等級獎勵浮層** | `index.html` L3984–4002 | `resultUnlockedMilestones` | **yes** |
+| **關卡紀錄 modal** | `index.html` L3198+、L4618+ | `stageRecordRows` | **yes** |
+| **樣式** | `result-mistakes.css` | `.result-*`、`.stage-record-*`、`.mistakes-*` | 見 `css-map.md` |
+
+**`createVueBindings` → 結算 modal 常用綁定：** `calculatedGrade`、`accuracyPct`、`stageStarDisplay`、`stageClearTimeText`；EXP 動畫欄位（`animatedExp`、`displayedResult*`）由 **#36** 驅動。
+
+**DO NOT TOUCH（結算相關）：** `grantRewards`、`processLevelUp`（#36 內）、`playResultFanfare`（#12/#36）、`checkAnswer` 勝利鏈、`saveProgression`（#36 內）。
+
 ---
 
 ## B. Before modifying — search here first
@@ -131,7 +152,10 @@
 | 地圖／選關 | `selectStageFromMap`, `openMap` | #8–11 | `map-chapters.json`, `settings-manager.js` |
 | 共鳴輪圖鑑 | `codexWheelSkills`, `setCodexWheelPhase` | #14, #17–19 | `spirit-codex-helpers.js`, `codex.css` |
 | 怪物圖鑑 | `monsterCodexEntries`, `buildMonsterCodexEntries` | #18 | `codex-display-utils.js` |
-| 結算／EXP 動畫 | `grantRewards`, `createVueBindings` | #36, #38 | `result-display-manager.js` |
+| 結算卡文案（評價、星等、時間字串） | `calculatedGrade`, `stageStarDisplay`, `formatStageClearTime` | **#38**, `result-display-manager.js` | `result-display-manager.js`, `game-utils.js` |
+| 結算卡版面／按鈕 | `monsterResultShown`, `accuracyPct` | **#36b**, template | `index.html` L3884–3970, `result-mistakes.css` |
+| 等級獎勵浮層文案 | `resultUnlockedMilestones`, `RESULT_LEVEL_MILESTONE_REWARDS` | manager + **#36b** | `result-display-manager.js` |
+| EXP 動畫／發獎／升級 | `grantRewards`, `animatedExp` | **#36** | **DO NOT TOUCH**（除非任務明示） |
 | 戰鬥出題 | `generateQuestionBySkill` | #31 | **僅** `earlyGamePools.v1.js`（內容） |
 | 答題判定 | `checkAnswer` | #35 | **DO NOT TOUCH** |
 | 音訊／BGM／TTS | `initAudio`, `playBgm`, `onUserGesture` | #24, #26, #32 | `audio-tts.js`；**DO NOT TOUCH** |
@@ -149,7 +173,9 @@
 | 知識卡 / 解鎖演出 | #12 | `index.html` overlay | 與 `grantRewards` 串接 |
 | 共鳴輪（小助靈圖鑑） | #14, #17–19 | `spirit-codex-helpers.js` | 輪上技能順序：`orderCodexWheelSkillsForResonance`（已外移） |
 | 怪物圖鑑 | #18 | `codex-display-utils.js`, `enemies.v1.json` | 顯示優先 utils |
-| 結果畫面 / EXP 動畫 | #36, #38 | `result-display-manager.js` | 與 `grantRewards` 耦合 |
+| 結算畫面顯示（評價／星等／紀錄表） | #38, `result-display-manager.js` | `index.html`, `result-mistakes.css` | **勿**改 `grantRewards` 內 EXP 計算 |
+| 結算 EXP 動畫／發獎 | #36 | — | **DO NOT TOUCH** |
+| 錯題本（mistakes） | #30, `mistakes` ref | `index.html` mistakes modal | 與結算 modal 不同 DOM |
 | 技能（擬聲詞）施放 | #21 | `abilities.v1.json`, `hero-status.js` | buff 與 ATB 互動 |
 | 藥水 / 重試 / 復活 | #37 | — | 會動到 `initGame` / `stopAllAudio` |
 | 戰鬥特效（一般命中） | #27, #23 | `vfx-helpers.js`, `skill-vfx.js` | 勿改投射物時序 |
@@ -184,6 +210,8 @@
 
 | Item | game.js lines | Proposed file | Est. lines |
 |------|---------------|---------------|------------|
+| ~~`RESULT_LEVEL_MILESTONE_REWARDS` 文案表~~ | — | `result-display-manager.js` | ~6 | **已完成**（2026-05-24） |
+| `resultLevelUpStatText` 字串組裝 | #36 內 | `result-display-manager.js` | ~15 | 仍耦合 `getDerivedMax*`；需與 #36 一併規劃 |
 | 共鳴輪動畫 / 拖曳 / RAF | 2250–3043 | `codex-wheel-controller.js` | 500–650 |
 | Boss death VFX 序列 | 3889–4106 | `boss-death-vfx.js` 或 `vfx-helpers.js` | ~220 |
 | Boss 攻擊 VFX | 7114–7601 | `boss-attack-vfx.js` | ~490 |
@@ -216,6 +244,7 @@
 | `skillCorrectCounts` / `normalizeSkillCorrectCountsMap` | 2026-05-24 | 舊「累計答對次數／雙次制」（normalize `% 2`）殘留；現役親密度僅 **`skillMastery`**（答對 +1，`addSkillMasteryProgress`）。舊存檔 JSON 若含 `skillCorrectCounts`：**load 時忽略**，**save 不再寫回**。 |
 | `orderCodexWheelSkillsForResonance` + `SPIRIT_RESONANCE_VISUAL_ORDER` | 2026-05-24 | 外移至 `spirit-codex-helpers.js`；`game.js` `codexWheelSkills` computed 改呼叫 helper；boot fallback 為 identity 陣列。 |
 | `formatSaveSlotTime` | 2026-05-24 | 外移至 `game-utils.js`；`saveSlotCards.lastPlayedText` 仍經 `__JPAPP_UTILS` + setup fallback。 |
+| `resultLevelMilestoneRewards` 常數表 | 2026-05-24 | 外移至 `result-display-manager.js` `RESULT_LEVEL_MILESTONE_REWARDS`；`game.js` 保留 boot fallback。 |
 | Unused codex format Vue exports（`formatSkillMeaning` 等） | 2026-05-24 | 薄包裝已刪；模板改直接綁 `codexSelectedSkill.*`；保留 `getSkillTypeLabel`。 |
 | `hero-status.js` `isSpeedBuff` 分支 | 2026-05-24 | speed potion / speed buff 已退役；unreachable 分支已移除（全 repo 無 `isSpeedBuff` 定義）。`hasSpeedOrEvadeBuffBestEffort()` 現役仍檢查：`heroStatusTimers.speedUntil`、`isEvadeBuff` best-effort、`speedMultiplier > 1.01` best-effort。 |
 | `getStageRecordTimeMs` 解構（game.js） | 2026-05-24 | setup 未使用；`game-utils.js` 內實作保留。 |

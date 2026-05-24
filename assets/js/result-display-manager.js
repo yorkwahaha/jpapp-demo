@@ -4,6 +4,15 @@
 (function (global) {
     'use strict';
 
+    /** 結算浮層「等級獎勵解放」卡片的顯示文案（非解鎖邏輯；篩選在 game.js `grantRewards`）。 */
+    var RESULT_LEVEL_MILESTONE_REWARDS = [
+        { level: 5, type: 'NEW SKILL', name: 'すっきり / 清爽恢復', desc: '消耗 SP，回復 20 HP' },
+        { level: 10, type: 'NEW SKILL', name: 'ぴったり / 完美對上', desc: '此題只留下正確答案，每場一次' },
+        { level: 20, type: 'NEW PASSIVE', name: 'しっかり / 穩住節奏', desc: '每場一次，答錯也不會中斷 Combo' },
+        { level: 25, type: 'NEW PASSIVE', name: 'がっちり / 牢牢撐住', desc: '每場一次，受到致命傷時 HP 保留 1' },
+        { level: 30, type: 'NEW PASSIVE', name: 'ばっちり / 完美反擊', desc: '受擊後反擊同等傷害，每場最多 3 次' }
+    ];
+
     var DEFAULT_STAR_TIME_LIMIT_SECONDS = 60;
 
     function getDefaultStageStarTimeLimitSeconds(levelId) {
@@ -232,6 +241,7 @@
     }
 
     global.JPAPPResultDisplayManager = {
+        RESULT_LEVEL_MILESTONE_REWARDS: RESULT_LEVEL_MILESTONE_REWARDS,
         DEFAULT_STAR_TIME_LIMIT_SECONDS: DEFAULT_STAR_TIME_LIMIT_SECONDS,
         getDefaultStageStarTimeLimitSeconds: getDefaultStageStarTimeLimitSeconds,
         createVueBindings: createVueBindings,

@@ -3753,7 +3753,7 @@ const _jpApp = Vue.createApp({
         const resultExpBarTransitionEnabled = ref(true);
         const showLevelUpMessageAfterAnimation = ref(false);
         const resultLevelUpStatText = ref('');
-        const resultLevelMilestoneRewards = [
+        const resultLevelMilestoneRewards = window.JPAPPResultDisplayManager?.RESULT_LEVEL_MILESTONE_REWARDS ?? [
             { level: 5, type: 'NEW SKILL', name: 'すっきり / 清爽恢復', desc: '消耗 SP，回復 20 HP' },
             { level: 10, type: 'NEW SKILL', name: 'ぴったり / 完美對上', desc: '此題只留下正確答案，每場一次' },
             { level: 20, type: 'NEW PASSIVE', name: 'しっかり / 穩住節奏', desc: '每場一次，答錯也不會中斷 Combo' },
