@@ -11341,14 +11341,6 @@ const _jpApp = Vue.createApp({
             }
         };
 
-        const handleMapImageError = (e) => {
-
-            console.warn('[MapImage] Load failed, falling back to chapter1.png');
-
-            e.target.src = DEFAULT_IMAGE_PATHS.mapFallback;
-
-        };
-
         const getAnswerForDisplay = (blankIndex) => {
 
             const ans = currentQuestion.value.answers[blankIndex];
@@ -11765,7 +11757,6 @@ const _jpApp = Vue.createApp({
             setDefaultAttackMode, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, currentQuestionBondMax, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, levelTitle, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, levelPassiveVfx, counterSlashVfx, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, monsterHitGiragira, monsterGiraKnockActive, monsterGiraKnockStyle, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, battleQuestionSizeClass, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, codexPage, codexWheelSkills, codexSelectedSkill, codexDetailMode, getCodexWheelItemStyle, getCodexWheelItemClass, getCodexSkillDisplayName, setCodexSelectedIndex, shiftCodexWheel, startCodexWheelArrowPress, stopCodexWheelArrowPress, handleCodexWheelArrowClick, openCodexDetail, closeCodexDetail, startCodexDrag, moveCodexDrag, endCodexDrag, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             handleEscapeToMap, retryCurrentStageWithTransition, escapeOverlayVisible, escapeOverlayOpacity, isEscaping, retryTransitionActive,
             heroBuffs: (typeof heroBuffs !== 'undefined' && heroBuffs) ? heroBuffs : debugControls,
-            debugControls,
             // ぴったり: hide wrong choices for the next question
             skillList, castAbility, spState, settings, shouldShowNextButton, praiseToast, comboPopup, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG, getSkillTypeLabel, pittariActive, isPittariSealed, isBattleChoiceBondMax, activeLevelPassiveBadges,
             skillMastery, getSkillMastery, getSkillMasteryStyle, isBondMaxSkill,
@@ -11778,7 +11769,7 @@ const _jpApp = Vue.createApp({
             playPrologueOpening, playMainEndingFinale,
             handleSpiritIconError, getSpiritIconPath, shouldShowSpiritIcon,
             isMentorSkipPressing, startMentorSkipPress, cancelMentorSkipPress,
-            isMonsterImageError, handleMonsterImageError, handleMapImageError, currentMonsterSprite, monsterPositionStyle, monsterIsEntering, monsterIsDying, monsterTrulyDead, monsterResultShown, bossDeathVfxActive, bossDeathStage, monsterAttackLunge,
+            isMonsterImageError, handleMonsterImageError, currentMonsterSprite, monsterPositionStyle, monsterIsEntering, monsterIsDying, monsterTrulyDead, monsterResultShown, bossDeathVfxActive, bossDeathStage, monsterAttackLunge,
             showMap, unlockedLevels, clearedLevels,
             openMap, startActiveSaveSlot, openSaveSlotPanel, requestNewGame, selectSaveSlot, requestDeleteSaveSlot, cancelDeleteSaveSlot, confirmDeleteSaveSlot, pendingDeleteSaveSlotId, isSaveSlotPanelOpen, saveSlotCards, activeSaveSlotId, saveSlotPanelMode, isLevelUnlocked, isLevelCleared, getStageNodeClass, getLevelTitle, getStageFocusParticle, getStageFocusLabel, hasMentor,
 
