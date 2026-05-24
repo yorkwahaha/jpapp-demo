@@ -3,6 +3,7 @@
 本文件盤點 `assets/js/game.js` 內導師對話相關區塊，作為未來模組化前的風險邊界。此輪不做正式外移，不改玩家可見行為，不碰音訊、TTS、mentor audio、BGM/SFX/fanfare/iOS resume。
 
 > **Doc sync:** 2026-05-24 — §導師 UI 現況、§觸發路由、§台詞資料來源（`rg setupMentorDialogue` 實測）
+> **Runtime cleanup：** 2026-05-24 — 移除 `_disableMentorAutoTrigger`、`isMentorPortraitError`（battle modal 殘留）；map 仍用 `handleMentorSceneImageError`。
 > **L36 真結局：** 2026-05-24 — **已修正**：`getMentorDialogueEntry('MAIN_ENDING_FINALE')` alias → `FINAL_ENDING`（`game.js`，未改 JSON）
 > **行號：** 下列 `game.js` 行號以當次 `rg` 為準，會漂移；改動前請再 `rg "setupMentorDialogue|finishMentorDialogue"`。
 
@@ -11,7 +12,7 @@
 | 項目 | 說明 |
 |------|------|
 | **現役** | 地圖 `.map-mentor-overlay` + `isMapMentorOpen`；唯一播放入口 `setupMentorDialogue`（**`showMap` 必須為 true**） |
-| **已移除（勿恢復）** | 戰鬥 mentor modal：`.mentor-overlay`、`isMentorModalOpen`、`triggerMentorDialogue`、長按 skip、`skipMentor`／`withMentor`／`forceMentor` |
+| **已移除（勿恢復）** | 戰鬥 mentor modal：`.mentor-overlay`、`isMentorModalOpen`、`triggerMentorDialogue`、長按 skip、`skipMentor`／`withMentor`／`forceMentor`、`_disableMentorAutoTrigger`、`isMentorPortraitError` |
 | **非地圖呼叫** | `setupMentorDialogue` → `console.warn` + `false`；**不**開 overlay、**不** `pauseBattle` |
 | **Debug** | `jpDebug.playMentor`／`replayMentor` 僅地圖；戰鬥中只 warn 並回 `false`，計時器不受影響 |
 | **開戰** | `initGame` **不播**導師；unlock 只佇列 knowledge card，結尾直接 `startTimer()` |

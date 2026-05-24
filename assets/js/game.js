@@ -1591,8 +1591,6 @@ const _jpApp = Vue.createApp({
 
         const isTypingMentor = ref(false);
 
-        const isMentorPortraitError = ref(false);
-
         const mentorPortraitVideo = ref(null);
 
         const mentorVideoEl = ref(null);
@@ -1714,7 +1712,9 @@ const _jpApp = Vue.createApp({
                 }
                 return;
             }
-            isMentorPortraitError.value = true;
+            if (event?.target) {
+                event.target.src = fallbackPath;
+            }
         };
 
         const handleMentorSceneImageError = (event) => handleMentorImageError(event, MENTOR_FALLBACK_SCENE_IMAGE);
@@ -1850,8 +1850,6 @@ const _jpApp = Vue.createApp({
             mentorDialogueIndex.value = 0;
 
             isMapMentorOpen.value = true;
-
-            isMentorPortraitError.value = false;
 
             isMentorVideoError.value = false;
 
@@ -11455,13 +11453,7 @@ const _jpApp = Vue.createApp({
             praiseToast.value.show = false;
             comboPopup.value.show = false;
 
-            window._disableMentorAutoTrigger = true;
-
-            startLevel(lv).then(() => {
-
-                window._disableMentorAutoTrigger = false;
-
-            });
+            startLevel(lv);
 
         };
 
@@ -11520,7 +11512,7 @@ const _jpApp = Vue.createApp({
             isMonsterCodexOpen, openMonsterCodex, monsterCodexEntries, selectedMonsterCodexEntry, selectMonsterCodexEntry, handleMonsterCodexImageError,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
             isLevelJumpOpen, isAdvancedSettingsOpen, isStageRecordsOpen, stageRecordRows, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,
-            displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, isMentorPortraitError, mentorPages,
+            displayedMentorText, isTypingMentor, restartMentorDialogue, finishMentorDialogue, mentorPages,
             currentMentorDialogueItem, currentMentorSceneImage, handleMentorSceneImageError,
             mentorVideoEl, mentorVideoSources, shouldUseMentorVideo, shouldMuteMentorVideo, mentorVideoPoster, handleMentorVideoError,
             playPrologueOpening, playMainEndingFinale,
