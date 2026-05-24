@@ -4205,7 +4205,7 @@ const _jpApp = Vue.createApp({
 
             if (isMenuOpen.value || isCodexOpen.value || isMistakesOpen.value) return;
 
-            // NEW: Ensure battle starts if logically in battle but timer not running (e.g. after mentor/skill tutorial)
+            // Ensure battle starts if logically in battle but timer not running (e.g. menu/codex closed)
 
             const inBattle = !showLevelSelect.value && !isFinished.value && currentLevel.value > 0;
 

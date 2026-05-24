@@ -1506,7 +1506,7 @@ Audit Tools (Question Distribution):
 - jpDebug.auditStop() : Stop recording and show report.
 - jpDebug.auditReset() : Clear data.
 
-Mentor/Tutorial:
+Mentor/Tutorial (map-only; battle warns, no pause):
 - jpDebug.resetMentorTutorials()
 - jpDebug.replayMentor('WA_TOPIC_BASIC')
 - jpDebug.playMentor('ENDING_L35_NORMAL')

@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
 > **Last audited:** 2026-05-24 (release `26052401` context)
-> **Doc sync:** 2026-05-24 — mentor 路由見 `mentor-dialogue-map.md`；battle mentor 已移除（無 `triggerMentorDialogue`）
+> **Doc sync:** 2026-05-24 — mentor 見 `mentor-dialogue-map.md` §導師 UI 現況（map-only；battle mentor 已移除）
 > **File:** `assets/js/game.js` — **~11,693 lines** (1-indexed；外移後略減)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）

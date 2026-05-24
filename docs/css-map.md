@@ -24,7 +24,7 @@ Recommended future order:
 2. `assets/css/layout.css` - common layout, modal primitives, shared HUD/base panels
 3. `assets/css/home.css` - home cover/title/menu/start screen and home-only keyframes
 4. `assets/css/settings.css` - settings, system menu, shared modal controls
-5. `assets/css/mentor.css` - mentor overlays, dialogue, prologue/portrait presentation
+5. `assets/css/mentor.css` - **map** mentor overlay helpers (prologue iOS, `.mentor-scene-video`); battle `.mentor-overlay` removed 2026-05-24
 6. `assets/css/map.css` - map screen, map HUD, nodes, map ambience
 7. `assets/css/battle.css` - battle screen base, HUD, HP/SP, question, options, resonance wheel
 8. `assets/css/battle-vfx.css` - battle animations, boss death, hit, projectile, skill VFX
@@ -44,7 +44,7 @@ Recommended future order:
 | L1751-L1841 | Corner menu mobile | Mobile corner menu and in-battle menu states | Medium | `settings.css` | No for now | Duplicates later forced-hide rules and is tied to battle/menu fallback behavior. Do not move until corner-menu ownership is decided. |
 | L1851-L2038 | Modal/question responsive tweaks | Question text responsive sizing, modal panel text, desktop/mobile adjustments | Medium | `layout.css` / `rwd.css` | No | Crosses battle question and modal primitives. Needs split by selector group. |
 | L2044-L2458 | Battle polish package and audio debug UI | Battle log, monster entrance/breathing, question stone slots, flick option styling, audio debug overlay | High | `battle.css` + `battle-vfx.css`; keep `.audio-debug-*` in `styles.css` for now | No | Crosses core battle UI, Flick/TAP, VFX, and audio diagnostics. In current CSS, dev-tools selectors are effectively `.audio-debug-*`; non-audio dev-tools styles are not isolated in `styles.css`. |
-| L2278-L2897 | Mentor overlay and portrait system | Mentor tutorial/dialogue overlay, portrait/video clipping, map mentor portrait responsive rules | Medium | `mentor.css` | Partial: Phase 1-B | Moved pure `.mentor-*`, `.is-prologue-mentor*`, mentor dialogue text, mentor portrait video, and mentor mobile-only selector rules to `mentor.css`. Kept `.map-mentor-portrait-stage` and non-mentor mobile `#hud` / question / TAP rules in `styles.css`. |
+| L2278-L2897 | Map mentor portrait / dialogue presentation | **Map** mentor overlay (`.map-mentor-*`), portrait/video clipping, prologue iOS tweaks; **not** battle `.mentor-overlay` (removed) | Medium | `mentor.css` | Partial: Phase 1-B | Map-facing `.mentor-*` / `.is-prologue-mentor*` in `mentor.css`; `.map-mentor-portrait-stage` in `styles.css`. |
 | L2898-L6458 | Boss/battle VFX | Boss attacks, boss death, hidden boss, monster death, aura, special attack effects | Medium | `battle-vfx.css` | Yes, in chunks | Large but selector namespace is mostly `boss-*`, `monster-*`, and VFX classes. Move by sub-block with visual checks. |
 | L6459-L6759 | Result and mistakes UI | Result screen, result stats, mistakes modal responsiveness | Low-Medium | `result-mistakes.css` | Done: Phase 1-D | Moved result modal, result stats, mistakes header, stage log cards, and local mistakes mobile rules. Kept stage confirm in `styles.css`. |
 | `result-mistakes.css` L1–370+ | Battle result modal (`monsterResultShown`) | `.result-modal-glass`, `.result-stat-*`, `.result-action-*`, spirit hero | Low–Med | `result-mistakes.css` | — | 模板 `index.html` L3884–3970；評價色 class 來自 `game-utils.js` `getGradeColor`（非本 CSS 檔） |

@@ -2,7 +2,7 @@
 
 > **Purpose:** 跨檔責任邊界與 `index.html` 載入順序，搭配 [`game-js-map.md`](./game-js-map.md) 使用。  
 > **Last updated:** 2026-05-24
-> **Doc sync:** 2026-05-24 — §想改導師在地圖／確認窗出現；地圖流程；地圖顯示層
+> **Doc sync:** 2026-05-24 — 導師現況見 `mentor-dialogue-map.md` §導師 UI 現況（map overlay only；battle mentor removed）
 
 ## Script 載入順序（`index.html` → `game.js` 前）
 
