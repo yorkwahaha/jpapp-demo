@@ -690,6 +690,9 @@ const _jpApp = Vue.createApp({
             if (skillId === 'PROLOGUE_OPENING') {
                 return mentorMap.PROLOGUE_OPENING || mentorMap.PROLOGUE;
             }
+            if (skillId === 'MAIN_ENDING_FINALE') {
+                return mentorMap.MAIN_ENDING_FINALE || mentorMap.FINAL_ENDING;
+            }
             return mentorMap[skillId];
         };
 
@@ -1186,7 +1189,7 @@ const _jpApp = Vue.createApp({
                         setupMentorDialogue({
                             id: 'MAIN_ENDING_FINALE',
                             name: 'Selene姐姐',
-                            mentorDialogue: MENTOR_AUDIO_MAP.value['MAIN_ENDING_FINALE']?.dialogue || []
+                            mentorDialogue: getMentorDialogueEntry('MAIN_ENDING_FINALE')?.dialogue || []
                         });
                         window._resumeAfterMentor = () => {
                             isSpecialSceneActive.value = false;
