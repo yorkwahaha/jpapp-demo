@@ -153,6 +153,7 @@
 | `getLevelTitle` setup 薄封裝 | 2026-05-24 | 全 repo 無呼叫；函式與 Vue export 已刪。 |
 | Vue `return` → `handleMapTabClick` | 2026-05-24 | `index.html` 無引用；`jumpToMapSegment` 仍內部呼叫。 |
 | Vue `return` → `praiseToast` / `openMap` / `levelTitle` | 2026-05-24 | 模板無綁定；`praiseToast`/`openMap`/`levelTitle` 本體與內部流程保留；`levelTitle` 仍經 `__attachDebugTools` 直傳。 |
+| `requestNewGame` | 2026-05-24 | 舊「新遊戲」入口；僅 `openSaveSlotPanel('new')`，無 template/debug 綁定。現役新開局：面板點空槽 → `selectSaveSlot` → `startNewGameFromSlot`。 |
 
 ### SAFE
 

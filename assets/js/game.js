@@ -977,11 +977,6 @@ const _jpApp = Vue.createApp({
             openMap();
         };
 
-        const requestNewGame = () => {
-            if (!showLevelSelect.value) return;
-            openSaveSlotPanel('new');
-        };
-
         const requestDeleteSaveSlot = (slotId) => {
             if (!showLevelSelect.value) return;
             const slot = getSaveSlotMetadata(slotId);
@@ -11764,7 +11759,7 @@ const _jpApp = Vue.createApp({
             isMentorSkipPressing, startMentorSkipPress, cancelMentorSkipPress,
             isMonsterImageError, handleMonsterImageError, currentMonsterSprite, monsterPositionStyle, monsterIsEntering, monsterIsDying, monsterTrulyDead, monsterResultShown, bossDeathVfxActive, bossDeathStage, monsterAttackLunge,
             showMap, unlockedLevels, clearedLevels,
-            startActiveSaveSlot, openSaveSlotPanel, requestNewGame, selectSaveSlot, requestDeleteSaveSlot, cancelDeleteSaveSlot, confirmDeleteSaveSlot, pendingDeleteSaveSlotId, isSaveSlotPanelOpen, saveSlotCards, activeSaveSlotId, saveSlotPanelMode, isLevelUnlocked, isLevelCleared, getStageNodeClass, getStageFocusParticle, getStageFocusLabel, hasMentor,
+            startActiveSaveSlot, openSaveSlotPanel, selectSaveSlot, requestDeleteSaveSlot, cancelDeleteSaveSlot, confirmDeleteSaveSlot, pendingDeleteSaveSlotId, isSaveSlotPanelOpen, saveSlotCards, activeSaveSlotId, saveSlotPanelMode, isLevelUnlocked, isLevelCleared, getStageNodeClass, getStageFocusParticle, getStageFocusLabel, hasMentor,
 
             selectStageFromMap, startStageWithExplanation, returnToMap,
 
