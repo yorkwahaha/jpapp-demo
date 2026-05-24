@@ -2,8 +2,8 @@
 window.__attachDebugTools = function (refs) {
 
     const {
-        maxLevel, currentLevel, questions, userAnswers, selectedAnswers,
-        currentQuestionIndex, questionIndex, hasSubmitted, isCorrect, showResult,
+        maxLevel, currentLevel, questions, userAnswers,
+        hasSubmitted,
         showLevelSelect, showMap, isFinished, levelConfig, LEVEL_CONFIG,
         levelTitle, player, monster, currentQuestion,
         startLevel, retryLevel, initGame, generateQuestionBySkill,
@@ -476,19 +476,9 @@ window.__attachDebugTools = function (refs) {
 
                     if (typeof questions !== "undefined") questions.value = [q];
 
-                    if (typeof currentQuestionIndex !== "undefined") currentQuestionIndex.value = 0;
-
-                    if (typeof questionIndex !== "undefined") questionIndex.value = 0;
-
                     if (typeof userAnswers !== "undefined") userAnswers.value = [];
 
-                    if (typeof selectedAnswers !== "undefined") selectedAnswers.value = [];
-
                     if (typeof hasSubmitted !== "undefined") hasSubmitted.value = false;
-
-                    if (typeof isCorrect !== "undefined") isCorrect.value = null;
-
-                    if (typeof showResult !== "undefined") showResult.value = false;
 
                     if (typeof showLevelSelect !== "undefined") showLevelSelect.value = false;
 

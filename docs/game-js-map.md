@@ -158,6 +158,7 @@
 | Vue `return` → `stageConfirmSuspendedForMentor` | 2026-05-24 | 關卡說明導師流程內部使用；模板未綁定。 |
 | `saveSlotCards.clearedCountText` | 2026-05-24 | computed 欄位全 repo 無讀；存檔卡 UI 未顯示。 |
 | `debug.js` `showHome` / `goHome` refs | 2026-05-24 | `game.js` 從未傳入；`jpDebug.home()` 改僅用 `showLevelSelect` / `isFinished` fallback。 |
+| `debug.js` 舊 skill reset refs | 2026-05-24 | 移除 `selectedAnswers`、`currentQuestionIndex`、`questionIndex`、`isCorrect`、`showResult` 解構與 no-op 重置；現役為 `userAnswers` / `hasSubmitted` / `questions`。 |
 
 ### SAFE
 
