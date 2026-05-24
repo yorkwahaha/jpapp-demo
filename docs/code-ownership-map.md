@@ -2,7 +2,7 @@
 
 > **Purpose:** 跨檔責任邊界與 `index.html` 載入順序，搭配 [`game-js-map.md`](./game-js-map.md) 使用。  
 > **Last updated:** 2026-05-24
-> **Doc sync:** 2026-05-24 — 導師現況見 `mentor-dialogue-map.md` §導師 UI 現況（map overlay only；battle mentor removed）
+> **Doc sync:** 2026-05-24 — 導師現況見 `mentor-dialogue-map.md` §導師 UI 現況（map overlay only；battle mentor removed）；legacy `corner-menu.js` **removed** — 戰鬥技能／藥水／設定由 V3 `#hud` `.battle-hud-actions` 負責
 
 ## Script 載入順序（`index.html` → `game.js` 前）
 
@@ -17,6 +17,7 @@
 | early | `hero-status.js` | `heroBuffs`, DOM pills | 擬聲詞 buff UI |
 | early | `battle-log.js` | `pushBattleLog` (global) | 戰鬥訊息列 |
 | early | `audio-tts.js` | TTS / `playTtsKey` | 題目朗讀、WebSpeech |
+| ~~before game~~ | ~~`corner-menu.js`~~ | ~~`__initCornerMenu`~~ | **Removed 2026-05-24** — was dead init; use `#hud` `.battle-hud-actions` |
 | before game | `settings-manager.js` | `JPAPPSettingsManager` | 設定、**地圖顯示**（節點 class／焦點字／座標）、音量曲線 |
 | before game | `storage-manager.js` | `JPAPPStorageManager` | mentor seen、mistakes、audio debug pos |
 | before game | `codex-display-utils.js` | `JPAPPCodexDisplayUtils` | 圖鑑格式化、怪物圖鑑 entries 組裝（`buildMonsterCodexEntries`）、圖片 fallback |
@@ -86,6 +87,7 @@
 | **Codex wheel** | `game.js` + `spirit-codex-helpers` + `codex.css` | UI 狀態 + 動畫；**輪上技能順序**在 helpers | 改排序改 `spirit-codex-helpers.js`；RAF/拖曳仍在 game.js |
 | **Monster codex** | `codex-display-utils.js` + `game.js` computed/handlers + `enemies.v1.json` | computed 薄封裝；純組裝在 utils | 改顯示優先 utils；Vue 狀態留 game.js |
 | **Battle loop** | `game.js` | 唯一實作 | DO NOT TOUCH |
+| **Battle HUD actions（技能／藥水／設定）** | `index.html` `#hud` `.battle-hud-actions` + `styles.css` / `battle.css` | Vue handlers in `game.js`（`isSkillOpen`, `usePotion`, `isMenuOpen`） | **yes** — display；legacy `corner-menu.js` removed 2026-05-24 |
 | **Question content** | `earlyGamePools.v1.js` | 消費 pool | 改 data，不改 gen 除非允許 |
 | **Question generation** | `game.js` L7880–9339（§A #31） | 唯一實作 | DO NOT TOUCH |
 | **Audio playback** | `game.js` L4108–6731, L8165–8687（§A #24–26, #32）+ `audio-tts.js` | 主體在 game.js；gesture tail 與出題區檔案順序交錯 | DO NOT TOUCH |

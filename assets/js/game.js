@@ -3496,8 +3496,6 @@ const _jpApp = Vue.createApp({
 
             loadGameData();
 
-            window.__initCornerMenu?.(watch, showLevelSelect, isFinished);
-
             // Apply HERO_VISUAL_CONFIG.map.src to map avatar images
             nextTick(() => {
                 document.querySelectorAll('.map-hud-avatar-img').forEach(img => {
@@ -11391,8 +11389,6 @@ const _jpApp = Vue.createApp({
             window.JPAPPSettingsManager.installQuestionAreaCompactLayoutHooks({
                 watch, nextTick, displaySegments, hasSubmitted, userAnswers
             });
-
-            window.__initCornerMenu?.(watch, showLevelSelect, isFinished);
 
             window.__initViewportHooks?.(watch, showLevelSelect);
 

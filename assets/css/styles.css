@@ -1809,97 +1809,6 @@ rt {
     }
 }
 
-/* 修正網頁版出現手機角選單的問題 */
-#cornerMenu {
-    display: none !important;
-}
-
-@media (max-width: 480px) {
-    .left-actionbar {
-        display: none !important;
-    }
-
-    #cornerMenu.is-in-battle {
-        display: flex !important;
-        position: fixed;
-        right: 12px;
-        bottom: calc(12px + env(safe-area-inset-bottom));
-        z-index: 1000000;
-        pointer-events: none;
-        flex-direction: column;
-        align-items: flex-end;
-    }
-
-    #cornerMenu button {
-        pointer-events: auto;
-    }
-
-    #cornerMenuToggle {
-        width: 56px;
-        height: 56px;
-        border-radius: 16px;
-        background: rgba(30, 41, 59, 0.95);
-        border: 2px solid rgba(251, 191, 36, 0.6);
-        color: #fcd34d;
-        font-size: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-        transition: transform 0.2s;
-        touch-action: manipulation;
-    }
-
-    #cornerMenuToggle:active {
-        transform: scale(0.95);
-    }
-
-    .corner-menu-items {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-bottom: 10px;
-        transform: translateY(10px);
-        opacity: 0;
-        pointer-events: none;
-        visibility: hidden;
-        transition: transform 180ms ease, opacity 180ms ease, visibility 180ms;
-    }
-
-    #cornerMenu.is-in-battle.open .corner-menu-items {
-        transform: translateY(0);
-        opacity: 1;
-        pointer-events: auto;
-        visibility: visible;
-    }
-
-    .corner-menu-btn {
-        width: 56px;
-        height: 56px;
-        border-radius: 12px;
-        background: rgba(30, 41, 59, 0.95);
-        border: 1px solid rgba(148, 163, 184, 0.5);
-        color: #e2e8f0;
-        font-size: 11px;
-        font-weight: bold;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-        line-height: 1.2;
-        touch-action: manipulation;
-    }
-
-    .corner-menu-btn span:first-child {
-        margin-bottom: 2px;
-    }
-
-    .corner-menu-btn:active {
-        transform: scale(0.95);
-    }
-}
-
 body.lock-scroll {
     position: fixed;
     width: 100%;
@@ -6364,20 +6273,6 @@ body.lock-scroll {
 /* Remove pointer events from disabled buttons to allow flicker/tap fallthrough */
 .rune-btn[disabled] {
     pointer-events: none;
-}
-
-/* =========================================
-   V3.0 Battle UI: Force-hide old corner FAB menu
-   The v3.0 HUD now contains equivalent buttons (📖 skill, 🧪 potion, 🎒 bag).
-   The corner menu is redundant and visually interferes with the new layout.
-========================================= */
-#cornerMenu,
-#cornerMenu.is-in-battle,
-#cornerMenu.is-in-battle.open,
-#cornerMenuToggle {
-    display: none !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
 }
 
 /* --- Monster Animation --- */

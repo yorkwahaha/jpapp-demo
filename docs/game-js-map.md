@@ -72,7 +72,7 @@
 | 36b | **Result — UI state & timers** *(file-order)* | 3678–3748 | `animatedExp`、`displayedResult*`、通關計時、`resultUnlockedMilestones` | Low–Med | `animatedExp`, `stageClearElapsedSeconds`, `monsterResultShown` | `index.html` result modal | defer | 宣告在 #22；邏輯耦合 #36 |
 | 37 | **Handlers — retry / revive / potion** *(file-order)* | 8613, 11240–11294 | `usePotion`（音訊區）、`retryLevel`、`revive` | Med | `retryLevel`, `revive`, `usePotion` | — | defer | 重試關、喝藥 |
 | 38 | **Result — display bindings** | 11295–11363 | `createVueBindings`、`updateStageBestRecord` | Med | `calculatedGrade`, `stageRecordRows`, `createVueBindings` | `result-display-manager.js` | **yes**（顯示） | 評價／星等／紀錄表 |
-| 39 | **Boot hooks (2nd onMounted)** | 11364–11408 | changelog 版本 policy、音訊 unlock、`installTapChoicesLayoutHooks` | Med | `applyVersionStoragePolicy`, `unlockAudioOnce` | `changelog-manager.js` | defer | 首屏手勢後音訊 |
+| 39 | **Boot hooks (2nd onMounted)** | 11364–11408 | changelog 版本 policy、音訊 unlock、`installTapChoicesLayoutHooks` | Med | `applyVersionStoragePolicy`, `unlockAudioOnce` | `changelog-manager.js` | defer | 首屏手勢後音訊；~~`__initCornerMenu`~~ removed 2026-05-24 |
 | 40 | **Debug — level jump** | 11410–11476 | `debugJumpToLevel`、`window.debugJumpToLevel` | Low | `debugJumpToLevel`, `isLevelJumpOpen` | `debug.js` | **yes** (dev) | Dev 關卡跳轉 |
 | 41 | **Vue return & mount** | 11502–11549 | `return {…}`、`__attachDebugTools`、`_jpApp.mount` | Low–Med | `return {`, `_jpApp.mount` | `debug.js`, `index.html` | defer | 啟動不報錯 |
 
@@ -144,7 +144,7 @@
 |------|----------|------------|
 | `showLevelSelect` | 首頁／封面 | 預設、戰敗、部分設定返回 |
 | `showMap` | 世界地圖 | `openMap`（#8）、破關 `returnToMap`（#12）、選槽後 `startActiveSaveSlot` 鏈 |
-| 戰鬥中 | 戰鬥 HUD | `!showLevelSelect && !showMap && currentLevel > 0` |
+| 戰鬥中 | 戰鬥 HUD | `!showLevelSelect && !showMap && currentLevel > 0`；技能／藥水／設定入口為 `#hud` `.battle-hud-actions`（legacy `corner-menu.js` / `#cornerMenu` **removed 2026-05-24**） |
 
 **顯示 vs 進關流程（符號分界）：**
 
@@ -167,6 +167,7 @@
 | **L36 封印字樣** | — | `index.html` `sRankCount/35 封印` | `isAllStagesSRank` 解鎖邏輯 |
 | **章節下拉標題／鎖定文案** | `map-chapters.json` `segments[].title` | `.map-dropdown-*` L2314+ | `jumpToMapSegment` 內 `saveProgression` |
 | **地圖 HUD（HP/SP/等級/按鈕）** | `index.html` `.map-hud-*`（desktop L2369+、mobile L2434+） | 同上 + `styles.css` | 戰鬥 HUD `#hud` |
+| **戰鬥 HUD 技能／藥水／設定** | `index.html` `#hud` `.battle-hud-actions`（`.hud-tool-btn`） | `styles.css` / `battle.css` | `grantRewards`、題目生成、計時；勿恢復 corner menu |
 | **關卡確認窗標題／焦點助詞** | `settings-manager.js` `computeStageFocus*`；`levels.v1.json` | `.stage-confirm-*` L2556+ | `startStageWithExplanation` 導師鏈 |
 | **確認窗歷史最佳星／時間** | `result-display-manager.js` `getStageBest*` | `.stage-confirm-record` | `updateStageBestRecord` |
 | **確認窗按鈕文案** | — | 「取消」/`closeBattleConfirm`；「出發！」/`confirmAndStartBattle` | **`confirmAndStartBattle` 本體** |

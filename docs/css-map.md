@@ -41,7 +41,7 @@ Recommended future order:
 | L91-L748 | Early battle primitives and effects | Monster shake/hit, stage sizing, HUD base, question text, modal base, hero status pills | High | `battle.css` + `layout.css` + `battle-vfx.css` | No | Mixed battle layout, VFX, modal, and hero state. Needs second audit before moving. |
 | L749-L930 | Hero avatar/status positioning | Data-driven `#heroAvatar`, status bar, toast/praise animation | High | `battle.css` | No | Coupled to JS inline style and battle buff overlay positioning. |
 | L942-L1749 | Legacy mobile battle overrides | Mobile/tablet battle question, HUD structure, flick/projectile VFX, damage popups | High | `rwd.css` + `battle-vfx.css` | No | Contains structural Tailwind overrides and nested HUD selectors. Do not move until selector ownership is clearer. |
-| L1751-L1841 | Corner menu mobile | Mobile corner menu and in-battle menu states | Medium | `settings.css` | No for now | Duplicates later forced-hide rules and is tied to battle/menu fallback behavior. Do not move until corner-menu ownership is decided. |
+| ~~L1751-L1841~~ | ~~Corner menu mobile~~ | **Removed 2026-05-24** — legacy `#cornerMenu` FAB retired; battle actions use `#hud` `.battle-hud-actions`. | — | — | — | Was duplicate of V3 HUD; `corner-menu.js` deleted. |
 | L1851-L2038 | Modal/question responsive tweaks | Question text responsive sizing, modal panel text, desktop/mobile adjustments | Medium | `layout.css` / `rwd.css` | No | Crosses battle question and modal primitives. Needs split by selector group. |
 | L2044-L2458 | Battle polish package and audio debug UI | Battle log, monster entrance/breathing, question stone slots, flick option styling, audio debug overlay | High | `battle.css` + `battle-vfx.css`; keep `.audio-debug-*` in `styles.css` for now | No | Crosses core battle UI, Flick/TAP, VFX, and audio diagnostics. In current CSS, dev-tools selectors are effectively `.audio-debug-*`; non-audio dev-tools styles are not isolated in `styles.css`. |
 | L2278-L2897 | Map mentor portrait / dialogue presentation | **Map** mentor overlay (`.map-mentor-*`), portrait/video clipping, prologue iOS tweaks; **not** battle `.mentor-overlay` (removed) | Medium | `mentor.css` | Partial: Phase 1-B | Map-facing `.mentor-*` / `.is-prologue-mentor*` in `mentor.css`; `.map-mentor-portrait-stage` in `styles.css`. |
@@ -159,7 +159,7 @@ Do not continue into `rwd.css` yet. Current next candidates:
 
 1. Global/base rules and early battle primitives: body, slots, HP/SP, stage, question area, modal base, hero status, action bar, scrollbars.
 2. Legacy mobile battle overrides: nested `#hud`, question, Flick projectile, TAP/Flick controls, and mobile battle spacing.
-3. Corner menu fallback and forced-hide rules: mobile corner menu definitions plus later v3 HUD forced-hide override.
+3. ~~Corner menu fallback and forced-hide rules~~ **removed 2026-05-24** (V3 `#hud` `.battle-hud-actions` is canonical).
 4. Audio debug overlay: `.audio-debug-*` diagnostics UI. Isolated by selector but audio-related; leave frozen.
 5. Stage confirm modal: `.stage-confirm-*`, including best record and mentor entry presentation.
 6. Home/title/CTA cover leftovers: only mobile battle leftovers in the former home region remain (`#battleLog`, `#heroAvatar`, `.tap-mode-controls`) because they are battle-owned.
@@ -184,7 +184,7 @@ Classification key:
 | Global/base, simple form/card utilities, HP bar fallback | L1-L116 | D | `styles.css` | Body defaults, typography, shared cards, and HP fallback are broad primitives. Keep until a base/layout strategy exists. |
 | Early battle primitives and stage/question/modal base | L117-L748 | C/D mixed | `styles.css` until battle/layout audit | Contains battle VFX keyframes, `#stage`, `#hud`, `#question-area`, `.modal-overlay`, `.modal-panel`, slots, and hero status. Too cross-cutting for a mechanical move. |
 | Legacy mobile battle overrides | L942-L1749 | C | Frozen | Nested `#hud`, battle question, Flick projectile, and mobile battle layout. Do not move before `rwd.css` and battle ownership are defined. |
-| Corner menu fallback | L1751-L1841 | B | keep in `styles.css` for now; future owner likely `settings.css` | Selector family is bounded, but it is battle-state gated (`.is-in-battle`) and depends on `corner-menu.js` fallback behavior. It also conflicts with later force-hide rules, so ownership must be decided together with the hide policy. |
+| ~~Corner menu fallback~~ | — | — | **Removed 2026-05-24** | `corner-menu.js` and both `#cornerMenu` CSS blocks removed from `styles.css`. |
 | `body.lock-scroll` | L1842-L1849 | D | `styles.css` or future `layout.css` | Shared modal/page locking primitive. Keep in main legacy file for now. |
 | Modal/question responsive tweaks and praise/projectile leftovers | L1851-L2038 | C/D mixed | Frozen / `styles.css` | Crosses mobile question typography, modal text, desktop modal positioning, praise animation, and Flick VFX. Needs selector-by-selector split later. |
 | Battle log, rune/Flick option polish | L2043-L2277 | C | Frozen | Battle core/TAP/Flick adjacent; keep with battle audit. |
@@ -194,7 +194,7 @@ Classification key:
 | Boss/battle VFX leftovers | L2542-L6099 | C | Frozen / later `battle-vfx.css` pass | Large battle VFX surface with boss, monster, death, aura, and shared glass selectors. Move only in bounded VFX batches with visual QA. |
 | `question-card` late override | L6099-L6102 | C/D mixed | `styles.css` until battle/layout audit | Single shared override, but battle question card cascade-sensitive. |
 | Stage confirm modal | L6103-L6287 | B | recommended future owner: `map.css` or dedicated `stage-flow.css`; not `result-mistakes.css` | Triggered from stage selection, contains best record display, and includes mentor entry. It belongs to map/stage flow, not pure result, settings, or mentor. |
-| Disabled rune pointer-events and old corner FAB forced-hide | L6288-L6314 | C/B mixed | keep in `styles.css` until corner-menu policy is finalized | Rune disabled behavior is battle/TAP/Flick adjacent. Corner forced-hide is bounded but directly overrides the earlier corner menu block; the two blocks should be audited and moved (or removed) as one policy unit. |
+| Disabled rune pointer-events | L6288+ (approx.) | C | `styles.css` | Rune disabled behavior is battle/TAP/Flick adjacent. Legacy corner FAB force-hide **removed 2026-05-24** with corner menu cleanup. |
 | Home leftovers after Phase 1-E | L6315-L6341 | C | Frozen | Phase 1-E moved `.home-*`; remaining local block is mobile battle fixes such as `#battleLog`, `#heroAvatar`, `.tap-mode-controls`. |
 | HUD stabilization and desktop modal polish | L6342-L6424 | C/B mixed | Frozen / layout audit | Includes `.hud-interactive-rows`, `#hud`, `.modal-overlay`, `.modal-panel`. Legacy battle `.mentor-overlay` removed 2026-05-24. |
 | Map structure, map HUD, nodes, ambience | L6435-L7986 | C | Frozen | `map.css` remains deferred. It needs dedicated visual QA for map HUD, dropdown, nodes, mentor overlay, chapter ambience, and later four-mode map overrides. |
@@ -208,38 +208,18 @@ Current A candidates: none. The remaining obvious small candidates either have a
 
 `.modal-caption` plus the changelog text polish block has been completed in Phase 1-F and is now owned by `settings.css`.
 
-### Corner Menu Evaluation (Phase 1-F follow-up)
+### Corner Menu Evaluation (Phase 1-F follow-up) — **closed / removed**
 
-Scope discovered in `styles.css`:
+**Policy (2026-05-24):** Legacy mobile corner FAB menu **removed**. V3 battle HUD (`.battle-hud-actions` inside `#hud`) owns skill / potion / settings entry points.
 
-1. Mobile corner menu block around `L1751-L1841`:
-   - `#cornerMenu`, `#cornerMenu.is-in-battle`, `#cornerMenu button`, `#cornerMenuToggle`, `.corner-menu-items`, `.corner-menu-btn`.
-2. Late force-hide block around `L6298-L6305`:
-   - `#cornerMenu`, `#cornerMenu.is-in-battle`, `#cornerMenu.is-in-battle.open`, `#cornerMenuToggle` set to hidden/none.
+**Removed from repo:**
 
-Boundary and coupling check:
+- `assets/js/corner-menu.js` (`window.__initCornerMenu`)
+- `index.html` dynamic script load for corner-menu
+- `game.js` `__initCornerMenu` calls (both `onMounted` hooks)
+- `styles.css`: mobile `#cornerMenu` block and V3 force-hide override block
 
-- Map selectors: no direct `.map-*` coupling found.
-- Stage record selectors: no coupling found.
-- Settings modal selectors: no direct `.modal-*`/settings modal coupling found.
-- Dev tools / `.audio-debug-*`: no coupling found.
-- Four-mode RWD override blocks: not inside the four-mode section, but the corner menu block is mobile-only (`@media (max-width: 480px)`).
-- Battle/resonance/HUD/Flick/TAP: coupled to battle state via `.is-in-battle` and to left battle action bar behavior.
-- Audio/TTS/BGM/fanfare/iOS resume: no direct coupling found.
-
-Ownership recommendation:
-
-1. **Current recommendation: keep in `styles.css` (暫不作為下一輪小搬移).**
-2. If split later, `settings.css` is the most plausible owner (system/menu semantics), but only after one bounded task confirms policy:
-   - keep fallback corner menu,
-   - or fully deprecate it in favor of v3 HUD.
-3. Do not move only one of the two corner menu blocks. Treat the mobile display block and the force-hide block as a single decision unit.
-
-Next-round minimal plan (proposal only, no implementation):
-
-1. Audit-only task: confirm runtime policy with `corner-menu.js` (enabled fallback vs permanently disabled).
-2. If policy is "keep fallback": move both corner menu blocks together to `settings.css` in one mechanical pass.
-3. If policy is "deprecate": remove both CSS blocks and retire `corner-menu.js` in a dedicated JS+CSS cleanup task (outside Phase 1-style mechanical move).
+**Orphan note:** `.left-actionbar` CSS remains in `styles.css` (no HTML); separate cleanup if desired — not part of this removal.
 
 ### Dev-Tools Evaluation (Phase 1-F follow-up)
 
