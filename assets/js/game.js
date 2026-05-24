@@ -488,16 +488,7 @@ const _jpApp = Vue.createApp({
                 return acc;
             }, {});
         };
-        const normalizeSkillCorrectCountsMap = (source = {}) => {
-            return Object.entries(source || {}).reduce((acc, [skillId, rawValue]) => {
-                if (!skillId || typeof skillId !== 'string') return acc;
-                const value = Number(rawValue ?? 0);
-                acc[skillId] = Number.isFinite(value) ? Math.max(0, Math.floor(value)) % 2 : 0;
-                return acc;
-            }, {});
-        };
         const skillMastery = ref({});
-        const skillCorrectCounts = ref({});
 
         // --- Hero Visual Data Configuration ---
         // battle.marginBottom: CSS string applied to #heroAvatar margin-bottom (e.g. '24px' or 'clamp(135px,18dvh,160px)')
@@ -593,8 +584,6 @@ const _jpApp = Vue.createApp({
 
                     skillMastery: skillMastery.value,
 
-                    skillCorrectCounts: skillCorrectCounts.value,
-
                     lastViewedMap: { chapter: activeChapter.value, segment: selectedSegmentIdx.value },
 
                     playerStats: playerStats.value
@@ -665,8 +654,6 @@ const _jpApp = Vue.createApp({
 
                     if (parsed.skillMastery) skillMastery.value = normalizeSkillMasteryMap(parsed.skillMastery);
 
-                    if (parsed.skillCorrectCounts) skillCorrectCounts.value = normalizeSkillCorrectCountsMap(parsed.skillCorrectCounts);
-
                     if (parsed.playerStats) {
                         playerStats.value = parsed.playerStats;
                     } else {
@@ -697,7 +684,6 @@ const _jpApp = Vue.createApp({
             stageBestRecords.value = {};
             unlockedOnomatopeIds.value = [];
             skillMastery.value = {};
-            skillCorrectCounts.value = {};
             playerStats.value = { level: 1, exp: 0 };
             activeChapter.value = 'chapter1';
             selectedSegmentIdx.value = 0;
@@ -3343,11 +3329,6 @@ const _jpApp = Vue.createApp({
         });
 
         const getSkillTypeLabel = (type) => window.JPAPPCodexDisplayUtils.getSkillTypeLabel(type);
-        const formatParticleBadge = (p) => window.JPAPPCodexDisplayUtils.formatParticleBadge(p);
-        const formatSkillSpiritName = (s, sp) => window.JPAPPCodexDisplayUtils.formatSkillSpiritName(s, sp);
-        const formatSkillMeaning = (m) => window.JPAPPCodexDisplayUtils.formatSkillMeaning(m);
-        const formatSkillRule = (r) => window.JPAPPCodexDisplayUtils.formatSkillRule(r);
-        const formatUnlockLevel = (l) => window.JPAPPCodexDisplayUtils.formatUnlockLevel(l);
 
         const isSkillOpen = ref(false);
 
@@ -10418,7 +10399,6 @@ const _jpApp = Vue.createApp({
             const skillId = currentQuestion.value?.skillId;
             if (!skillId || typeof skillId !== 'string') return;
             if (getSkillMastery(skillId) >= 100) return;
-            skillCorrectCounts.value[skillId] = 0;
             skillMastery.value[skillId] = Math.min(100, getSkillMastery(skillId) + 1);
             saveProgression();
         };
@@ -11780,8 +11760,7 @@ const _jpApp = Vue.createApp({
             debugControls,
             // ぴったり: hide wrong choices for the next question
             skillList, castAbility, spState, settings, shouldShowNextButton, praiseToast, comboPopup, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG, getSkillTypeLabel, pittariActive, isPittariSealed, isBattleChoiceBondMax, activeLevelPassiveBadges,
-            formatParticleBadge, formatSkillSpiritName, formatSkillMeaning, formatSkillRule, formatUnlockLevel,
-            skillMastery, skillCorrectCounts, getSkillMastery, getSkillMasteryStyle, isBondMaxSkill,
+            skillMastery, getSkillMastery, getSkillMasteryStyle, isBondMaxSkill,
             isMonsterCodexOpen, openMonsterCodex, monsterCodexEntries, selectedMonsterCodexEntry, selectMonsterCodexEntry, handleMonsterCodexImageError,
             pendingLevelUpAbility, isAbilityUnlockModalOpen, confirmAbilityUnlockAndContinue,
             isMentorModalOpen, isLevelJumpOpen, isAdvancedSettingsOpen, isStageRecordsOpen, stageRecordRows, debugJumpToLevel, mentorTutorialSeen, currentMentorSkill, mentorDialogueIndex, currentMentorLine, isLastMentorLine, nextMentorLine,

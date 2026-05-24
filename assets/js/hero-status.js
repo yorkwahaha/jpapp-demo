@@ -163,8 +163,6 @@ function hasSpeedOrEvadeBuffBestEffort() {
 
         if (typeof isEvadeBuff !== "undefined" && isEvadeBuff) return true;
 
-        if (typeof isSpeedBuff !== "undefined" && isSpeedBuff) return true;
-
         if (typeof speedMultiplier !== "undefined" && speedMultiplier > 1.01) return true;
 
     } catch { }
