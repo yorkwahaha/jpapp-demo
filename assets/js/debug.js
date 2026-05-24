@@ -13,7 +13,9 @@ window.__attachDebugTools = function (refs) {
         mapChapters, activeChapter, selectedSegmentIdx, getMapNodeStyle,
         MENTOR_AUDIO_MAP,
         grantRewards, playerDead, monsterIsDying, monsterTrulyDead, monsterResultShown,
-        skillMastery, saveProgression, SPIRITS
+        skillMastery, saveProgression, SPIRITS,
+        playerStats, inventory, resetSP,
+        getDerivedMaxHp, getDerivedMaxSp, getDerivedMaxPotions, getExpRequiredForNextLevel
     } = refs || {};
 
     // --- Audit State ---
@@ -523,6 +525,10 @@ window.__attachDebugTools = function (refs) {
                     const h = String(location.hostname || "");
 
                     if (h === "localhost" || h === "127.0.0.1") return true;
+
+                    if (h === "0.0.0.0") return true;
+
+                    if (/^192\.168\./.test(h) || /^10\./.test(h) || /^172\.(1[6-9]|2\d|3[01])\./.test(h)) return true;
 
                     if (String(location.protocol || "") === "file:") return true;
 
@@ -1509,6 +1515,7 @@ jpDebug commands:
 - jpDebug.setSkillMastery('WA_TOPIC_BASIC', 100) (dev only)
 - jpDebug.setAllSkillMastery(100) (dev only)
 - jpDebug.resetSkillMasteryDebug() (dev only)
+- jpDebug.setPlayerLevel(14, 0) / setPlayerExp(190) / prepareLevelUpTest(14) (dev only)
 - jpDebug.killCurrentMonster() (dev only: localhost / 127.0.0.1 / file:) — instant win, uses grantRewards
 - jpDebug.state() / home() / levels()
 - jpDebug.mapNodes() : Console-table current map marker data.
@@ -1569,6 +1576,87 @@ Mentor/Tutorial:
                     }
                     console.warn("[jpDebug.skillMastery] saveProgression ref not found; change applied in-memory only.");
                     return false;
+                };
+
+                const _clampPlayerLevelDebug = (level, max = 30) => {
+                    const n = Number(level);
+                    if (!Number.isFinite(n)) return 1;
+                    return Math.max(1, Math.min(max, Math.floor(n)));
+                };
+
+                const _getNextExpDebug = (level) => {
+                    if (typeof getExpRequiredForNextLevel === "function") {
+                        return getExpRequiredForNextLevel(level);
+                    }
+                    return 120 + level * 80;
+                };
+
+                const _clampPlayerExpDebug = (exp, level) => {
+                    const n = Number(exp);
+                    if (!Number.isFinite(n)) return 0;
+                    if (level >= 30) return 0;
+                    return Math.max(0, Math.min(Math.floor(n), _getNextExpDebug(level) - 1));
+                };
+
+                const _getDerivedPlayerStatsDebug = (level) => ({
+                    maxHp: typeof getDerivedMaxHp === "function"
+                        ? getDerivedMaxHp(level)
+                        : 100 + (level - 1) + Math.floor((level - 1) / 5) * 5,
+                    maxSp: typeof getDerivedMaxSp === "function"
+                        ? getDerivedMaxSp(level)
+                        : 20 + Math.floor(level / 6),
+                    maxPotions: typeof getDerivedMaxPotions === "function"
+                        ? getDerivedMaxPotions(level)
+                        : level >= 15 ? 2 : 1
+                });
+
+                const _isPlayerStatRefreshSafeDebug = () => {
+                    const sls = typeof showLevelSelect !== "undefined" ? !!showLevelSelect?.value : false;
+                    const sm = typeof showMap !== "undefined" ? !!showMap?.value : false;
+                    const fin = typeof isFinished !== "undefined" ? !!isFinished?.value : false;
+                    const hasMonster = typeof monster !== "undefined" && !!monster?.value && Number(monster.value.hp) > 0;
+                    return sls || sm || fin || !hasMonster;
+                };
+
+                const _applyDerivedPlayerStatsDebug = (level) => {
+                    const derived = _getDerivedPlayerStatsDebug(level);
+                    if (!_isPlayerStatRefreshSafeDebug()) return { ...derived, refreshed: false };
+                    if (player?.value) {
+                        player.value.maxHp = derived.maxHp;
+                        player.value.hp = derived.maxHp;
+                    }
+                    if (window.__sp) {
+                        window.__sp.max = derived.maxSp;
+                        if (typeof resetSP === "function") resetSP();
+                    }
+                    if (inventory?.value) inventory.value.potions = derived.maxPotions;
+                    return { ...derived, refreshed: true };
+                };
+
+                const _persistPlayerLevelDebug = () => {
+                    if (typeof saveProgression === "function") {
+                        saveProgression();
+                        return true;
+                    }
+                    console.warn("[jpDebug.playerLevel] saveProgression ref not found; change applied in-memory only.");
+                    return false;
+                };
+
+                const _logPlayerLevelDebug = (label = "[jpDebug.playerLevel]") => {
+                    const level = Number(playerStats?.value?.level) || 1;
+                    const exp = Number(playerStats?.value?.exp) || 0;
+                    const nextExp = _getNextExpDebug(level);
+                    const derived = _getDerivedPlayerStatsDebug(level);
+                    const row = {
+                        level,
+                        exp,
+                        nextExp: level >= 30 ? 0 : nextExp,
+                        maxHp: derived.maxHp,
+                        maxSp: derived.maxSp,
+                        maxPotions: derived.maxPotions
+                    };
+                    console.info(label, row);
+                    return row;
                 };
 
                 debugApi.setSkillMastery = function setSkillMastery(skillId, value) {
@@ -1638,6 +1726,86 @@ Mentor/Tutorial:
                     skillMastery.value = {};
                     _persistMasteryDebug();
                     return true;
+                };
+
+                debugApi.setPlayerLevel = function setPlayerLevel(level, exp = 0) {
+                    if (!isJpDebugDevHost()) {
+                        console.warn("[jpDebug.setPlayerLevel] only available in development.");
+                        return false;
+                    }
+                    if (!playerStats || typeof playerStats !== "object" || !("value" in playerStats)) {
+                        console.warn("[jpDebug.setPlayerLevel] playerStats ref not available.");
+                        return false;
+                    }
+                    const nextLevel = _clampPlayerLevelDebug(level);
+                    const nextExp = _clampPlayerExpDebug(exp, nextLevel);
+                    playerStats.value = {
+                        ...(playerStats.value || {}),
+                        level: nextLevel,
+                        exp: nextExp
+                    };
+                    const derived = _applyDerivedPlayerStatsDebug(nextLevel);
+                    _persistPlayerLevelDebug();
+                    const row = _logPlayerLevelDebug("[jpDebug.setPlayerLevel]");
+                    if (!derived.refreshed) {
+                        console.info("[jpDebug.setPlayerLevel] active battle detected; derived HP/SP/potions will refresh on the next safe reset.");
+                    }
+                    return row;
+                };
+
+                debugApi.setPlayerExp = function setPlayerExp(exp) {
+                    if (!isJpDebugDevHost()) {
+                        console.warn("[jpDebug.setPlayerExp] only available in development.");
+                        return false;
+                    }
+                    if (!playerStats || typeof playerStats !== "object" || !("value" in playerStats)) {
+                        console.warn("[jpDebug.setPlayerExp] playerStats ref not available.");
+                        return false;
+                    }
+                    const level = _clampPlayerLevelDebug(playerStats.value?.level);
+                    playerStats.value = {
+                        ...(playerStats.value || {}),
+                        level,
+                        exp: _clampPlayerExpDebug(exp, level)
+                    };
+                    _persistPlayerLevelDebug();
+                    return _logPlayerLevelDebug("[jpDebug.setPlayerExp]");
+                };
+
+                debugApi.prepareLevelUpTest = function prepareLevelUpTest(fromLevel) {
+                    if (!isJpDebugDevHost()) {
+                        console.warn("[jpDebug.prepareLevelUpTest] only available in development.");
+                        return false;
+                    }
+                    if (!playerStats || typeof playerStats !== "object" || !("value" in playerStats)) {
+                        console.warn("[jpDebug.prepareLevelUpTest] playerStats ref not available.");
+                        return false;
+                    }
+                    const level = _clampPlayerLevelDebug(fromLevel, 29);
+                    const requiredExp = _getNextExpDebug(level);
+                    const exp = Math.max(0, requiredExp - 10);
+                    playerStats.value = {
+                        ...(playerStats.value || {}),
+                        level,
+                        exp
+                    };
+                    const before = _applyDerivedPlayerStatsDebug(level);
+                    const after = _getDerivedPlayerStatsDebug(level + 1);
+                    _persistPlayerLevelDebug();
+                    const row = {
+                        fromLevel: level,
+                        toLevel: level + 1,
+                        exp,
+                        requiredExp,
+                        hpChange: after.maxHp - before.maxHp,
+                        spChange: after.maxSp - before.maxSp,
+                        potionChange: after.maxPotions - before.maxPotions
+                    };
+                    console.info(`[jpDebug.prepareLevelUpTest] Prepared Lv${level} -> Lv${level + 1} test`, row);
+                    if (!before.refreshed) {
+                        console.info("[jpDebug.prepareLevelUpTest] active battle detected; derived HP/SP/potions will refresh on the next safe reset.");
+                    }
+                    return row;
                 };
             }
 
@@ -1741,7 +1909,9 @@ Mentor/Tutorial:
 
             // 正式命名空間
 
-            window.jpDebug = debugApi;
+            window.jpDebug = window.jpDebug || {};
+
+            Object.assign(window.jpDebug, debugApi);
 
 
 
