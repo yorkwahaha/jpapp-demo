@@ -2,8 +2,8 @@
 
 本文件盤點 `assets/js/game.js` 內導師對話相關區塊，作為未來模組化前的風險邊界。此輪不做正式外移，不改玩家可見行為，不碰音訊、TTS、mentor audio、BGM/SFX/fanfare/iOS resume。
 
-> **Doc sync:** 2026-05-24 — §地圖／關卡確認觸發點（交叉 `game-js-map.md` §地圖流程／§地圖顯示層）
-> **行號：** 下列 `game.js` 行號以 `rg` 當次盤查為準，會漂移；改動前請再 `rg "setupMentorDialogue|checkPrologueTrigger"`。
+> **Doc sync:** 2026-05-24 — §觸發路由總表、§台詞資料來源、ending／initGame／result 分支（`rg setupMentorDialogue` 實測）
+> **行號：** 下列 `game.js` 行號以當次 `rg` 為準，會漂移；改動前請再 `rg "setupMentorDialogue|finishMentorDialogue"`。
 
 ## 參考基準
 
@@ -30,6 +30,98 @@
 | `game.js` ~L2113+ | `finishMentorDialogue` | 寫入 seen state、停止 mentor audio/video、關閉 overlay、解除 stage suspend、更新音量、執行 `_resumeAfterMentor`。 | B/C/D | 高 | 不可在低風險整理輪碰；地圖／確認窗 resume 入口。 |
 | `game.js` L1595-L1625 | long-press skip helpers | 長按 skip 狀態、timer、SFX、呼叫 `finishMentorDialogue`。 | B/C | 中-高 | UI 行為與結束 lifecycle 相連，暫不外移。 |
 
+## `setupMentorDialogue` 入口總表（2026-05-24 `rg`）
+
+> **單一實作：** `game.js` ~L1840+。參數為 **skill 物件**（含 `id`、`name`、可選 `mentorDialogue`）。台詞解析見 §台詞資料來源。
+
+| # | 呼叫鏈 | `game.js`（約） | 傳入 `id` / 物件 | `_resumeAfterMentor` |
+|---|--------|----------------|------------------|----------------------|
+| 1 | `openMap` → `checkPrologueTrigger` | L729、L741 | `PROLOGUE_OPENING`（物件）；fallback 內嵌 3 行 | 關 special scene → map BGM |
+| 2 | `selectStageFromMap` Auto-Mentor | L1113–L1115 | `L36_FIRST_ENTRY` 或 **skill**（`config.skillId`） | 開 `isBattleConfirmOpen` |
+| 3 | `startStageWithExplanation` | L1146 | **skill** | 通常無（確認窗 `stageConfirmSuspendedForMentor`） |
+| 4 | `checkGlobalEndingTriggers` L36 首通 | L1185–L1188 | `MAIN_ENDING_FINALE` + 內聯 `mentorDialogue` | `openMap` |
+| 5 | 同上 L36 已通關分支 | L1205–L1208 | `MAIN_ENDING_FINALE`（僅 id／name） | **無**（`return` 前設 flag） |
+| 6 | `checkGlobalEndingTriggers` L35 全 S | L1227–L1228 | `ENDING_L35_ALL_S` 或 `ENDING_L35_ALL_S_AT_35` | **無** |
+| 7 | 同上 L35 一般結局 | L1231 | `ENDING_L35_NORMAL` | **無** |
+| 8 | `triggerMentorDialogue` → `setupMentorDialogue` | L1890 | **skill**（`skillsAll[skillId]`） | 由 `initGame` 設定（見下表） |
+| 9 | `playMainEndingFinale`（dev／debug） | L1240–L1246 | 間接 #4 | 同 #4 |
+
+**未呼叫 `setupMentorDialogue`（對照）：** `grantRewards`／結算 tally（僅 `triggerNextKnowledgeCard`、`playResultFanfare`）、`returnToMap`、`handleEscapeToMap`、`confirmAndStartBattle`。
+
+## `finishMentorDialogue` 結束後分流（~L2115+）
+
+| 步驟 | 行為 |
+|------|------|
+| 1 | 清除打字 timer |
+| 2 | 若 `currentMentorSkill.id` 不在 `mentorTutorialSeen` → `push` + `saveMentorState()` |
+| 3 | `stopMentorAudio` / `stopMentorVideo` |
+| 4 | `isMentorModalOpen` / `isMapMentorOpen` → false |
+| 5 | `stageConfirmSuspendedForMentor` → false |
+| 6 | `updateGainVolumes()` |
+| 7 | 若有 `window._resumeAfterMentor` → 執行後清空 |
+
+**誰會呼叫 `finishMentorDialogue`：** `nextMentorLine` 最後一頁（~L2101）；長按 skip 3 秒（~L2177）。UI：`nextMentorLine` 綁定地圖 overlay 點擊等（`index.html` `.map-mentor-overlay`）。
+
+**seen key 注意：** 地圖 Auto-Mentor 在進入前已 `push` `STAGE_INTRO_n`／`L36_FIRST_ENTRY`（~L1101）；`finishMentorDialogue` 另可能 `push` **`currentMentorSkill.id`**（skill id，如 `WA_TOPIC_BASIC`）。兩者 key 不同屬**現行設計**；改 seen 邏輯前需手測重播。
+
+## 台詞資料來源對照（勿改 JSON 本輪）
+
+`setupMentorDialogue` 內解析順序（~L1844）：
+
+```text
+centralizedData = getMentorDialogueEntry(skill.id)  // → MENTOR_AUDIO_MAP（fetch mentor-dialogues.v1.json）
+dialogueSource = centralizedData?.dialogue || skill.mentorDialogue || []
+```
+
+| 類型 | 來源檔 | 查詢 key | 用於 |
+|------|--------|----------|------|
+| **A. 集中化 JSON** | `assets/data/mentor-dialogues.v1.json` | 頂層 key = `skill.id` 或結局 id | 序章、關卡 intro、結局、L36；`getMentorDialogueEntry` 對 `PROLOGUE_OPENING` fallback `PROLOGUE` |
+| **B. 呼叫端內聯** | — | — | `checkPrologueTrigger` fallback 三行；`checkGlobalEndingTriggers` 內聯 `MENTOR_AUDIO_MAP[id]?.dialogue` |
+| **C. skill 物件欄位** | 理論上 `skills.v1.json` | `skill.mentorDialogue` | `triggerMentorDialogue` **進入條件**要求此欄；**2026-05-24 實測 `skills.v1.json` 無 `mentorDialogue` 欄** → `initGame` 的 `triggerMentorDialogue` 路徑可能不觸發（**待確認**是否為已知死路徑或另有合併） |
+| **D. 程式組裝 id** | — | `STAGE_INTRO_{n}` 僅用於 **seen**，非 JSON key | 地圖首次點關；台詞仍走 A（skill.id） |
+
+**JSON 頂層 key 一覽（2026-05-24，`rg '^  \"[A-Z]' mentor-dialogues`）：**
+`PROLOGUE`、`WA_TOPIC_BASIC` … 各關技能 id、`BOSS_REVIEW_*`、`FINAL_BOSS_35`、`ENDING_L35_NORMAL`、`ENDING_L35_ALL_S`、`ENDING_L35_ALL_S_AT_35`、`L36_FIRST_ENTRY`、`HIDDEN_BOSS_36`、`FINAL_ENDING`。
+
+**程式 id 與 JSON 不一致（待確認／修資料時對照）：**
+
+| 程式使用的 id | JSON 現有 key | 備註 |
+|---------------|---------------|------|
+| `PROLOGUE_OPENING` | `PROLOGUE`（+ `getMentorDialogueEntry` fallback） | 有序章 fallback 內嵌 |
+| `MAIN_ENDING_FINALE` | `FINAL_ENDING`（無 `MAIN_ENDING_FINALE`） | L1188 內聯讀 `MENTOR_AUDIO_MAP['MAIN_ENDING_FINALE']`；若皆空則可能無台詞 **待確認** 實機行為 |
+
+## Ending／Boss／`initGame`／Result 觸發表
+
+### `checkGlobalEndingTriggers`（~L1163；由 `openMap`／`returnToMap`／`playMainEndingFinale` 呼叫）
+
+| 條件 | `setupMentorDialogue` id | 資料來源 | 結束後 |
+|------|------------------------|----------|--------|
+| 首次通關 L36（`currentLevel===36`） | `MAIN_ENDING_FINALE` | B：內聯 MAP；key 見上表不一致 | `_resumeAfterMentor` → `openMap` |
+| 已通關 L36 且未設 `jpRpgTrueEndingSeen` | `MAIN_ENDING_FINALE` | 同上 | **無** `_resumeAfterMentor`（函式 `return`） |
+| L35 全關 S rank、首次 | `ENDING_L35_ALL_S` 或 `ENDING_L35_ALL_S_AT_35` | A：JSON | **無** |
+| L35 通關、非全 S、首次 | `ENDING_L35_NORMAL` | A：JSON | **無** |
+
+**Boss 戰鬥中：** `grantRewards` 內 `playSfx('bossClear')`（魔王）／`win` — **非** mentor dialogue。
+
+### `initGame`（~L9437+；開戰前）
+
+| 分支 | 條件 | 機制 | `_resumeAfterMentor` |
+|------|------|------|----------------------|
+| 新 unlock 技能 | `config.unlockSkills` 新增 | `triggerMentorDialogue(firstNewSkillId)` | 設了 token 但 callback **空**（~L9470）**待確認** 是否刻意 |
+| 關卡 instruction | `config.skillId`、未 skip | `triggerMentorDialogue(config.skillId)` | `startTimer()` + `uiPop`（~L9497） |
+| 跳過 | `_disableMentorAutoTrigger`／`skipMentor` | 不呼叫 | — |
+
+同關 **knowledge card**（非 mentor overlay）：`pendingKnowledgeCards` → 勝利後 `grantRewards` → `triggerNextKnowledgeCard`（獨立流程）。
+
+### Result／破關（`grantRewards` #36）
+
+| 項目 | 是否 mentor dialogue |
+|------|---------------------|
+| `playResultFanfare` / `bossClear` / `win` | 否（音訊 only） |
+| `triggerNextKnowledgeCard` | 否（知識卡 overlay） |
+| `monsterResultShown` 結算 UI | 否 |
+| 玩家按「返回地圖」 | `returnToMap`；無 `setupMentorDialogue` |
+
 ## 地圖／關卡確認相關觸發點（已知入口）
 
 > **UI 對照：** 地圖上導師用 `isMapMentorOpen` + `index.html` `.map-mentor-overlay`（~L2645+）；關卡確認窗「姐姐引導」用 `startStageWithExplanation`；首頁封面僅靜態立繪（`.home-mentor-keyart`），**不**走 `setupMentorDialogue`。
@@ -39,21 +131,11 @@
 | **首次進地圖（序章）** | `openMap` → `checkPrologueTrigger` | L763–767、L697+ | `PROLOGUE_OPENING`（資料 fallback `PROLOGUE`） | 關 special scene → map BGM／`MapAmbient` | `game-js-map` §地圖流程 `openMap` |
 | **地圖點關卡（首次）** | `selectStageFromMap` Auto-Mentor | L1082–1117 | `STAGE_INTRO_{n}` 或 L36：`L36_FIRST_ENTRY` | 開 `isBattleConfirmOpen` | `game-js-map` §地圖顯示層 確認窗 |
 | **關卡確認窗「姐姐引導」** | `startStageWithExplanation` | L1137–1154 | 關卡 `skillId` / `unlockSkills[0]` → `setupMentorDialogue(skill)` | （無固定 resume；`stageConfirmSuspendedForMentor`） | `index.html` `.stage-confirm-mentor-*` |
-| **L35/L36 結局／特殊場景** | `checkGlobalEndingTriggers` 等 | L1161+ | `MAIN_ENDING_FINALE` 等 | 可能 `openMap` | 見下表 ending 列；**待確認**細部分支 |
-| **戰鬥開局教學** | `initGame` 內 instruction mentor | ~L9468+ | 依關卡／unlock | 開 timer／下一題 | **非地圖**；見下表 `initGame` |
-| **破關回地圖** | `returnToMap` | ~L1308+ | — | — | **不播導師**；見 `game-js-map` §想改回地圖路徑 |
+| **L35/L36 結局** | `checkGlobalEndingTriggers` | L1163+ | 見 §Ending 表 | 部分分支 `openMap` | §觸發路由 #4–7 |
+| **戰鬥開局** | `initGame` → `triggerMentorDialogue` | ~L9464、L9490 | skill id | `startTimer` 等 | §`initGame` 表 |
+| **破關回地圖** | `returnToMap` | ~L1308+ | — | — | **不播導師** |
 
-**`setupMentorDialogue` 選 overlay（~L1850）：** `showMap.value === true` → `isMapMentorOpen`（地圖）；否則 `isMentorModalOpen`。關卡確認窗在導師播放時會 `opacity-0`（`isMapMentorOpen \|\| isMentorModalOpen`）。
-
-**文案／台詞資料（只讀對照，本輪不改 JSON）：**
-
-| 用途 | 優先讀取 | 備註 |
-|------|----------|------|
-| 序章、L36 專用、集中化台詞 | `assets/data/mentor-dialogues.v1.json` | `getMentorDialogueEntry`；`PROLOGUE_OPENING` 可 fallback `PROLOGUE` |
-| 一般關卡 stage intro | `skills.v1.json` 內 skill 的 `mentorDialogue` | `selectStageFromMap` 傳入 `setupMentorDialogue(skill)` |
-| 是否再播 | `mentorTutorialSeen` + `saveMentorState` | key 見上表；存於 `storage-manager` / slot-scoped seen |
-
-**待確認（勿猜測實作）：** `checkGlobalEndingTriggers` 內各分支與 `playMainEndingFinale` 的完整 mentor id 列表；`triggerMentorDialogue` 是否仍有地圖外入口。改動前請 `rg setupMentorDialogue` 全檔。
+**`setupMentorDialogue` 選 overlay（~L1852）：** `showMap` → `isMapMentorOpen`；否則 `isMentorModalOpen`。詳見 §台詞資料來源。
 
 ## 關聯入口與綁定
 

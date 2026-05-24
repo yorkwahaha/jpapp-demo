@@ -1160,6 +1160,7 @@ const _jpApp = Vue.createApp({
             removeStoryFlag('jpRpgL36Unlocked');
         }
 
+        /** L35/L36 ending mentor ids — docs/mentor-dialogue-map.md §Ending. Map-flow doc only; do not edit. */
         const checkGlobalEndingTriggers = () => {
             // ---- [ NEW: MAIN ENDING FINALE ] ----
             // Trigger immediately after defeating Level 36 for the first time
@@ -1837,6 +1838,7 @@ const _jpApp = Vue.createApp({
         loadMentorState();
 
         // ================= [ MENTOR DIALOGUE ] =================
+        /** Entry router: see docs/mentor-dialogue-map.md §觸發路由總表. Dialogue: mentor-dialogues.v1.json via getMentorDialogueEntry(skill.id). */
         const setupMentorDialogue = (skill) => {
             currentMentorSkill.value = skill;
 
@@ -2112,6 +2114,7 @@ const _jpApp = Vue.createApp({
 
         };
 
+        /** Closes overlay, saves seen, runs window._resumeAfterMentor — see mentor-dialogue-map.md §finishMentorDialogue 分流. */
         const finishMentorDialogue = () => {
 
             if (typingTimerMentor) {

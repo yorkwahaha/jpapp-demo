@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
 > **Last audited:** 2026-05-24 (release `26052401` context)
-> **Doc sync:** 2026-05-24 — mentor×map 交叉參照；§地圖流程；§地圖顯示層；§結算／存檔卡
+> **Doc sync:** 2026-05-24 — mentor 觸發路由見 `mentor-dialogue-map.md` §觸發路由總表；§地圖流程；§結算／存檔卡
 > **File:** `assets/js/game.js` — **~11,693 lines** (1-indexed；外移後略減)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -186,6 +186,8 @@
 | Overlay 分流 | `setupMentorDialogue` #16 | `isMapMentorOpen` if `showMap` | 否則 `isMentorModalOpen` | mentor §setupMentorDialogue |
 
 **DO NOT TOUCH（mentor×map）：** `setupMentorDialogue`、`finishMentorDialogue`、`playMentorAudioForCurrentPage`、`mentor-dialogues.v1.json`、`_resumeAfterMentor` 回調內容。
+
+**完整導師入口／結局／initGame／result 對照：** [`mentor-dialogue-map.md`](./mentor-dialogue-map.md) §觸發路由總表、§Ending／initGame／Result、§台詞資料來源。
 
 ### 地圖流程（Map flow / return-to-map）
 
