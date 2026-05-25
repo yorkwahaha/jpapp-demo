@@ -72,7 +72,7 @@
 | 36b | **Result — UI state & timers** *(file-order)* | 3678–3748 | `animatedExp`、`displayedResult*`、通關計時、`resultUnlockedMilestones` | Low–Med | `animatedExp`, `stageClearElapsedSeconds`, `monsterResultShown` | `index.html` result modal | defer | 宣告在 #22；邏輯耦合 #36 |
 | 37 | **Handlers — retry / revive / potion** *(file-order)* | 8613, 11240–11294 | `usePotion`（音訊區）、`retryLevel`、`revive` | Med | `retryLevel`, `revive`, `usePotion` | — | defer | 重試關、喝藥 |
 | 38 | **Result — display bindings** | 11295–11363 | `createVueBindings`、`updateStageBestRecord` | Med | `calculatedGrade`, `stageRecordRows`, `createVueBindings` | `result-display-manager.js` | **yes**（顯示） | 評價／星等／紀錄表 |
-| 39 | **Boot hooks (2nd onMounted)** | 11364–11408 | changelog 版本 policy、音訊 unlock、`installTapChoicesLayoutHooks` | Med | `applyVersionStoragePolicy`, `unlockAudioOnce` | `changelog-manager.js` | defer | 首屏手勢後音訊；~~`__initCornerMenu`~~ removed 2026-05-24 |
+| 39 | **Boot hooks (2nd onMounted)** | 11364–11408 | changelog 版本 policy、音訊 unlock、`installTapChoicesLayoutHooks` | Med | `applyVersionStoragePolicy`, `unlockAudioOnce` | `changelog-manager.js` | defer | 首屏手勢後音訊 |
 | 40 | **Debug — level jump** | 11410–11476 | `debugJumpToLevel`、`window.debugJumpToLevel` | Low | `debugJumpToLevel`, `isLevelJumpOpen` | `debug.js` | **yes** (dev) | Dev 關卡跳轉 |
 | 41 | **Vue return & mount** | 11502–11549 | `return {…}`、`__attachDebugTools`、`_jpApp.mount` | Low–Med | `return {`, `_jpApp.mount` | `debug.js`, `index.html` | defer | 啟動不報錯 |
 
@@ -432,6 +432,10 @@
 | `game.js` changelog inline fallback | 2026-05-24 | 與 `changelog-manager.js` 重複的 `createChangelogState` 副本已刪；與 `settings-manager` 相同，假設 script 已載入。 |
 | `changelog-manager.js` `Array.prototype.random` | 2026-05-24 | 全 repo 無 `.random()` 陣列呼叫；與 changelog 無關。 |
 | `versionImageAsset` inline 實作 | 2026-05-24 | 改薄封裝 `JPAPPChangelogManager.appendVersionQuery`（導師圖等仍經 `versionImageAsset` 別名）。 |
+| Legacy UI — corner menu | 2026-05-24 | `corner-menu.js`、`__initCornerMenu`、index 載入、`#cornerMenu` CSS 已移除；現役 `.battle-hud-actions`。 |
+| Legacy UI — `.left-actionbar` / drawer CSS | 2026-05-24 | `styles.css` orphan 區塊已刪；無 HTML/JS。 |
+| Legacy UI — `viewport-hooks` `.action-btn` | 2026-05-24 | `touchend` 雙擊防護僅 `button` + `#flickLayer`；`.action-btn` 死路徑已刪。 |
+| Battle mentor modal | 2026-05-24 | `.mentor-overlay`、`isMentorModalOpen`、`triggerMentorDialogue` 等已移除；見 `mentor-dialogue-map.md`。 |
 
 ### SAFE
 
