@@ -6874,6 +6874,66 @@ body.lock-scroll {
 
 }
 
+/* Map node label & rank readability (CSS-only; beats index.html inline) */
+.map-page-container .stage-node-wrap .node-landmark-label {
+    font-size: 0.8125rem;
+    letter-spacing: 0.04em;
+    color: #f8fafc;
+    text-shadow:
+        0 0 2px rgba(0, 0, 0, 0.82),
+        0 1px 2px rgba(0, 0, 0, 0.72),
+        0 2px 6px rgba(0, 0, 0, 0.58),
+        0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+@media (max-width: 640px) {
+    .map-page-container .stage-node-wrap .node-landmark-label {
+        font-size: 0.875rem;
+    }
+}
+
+.map-page-container .stage-node-wrap .grade-badge {
+    outline: 1px solid rgba(255, 255, 255, 0.3);
+    outline-offset: 0;
+    -webkit-text-stroke: 0.85px rgba(255, 255, 255, 0.55);
+    paint-order: stroke fill;
+    text-shadow:
+        0 0 1.5px rgba(0, 0, 0, 0.92),
+        0 1px 0 rgba(255, 255, 255, 0.35),
+        0 2px 3px rgba(0, 0, 0, 0.78),
+        0 0 7px rgba(0, 0, 0, 0.42),
+        0 0 4px rgba(255, 255, 255, 0.12);
+}
+
+.map-page-container .stage-node-wrap .text-yellow-400.grade-badge,
+.map-page-container .stage-node-wrap .text-yellow-300.grade-badge {
+    filter: brightness(1.3) drop-shadow(0 0 4px rgba(0, 0, 0, 0.58)) drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5));
+    -webkit-text-stroke: 0.85px rgba(255, 255, 255, 0.42);
+}
+
+.map-page-container .stage-node-wrap .text-blue-400.grade-badge,
+.map-page-container .stage-node-wrap .text-cyan-400.grade-badge {
+    filter: brightness(1.2) drop-shadow(0 0 4px rgba(0, 0, 0, 0.58)) drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5));
+}
+
+.map-page-container .stage-node-wrap .text-slate-200.grade-badge,
+.map-page-container .stage-node-wrap .text-gray-200.grade-badge {
+    filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.62)) drop-shadow(0 2px 5px rgba(0, 0, 0, 0.52));
+    -webkit-text-stroke: 0.85px rgba(255, 255, 255, 0.58);
+}
+
+.map-page-container .stage-node-wrap .text-orange-400.grade-badge,
+.map-page-container .stage-node-wrap .text-amber-600.grade-badge {
+    outline: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+    -webkit-text-stroke: 0.85px rgba(255, 255, 255, 0.55) !important;
+    text-shadow:
+        0 0 1.5px rgba(0, 0, 0, 0.92),
+        0 1px 0 rgba(255, 255, 255, 0.38),
+        0 2px 4px rgba(0, 0, 0, 0.75),
+        0 0 6px rgba(0, 0, 0, 0.45) !important;
+    filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.65)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.55)) !important;
+}
+
 
 /* Glow Layers for Independent Pulses (Ch 5+) */
 .map-ambient-glow-layer {
