@@ -84,23 +84,6 @@ rt {
     opacity: 0.8;
 }
 
-.hp-bar-fill.danger {
-    background: #dc2626 !important;
-}
-
-/* Restore Hero HP Bar CSS */
-.hp-bar-wrap {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 9999px;
-    overflow: hidden;
-}
-
-.hp-bar-fill {
-    height: 100%;
-    border-radius: 9999px;
-    transition: width 0.5s ease;
-}
-
 .potion-btn-hud {
     position: absolute;
     left: 0.75rem;
@@ -796,8 +779,7 @@ rt {
     }
 }
 
-.hero-avatar,
-.hero-avatar-img {
+.hero-avatar {
     width: 128px;
     height: 128px;
     margin: 0 auto;
@@ -817,14 +799,6 @@ rt {
         left: var(--hero-left-desktop);
         margin-left: var(--hero-ml-desktop);
     }
-}
-
-.hero-statusbar {
-    margin-top: 4px;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    justify-content: flex-start;
 }
 
 .hero-status-pill {
@@ -996,20 +970,6 @@ rt {
         display: none !important;
     }
 
-    .hero-avatar-img {
-        width: 106px !important;
-        height: 106px !important;
-        border-radius: 12px !important;
-        border: 2px solid rgba(255, 200, 100, 0.45) !important;
-        object-fit: cover !important;
-    }
-
-    .hp-bar-fill {
-        height: 100% !important;
-        border-radius: 5px !important;
-    }
-
-    .sp-fill,
     #spFill {
         display: block !important;
         height: 10px !important;
@@ -1035,16 +995,6 @@ rt {
         font-size: 10px !important;
         line-height: 1 !important;
         white-space: nowrap;
-    }
-
-    .hero-statusbar {
-        position: static !important;
-        min-height: auto !important;
-        margin-top: 2px !important;
-        gap: 4px !important;
-        flex-wrap: wrap !important;
-        justify-content: flex-start !important;
-        align-items: flex-start !important;
     }
 
     .hero-status-pill {

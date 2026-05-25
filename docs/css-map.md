@@ -222,6 +222,7 @@ Current A candidates: none. The remaining obvious small candidates either have a
 - `styles.css`: legacy `.left-actionbar`, `.drawer-toggle-btn`, `.drawer-item` blocks (no HTML/JS since V3 HUD)
 - `viewport-hooks.js`: `touchend` handler no longer references `.action-btn` (2026-05-24)
 - `styles.css` `@media (max-width: 900px)`: `#hud>.w-64` subtree + `#hud>.flex-1.border-2` removed (2026-05-24); V3 `.battle-hud-*` unchanged
+- `styles.css` (2026-05-25): removed legacy hero/avatar/hp/sp/statusbar CSS orphans — `.hero-avatar-img`, `.hp-bar-wrap`, `.hp-bar-fill`, `.hp-bar-fill.danger`, `.sp-fill` (kept `#spFill` rule + `.hero-avatar`, `.hero-status-pill`, `#heroStatusBar`, `#monsterStatusBar`, `.hud-bar-*`, `.battle-hud-*`)
 
 ### Dev-Tools Evaluation (Phase 1-F follow-up)
 
