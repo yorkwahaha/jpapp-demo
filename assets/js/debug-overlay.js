@@ -234,13 +234,13 @@
 
     document.addEventListener('pointerdown', function (e) {
 
-        const t = e.target.closest('#menuBtn, [data-debug-toggle], button');
+        const t = e.target.closest('button');
 
         if (!t) return;
 
         const txt = (t.id + ' ' + t.textContent + ' ' + (t.getAttribute('aria-label') || '')).toLowerCase();
 
-        if (!txt.includes('menu') && !txt.includes('系統') && !txt.includes('system') && t.id !== 'menuBtn') return;
+        if (!txt.includes('menu') && !txt.includes('系統') && !txt.includes('system')) return;
 
 
 
