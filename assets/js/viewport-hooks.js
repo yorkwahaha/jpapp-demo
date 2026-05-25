@@ -121,7 +121,8 @@ window.__initViewportHooks = function (watch, showLevelSelect) {
 
                 if (now - lastTouchEnd <= 300) {
 
-                    if (e.target.closest('button') || e.target.closest('.action-btn')) {
+                    // Flick resonance slots are <button> inside #flickLayer
+                    if (e.target.closest('button')) {
 
                         if (e.target.closest('#flickLayer')) {
 
