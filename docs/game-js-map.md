@@ -436,6 +436,7 @@
 | Legacy UI — `.left-actionbar` / drawer CSS | 2026-05-24 | `styles.css` orphan 區塊已刪；無 HTML/JS。 |
 | Legacy UI — `viewport-hooks` `.action-btn` | 2026-05-24 | `touchend` 雙擊防護僅 `button` + `#flickLayer`；`.action-btn` 死路徑已刪。 |
 | Legacy UI — `debug-overlay` `#menuBtn` / `[data-debug-toggle]` | 2026-05-24 | 長按手勢改 `closest('button')` + 系統選單文字過濾；無 DOM。 |
+| Legacy UI — `#hud>.w-64` / `#hud>.flex-1.border-2` mobile CSS | 2026-05-24 | `styles.css` `@media (max-width: 900px)` orphan 已刪；現役 V3 `.battle-hud-*` / `.hud-tool-btn`。 |
 | Battle mentor modal | 2026-05-24 | `.mentor-overlay`、`isMentorModalOpen`、`triggerMentorDialogue` 等已移除；見 `mentor-dialogue-map.md`。 |
 
 ### SAFE

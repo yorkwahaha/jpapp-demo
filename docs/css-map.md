@@ -221,6 +221,7 @@ Current A candidates: none. The remaining obvious small candidates either have a
 - `styles.css`: mobile `#cornerMenu` block and V3 force-hide override block
 - `styles.css`: legacy `.left-actionbar`, `.drawer-toggle-btn`, `.drawer-item` blocks (no HTML/JS since V3 HUD)
 - `viewport-hooks.js`: `touchend` handler no longer references `.action-btn` (2026-05-24)
+- `styles.css` `@media (max-width: 900px)`: `#hud>.w-64` subtree + `#hud>.flex-1.border-2` removed (2026-05-24); V3 `.battle-hud-*` unchanged
 
 ### Dev-Tools Evaluation (Phase 1-F follow-up)
 
