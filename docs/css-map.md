@@ -157,7 +157,7 @@ Do not continue into `rwd.css` yet. Current next candidates:
 
 `styles.css` still owns these major areas after Phase 1-E:
 
-1. Global/base rules and early battle primitives: body, slots, HP/SP, stage, question area, modal base, hero status, action bar, scrollbars.
+1. Global/base rules and early battle primitives: body, slots, HP/SP, stage, question area, modal base, hero status, scrollbars (legacy `.left-actionbar` **removed 2026-05-24**).
 2. Legacy mobile battle overrides: nested `#hud`, question, Flick projectile, TAP/Flick controls, and mobile battle spacing.
 3. ~~Corner menu fallback and forced-hide rules~~ **removed 2026-05-24** (V3 `#hud` `.battle-hud-actions` is canonical).
 4. Audio debug overlay: `.audio-debug-*` diagnostics UI. Isolated by selector but audio-related; leave frozen.
@@ -185,6 +185,7 @@ Classification key:
 | Early battle primitives and stage/question/modal base | L117-L748 | C/D mixed | `styles.css` until battle/layout audit | Contains battle VFX keyframes, `#stage`, `#hud`, `#question-area`, `.modal-overlay`, `.modal-panel`, slots, and hero status. Too cross-cutting for a mechanical move. |
 | Legacy mobile battle overrides | L942-L1749 | C | Frozen | Nested `#hud`, battle question, Flick projectile, and mobile battle layout. Do not move before `rwd.css` and battle ownership are defined. |
 | ~~Corner menu fallback~~ | — | — | **Removed 2026-05-24** | `corner-menu.js` and both `#cornerMenu` CSS blocks removed from `styles.css`. |
+| ~~Legacy `.left-actionbar` / drawer~~ | ~~L937–978, L999–1001, L1388–1459~~ | — | **Removed 2026-05-24** | Orphan pre–V3 HUD bottom bar; battle uses `.battle-hud-actions` / `.hud-tool-btn`. |
 | `body.lock-scroll` | L1842-L1849 | D | `styles.css` or future `layout.css` | Shared modal/page locking primitive. Keep in main legacy file for now. |
 | Modal/question responsive tweaks and praise/projectile leftovers | L1851-L2038 | C/D mixed | Frozen / `styles.css` | Crosses mobile question typography, modal text, desktop modal positioning, praise animation, and Flick VFX. Needs selector-by-selector split later. |
 | Battle log, rune/Flick option polish | L2043-L2277 | C | Frozen | Battle core/TAP/Flick adjacent; keep with battle audit. |
@@ -218,8 +219,7 @@ Current A candidates: none. The remaining obvious small candidates either have a
 - `index.html` dynamic script load for corner-menu
 - `game.js` `__initCornerMenu` calls (both `onMounted` hooks)
 - `styles.css`: mobile `#cornerMenu` block and V3 force-hide override block
-
-**Orphan note:** `.left-actionbar` CSS remains in `styles.css` (no HTML); separate cleanup if desired — not part of this removal.
+- `styles.css`: legacy `.left-actionbar`, `.drawer-toggle-btn`, `.drawer-item` blocks (no HTML/JS since V3 HUD)
 
 ### Dev-Tools Evaluation (Phase 1-F follow-up)
 
