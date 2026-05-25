@@ -4735,7 +4735,6 @@ body.lock-scroll {
     -webkit-user-select: none;
     user-select: none;
     -webkit-user-drag: none;
-    user-drag: none;
 }
 
 @keyframes boss-impact-flash {
