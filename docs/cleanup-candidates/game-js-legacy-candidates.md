@@ -7,6 +7,38 @@
 
 This inventory records cleanup candidates and stale references that may deserve a later, separately approved cleanup pass. Most candidates are not safe to delete now because they are boot fallbacks, public `window` contracts, debug hooks, or adjacent to frozen runtime zones.
 
+
+## Plain-Language Decision Summary
+
+Use this file as a **warning list**, not as a deletion plan. None of the 12 candidates should be deleted now.
+
+### Safest docs-only cleanup candidates
+
+These can be reviewed later as documentation cleanup only:
+
+- **#1 Docs-only stale battle mentor modal references** — consolidate docs wording, but do not touch mentor runtime.
+- **#10 `clearedCountText` historical docs note** — likely docs-only history cleanup.
+- **#11 Old codex/book/card naming residue in docs** — terminology cleanup only; do not touch active `knowledge-card-*` code.
+- **#12 Completed-cleanup table in `game-js-map.md`** — decide whether to archive old history elsewhere.
+
+### Needs more evidence before any code change
+
+- **#2 VFX boot shims** — may be boot insurance.
+- **#3 moved-code comment** — low risk, but not important.
+- **#4 SP legacy DOM update path** — SP gameplay is active; separate DOM no-op from active helpers first.
+- **#5 inline `game-utils` fallbacks** — may be required if helper loading fails.
+- **#6 `debugControls` / `heroBuffs` fallback** — may protect debug/buff display.
+- **#8 `debugJumpToLevel`** — dev-only, but touches battle entry surfaces.
+- **#9 praise toast residue** — may affect feedback timing or presentation.
+
+### Do not touch in the near future
+
+- **#7 `window.__debugQMix`** — it is inside question-generation territory. Treat as frozen.
+
+### Default rule
+
+If a future cleanup task cannot prove that a candidate is docs-only or comment-only, stop and ask for explicit approval.
+
 ## Candidates
 
 ### 1. Docs-only stale references to removed battle mentor modal

@@ -8,6 +8,27 @@
 
 Build and maintain a reliable, current map of `assets/js/game.js` so future agents can find code quickly, avoid frozen zones, and make smaller patches. This goal is self-managed by the agent across small milestone batches.
 
+
+## Completed Milestones on the Current Mainline
+
+These milestones have already been completed and merged to `main` as of commit `5a3b27c`:
+
+- **M1:** `docs/game-js-map.md` and `docs/code-ownership-map.md` sync.
+- **M2:** two `game.js` comment-only navigation anchors.
+- **Goal spec:** this long-running workflow document.
+- **M3:** legacy/dead-code candidate inventory in `docs/cleanup-candidates/game-js-legacy-candidates.md`.
+- **M4:** quick search expansion + safe extraction proposal in `docs/cleanup-candidates/game-js-extraction-proposal.md`.
+
+The next milestone must stay review-only unless the user explicitly approves implementation.
+
+## Plain-English Workflow
+
+1. First, update or review docs.
+2. Second, list risks and stop.
+3. Third, ask for approval before touching runtime code.
+4. Never delete, move, or extract code just because it looks old.
+5. When unsure, choose documentation over implementation.
+
 ## Roles
 
 ### Implementer
@@ -79,24 +100,28 @@ Supervisor Check After:
   - `node --check assets/js/debug.js`
   - `git diff --check`
 
-### Milestone 3: Cross-Doc Consistency Pass
+### Milestone 3: Legacy / Dead-Code Candidate Inventory
 
-- Verify `game-js-map.md`, `code-ownership-map.md`, `mentor-dialogue-map.md`, and `css-map.md` do not contradict current `game.js` entry points.
-- Patch only docs unless explicitly approved.
+- Inventory possible cleanup candidates only.
+- Do not delete code.
+- Mark every candidate with risk, evidence, and required validation.
+- Default recommendation must be "not safe to delete now" unless evidence is overwhelming.
 - Validation: `git diff --check`.
 
-### Milestone 4: Quick Search Expansion
+### Milestone 4: Quick Search Expansion + Safe Extraction Proposal
 
 - Add or refine task-to-`rg` tables for common agent tasks.
+- Propose possible future extraction areas, but do not implement them.
 - Prefer symbol names over line numbers.
 - Mark which files to open first and which files to avoid.
 - Validation: `git diff --check`.
 
-### Milestone 5: Frozen-Zone Audit
+### Milestone 5: Review-Only Readiness Ranking
 
-- Re-audit high-risk zones against current code.
-- Update docs with clearer "do not touch" boundaries.
-- No runtime edits.
+- Rank candidates into: best first candidate, possible later, defer, and do not touch.
+- Do not implement extraction.
+- Do not modify runtime code.
+- End with one clear recommendation for the next review or audit task.
 - Validation: `git diff --check`.
 
 ### Milestone 6: Optional Comment Anchor Cleanup
@@ -108,6 +133,19 @@ Supervisor Check After:
   - `node --check assets/js/game.js`
   - `node --check assets/js/debug.js`
   - `git diff --check`
+
+
+## Implementation Approval Gate
+
+Runtime implementation is not allowed by default. Before any implementation task, the user must explicitly approve:
+
+- The exact candidate.
+- The exact files allowed.
+- The maximum patch size or scope.
+- The validation commands.
+- Whether commit / push is allowed.
+
+If those details are not explicit, the agent must stay docs-only or stop.
 
 ## Hard Restrictions
 
