@@ -1126,6 +1126,13 @@
     font-weight: 800;
 }
 
+.codex-book--resonance .codex-book-subtitle {
+    color: rgba(226, 240, 255, 0.84);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.28em;
+}
+
 .codex-close-btn {
     color: rgba(252, 228, 160, 0.55);
     padding: 6px;
@@ -2153,15 +2160,26 @@
         font-size: 1.85rem;
     }
 
-    .codex-resonance-detail {
-        grid-template-columns: 1fr;
-        gap: 0.72rem;
-        padding: 0.62rem max(0.5rem, env(safe-area-inset-left)) 0.72rem max(0.5rem, env(safe-area-inset-right));
+    .codex-book--resonance .codex-book-title {
+        font-size: 1.16rem;
     }
 
-    .codex-detail-back {
-        min-height: 34px;
-        font-size: 0.78rem;
+    .codex-book--resonance .codex-book-subtitle {
+        font-size: 0.76rem;
+        font-weight: 900;
+        color: rgba(239, 246, 255, 0.92);
+        letter-spacing: 0.24em;
+    }
+
+    .codex-resonance-detail {
+        grid-template-columns: 1fr;
+        gap: 0.78rem;
+        padding: 0.62rem max(0.5rem, env(safe-area-inset-left)) 0.78rem max(0.5rem, env(safe-area-inset-right));
+    }
+
+    .codex-resonance-detail .codex-detail-back {
+        min-height: 38px;
+        font-size: 0.92rem;
         max-width: 100%;
         box-sizing: border-box;
     }
@@ -2186,37 +2204,46 @@
         height: min(64vw, 178px);
     }
 
-    .codex-contract-panel {
-        padding: 0.76rem;
+    .codex-resonance-detail .codex-contract-panel {
+        padding: 0.88rem;
     }
 
-    .codex-contract-name {
-        font-size: 1.12rem;
+    .codex-resonance-detail .codex-contract-kicker {
+        font-size: 0.72rem;
     }
 
-    .codex-contract-grid {
+    .codex-resonance-detail .codex-contract-name {
+        font-size: 1.62rem;
+    }
+
+    .codex-resonance-detail .codex-contract-affinity span {
+        font-size: 0.84rem;
+    }
+
+    .codex-resonance-detail .codex-contract-grid {
         grid-template-columns: 1fr;
-        gap: 0.48rem;
+        gap: 0.58rem;
     }
 
-    .codex-contract-section {
-        padding: 0.58rem;
+    .codex-resonance-detail .codex-contract-section {
+        padding: 0.72rem;
     }
 
-    .codex-contract-section p,
-    .codex-contract-section li,
-    .codex-contract-section code,
-    .codex-contract-locked-text {
-        font-size: 0.82rem;
+    .codex-resonance-detail .codex-contract-section p,
+    .codex-resonance-detail .codex-contract-section li,
+    .codex-resonance-detail .codex-contract-section code,
+    .codex-resonance-detail .codex-contract-locked-text {
+        font-size: 1.17rem;
+        line-height: 1.58;
+    }
+
+    .codex-resonance-detail .codex-contract-section .codex-label-mini {
+        font-size: 0.88rem;
+        padding: 0.22rem 0.68rem;
     }
 
     .codex-mastery-track {
         height: 10px;
-    }
-
-    .codex-label-mini {
-        font-size: 0.76rem;
-        padding: 2px 8px;
     }
 }
 
