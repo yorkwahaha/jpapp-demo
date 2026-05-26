@@ -1105,6 +1105,9 @@
 }
 
 .codex-book--resonance .codex-book-header {
+    position: relative;
+    z-index: 4;
+    isolation: isolate;
     background:
         linear-gradient(90deg, rgba(255, 255, 255, 0.24), transparent 26%, rgba(147, 197, 253, 0.2)),
         linear-gradient(135deg, rgba(43, 69, 135, 0.92), rgba(82, 112, 181, 0.9));
@@ -1762,8 +1765,7 @@
     gap: 1rem;
     flex: 1;
     min-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden;
     padding: 1rem;
     color: #16325f;
     box-sizing: border-box;
@@ -1870,6 +1872,7 @@
 .codex-contract-panel {
     width: 100%;
     min-width: 0;
+    min-height: 0;
     max-width: 100%;
     box-sizing: border-box;
     align-self: stretch;
@@ -1881,6 +1884,10 @@
         rgba(239, 246, 255, 0.74);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82), 0 16px 36px rgba(37, 99, 235, 0.14);
     backdrop-filter: blur(14px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
 }
 
 .codex-contract-kicker {
@@ -2040,11 +2047,19 @@
     .codex-resonance-overview {
         padding: 0.62rem 0.24rem 0.58rem;
         gap: 0.44rem;
+        justify-content: flex-start;
+        overflow: hidden;
+    }
+
+    .codex-resonance-overview::before,
+    .codex-resonance-overview::after {
+        inset: 0;
     }
 
     .codex-wheel-stage {
-        min-height: 300px;
-        transform: translateY(-1.2rem);
+        min-height: min(52vh, 320px);
+        transform: translateY(-0.35rem);
+        overflow: hidden;
     }
 
     .codex-wheel-stage::after {
@@ -2055,7 +2070,7 @@
     }
 
     .codex-wheel-orbit {
-        width: 102%;
+        width: 100%;
         height: min(48vh, 340px);
         min-height: 264px;
     }
@@ -2172,21 +2187,36 @@
     }
 
     .codex-resonance-detail {
-        grid-template-columns: 1fr;
-        gap: 0.78rem;
-        padding: 0.62rem max(0.5rem, env(safe-area-inset-left)) 0.78rem max(0.5rem, env(safe-area-inset-right));
+        display: flex;
+        flex-direction: column;
+        grid-template-columns: none;
+        gap: 0.62rem;
+        padding: 0.62rem max(0.5rem, env(safe-area-inset-left)) 0.72rem max(0.5rem, env(safe-area-inset-right));
+        overflow: hidden;
     }
 
     .codex-resonance-detail .codex-detail-back {
+        flex: 0 0 auto;
         min-height: 38px;
         font-size: 0.92rem;
         max-width: 100%;
         box-sizing: border-box;
     }
 
-    .codex-contract-hero {
+    .codex-resonance-detail .codex-contract-hero {
+        flex: 0 0 auto;
         min-height: 178px;
         padding: 0 0.12rem;
+    }
+
+    .codex-resonance-detail .codex-contract-panel {
+        flex: 1 1 auto;
+        min-height: 0;
+        padding: 0.88rem;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
     }
 
     .codex-contract-hero::before {
@@ -2204,8 +2234,8 @@
         height: min(64vw, 178px);
     }
 
-    .codex-resonance-detail .codex-contract-panel {
-        padding: 0.88rem;
+    .codex-resonance-detail .codex-detail-back {
+        grid-column: auto;
     }
 
     .codex-resonance-detail .codex-contract-kicker {
@@ -2283,34 +2313,84 @@
     border: 1px solid rgba(251, 191, 36, 0.25);
 }
 
-/* ── Mobile portrait: enlarge resonance wheel, shift arrows down ── */
+/* ── Mobile portrait: stabilize overview wheel layout ── */
 @media (max-width: 767px) and (orientation: portrait) {
-    /* Allow the modal body to overflow so the wheel can extend beyond it */
-    .codex-modal-overlay .codex-book--resonance,
-    .codex-modal-overlay .codex-resonance-shell,
+    .codex-modal-overlay .codex-book--resonance:has(.codex-resonance-overview),
+    .codex-modal-overlay .codex-resonance-shell:has(.codex-resonance-overview) {
+        overflow: hidden !important;
+    }
+
     .codex-modal-overlay .codex-resonance-overview {
-        overflow: visible !important;
+        justify-content: flex-start;
+        padding-top: 0.5rem;
+        padding-bottom: 0.7rem;
+        overflow: hidden;
     }
 
     .codex-modal-overlay .codex-wheel-stage {
-        min-height: 250px !important;
-        height: 250px !important;
-        margin-top: -15px !important;
-        margin-bottom: -15px !important;
-        transform: translateY(-0.8rem) !important;
-        overflow: visible !important;
+        flex: 1 1 auto;
+        min-height: min(50vh, 300px) !important;
+        height: auto !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        transform: none !important;
+        overflow: hidden !important;
     }
 
     .codex-modal-overlay .codex-wheel-orbit {
-        width: 128% !important;
-        margin-left: -14% !important;
-        height: 250px !important;
-        min-height: auto !important;
+        width: 100% !important;
+        margin-left: 0 !important;
+        height: min(48vh, 340px) !important;
+        min-height: 264px !important;
     }
 
-    /* Push arrows down so they don't overlap the spirits */
     .codex-modal-overlay .codex-wheel-arrow {
-        top: calc(50% + 45px) !important;
+        top: 50% !important;
+    }
+}
+
+/* ── Tablet portrait: taller resonance overview (iPad; not iPhone) ── */
+@media (min-width: 640px) and (max-width: 1024px) and (orientation: portrait) {
+    .codex-modal-overlay .codex-book--resonance:has(.codex-resonance-overview) {
+        display: flex;
+        flex-direction: column;
+        width: min(92vw, 720px);
+        min-height: min(78dvh, 820px);
+        max-height: min(86dvh, 900px);
+        height: auto;
+    }
+
+    .codex-modal-overlay .codex-resonance-shell:has(.codex-resonance-overview) {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .codex-modal-overlay .codex-resonance-overview {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+        justify-content: flex-start;
+        padding-bottom: 1.35rem;
+    }
+
+    .codex-modal-overlay .codex-resonance-overview::before,
+    .codex-modal-overlay .codex-resonance-overview::after {
+        inset: 0;
+    }
+
+    .codex-modal-overlay .codex-wheel-stage {
+        flex: 1 1 auto;
+        min-height: min(52vh, 440px);
+        height: auto;
+        transform: none;
+        overflow: hidden;
+    }
+
+    .codex-modal-overlay .codex-wheel-orbit {
+        width: 100%;
+        height: min(48vh, 400px);
+        min-height: 300px;
     }
 }
 
