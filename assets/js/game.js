@@ -10739,6 +10739,7 @@ const _jpApp = Vue.createApp({
 
         };
 
+        // ================= [ VICTORY — GRANT REWARDS ] =================
         const grantRewards = () => {
             if (monsterIsDying.value || monsterTrulyDead.value || monsterResultShown.value) return;
 
@@ -11601,6 +11602,7 @@ const _jpApp = Vue.createApp({
             return !correct.includes(opt);
         };
 
+        // ================= [ VUE RETURN & BINDINGS ] =================
         return {
             isNextBtnVisible,
             animatedExp, hasLeveledUp, displayedResultLevel, displayedResultExp, displayedResultNextExp, displayedResultExpPct, resultExpBarTransitionEnabled, showLevelUpMessageAfterAnimation, resultLevelUpStatText, resultUnlockedMilestones, showResultMilestoneRewards, dismissResultMilestoneRewards, playerStats, getExpRequiredForNextLevel,
