@@ -68,6 +68,8 @@
 | 只改導師台詞／語音／分頁 runtime | #16 + audio | **DO NOT TOUCH** runtime／TTS／audio 除非明示 |
 | 只改導師 overlay 視覺 | `mentor.css` + `index.html` `.map-mentor-overlay` / `.stage-confirm-mentor-*` | 無 `.mentor-overlay` battle template（已移除 2026-05-24） |
 | 只改樣式 | [`css-map.md`](./css-map.md) | class 名自 `index.html` |
+| 只改怪物圖鑑顯示（列表／詳情／鎖定文案） | `codex-display-utils.js` + `game-js-extraction-proposal.md` §4 | `buildMonsterCodexEntries`, `getDefaultMonsterSprite`, `isMonsterCodexUnlocked` | **yes** — utils/data；`game.js` 僅薄 glue（**勿** glue factory）；共鳴輪 runtime **勿碰** |
+| Dev feedback trace flag | — | `JPAPP_DEBUG_FEEDBACK` / `traceFeedbackDebug` | **暫緩** — 鄰近 `checkAnswer`／feedback voice；見 extraction proposal §2 |
 
 ### `game.js` quick entry points（2026-05-26 audit）
 
@@ -102,7 +104,7 @@
 | **Map progression / enter battle** | `game.js` #11 + #33 | `confirmAndStartBattle`, `startLevel` | **DO NOT TOUCH**（開戰） |
 | **Mentor** | `game.js` #15–16 + `mentor-dialogue-helpers.js` + `mentor-dialogues.v1.json` | 地圖觸發見 `mentor-dialogue-map.md` §地圖觸發點；與 #8/#10/#11 交會 | **DO NOT TOUCH** runtime／audio |
 | **Codex wheel** | `game.js` + `spirit-codex-helpers` + `index.html` + `assets/css/codex.css` | UI 狀態 + 動畫；**輪上技能順序**在 helpers；`26052601` resonance UI/layout 主要在 HTML/CSS | 改排序改 `spirit-codex-helpers.js`；改 layout 優先 `index.html`/`codex.css`；RAF/拖曳仍在 game.js 且 high-risk |
-| **Monster codex** | `codex-display-utils.js` + `game.js` computed/handlers + `enemies.v1.json` | computed 薄封裝；純組裝在 utils | 改顯示優先 utils；Vue 狀態留 game.js |
+| **Monster codex** | `codex-display-utils.js` + `game.js` computed/handlers + `enemies.v1.json` | `buildMonsterCodexEntries`；`694993d` 新增 `getDefaultMonsterSprite` / `isMonsterCodexUnlocked`；`game.js` 薄 glue only | 改顯示優先 utils；**勿** glue factory；Vue 開關/選取留 game.js |
 | **Battle loop** | `game.js` | 唯一實作 | DO NOT TOUCH |
 | **Battle HUD actions（技能／藥水／設定）** | `index.html` `#hud` `.battle-hud-actions` + `styles.css` / `battle.css` | Vue handlers in `game.js`（`isSkillOpen`, `usePotion`, `isMenuOpen`） | **yes** — display；legacy `corner-menu.js` removed 2026-05-24 |
 | **Question content** | `earlyGamePools.v1.js` | 消費 pool | 改 data，不改 gen 除非允許 |
@@ -130,7 +132,7 @@
 | `window.__debugQMix` | game.js | 題庫分布 debug |
 | `window.skillId` | game.js (battle) | debug / 外部 hook |
 | `window.JPAPP_DEBUG_AUDIO` | flags | 抑制 SFX error log |
-| `window.JPAPP_DEBUG_FEEDBACK` | flags | feedback voice trace |
+| `window.JPAPP_DEBUG_FEEDBACK` | flags | feedback voice trace — **暫緩** cleanup（鄰近 `checkAnswer`）；見 `game-js-extraction-proposal.md` §2 |
 
 ## 存檔欄位 — 親密度（`jpapp_progression_v1`）
 

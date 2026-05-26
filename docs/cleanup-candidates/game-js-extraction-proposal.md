@@ -5,37 +5,35 @@
 
 ## Current Branch State
 
-- Branch: `experiment/game-js-goal-map`
-- Working tree before this proposal: clean.
-- Latest local commits:
-  - `0d7e18a docs: inventory game js legacy cleanup candidates`
-  - `e676657 docs: add game js mapping goal spec`
-  - `bbb9d40 docs(game): add game js navigation anchors`
-  - `afd59c8 docs: sync game js map and ownership entries`
-  - `26c5216 chore: release 26052601 codex resonance layout`
-- Current mapping baseline remains release `26052601`.
-- This proposal assumes the M3 inventory at `docs/cleanup-candidates/game-js-legacy-candidates.md` is the active legacy/dead-code reference.
+- Branch: `main` (local; verify before editing).
+- Mapping baseline: release `26052601`.
+- Recent mapping / cleanup commits (newest first):
+  - `694993d` refactor: harden monster codex display utils (`codex-display-utils.js` only)
+  - `ff39938` docs: clarify game js mapping safety guidance
+  - `5a3b27c` docs: propose game js extraction candidates
+- M3 inventory: `docs/cleanup-candidates/game-js-legacy-candidates.md`.
+- Long-running workflow: `docs/agent-goals/game-js-map-goal.md`.
 
 
 ## Plain-Language Decision Summary
 
-- **Do not implement extraction yet.** This file is for choosing the safest future direction, not for changing runtime code.
-- **Best next step:** run one more review-only milestone that checks the safest candidate in more detail.
-- **Safest future implementation candidate:** Monster codex display computed wrapper, because display formatting is already partly isolated in `assets/js/codex-display-utils.js`. It still needs a small dedicated audit before any code changes.
-- **Do not use dev-only feedback trace as the first code change** unless a future task proves the diff is logging-only and does not enter answer judgment / feedback timing.
+- **Primary direction:** `game.js` **mapping / navigation / ownership docs** — not line-count slimming or broad modularization.
+- **Dead-code cleanup:** inventory only (`game-js-legacy-candidates.md`); delete only with explicit approval and evidence.
+- **Monster codex (2026-05-26):** M5 audit done; display utils hardened in `694993d` (`getDefaultMonsterSprite`, `isMonsterCodexUnlocked`, NaN guards). `game.js` keeps thin Vue glue (~35 lines). **Do not** pursue a glue factory unless a future task explicitly approves it.
+- **Dev-only feedback trace:** **暫緩** — see §2 audit note; adjacent to `checkAnswer` / feedback voice; not the next cleanup target.
+- **Do not rush module extraction.** Future work stays small, bounded, and user-approved per `game-js-map-goal.md` Implementation Approval Gate.
 - **Never start with:** audio, question generation, `checkAnswer`, `grantRewards`, timer/ATB, save migration, battle core, or codex wheel runtime.
 
 ## Implementation Readiness Ranking
 
-### 1. Best first candidate
+### 1. Completed small pass (do not re-open without new scope)
 
 #### Monster codex display computed wrapper
 
-- **Why this is the best first candidate:** It is mostly display/data formatting for the monster codex, and a helper module already exists at `assets/js/codex-display-utils.js`.
-- **Likely files later:** `assets/js/game.js`, `assets/js/codex-display-utils.js`, and possibly docs only.
-- **Main risk:** It can affect locked/unlocked monster display or image fallback, so it still needs manual UI smoke testing.
-- **Validation needed later:** `node --check assets/js/game.js`, `node --check assets/js/codex-display-utils.js`, open monster codex from map and battle, check locked/unlocked entries and image fallback.
-- **Implementation recommended now:** No. Next action should be a focused audit only.
+- **Status (2026-05-26):** M5 audit complete; utils-only hardening landed in `694993d`. Entry build/formatting lives in `codex-display-utils.js`; `game.js` retains Vue refs + thin computed/handlers only.
+- **Glue factory:** **Not recommended** — diminishing returns; adjacency to shared codex `keydown` / BGM duck ref.
+- **Further display tweaks:** Prefer `codex-display-utils.js` and `enemies.v1.json` (data); avoid `game.js` unless glue wiring is unavoidable.
+- **Smoke test (if touching utils again):** map HUD monster codex — locked/unlocked cards, detail stats, portrait `@error` fallback.
 
 ### 2. Possible later, after more audit
 
@@ -43,7 +41,7 @@
 
 - **Why it might be possible:** It appears to be debug logging only.
 - **Why it still needs caution:** It is near feedback / answer-result behavior, so it must not change voice, combo, timing, or `checkAnswer` behavior.
-- **Implementation recommended now:** No.
+- **Implementation recommended now:** No. **Status: 暫緩** (audit 2026-05-26 — see §2 audit note).
 
 #### Save-slot display formatting fallbacks
 
@@ -138,8 +136,8 @@ All candidates below are proposal-only. Implementation is not recommended now.
 - **Required dependencies:** `ENEMIES`, unlock/progress state, selected monster id, image fallback handling, and `JPAPPCodexDisplayUtils`.
 - **Risk level:** Low to medium.
 - **What must not be touched:** Codex wheel runtime, wheel sorting/phase/drag/RAF, battle overlay pausing, active spirit codex state, and map HUD entry points.
-- **Validation needed if implemented later:** `node --check assets/js/game.js`; `node --check assets/js/codex-display-utils.js`; open monster codex from map and battle contexts; verify locked/unlocked entries and image fallback.
-- **Implementation recommended now:** No.
+- **Validation if utils touched again:** `node --check assets/js/codex-display-utils.js`; map HUD monster codex smoke (locked/unlocked, detail, image fallback).
+- **Implementation recommended now:** No further work unless a new scoped task; utils pass done (`694993d`).
 - **Audit note 2026-05-26 (M5, review-only):**
   - **Locations checked:** `assets/js/game.js` L1573–1574 (`isMonsterCodexOpen`, `selectedMonsterCodexId` refs inside `[ CODEX - STATE ]`), L2939–2971 (computed + handlers), L3004–3006 (shared `keydown` Escape branch), L4544 / L5557 (`isMonsterCodexOpen` in BGM UI duck scale); `assets/js/codex-display-utils.js` L100–237 (`formatMonster*` / `buildMonsterCodexEntry` / `buildMonsterCodexEntries`); `index.html` L257–274 (boot stub), L2402/L2526 (`openMonsterCodex` map HUD only), L2859–2917 (modal template); `assets/data/enemies.v1.json` via `ENEMIES` ref (`loadGameData` ~L3119).
   - **Display vs wrapper:** Entry assembly and stat formatting are **already** in `codex-display-utils.js` (2026-05-24 extraction). `game.js` retains a **thin** `monsterCodexEntries` computed (~10 lines) that passes `ENEMIES`, `clearedLevels`, `LEVEL_CONFIG`, and `DEFAULT_IMAGE_PATHS.monsterSprite` into `buildMonsterCodexEntries`, plus `selectedMonsterCodexEntry`, `openMonsterCodex`, `selectMonsterCodexEntry`, and `handleMonsterCodexImageError`. This is display/UI glue, not question/battle logic.
@@ -185,11 +183,7 @@ These areas remain out of scope unless a future task explicitly approves a dedic
 
 ## Recommended Next Milestone
 
-M5 should remain **review-only**. Recommended M5 focus:
-
-1. Do a focused audit of the **Monster codex display computed wrapper** only.
-2. Confirm exact symbols, dependencies, and UI smoke tests.
-3. Do not implement extraction yet.
-4. Stop with a clear yes/no recommendation for whether this can become the first tiny extraction task.
-
-If M5 finds hidden risk, stay docs-only and do not proceed to implementation.
+- **M5 (monster codex audit):** **Done** (review-only audit + utils hardening `694993d`; no glue factory).
+- **M6 (optional):** Comment-only navigation anchors in `game.js` per `game-js-map-goal.md` — only if docs still show findability gaps.
+- **Default next agent work:** **Docs / navigation consistency** and symbol tables in `game-js-map.md` + `code-ownership-map.md` — not runtime extraction or `game.js` slimming.
+- **Do not** pick dev-only feedback trace, codex wheel runtime, or save-slot fallback removal without a dedicated approved task.

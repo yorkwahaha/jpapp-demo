@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
 > **Last audited:** 2026-05-26 (release `26052601` context；§A 行號 `rg` 校正)
-> **Doc sync:** 2026-05-26 — mentor 見 [`mentor-dialogue-map.md`](./mentor-dialogue-map.md) §導師 UI 現況（**map-only**；battle mentor 已移除）。`26052601` codex resonance release 主要是 CSS/layout；`game.js` 共鳴輪 runtime 仍凍結。
+> **Doc sync:** 2026-05-26 — mentor 見 [`mentor-dialogue-map.md`](./mentor-dialogue-map.md) §導師 UI 現況（**map-only**；battle mentor 已移除）。`26052601` codex resonance release 主要是 CSS/layout；`game.js` 共鳴輪 runtime 仍凍結。怪物圖鑑顯示 utils 已整理（`694993d`）；`game.js` #18 仍為薄 glue，**勿** glue factory。
 > **File:** `assets/js/game.js` — **11,651 lines** (1-indexed；2026-05-26 audit)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -17,6 +17,8 @@
 ## 核心原則
 
 - **穩定優先**：Vue `setup()` 是整合點，大塊外移需分 phase。
+- **地圖化優先**：本文件與 `code-ownership-map.md` 供 Agent **查找與邊界**；主軸不是 `game.js` 減肥或急於模組化。
+- **Dead code**：僅列候選（見 `cleanup-candidates/game-js-legacy-candidates.md`）；預設不刪。
 - **已外移模組勿還原**：見 `code-ownership-map.md`。
 - **Freeze（專案級）**：audio lifecycle、battle timing、save/load、mentor runtime、question gen、boss/L36 選題、CSS/RWD（未要求時）。
 

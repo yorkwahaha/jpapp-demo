@@ -1,7 +1,7 @@
 # Long-Running Goal: `game.js` Mapping
 
 > **Scope:** Documentation-first navigation and ownership mapping for `assets/js/game.js`.
-> **Current baseline:** release `26052601`; latest map sync commits `afd59c8` and `bbb9d40`.
+> **Current baseline:** release `26052601`; recent map work on `main` includes `ff39938` (mapping safety), `694993d` (monster codex display utils only).
 > **Primary rule:** Do not modularize, refactor, delete, or change runtime behavior unless a later task explicitly changes this goal.
 
 ## Objective
@@ -11,15 +11,17 @@ Build and maintain a reliable, current map of `assets/js/game.js` so future agen
 
 ## Completed Milestones on the Current Mainline
 
-These milestones have already been completed and merged to `main` as of commit `5a3b27c`:
+These milestones have already been completed on `main` (through `694993d` unless noted):
 
 - **M1:** `docs/game-js-map.md` and `docs/code-ownership-map.md` sync.
 - **M2:** two `game.js` comment-only navigation anchors.
 - **Goal spec:** this long-running workflow document.
 - **M3:** legacy/dead-code candidate inventory in `docs/cleanup-candidates/game-js-legacy-candidates.md`.
 - **M4:** quick search expansion + safe extraction proposal in `docs/cleanup-candidates/game-js-extraction-proposal.md`.
+- **M5:** review-only audit of monster codex display wrapper (`game-js-extraction-proposal.md` §4 audit note).
+- **Post-M5 utils (scoped):** `694993d` — `codex-display-utils.js` only; **not** glue factory / not `game.js` slimming.
 
-The next milestone must stay review-only unless the user explicitly approves implementation.
+**Default next work:** docs / navigation consistency (M6 comment anchors optional). **Not** broad extraction, dead-code deletion, or `game.js` line-count reduction unless the user explicitly approves runtime scope.
 
 ## Plain-English Workflow
 

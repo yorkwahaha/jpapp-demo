@@ -35,6 +35,11 @@ These can be reviewed later as documentation cleanup only:
 
 - **#7 `window.__debugQMix`** — it is inside question-generation territory. Treat as frozen.
 
+### Cross-ref: extraction / cleanup status (2026-05-26)
+
+- **`JPAPP_DEBUG_FEEDBACK` / feedback trace:** **暫緩** — not a safe next cleanup; call sites neighbor `checkAnswer` and feedback voice. See `game-js-extraction-proposal.md` §2 audit note.
+- **Monster codex display:** utils hardened in `694993d`; `game.js` glue stays thin — **no** glue factory. See `game-js-extraction-proposal.md` §4.
+
 ### Default rule
 
 If a future cleanup task cannot prove that a candidate is docs-only or comment-only, stop and ask for explicit approval.
