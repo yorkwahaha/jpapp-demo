@@ -6,6 +6,10 @@
     backdrop-filter: blur(14px) brightness(0.55) contrast(0.9) !important;
     /* Strong blur and dimming */
     -webkit-backdrop-filter: blur(14px) brightness(0.55) contrast(0.9) !important;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .result-modal-glass {
@@ -13,6 +17,10 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
     max-height: 94dvh;
     isolation: isolate;
     border: 2px solid rgba(255, 255, 255, 0.18) !important;
@@ -51,6 +59,13 @@
 .result-modal-glass>* {
     position: relative;
     z-index: 1;
+}
+
+.result-modal-glass button {
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .result-spirit-hero {
@@ -198,6 +213,9 @@
     gap: 0.75rem;
     margin-bottom: 0.75rem;
     transition: opacity 0.2s ease;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .result-action-btn {
@@ -209,6 +227,10 @@
     font-weight: 900;
     line-height: 1.15;
     transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .result-action-btn:active {

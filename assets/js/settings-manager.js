@@ -268,10 +268,12 @@
                 if (!area) return;
                 var row = area.firstElementChild;
                 if (!row) return;
+                var tolerance = Math.max(14, Math.min(28, Math.round(area.offsetWidth * 0.04)));
+                var ultraTolerance = Math.max(24, Math.round(tolerance * 1.4));
                 area.classList.remove('question-compact', 'question-ultra-compact');
-                if (row.scrollWidth <= area.offsetWidth + 4) return;
+                if (row.scrollWidth <= row.clientWidth + tolerance) return;
                 area.classList.add('question-compact');
-                if (row.scrollWidth <= area.offsetWidth + 4) return;
+                if (row.scrollWidth <= row.clientWidth + ultraTolerance) return;
                 area.classList.remove('question-compact');
                 area.classList.add('question-ultra-compact');
             };

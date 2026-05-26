@@ -11050,15 +11050,31 @@ const _jpApp = Vue.createApp({
 
         });
 
+        const getBattleQuestionVisualLength = (segments) => {
+            const getCharWeight = (char) => {
+                if (/[\s、。,.!?！？・「」『』（）()［］[\]＿_]/.test(char)) return 0;
+                if (/[ぁぃぅぇぉっゃゅょァィゥェォッャュョ]/.test(char)) return 0.55;
+                if (char === 'ー') return 0.55;
+                if (/[ァ-ヴ]/.test(char)) return 0.92;
+                if (/[A-Za-z0-9]/.test(char)) return 0.62;
+                if (/[\u4e00-\u9fff]/.test(char)) return 1.12;
+                return 1;
+            };
+
+            const measure = (text) => Array.from(String(text || '')).reduce((sum, char) => sum + getCharWeight(char), 0);
+
+            return (segments || []).reduce((sum, seg) => {
+                const baseText = seg?.isBlank ? (getAnswerForDisplay(seg.blankIndex) || '＿') : (seg?.text || '');
+                const rubyText = seg?.ruby || '';
+                return sum + Math.max(measure(baseText), measure(rubyText) * 0.56);
+            }, 0);
+        };
+
         const battleQuestionSizeClass = computed(() => {
-            const visibleText = displaySegments.value.map(seg => {
-                if (!seg.isBlank) return seg.text || '';
-                return getAnswerForDisplay(seg.blankIndex) || '＿';
-            }).join('');
-            const length = Array.from(visibleText.replace(/[\s、。,.!?！？・「」『』（）()［］[\]＿_]/g, '')).length;
-            if (length > 19) return 'question-size-very-long';
-            if (length > 14) return 'question-size-long';
-            if (length > 10) return 'question-size-medium';
+            const length = getBattleQuestionVisualLength(displaySegments.value);
+            if (length > 22.5) return 'question-size-very-long';
+            if (length > 17.5) return 'question-size-long';
+            if (length > 14.25) return 'question-size-medium';
             return 'question-size-short';
         });
 
@@ -11363,6 +11379,90 @@ const _jpApp = Vue.createApp({
             window.JPAPPSettingsManager.scheduleReloadClearingJpRpgAppVersionFlag();
         };
 
+        const installOverlayDoubleTapZoomGuard = () => {
+            if (window.__jpappOverlayDoubleTapZoomGuardInstalled) return;
+            window.__jpappOverlayDoubleTapZoomGuardInstalled = true;
+
+            const surfaceSelector = [
+                '.result-screen-backdrop',
+                '.result-modal-glass',
+                '.result-milestone-float',
+                '.result-milestone-float__panel',
+                '.result-milestone-card',
+                '.knowledge-card-overlay',
+                '.knowledge-card-container',
+                '.knowledge-card',
+                '.spirit-unlock-stage',
+                '.modal-overlay',
+                '.modal-panel',
+                '.level-passive-vfx',
+                '.level-passive-vfx__card',
+                '.battle-answer-feedback-overlay',
+                '.battle-answer-feedback-overlay > div'
+            ].join(',');
+            const interactiveSelector = 'button, a, input, select, textarea, summary, [role="button"]';
+
+            let startX = 0;
+            let startY = 0;
+            let moved = false;
+            let lastTapTime = 0;
+            let lastTapX = 0;
+            let lastTapY = 0;
+            let lastTapSurface = null;
+
+            const getOverlaySurface = (target) => {
+                if (!target || typeof target.closest !== 'function') return null;
+                if (target.closest(interactiveSelector)) return null;
+                return target.closest(surfaceSelector);
+            };
+
+            const onTouchStart = (event) => {
+                const touch = event.touches && event.touches[0];
+                if (!touch || !getOverlaySurface(event.target)) return;
+                startX = touch.clientX;
+                startY = touch.clientY;
+                moved = false;
+            };
+
+            const onTouchMove = (event) => {
+                const touch = event.touches && event.touches[0];
+                if (!touch) return;
+                if (Math.abs(touch.clientX - startX) > 10 || Math.abs(touch.clientY - startY) > 10) {
+                    moved = true;
+                }
+            };
+
+            const onTouchEnd = (event) => {
+                const touch = event.changedTouches && event.changedTouches[0];
+                const surface = getOverlaySurface(event.target);
+                if (!touch || !surface || moved) return;
+
+                const now = Date.now();
+                const nearPreviousTap = Math.abs(touch.clientX - lastTapX) < 26 && Math.abs(touch.clientY - lastTapY) < 26;
+                const isDoubleTap = surface === lastTapSurface && now - lastTapTime < 360 && nearPreviousTap;
+
+                if (isDoubleTap && event.cancelable) {
+                    event.preventDefault();
+                }
+
+                lastTapTime = now;
+                lastTapX = touch.clientX;
+                lastTapY = touch.clientY;
+                lastTapSurface = surface;
+            };
+
+            const onDblClick = (event) => {
+                if (getOverlaySurface(event.target) && event.cancelable) {
+                    event.preventDefault();
+                }
+            };
+
+            document.addEventListener('touchstart', onTouchStart, { capture: true, passive: true });
+            document.addEventListener('touchmove', onTouchMove, { capture: true, passive: true });
+            document.addEventListener('touchend', onTouchEnd, { capture: true, passive: false });
+            document.addEventListener('dblclick', onDblClick, { capture: true });
+        };
+
         onMounted(() => {
 
             changelogManager.applyVersionStoragePolicy(APP_VERSION);
@@ -11389,6 +11489,8 @@ const _jpApp = Vue.createApp({
             window.JPAPPSettingsManager.installQuestionAreaCompactLayoutHooks({
                 watch, nextTick, displaySegments, hasSubmitted, userAnswers
             });
+
+            installOverlayDoubleTapZoomGuard();
 
             window.__initViewportHooks?.(watch, showLevelSelect);
 

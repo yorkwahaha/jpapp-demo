@@ -382,6 +382,9 @@ rt {
 #question-area {
     --battle-question-jp-size: clamp(1rem, 2.42vmin + 0.82rem, 2.375rem);
     --battle-question-row-gap: 0.5rem;
+    --battle-particle-slot-min: 2.15em;
+    --battle-particle-slot-pad-x: 0.22em;
+    --battle-particle-slot-border: max(2px, 0.08em);
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -408,6 +411,10 @@ rt {
 #question-area .battle-question-main-row {
     flex-wrap: nowrap;
     gap: var(--battle-question-row-gap);
+    align-items: baseline !important;
+    max-width: 100%;
+    min-width: 0;
+    overflow: visible;
 }
 
 #question-area.question-size-medium {
@@ -427,7 +434,7 @@ rt {
 
 #question-area.question-ultra-compact .battle-question-main-row {
     flex-wrap: wrap;
-    overflow-wrap: anywhere;
+    overflow-wrap: normal;
     row-gap: 0.125rem;
 }
 
@@ -440,23 +447,59 @@ rt {
 
 #question-area.question-ultra-compact .battle-question-jp {
     white-space: normal;
-    overflow-wrap: anywhere;
-    word-break: break-word;
+    overflow-wrap: normal;
+    word-break: normal;
 }
 
 .battle-question-text {
+    display: inline-flex;
     max-width: 100%;
     align-items: baseline;
+    flex: 0 1 auto;
+    min-width: 0;
 }
 
-#question-area .blank-slot {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+.battle-question-phrase {
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: center;
     flex: 0 0 auto;
+    max-width: none;
+    overflow: visible;
+    white-space: nowrap;
+}
+
+#question-area .blank-slot,
+#question-area .particle-input {
+    display: inline-flex !important;
+    align-items: flex-end !important;
+    justify-content: center !important;
+    box-sizing: border-box;
+    position: relative;
+    top: -1px;
+    flex: 0 0 auto;
+    width: auto !important;
+    min-width: var(--battle-particle-slot-min) !important;
+    padding: 0 var(--battle-particle-slot-pad-x) 0.04em var(--battle-particle-slot-pad-x) !important;
+    margin-inline: 0.08em !important;
+    border-top: 0 !important;
+    border-right: 0 !important;
+    border-bottom: var(--battle-particle-slot-border) solid currentColor !important;
+    border-left: 0 !important;
+    border-radius: 0 !important;
     white-space: nowrap !important;
-    line-height: 1.05 !important;
-    vertical-align: middle !important;
+    line-height: 1 !important;
+    vertical-align: baseline !important;
+    transform: none !important;
+}
+
+#question-area .blank-slot:hover {
+    transform: none !important;
+}
+
+#question-area .ruby-text rt {
+    position: relative;
+    top: 4px;
 }
 
 .level-badge {
@@ -522,6 +565,10 @@ rt {
     align-items: center;
     justify-content: center;
     z-index: 4000;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .modal-panel {
@@ -536,9 +583,24 @@ rt {
     max-height: 90vh;
     max-width: 600px;
     overflow-y: auto;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
     box-shadow:
         0 20px 50px rgba(0, 0, 0, 0.6),
         inset 0 0 20px rgba(255, 255, 255, 0.02);
+}
+
+.knowledge-card-overlay,
+.knowledge-card-container,
+.knowledge-card,
+.spirit-unlock-stage,
+.spirit-unlock-btn {
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 @media (max-width: 480px) {
@@ -6146,6 +6208,10 @@ body.lock-scroll {
         height: 110px !important;
     }
 
+    .map-ui-desktop-zone .map-hud-exp-bar {
+        max-width: 118px;
+    }
+
     /* Adjust HUD left padding to match smaller avatar and center content */
     .map-ui-desktop-zone .map-hud-bottom {
         padding-left: 145px !important;
@@ -6382,6 +6448,10 @@ body.lock-scroll {
     left: 14px;
     z-index: 26;
     pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: visible;
 }
 
 .map-hud-avatar-img {
@@ -6390,6 +6460,36 @@ body.lock-scroll {
     display: block;
     object-fit: contain;
     filter: none;
+    align-self: center;
+}
+
+.map-hud-exp-bar {
+    position: relative;
+    width: clamp(62px, 17vw, 96px);
+    max-width: 88%;
+    margin-top: 1px;
+    z-index: 12;
+    align-self: center;
+    pointer-events: none;
+}
+
+.map-hud-exp-track {
+    width: 100%;
+    height: 5px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(15, 23, 42, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.map-hud-exp-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #b45309 0%, #fbbf24 55%, #fde68a 100%);
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.45);
 }
 
 .map-hud-bars {
@@ -6528,7 +6628,7 @@ body.lock-scroll {
     position: fixed;
     left: 50%;
     right: auto;
-    bottom: env(safe-area-inset-bottom, 0px);
+    bottom: 0;
     z-index: 48;
     width: var(--map-visible-width, 100vw);
     max-width: 100vw;
@@ -6540,8 +6640,8 @@ body.lock-scroll {
     align-items: center;
     padding: 0 12px;
     pointer-events: auto;
-    /* Absorb safe-area via padding-bottom fallback for iPhone home bar */
-    padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
+    box-sizing: border-box;
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 5px);
 }
 
 /* Inner content group: HP/SP bars + action buttons as one centered unit */
@@ -6576,10 +6676,12 @@ body.lock-scroll {
 
 .map-page-container .map-ui-mobile-zone .map-hud-avatar {
     position: fixed;
-    left: calc(env(safe-area-inset-left, 0px) + 8px);
-    bottom: env(safe-area-inset-bottom, 0px);
+    left: calc(env(safe-area-inset-left, 0px) + 13px);
+    bottom: max(env(safe-area-inset-bottom, 0px), 5px);
     z-index: 49;
     pointer-events: none;
+    overflow: visible;
+    align-items: center;
 }
 
 .map-page-container .map-ui-mobile-zone .map-hud-avatar-img {
@@ -6589,13 +6691,73 @@ body.lock-scroll {
     pointer-events: none;
 }
 
+.map-page-container .map-ui-mobile-zone .map-hud-exp-bar {
+    width: clamp(62px, 17vw, 96px);
+    max-width: 88%;
+    margin-top: 1px;
+    align-self: center;
+}
+
+.map-page-container .map-ui-desktop-zone .map-hud-bars,
 .map-page-container .map-ui-mobile-zone .map-hud-bars {
     flex: 0 0 auto;
-    width: clamp(130px, 34vw, 200px);
+    width: clamp(120px, 34vw, 150px);
+    max-width: clamp(120px, 34vw, 150px);
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 2px;
+    padding: 6px 8px;
+    border-radius: 14px;
+    background: rgba(5, 15, 25, 0.34);
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    box-shadow:
+        0 4px 14px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+    --battle-hud-label-col: 1.375rem;
+    --battle-hud-value-col: 1.875rem;
+}
+
+.map-page-container .map-ui-desktop-zone .map-hud-bar-row,
+.map-page-container .map-ui-mobile-zone .map-hud-bar-row {
+    display: grid;
+    grid-template-columns: var(--battle-hud-label-col) minmax(0, 1fr) var(--battle-hud-value-col);
+    align-items: center;
+    column-gap: 6px;
+    width: 100%;
+    gap: 0;
+}
+
+.map-page-container .map-ui-desktop-zone .map-hud-bar-track,
+.map-page-container .map-ui-mobile-zone .map-hud-bar-track {
+    width: 100%;
+    min-width: 0;
+    height: 6px;
+    min-height: 6px;
+    flex: none;
+    border-width: 1.5px;
+}
+
+.map-page-container .map-ui-desktop-zone .map-hud-bar-row .hud-bar-label,
+.map-page-container .map-ui-mobile-zone .map-hud-bar-row .hud-bar-label {
+    font-size: 11px;
+    line-height: 1;
+    width: auto;
+    justify-self: start;
+}
+
+.map-page-container .map-ui-desktop-zone .map-hud-bar-row .hud-bar-value,
+.map-page-container .map-ui-mobile-zone .map-hud-bar-row .hud-bar-value {
+    font-size: 11px;
+    font-family: monospace;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    min-width: var(--battle-hud-value-col);
+    max-width: var(--battle-hud-value-col);
+    text-align: right;
+    justify-self: end;
 }
 
 .map-hud-btn:active {
@@ -8448,7 +8610,7 @@ body.lock-scroll {
 
     /* Furigana (Ruby) */
     .battle-top-ui-layer .ruby-text rt {
-        font-size: 11px !important;
+        font-size: 10px !important;
         /* down 2 steps from 14px */
         margin-bottom: 0px !important;
         line-height: 1 !important;
@@ -8789,6 +8951,10 @@ body.lock-scroll {
         radial-gradient(circle at 12% 0%, rgba(253, 230, 138, 0.24), transparent 38%),
         linear-gradient(135deg, rgba(120, 53, 15, 0.46), rgba(15, 23, 42, 0.88));
     padding: 10px 12px;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
     box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.12), 0 10px 24px rgba(0, 0, 0, 0.26);
 }
 
@@ -8804,6 +8970,10 @@ body.lock-scroll {
     pointer-events: auto;
     background: rgba(2, 6, 23, 0.58);
     backdrop-filter: blur(5px);
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .result-milestone-float__panel {
@@ -8818,6 +8988,10 @@ body.lock-scroll {
         radial-gradient(circle at 50% 0%, rgba(251, 191, 36, 0.2), transparent 42%),
         linear-gradient(180deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.98));
     padding: 14px;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
     box-shadow: 0 24px 64px rgba(0, 0, 0, 0.48), 0 0 32px rgba(251, 191, 36, 0.18);
 }
 
@@ -8913,6 +9087,10 @@ body.lock-scroll {
 
 .level-passive-vfx {
     --passive-vfx-color: rgba(251, 191, 36, 0.9);
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .level-passive-vfx__burst {
@@ -8932,6 +9110,10 @@ body.lock-scroll {
     background: transparent;
     box-shadow: none;
     transform: skew(-7deg);
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
     animation: level-passive-card 2.5s ease-out both;
 }
 
@@ -9275,12 +9457,20 @@ body.lock-scroll {
     height: auto !important;
     transform: translateX(-50%);
     z-index: 72 !important;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .battle-answer-feedback-overlay>div {
     min-height: 42px;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .battle-tap-attack-row {
@@ -9997,6 +10187,8 @@ body.lock-scroll {
     }
 
     #heroAvatar {
+        position: fixed !important;
+        top: auto !important;
         left: clamp(12px, 5.5vw, 26px) !important;
         bottom: calc(env(safe-area-inset-bottom, 0px) + 12px) !important;
         width: clamp(90px, 23vw, 116px) !important;
@@ -10017,7 +10209,7 @@ body.lock-scroll {
     .battle-hud-bars {
         position: fixed !important;
         left: 50% !important;
-        bottom: var(--mobile-hp-panel-bottom) !important;
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 28px) !important;
         transform: translateX(-50%) !important;
         width: clamp(120px, 34vw, 150px) !important;
         flex-basis: auto !important;
@@ -10060,14 +10252,202 @@ body.lock-scroll {
 
     .battle-hud-actions {
         gap: 6px !important;
-        position: relative;
+        position: fixed !important;
+        right: clamp(10px, 3vw, 16px) !important;
+        left: auto !important;
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 28px) !important;
+        transform: translate(-3px, 18px) !important;
         z-index: 57;
         pointer-events: auto;
+        align-items: center !important;
+    }
+
+    .battle-status-content {
+        min-height: 0;
     }
 
     .battle-mode-toggle {
         transform: scale(0.92);
         transform-origin: right center;
+    }
+
+    .battle-top-ui-layer .question-card.glass-panel {
+        min-height: clamp(80px, 13dvh, 140px);
+        max-height: clamp(116px, 21dvh, 184px);
+        height: auto;
+        padding: clamp(10px, 1.8dvh, 14px) clamp(14px, 3.8vw, 20px) !important;
+        overflow: hidden;
+        contain: paint;
+    }
+
+    .battle-top-ui-layer #question-area {
+        --battle-question-jp-size: clamp(1.52rem, 3.9vmin + 1.08rem, 2.42rem);
+        --battle-question-row-gap: 0.44rem;
+        --battle-particle-slot-min: 2.05em;
+        --battle-particle-slot-pad-x: 0.18em;
+        --battle-particle-slot-border: max(2px, 0.075em);
+        padding-top: 0.25rem;
+        padding-bottom: 0.35rem;
+        padding-left: clamp(0.7rem, 2.8vw, 1rem);
+        padding-right: clamp(0.7rem, 2.8vw, 1rem);
+        overflow: hidden;
+    }
+
+    .battle-top-ui-layer #question-area.question-size-medium {
+        --battle-question-jp-size: clamp(1.56rem, 4.15vmin + 0.98rem, 2.38rem);
+        --battle-question-row-gap: 0.34rem;
+    }
+
+    .battle-top-ui-layer #question-area.question-size-long {
+        --battle-question-jp-size: clamp(1.25rem, 3.2vmin + 0.8rem, 1.88rem);
+        --battle-question-row-gap: 0.22rem;
+    }
+
+    .battle-top-ui-layer #question-area.question-size-very-long {
+        --battle-question-jp-size: clamp(1.02rem, 2.35vmin + 0.64rem, 1.42rem);
+        --battle-question-row-gap: 0.14rem;
+    }
+
+    .battle-top-ui-layer #question-area.question-compact {
+        --battle-question-row-gap: 0.12rem;
+    }
+
+    .battle-top-ui-layer #question-area.question-ultra-compact {
+        --battle-question-jp-size: clamp(1.06rem, 2.45vmin + 0.66rem, 1.52rem);
+        --battle-question-row-gap: 0.06rem;
+    }
+
+    .battle-top-ui-layer #question-area .battle-question-main-row {
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: baseline !important;
+        overflow-wrap: normal;
+        word-break: normal;
+        row-gap: 0.2rem;
+        max-width: 100%;
+        min-width: 0;
+        overflow: visible;
+    }
+
+    .battle-top-ui-layer #question-area.question-size-medium .battle-question-main-row,
+    .battle-top-ui-layer #question-area.question-size-long .battle-question-main-row,
+    .battle-top-ui-layer #question-area.question-size-very-long .battle-question-main-row {
+        flex-wrap: nowrap;
+        row-gap: 0.18rem;
+    }
+
+    .battle-top-ui-layer #question-area .battle-question-jp {
+        font-size: var(--battle-question-jp-size) !important;
+        line-height: 1.15 !important;
+        white-space: nowrap;
+        max-width: 100%;
+        overflow-wrap: normal;
+        word-break: normal;
+    }
+
+    .battle-top-ui-layer #question-area.question-size-medium .battle-question-jp,
+    .battle-top-ui-layer #question-area.question-size-long .battle-question-jp,
+    .battle-top-ui-layer #question-area.question-size-very-long .battle-question-jp,
+    .battle-top-ui-layer #question-area.question-ultra-compact .battle-question-jp {
+        white-space: nowrap;
+        overflow-wrap: normal;
+        word-break: normal;
+        line-height: 1.2;
+    }
+
+    .battle-top-ui-layer #question-area .battle-question-text {
+        display: inline-flex;
+        align-items: baseline;
+        flex: 0 1 auto;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .battle-top-ui-layer #question-area .battle-question-phrase {
+        display: inline-flex;
+        align-items: baseline;
+        justify-content: center;
+        flex: 0 0 auto;
+        max-width: none;
+        overflow: visible;
+        white-space: nowrap;
+    }
+
+    .battle-top-ui-layer #question-area .blank-slot,
+    .battle-top-ui-layer #question-area .particle-input {
+        display: inline-flex !important;
+        align-items: flex-end !important;
+        justify-content: center !important;
+        box-sizing: border-box;
+        position: relative;
+        top: -1px;
+        flex: 0 0 auto;
+        width: auto !important;
+        min-width: var(--battle-particle-slot-min) !important;
+        padding: 0 var(--battle-particle-slot-pad-x) 0.04em var(--battle-particle-slot-pad-x) !important;
+        margin-inline: 0.06em !important;
+        border-top: 0 !important;
+        border-right: 0 !important;
+        border-bottom: var(--battle-particle-slot-border) solid currentColor !important;
+        border-left: 0 !important;
+        border-radius: 0 !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
+        vertical-align: baseline !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    .battle-top-ui-layer #question-area .blank-slot:hover {
+        transform: none !important;
+    }
+
+    .battle-top-ui-layer #question-area .ruby-text rt {
+        position: relative;
+        top: 4px;
+    }
+
+    .battle-top-ui-layer #question-area.question-size-long .battle-question-jp,
+    .battle-top-ui-layer #question-area.question-size-very-long .battle-question-jp {
+        line-height: 1.22;
+    }
+
+    .battle-top-ui-layer .battle-question-cn,
+    .battle-top-ui-layer #question-area>div.battle-question-cn:last-child {
+        font-size: clamp(1.2rem, 2.8vmin + 0.92rem, 1.5rem) !important;
+        line-height: 1.34 !important;
+        margin-top: 0.25rem !important;
+        overflow-wrap: normal;
+        word-break: normal;
+    }
+
+    .battle-top-ui-layer #question-area.question-size-medium .battle-question-cn,
+    .battle-top-ui-layer #question-area.question-size-medium>div.battle-question-cn:last-child {
+        font-size: clamp(1.1rem, 2.5vmin + 0.82rem, 1.38rem) !important;
+        line-height: 1.32 !important;
+    }
+
+    .battle-top-ui-layer #question-area.question-size-long .battle-question-cn,
+    .battle-top-ui-layer #question-area.question-size-long>div.battle-question-cn:last-child {
+        font-size: clamp(0.98rem, 2.1vmin + 0.66rem, 1.2rem) !important;
+        line-height: 1.3 !important;
+    }
+
+    .battle-top-ui-layer #question-area.question-size-very-long .battle-question-cn,
+    .battle-top-ui-layer #question-area.question-size-very-long>div.battle-question-cn:last-child {
+        font-size: clamp(0.9rem, 1.85vmin + 0.58rem, 1.08rem) !important;
+        line-height: 1.28 !important;
+    }
+
+    .battle-top-ui-layer .ruby-text rt,
+    .battle-top-ui-layer #question-area .ruby-text rt {
+        font-size: clamp(0.52em, 1.45vmin + 0.38em, 0.6em) !important;
+        line-height: 1 !important;
+    }
+
+    .battle-top-ui-layer #question-area.question-size-long .ruby-text rt,
+    .battle-top-ui-layer #question-area.question-size-very-long .ruby-text rt {
+        font-size: clamp(0.48em, 1.25vmin + 0.32em, 0.54em) !important;
     }
 
     .battle-answer-feedback-overlay {
@@ -10109,13 +10489,37 @@ body.lock-scroll {
 
     .resonance-wheel:not(.tap-mode) .resonance-slot:nth-child(1),
     .resonance-wheel:not(.tap-mode) .resonance-slot:nth-last-child(1) {
-        transform: translateY(-5px);
+        transform: translateY(-20px);
     }
 
     .resonance-wheel:not(.tap-mode) .resonance-slot:nth-child(2):nth-last-child(2),
     .resonance-wheel:not(.tap-mode) .resonance-slot:nth-child(2):nth-last-child(3),
     .resonance-wheel:not(.tap-mode) .resonance-slot:nth-child(3):nth-last-child(2) {
-        transform: translateY(11px);
+        transform: translateY(3px);
+    }
+
+    .resonance-wheel.tap-mode .resonance-slot:nth-child(1):nth-last-child(3),
+    .resonance-wheel.tap-mode .resonance-slot:nth-child(3):nth-last-child(1) {
+        transform: translateY(-30px);
+    }
+
+    .resonance-wheel.tap-mode .resonance-slot:nth-child(2):nth-last-child(2) {
+        transform: translateY(-10px);
+    }
+
+    .resonance-wheel.tap-mode .resonance-slot:nth-child(1):nth-last-child(4),
+    .resonance-wheel.tap-mode .resonance-slot:nth-child(4):nth-last-child(1) {
+        transform: translateY(-24px);
+    }
+
+    .resonance-wheel.tap-mode .resonance-slot:nth-child(2):nth-last-child(3),
+    .resonance-wheel.tap-mode .resonance-slot:nth-child(3):nth-last-child(2) {
+        transform: translateY(-8px);
+    }
+
+    #flickLayer.resonance-wheel .resonance-slot:nth-child(1):nth-last-child(2),
+    #flickLayer.resonance-wheel .resonance-slot:nth-child(2):nth-last-child(1) {
+        transform: translateY(3px);
     }
 
     .battle-tap-attack-row {
@@ -10161,7 +10565,7 @@ body.lock-scroll {
     }
 
     .map-page-container .map-ui-mobile-zone .map-hud-avatar {
-        left: calc(env(safe-area-inset-left, 0px) + 8px);
+        left: calc(env(safe-area-inset-left, 0px) + 13px);
     }
 }
 
@@ -10429,7 +10833,7 @@ body.lock-scroll {
         max-height: 64px;
         padding-left: 0;
         padding-right: 0;
-        padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
+        padding-bottom: max(env(safe-area-inset-bottom, 0px), 5px);
     }
 
     .map-page-container .map-ui-mobile-zone .map-hud-center {
@@ -10444,7 +10848,7 @@ body.lock-scroll {
 
     .map-page-container .map-ui-mobile-zone .map-hud-avatar {
         left: calc(50% - clamp(250px, 34vw, 300px));
-        bottom: 0;
+        bottom: max(env(safe-area-inset-bottom, 0px), 5px);
     }
 
     .map-page-container .map-ui-mobile-zone .map-hud-avatar-img {
@@ -10892,7 +11296,7 @@ body.lock-scroll {
         max-height: 64px;
         padding-left: 0;
         padding-right: 0;
-        padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
+        padding-bottom: max(env(safe-area-inset-bottom, 0px), 5px);
     }
 
     .map-page-container .map-ui-mobile-zone .map-hud-center {
@@ -10907,7 +11311,7 @@ body.lock-scroll {
 
     .map-page-container .map-ui-mobile-zone .map-hud-avatar {
         left: calc(50% - clamp(250px, 34vw, 300px));
-        bottom: 0;
+        bottom: max(env(safe-area-inset-bottom, 0px), 5px);
     }
 
     .map-page-container .map-ui-mobile-zone .map-hud-avatar-img {

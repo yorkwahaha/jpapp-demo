@@ -2362,8 +2362,10 @@
                             <div class="absolute -top-1 -right-2 bg-slate-900 border border-amber-500/50 rounded px-1.5 py-0.5 text-[10px] text-amber-400 font-bold z-10 whitespace-nowrap shadow shadow-black/50">
                                 Lv.{{ playerStats.level }}
                             </div>
-                            <div class="absolute -bottom-1 left-0 w-full h-1 bg-slate-800 z-10 border border-slate-900 overflow-hidden">
-                                <div class="bg-amber-500 h-full transition-all" :style="{ width: playerStats.level >= 30 ? '100%' : ((playerStats.exp / getExpRequiredForNextLevel(playerStats.level)) * 100) + '%' }"></div>
+                            <div class="map-hud-exp-bar">
+                                <div class="map-hud-exp-track">
+                                    <div class="map-hud-exp-fill transition-all" :style="{ width: playerStats.level >= 30 ? '100%' : ((playerStats.exp / getExpRequiredForNextLevel(playerStats.level)) * 100) + '%' }"></div>
+                                </div>
                             </div>
 
                         </div>
@@ -2485,8 +2487,10 @@
                     <div class="absolute -top-1 -right-2 bg-slate-900 border border-amber-500/50 rounded px-1.5 py-0.5 text-[10px] text-amber-400 font-bold z-10 whitespace-nowrap shadow shadow-black/50">
                         Lv.{{ playerStats.level }}
                     </div>
-                    <div class="absolute -bottom-1 left-0 w-full h-1 bg-slate-800 z-10 border border-slate-900 overflow-hidden">
-                        <div class="bg-amber-500 h-full transition-all" :style="{ width: playerStats.level >= 30 ? '100%' : ((playerStats.exp / getExpRequiredForNextLevel(playerStats.level)) * 100) + '%' }"></div>
+                    <div class="map-hud-exp-bar">
+                        <div class="map-hud-exp-track">
+                            <div class="map-hud-exp-fill transition-all" :style="{ width: playerStats.level >= 30 ? '100%' : ((playerStats.exp / getExpRequiredForNextLevel(playerStats.level)) * 100) + '%' }"></div>
+                        </div>
                     </div>
 
                 </div>
@@ -3620,39 +3624,44 @@
                             :class="battleQuestionSizeClass">
 
                             <div
-                                class="battle-question-main-row flex flex-nowrap justify-center items-center gap-x-2 gap-y-1 leading-tight mb-2 sm:mb-3 w-full max-w-full min-w-0">
+                                class="battle-question-main-row flex flex-nowrap justify-center items-center gap-x-2 gap-y-1 leading-tight mb-2 sm:mb-3 w-full max-w-full min-w-0"
+                                :key="'question_row_' + currentLevel + '_' + currentIndex + '_' + (currentQuestion?.chinese || '')">
 
-                                <span v-for="(seg, idx) in displaySegments"
-                                    :key="'seg_' + currentLevel + '_' + currentIndex + '_' + idx"
-                                    class="inline-flex items-center battle-question-text">
+                                <span class="battle-question-phrase">
 
-                                    <span v-if="!seg.isBlank"
-                                        class="battle-question-jp text-white text-3xl md:text-4xl font-black drop-shadow-lg">
+                                    <span v-for="(seg, idx) in displaySegments"
+                                        :key="'seg_' + currentLevel + '_' + currentIndex + '_' + idx"
+                                        class="inline-flex items-center battle-question-text">
 
-                                        <ruby v-if="seg.ruby" class="ruby-text">{{ seg.text }}<rt
-                                                class="text-[13px] md:text-sm text-amber-300 font-black mb-1 drop-shadow-md">
-                                                {{ seg.ruby
+                                        <span v-if="!seg.isBlank"
+                                            class="battle-question-jp text-white text-3xl md:text-4xl font-black drop-shadow-lg">
 
-                                                }}</rt></ruby>
+                                            <ruby v-if="seg.ruby" class="ruby-text">{{ seg.text }}<rt
+                                                    class="text-[13px] md:text-sm text-amber-300 font-black mb-1 drop-shadow-md">
+                                                    {{ seg.ruby
 
-                                        <span v-else>{{ seg.text }}</span>
+                                                    }}</rt></ruby>
 
-                                    </span>
+                                            <span v-else>{{ seg.text }}</span>
 
-                                    <span v-else-if="seg.showInput && isChoiceMode"
-                                        class="battle-question-jp blank-slot text-3xl md:text-4xl font-black mx-1"
-                                        :class="[getInputStyle(seg.blankIndex), { 'is-empty': !hasSubmitted && !userAnswers[seg.blankIndex] }]">
+                                        </span>
 
-                                        {{ hasSubmitted ? getAnswerForDisplay(seg.blankIndex) :
+                                        <span v-else-if="seg.showInput && isChoiceMode"
+                                            class="battle-question-jp blank-slot text-3xl md:text-4xl font-black mx-1"
+                                            :class="[getInputStyle(seg.blankIndex), { 'is-empty': !hasSubmitted && !userAnswers[seg.blankIndex] }]">
 
-                                        (userAnswers[seg.blankIndex] || '\u00A0') }}
+                                            {{ hasSubmitted ? getAnswerForDisplay(seg.blankIndex) :
 
-                                    </span>
+                                            (userAnswers[seg.blankIndex] || '\u00A0') }}
 
-                                    <span v-else
-                                        class="battle-question-jp particle-input correct inline-block px-3 py-0.5 text-3xl md:text-4xl mx-1 shadow-inner">
+                                        </span>
 
-                                        {{ getAnswerForDisplay(seg.blankIndex) }}
+                                        <span v-else
+                                            class="battle-question-jp particle-input correct inline-block px-3 py-0.5 text-3xl md:text-4xl mx-1 shadow-inner">
+
+                                            {{ getAnswerForDisplay(seg.blankIndex) }}
+
+                                        </span>
 
                                     </span>
 
