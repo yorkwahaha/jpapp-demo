@@ -109,7 +109,9 @@
          */
         formatMonsterEvasion: function(evasionRate) {
             if (evasionRate === null || evasionRate === undefined) return '未記錄';
-            return `${Math.round(Number(evasionRate) * 100)}%`;
+            const pct = Math.round(Number(evasionRate) * 100);
+            if (!Number.isFinite(pct)) return '未記錄';
+            return `${pct}%`;
         },
 
         /**
@@ -119,7 +121,9 @@
          */
         formatMonsterAttackInterval: function(attackIntervalMs) {
             if (attackIntervalMs === null || attackIntervalMs === undefined) return '未記錄';
-            return `${(Number(attackIntervalMs) / 1000).toFixed(1)} 秒`;
+            const seconds = Number(attackIntervalMs) / 1000;
+            if (!Number.isFinite(seconds)) return '未記錄';
+            return `${seconds.toFixed(1)} 秒`;
         },
 
         /**
@@ -141,11 +145,33 @@
          * @param {Event} event 
          * @param {string} fallbackSrc 
          */
+        /**
+         * Default monster portrait for codex list/detail and @error fallback.
+         * @param {string} [override] e.g. game.js DEFAULT_IMAGE_PATHS.monsterSprite
+         * @returns {string}
+         */
+        getDefaultMonsterSprite: function(override) {
+            if (override != null && override !== '') return override;
+            return window.JPAPP_CONSTANTS?.DEFAULT_IMAGE_PATHS?.monsterSprite || '';
+        },
+
+        /**
+         * Monster codex unlock: player has cleared any stage where this enemy spawns.
+         * @param {number[]} spawnLevels
+         * @param {number[]} clearedLevels
+         * @returns {boolean}
+         */
+        isMonsterCodexUnlocked: function(spawnLevels, clearedLevels) {
+            const levels = Array.isArray(spawnLevels) ? spawnLevels : [];
+            const cleared = Array.isArray(clearedLevels) ? clearedLevels : [];
+            return levels.some(lv => cleared.includes(Number(lv)));
+        },
+
         handleMonsterImageError: function(event, fallbackSrc) {
             const img = event?.target;
             if (!img || img.dataset.fallbackApplied === 'true') return;
             img.dataset.fallbackApplied = 'true';
-            img.src = fallbackSrc || window.JPAPP_CONSTANTS?.DEFAULT_IMAGE_PATHS?.monsterSprite || '';
+            img.src = this.getDefaultMonsterSprite(fallbackSrc);
         },
 
         /**
@@ -192,11 +218,9 @@
          * @returns {Object}
          */
         buildMonsterCodexEntry: function(enemy, idx, options = {}) {
-            const {
-                clearedLevels = [],
-                levelConfig = {},
-                defaultMonsterSprite = window.JPAPP_CONSTANTS?.DEFAULT_IMAGE_PATHS?.monsterSprite || ''
-            } = options;
+            const clearedLevels = options.clearedLevels;
+            const levelConfig = options.levelConfig;
+            const defaultMonsterSprite = this.getDefaultMonsterSprite(options.defaultMonsterSprite);
             const spawnLevels = Array.isArray(enemy?.spawnLevels) ? enemy.spawnLevels : [];
             const enemyStats = enemy?.enemyStats || {};
             const damage = enemyStats.damage || {};
@@ -205,8 +229,7 @@
             const damageMax = typeof damage === 'number' ? damage : (damage.max ?? enemy?.attackDamageMax ?? null);
             const attackIntervalMs = enemyStats.attackIntervalMs ?? enemy?.attackIntervalMs ?? null;
             const evasionRate = enemyStats.evasionRate ?? enemy?.evasionRate ?? null;
-            const cleared = Array.isArray(clearedLevels) ? clearedLevels : [];
-            const isUnlocked = spawnLevels.some(lv => cleared.includes(Number(lv)));
+            const isUnlocked = this.isMonsterCodexUnlocked(spawnLevels, clearedLevels);
 
             return {
                 id: enemy?.id || `monster-${idx}`,
