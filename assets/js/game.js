@@ -1412,7 +1412,7 @@ const _jpApp = Vue.createApp({
         };
 
         // ---- [ CONSTANTS & SETTINGS ] ----
-        const APP_VERSION = window.APP_VERSION || "26052401";
+        const APP_VERSION = window.APP_VERSION || "26052601";
         const changelogManager = window.JPAPPChangelogManager;
         const versionImageAsset = (path) => {
             const append = changelogManager?.appendVersionQuery;
