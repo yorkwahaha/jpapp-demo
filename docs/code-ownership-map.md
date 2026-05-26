@@ -1,8 +1,8 @@
 # JPAPP Code Ownership Map
 
 > **Purpose:** 跨檔責任邊界與 `index.html` 載入順序，搭配 [`game-js-map.md`](./game-js-map.md) 使用。  
-> **Last updated:** 2026-05-26
-> **Doc sync:** 2026-05-26 — `game.js` audit: 11,651 lines; latest release `26052601` codex resonance layout was mostly `index.html` + CSS/layout, while `game.js` codex wheel runtime remains high-risk/frozen.
+> **Last updated:** 2026-05-27 (M6 audit-only sync)
+> **Doc sync:** 2026-05-27 — `game.js` audit: 11,653 lines; M2 anchors `[ VICTORY — GRANT REWARDS ]` / `[ VUE RETURN & BINDINGS ]` verified in source; codex wheel runtime remains high-risk/frozen.
 
 ## Script 載入順序（`index.html` → `game.js` 前）
 
@@ -86,7 +86,7 @@
 | Answer judgment | `checkAnswer` | ~10346 | **DO NOT TOUCH** |
 | Victory rewards | `grantRewards` | ~10742 | **DO NOT TOUCH** EXP/save/fanfare |
 | Result display wiring | `createVueBindings` | ~11324 | display-only tasks may start here |
-| Dev tools / mount | `debugJumpToLevel`, `return {`, `_jpApp.mount` | ~11512, ~11604, ~11648 | dev/bootstrap caution |
+| Dev tools / mount | `debugJumpToLevel`, `return {`, `_jpApp.mount` | ~11513, ~11606, ~11650 | dev/bootstrap; anchors §`game-js-map.md` §F |
 
 ## 所有權矩陣（誰擁有什麼）
 

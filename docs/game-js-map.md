@@ -1,8 +1,8 @@
 # JPAPP `game.js` Code Map
 
-> **Last audited:** 2026-05-26 (release `26052601` context；§A 行號 `rg` 校正)
+> **Last audited:** 2026-05-27 (M6 audit-only；§A / §F 行號與 `game.js` 錨點 `rg` 校正)
 > **Doc sync:** 2026-05-26 — mentor 見 [`mentor-dialogue-map.md`](./mentor-dialogue-map.md) §導師 UI 現況（**map-only**；battle mentor 已移除）。`26052601` codex resonance release 主要是 CSS/layout；`game.js` 共鳴輪 runtime 仍凍結。怪物圖鑑顯示 utils 已整理（`694993d`）；`game.js` #18 仍為薄 glue，**勿** glue factory。
-> **File:** `assets/js/game.js` — **11,651 lines** (1-indexed；2026-05-26 audit)
+> **File:** `assets/js/game.js` — **11,653 lines** (1-indexed；2026-05-27 audit)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
 
@@ -70,13 +70,13 @@
 | 33 | **Battle — startLevel & initGame** | 8582–10033 | `startLevel`、`initGame`、題庫組裝、knowledge card 佇列（**無** battle mentor） | **High** | `startLevel`, `initGame`, `questions` | `mentor-dialogue-map.md` §initGame | **no** | 開戰 → knowledge card → `startTimer` |
 | 34 | **Battle — feedback voice** | 10034–10343 | `playFeedbackVoice`、`playCorrectFeedback` | **High** | `playFeedbackVoice`, `playCorrectFeedback` | `FEEDBACK_VOICE_PATHS` | **no** | 稱讚語音 |
 | 35 | **Battle — checkAnswer & nextQuestion** | 10344–10741 | 判定、傷害、combo、`nextQuestion`、`addSkillMasteryProgress` | **DO NOT TOUCH** | `checkAnswer`, `nextQuestion`, `addSkillMasteryProgress` | — | **no** | 答對/答錯全流程 |
-| 36 | **Victory — grantRewards** *(core)* | 10742–11227 | EXP 發放、勝利流程、EXP 條 `animateRewards`、`playResultFanfare` 觸發；目前 `grantRewards` 前無 dedicated SECTION header | **DO NOT TOUCH** | `grantRewards`, `animateRewards`, `playResultFanfare` | `result-display-manager.js`（讀取用） | **no** | 獎勵／升級；見 §結算畫面 |
+| 36 | **Victory — grantRewards** *(core)* | 10742–11227 | EXP 發放、勝利流程、EXP 條 `animateRewards`、`playResultFanfare` 觸發；錨點 `[ VICTORY — GRANT REWARDS ]`（§F） | **DO NOT TOUCH** | `grantRewards`, `animateRewards`, `playResultFanfare` | `result-display-manager.js`（讀取用） | **no** | 獎勵／升級；見 §結算畫面 |
 | 36b | **Result — UI state & timers** *(file-order)* | 3678–3748 | `animatedExp`、`displayedResult*`、通關計時、`resultUnlockedMilestones` | Low–Med | `animatedExp`, `stageClearElapsedSeconds`, `monsterResultShown` | `index.html` result modal | defer | 宣告在 #22；邏輯耦合 #36 |
 | 37 | **Handlers — retry / revive / potion** *(file-order)* | 8613, 11240–11294 | `usePotion`（音訊區）、`retryLevel`、`revive` | Med | `retryLevel`, `revive`, `usePotion` | — | defer | 重試關、喝藥 |
 | 38 | **Result — display bindings** | 11228–11363 | `PROGRESSION & REWARDS` header、`createVueBindings`、`updateStageBestRecord` | Med | `calculatedGrade`, `stageRecordRows`, `createVueBindings` | `result-display-manager.js` | **yes**（顯示） | 評價／星等／紀錄表 |
 | 39 | **Boot hooks (2nd onMounted)** | 11364–11510 | changelog 版本 policy、音訊 unlock、`installTapChoicesLayoutHooks` | Med | `applyVersionStoragePolicy`, `unlockAudioOnce` | `changelog-manager.js` | defer | 首屏手勢後音訊 |
 | 40 | **Debug — level jump & dev tools attach** | 11511–11603 | `debugJumpToLevel`、`window.debugJumpToLevel`、`__attachDebugTools` | Low | `debugJumpToLevel`, `isLevelJumpOpen`, `__attachDebugTools` | `debug.js`, `dev-tools.js` | **yes** (dev) | Dev 關卡跳轉 |
-| 41 | **Vue return & mount** | 11604–11651 | `return {…}`、`_jpApp.mount` | Low–Med | `return {`, `_jpApp.mount` | `debug.js`, `index.html` | defer | 啟動不報錯 |
+| 41 | **Vue return & mount** | 11605–11653 | `return {…}`、`_jpApp.mount`；錨點 `[ VUE RETURN & BINDINGS ]`（§F） | Low–Med | `return {`, `_jpApp.mount`, `VUE RETURN` | `debug.js`, `index.html` | defer | 啟動不報錯 |
 
 **區塊數量：** 41（含 #32 檔案順序備註列）
 **High-risk / DO NOT TOUCH 區塊：** #5–12, #15–16, #24, #26–28, #30–32, #35–36
@@ -338,10 +338,10 @@
 | `generateQuestionBySkill` | ~8861 | **DO NOT TOUCH** | Question engine / choices / fallback |
 | `initGame` | ~9234 | **High** | Battle initialization |
 | `checkAnswer` | ~10346 | **DO NOT TOUCH** | Judgment, damage, combo, rewards trigger |
-| `grantRewards` | ~10742 | **DO NOT TOUCH** | EXP, unlocks, result fanfare, save writes |
-| `createVueBindings` | ~11324 | Med | Result-display manager integration |
-| `debugJumpToLevel` / dev tools | ~11512–11603 | Low | Dev-only |
-| `return {` / `_jpApp.mount` | ~11604 / ~11648 | Low–Med | Vue public binding and boot |
+| `grantRewards` | ~10743 | **DO NOT TOUCH** | Anchor `[ VICTORY — GRANT REWARDS ]` ~L10742 |
+| `createVueBindings` | ~11325 | Med | Result-display manager integration; before `[ PROGRESSION & REWARDS ]` |
+| `debugJumpToLevel` / dev tools | ~11513–11603 | Low | Anchor `[ DEBUG TOOLS — LEVEL JUMP ]` ~L11512 |
+| `return {` / `_jpApp.mount` | ~11606 / ~11650 | Low–Med | Anchor `[ VUE RETURN & BINDINGS ]` ~L11605 |
 
 ## C. 未來 Agent 查找指南（依功能）
 
@@ -497,7 +497,7 @@
 ## F. Section header（`game.js` 內錨點）
 
 > **用途：** `rg "\[ .* \]" assets/js/game.js` 或下表 **Keywords** 定位；行號會漂移，以註解文字為準。
-> **2026-05-26：** 本節僅同步現有 header；本輪未插入 `game.js` comment anchor。
+> **2026-05-27（M6 audit）：** 同步現有 header；**未**修改 `game.js`。M2 錨點 `[ VICTORY — GRANT REWARDS ]`、`[ VUE RETURN & BINDINGS ]` 已存在。
 
 | Header 文字（`rg`） | 約略行 | §A 對照 | 備註 |
 |--------------------|--------|---------|------|
@@ -521,9 +521,12 @@
 | `[ BATTLE INIT ]` | ~9232 | #33 | **既有** |
 | `[ BATTLE LOGIC ]` | ~10161 | #34–35 | **既有** |
 | `[ BATTLE — CHECK ANSWER ]` | ~10346 | #35 | **2026-05-24 L2 新增**；DO NOT REFACTOR CASUALLY |
-| `[ PROGRESSION & REWARDS ]` | ~11228 | #38 | **既有**; after `grantRewards` |
+| `[ VICTORY — GRANT REWARDS ]` | ~10742 | #36 | **2026-05-24 M2**；`grantRewards` 前；DO NOT TOUCH |
+| `[ PROGRESSION & REWARDS ]` | ~11229 | #38 | **既有**；`createVueBindings` / `updateStageBestRecord`（顯示接線；在 `grantRewards` 之後） |
+| `[ DEBUG TOOLS — LEVEL JUMP ]` | ~11512 | #40 | **既有**；`debugJumpToLevel`；dev-only |
+| `[ VUE RETURN & BINDINGS ]` | ~11605 | #41 | **2026-05-24 M2**；`return {…}` 前 |
 
-**下一批候選（尚未插入）：** `[ VICTORY — GRANT REWARDS ]`（`grantRewards` 前）、`[ CODEX — RESONANCE WHEEL ]`、`[ VUE RETURN ]`。僅在 comment-only task 明示允許時插入。
+**下一批候選（尚未插入，M6 不建議本輪加）：** `[ CODEX — RESONANCE WHEEL ]`（`codexWheelSkills` / 拖曳區前；#17 大段仍僅 `[ CODEX - COMPUTED ]` umbrella）。僅在 comment-only task 明示允許時插入。
 
 ```javascript
 // ================= [ PROGRESSION / SAVE SLOTS ] =================
@@ -533,7 +536,10 @@
 // ================= [ BATTLE — ATB TIMER ] =================
 // ================= [ QUESTION GENERATION ] =================           // DO NOT REFACTOR CASUALLY
 // ================= [ BATTLE — CHECK ANSWER ] =================         // DO NOT REFACTOR CASUALLY
+// ================= [ VICTORY — GRANT REWARDS ] =================       // DO NOT TOUCH
 // ================= [ PROGRESSION & REWARDS ] =================
+// ================= [ DEBUG TOOLS — LEVEL JUMP ] =================
+// ================= [ VUE RETURN & BINDINGS ] =================
 ```
 
 ---
