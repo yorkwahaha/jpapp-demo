@@ -1,8 +1,8 @@
 # JPAPP `game.js` Code Map
 
-> **Last audited:** 2026-05-24 (release `26052401` context；§A 行號 `rg` 校正)
-> **Doc sync:** 2026-05-24 — mentor 見 [`mentor-dialogue-map.md`](./mentor-dialogue-map.md) §導師 UI 現況（**map-only**；battle mentor 已移除）
-> **File:** `assets/js/game.js` — **~11,549 lines** (1-indexed；外移後略減)
+> **Last audited:** 2026-05-26 (release `26052601` context；§A 行號 `rg` 校正)
+> **Doc sync:** 2026-05-26 — mentor 見 [`mentor-dialogue-map.md`](./mentor-dialogue-map.md) §導師 UI 現況（**map-only**；battle mentor 已移除）。`26052601` codex resonance release 主要是 CSS/layout；`game.js` 共鳴輪 runtime 仍凍結。
+> **File:** `assets/js/game.js` — **11,651 lines** (1-indexed；2026-05-26 audit)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
 
@@ -24,7 +24,7 @@
 
 ## A. 大區塊地圖
 
-> 行號區間**互不重疊**（2026-05-24 `rg` 對 `game.js` 實測；檔案約 11,549 行）。#32、#36b、#37 等為**檔案順序**與邏輯區塊交錯者，見 **Notes**／**Keywords**。
+> 行號區間以**主要入口**定位（2026-05-26 `rg` 對 `game.js` 實測；檔案 11,651 行）。#31/#32/#33、#36b、#37 等為**檔案順序**與邏輯區塊交錯者，見 **Notes**／**Keywords**。
 >
 > **Mentor 現況：** 僅 **map** overlay（`isMapMentorOpen`、`.map-mentor-overlay`）；**無** battle mentor modal。詳見 [`mentor-dialogue-map.md`](./mentor-dialogue-map.md) §導師 UI 現況。
 >
@@ -63,18 +63,18 @@
 | 28 | **Battle — ATB & timer** | 6930–7005 | `runTimerLogic`、`startTimer`（開局計時；**無** battle mentor） | **High** | `runTimerLogic`, `startTimer`, `timeLeft` | `hero-status.js` | **no** | 倒數、超時 |
 | 29 | **Battle — boss attack VFX** | 7006–7512 | `playBossVineAttackVfx`、`playBossSmashAttackVfx` 等 | Low | `playBossVineAttackVfx`, `playBossSmashAttackVfx` | `battle.css` | **yes** | Boss 特殊攻擊畫面 |
 | 30 | **Battle — applyMonsterAttack & mistakes** | 7513–7778 | `applyMonsterAttack`、`playMistakeVoice`、`clearMistakes` | **High** | `applyMonsterAttack`, `playMistakeVoice` | — | **no** | 怪物攻擊、錯題本 |
-| 31 | **Question generation** | 7779–8056 | `QUESTION_MIX_CONFIG`、`generateQuestionBySkill`、`getChoices`、`startBossQueue` | **DO NOT TOUCH** | `generateQuestionBySkill`, `startBossQueue`, `__debugQMix` | `earlyGamePools.v1.js`, `levels.v1.json` | **no** | 關卡題型分布 |
-| 32 | **Audio — debug format & gesture tail** *(file-order)* | 8057–8580 | `formatAudioDebugValue`、`onUserGesture`、`ensureBgmElementSync` | **DO NOT TOUCH** | `onUserGesture`, `formatAudioDebugValue` | `audio-debug-manager.js` | **no** | 實體在 #31 之後；語意屬音訊 |
-| 33 | **Battle — startLevel & initGame** | 8581–10033 | `startLevel`、`initGame`、題庫組裝、knowledge card 佇列（**無** battle mentor） | **High** | `initGame`, `startLevel`, `questions` | `mentor-dialogue-map.md` §initGame | **no** | 開戰 → knowledge card → `startTimer` |
+| 31 | **Question generation** | 7773–9231 | `QUESTION_MIX_CONFIG`、`generateQuestionBySkill`、`getChoices`、`startBossQueue`；後段與 `startLevel` helper 交錯 | **DO NOT TOUCH** | `generateQuestionBySkill`, `startBossQueue`, `__debugQMix` | `earlyGamePools.v1.js`, `levels.v1.json` | **no** | 關卡題型分布 |
+| 32 | **Audio — debug format & gesture tail** *(file-order)* | 8080–8581 | `formatAudioDebugValue`、`onUserGesture`、`ensureBgmElementSync` | **DO NOT TOUCH** | `onUserGesture`, `formatAudioDebugValue` | `audio-debug-manager.js` | **no** | 實體在 #31 之後；語意屬音訊 |
+| 33 | **Battle — startLevel & initGame** | 8582–10033 | `startLevel`、`initGame`、題庫組裝、knowledge card 佇列（**無** battle mentor） | **High** | `startLevel`, `initGame`, `questions` | `mentor-dialogue-map.md` §initGame | **no** | 開戰 → knowledge card → `startTimer` |
 | 34 | **Battle — feedback voice** | 10034–10343 | `playFeedbackVoice`、`playCorrectFeedback` | **High** | `playFeedbackVoice`, `playCorrectFeedback` | `FEEDBACK_VOICE_PATHS` | **no** | 稱讚語音 |
-| 35 | **Battle — checkAnswer & nextQuestion** | 10344–10739 | 判定、傷害、combo、`nextQuestion`、`addSkillMasteryProgress` | **DO NOT TOUCH** | `checkAnswer`, `nextQuestion`, `addSkillMasteryProgress` | — | **no** | 答對/答錯全流程 |
-| 36 | **Victory — grantRewards** *(core)* | 10740–11025 | EXP 發放、勝利流程、EXP 條 `animateRewards`、`playResultFanfare` 觸發 | **DO NOT TOUCH** | `grantRewards`, `animateRewards`, `playResultFanfare` | `result-display-manager.js`（讀取用） | **no** | 獎勵／升級；見 §結算畫面 |
+| 35 | **Battle — checkAnswer & nextQuestion** | 10344–10741 | 判定、傷害、combo、`nextQuestion`、`addSkillMasteryProgress` | **DO NOT TOUCH** | `checkAnswer`, `nextQuestion`, `addSkillMasteryProgress` | — | **no** | 答對/答錯全流程 |
+| 36 | **Victory — grantRewards** *(core)* | 10742–11227 | EXP 發放、勝利流程、EXP 條 `animateRewards`、`playResultFanfare` 觸發；目前 `grantRewards` 前無 dedicated SECTION header | **DO NOT TOUCH** | `grantRewards`, `animateRewards`, `playResultFanfare` | `result-display-manager.js`（讀取用） | **no** | 獎勵／升級；見 §結算畫面 |
 | 36b | **Result — UI state & timers** *(file-order)* | 3678–3748 | `animatedExp`、`displayedResult*`、通關計時、`resultUnlockedMilestones` | Low–Med | `animatedExp`, `stageClearElapsedSeconds`, `monsterResultShown` | `index.html` result modal | defer | 宣告在 #22；邏輯耦合 #36 |
 | 37 | **Handlers — retry / revive / potion** *(file-order)* | 8613, 11240–11294 | `usePotion`（音訊區）、`retryLevel`、`revive` | Med | `retryLevel`, `revive`, `usePotion` | — | defer | 重試關、喝藥 |
-| 38 | **Result — display bindings** | 11295–11363 | `createVueBindings`、`updateStageBestRecord` | Med | `calculatedGrade`, `stageRecordRows`, `createVueBindings` | `result-display-manager.js` | **yes**（顯示） | 評價／星等／紀錄表 |
-| 39 | **Boot hooks (2nd onMounted)** | 11364–11408 | changelog 版本 policy、音訊 unlock、`installTapChoicesLayoutHooks` | Med | `applyVersionStoragePolicy`, `unlockAudioOnce` | `changelog-manager.js` | defer | 首屏手勢後音訊 |
-| 40 | **Debug — level jump** | 11410–11476 | `debugJumpToLevel`、`window.debugJumpToLevel` | Low | `debugJumpToLevel`, `isLevelJumpOpen` | `debug.js` | **yes** (dev) | Dev 關卡跳轉 |
-| 41 | **Vue return & mount** | 11502–11549 | `return {…}`、`__attachDebugTools`、`_jpApp.mount` | Low–Med | `return {`, `_jpApp.mount` | `debug.js`, `index.html` | defer | 啟動不報錯 |
+| 38 | **Result — display bindings** | 11228–11363 | `PROGRESSION & REWARDS` header、`createVueBindings`、`updateStageBestRecord` | Med | `calculatedGrade`, `stageRecordRows`, `createVueBindings` | `result-display-manager.js` | **yes**（顯示） | 評價／星等／紀錄表 |
+| 39 | **Boot hooks (2nd onMounted)** | 11364–11510 | changelog 版本 policy、音訊 unlock、`installTapChoicesLayoutHooks` | Med | `applyVersionStoragePolicy`, `unlockAudioOnce` | `changelog-manager.js` | defer | 首屏手勢後音訊 |
+| 40 | **Debug — level jump & dev tools attach** | 11511–11603 | `debugJumpToLevel`、`window.debugJumpToLevel`、`__attachDebugTools` | Low | `debugJumpToLevel`, `isLevelJumpOpen`, `__attachDebugTools` | `debug.js`, `dev-tools.js` | **yes** (dev) | Dev 關卡跳轉 |
+| 41 | **Vue return & mount** | 11604–11651 | `return {…}`、`_jpApp.mount` | Low–Med | `return {`, `_jpApp.mount` | `debug.js`, `index.html` | defer | 啟動不報錯 |
 
 **區塊數量：** 41（含 #32 檔案順序備註列）
 **High-risk / DO NOT TOUCH 區塊：** #5–12, #15–16, #24, #26–28, #30–32, #35–36
@@ -265,7 +265,7 @@
 | **顯示格式化（優先改這裡）** | `assets/js/result-display-manager.js` | `accuracyPct`、`calculatedGrade`（S–E）、`stageStarRating` / `stageStarDisplay`（★☆）、`stageClearTimeText`、`stageRecordRows`、`formatStageBest*`、`buildCurrentStageRecordPayload` | **yes**（評價規則、星等、表格列） |
 | **時間字串** | `game-utils.js` `formatStageClearTime` | 通關秒數 → `X.XX 秒` | **yes** |
 | **等級獎勵卡片文案** | `result-display-manager.js` `RESULT_LEVEL_MILESTONE_REWARDS` | Lv5/10/20/25/30 浮層 `type` / `name` / `desc` | **yes** |
-| **Vue 注入** | `game.js` L11295–11363 | `createVueBindings` 接線、`updateStageBestRecord` | 紀錄比較：**defer** |
+| **Vue 注入** | `game.js` L11228–11363 | `createVueBindings` 接線、`updateStageBestRecord` | 紀錄比較：**defer** |
 | **結算 UI state** | `game.js` L3745–3817 | `animatedExp`、`displayedResult*`、`scheduleResultMilestoneRewards` | 動畫 state / 排程：**no**／defer |
 | **結算模板** | `index.html` L3884–3970 | `v-if="monsterResultShown"` 內評價、EXP、按鈕 | **yes** |
 | **等級獎勵浮層** | `index.html` L3984–4002 | `resultUnlockedMilestones` | **yes** |
@@ -321,6 +321,25 @@
 | 音訊／BGM／TTS | `initAudio`, `playBgm`, `onUserGesture` | #24, #26, #32 | `audio-tts.js`；**DO NOT TOUCH** |
 | 導師 | `setupMentorDialogue` | #15–16 | `mentor-dialogues.v1.json`（文案）；runtime **DO NOT TOUCH** |
 | Dev 關卡跳轉 | `debugJumpToLevel` | #40 | `debug.js` |
+
+### Symbol quick table（2026-05-26）
+
+| Symbol / anchor | Current line | Risk | Notes |
+|-----------------|--------------|------|-------|
+| `saveProgression` | ~556 | **High** | Save/load core; do not edit for display-only tasks |
+| `openMap` | ~769 | **High** | Home/map transition, BGM, mentor prologue |
+| `returnToMap` | ~1318 | **High** | Result/map transition, fanfare/BGM timing |
+| `setupMentorDialogue` | ~1837 | **DO NOT TOUCH** | map-only mentor runtime and audio |
+| `codexWheelSkills` | ~2142 | Low–Med runtime, high caution | Codex resonance UI/layout release `26052601` mostly CSS; wheel runtime remains frozen |
+| `playBgm` | ~5436 | **DO NOT TOUCH** | Audio lifecycle / iOS gesture path |
+| `startLevel` | ~8582 | **High** | Battle entry and question setup |
+| `generateQuestionBySkill` | ~8861 | **DO NOT TOUCH** | Question engine / choices / fallback |
+| `initGame` | ~9234 | **High** | Battle initialization |
+| `checkAnswer` | ~10346 | **DO NOT TOUCH** | Judgment, damage, combo, rewards trigger |
+| `grantRewards` | ~10742 | **DO NOT TOUCH** | EXP, unlocks, result fanfare, save writes |
+| `createVueBindings` | ~11324 | Med | Result-display manager integration |
+| `debugJumpToLevel` / dev tools | ~11512–11603 | Low | Dev-only |
+| `return {` / `_jpApp.mount` | ~11604 / ~11648 | Low–Med | Vue public binding and boot |
 
 ## C. 未來 Agent 查找指南（依功能）
 
@@ -389,11 +408,11 @@
 
 | Item | game.js lines | Note |
 |------|---------------|------|
-| Question engine | 7779–8056（§A #31） | 題庫 wrap-up 凍結；拆檔需專項 + 回歸 |
-| Audio core | 4006–6626, 8057–8580（§A #24–26, #32） | iOS Safari 高風險；含檔案順序交錯的 gesture tail |
+| Question engine | 7773–9231（§A #31） | 題庫 wrap-up 凍結；拆檔需專項 + 回歸 |
+| Audio core | 4006–6626, 8080–8581（§A #24–26, #32） | iOS Safari 高風險；含檔案順序交錯的 gesture tail |
 | Mentor manager | 1835–2139 | map-only；與 TTS/BGM lifecycle 綁死 |
-| Battle judgment | 10344–10739 | 與 `initGame`、knowledge card 耦合 |
-| Vue `setup()` 主體 | 103–11501 | 最終整合層，不拆 |
+| Battle judgment | 10344–10741 | 與 `initGame`、knowledge card 耦合 |
+| Vue `setup()` 主體 | 103–11603 | 最終整合層，不拆 |
 
 ---
 
@@ -476,7 +495,7 @@
 ## F. Section header（`game.js` 內錨點）
 
 > **用途：** `rg "\[ .* \]" assets/js/game.js` 或下表 **Keywords** 定位；行號會漂移，以註解文字為準。
-> **2026-05-24 L2：** 本輪新增 5 個 header（僅註解）；其餘為先前既有。
+> **2026-05-26：** 本節僅同步現有 header；本輪未插入 `game.js` comment anchor。
 
 | Header 文字（`rg`） | 約略行 | §A 對照 | 備註 |
 |--------------------|--------|---------|------|
@@ -485,13 +504,24 @@
 | `[ CONFIG & STATE — VUE REACTIVE SETUP ]` | ~174 | #4 | **既有** |
 | `[ PROGRESSION / SAVE SLOTS ]` | ~196 | #5–7 | **2026-05-24 L2 新增**（`PROGRESSION_KEY` 前） |
 | `[ MAP FLOW & MENTOR TRIGGERS ]` | ~700 | #8–12 | **2026-05-24 L2 新增**（`checkPrologueTrigger` / `openMap` 區） |
+| `[ STATE — SKILLS & CODEX ]` | ~1509 | #14–19 | **既有** codex state umbrella |
+| `[ CODEX - STATE ]` | ~1529 | #14 | **既有** |
 | `[ MENTOR DIALOGUE ]` | ~1835 | #16 | **既有**（`setupMentorDialogue` 前；map-only） |
-| `[ QUESTION GENERATION ]` | ~7775 | #31 | **既有** |
+| `[ CODEX - COMPUTED ]` | ~2133 | #17–18 | **既有** |
+| `[ CODEX - GLOBAL EVENTS ]` | ~2998 | #19 | **既有** |
+| `[ STATE — GAME BATTLE CORE ]` | ~3543 | #22 | **既有** |
+| `[ STATE — AUDIO REFS ]` | ~4001 | #24 | **既有** |
 | `[ BATTLE — PAUSE / RESUME ]` | ~4191 | #25 | **2026-05-24 L2 新增**（取代舊 `BATTLE CONTROL` 一行註解） |
+| `[ AUDIO & TTS ]` | ~4247 | #26 | **既有**；audio freeze |
 | `[ BATTLE — ATB TIMER ]` | ~6932 | #28 | **2026-05-24 L2 新增**（`runTimerLogic` 前） |
+| `[ TIMER ]` | ~6974 | #28 | **既有** inner timer anchor |
+| `[ QUESTION GENERATION ]` | ~7773 | #31 | **既有** |
+| `[ BATTLE INIT ]` | ~9232 | #33 | **既有** |
+| `[ BATTLE LOGIC ]` | ~10161 | #34–35 | **既有** |
 | `[ BATTLE — CHECK ANSWER ]` | ~10346 | #35 | **2026-05-24 L2 新增**；DO NOT REFACTOR CASUALLY |
+| `[ PROGRESSION & REWARDS ]` | ~11228 | #38 | **既有**; after `grantRewards` |
 
-**下一批候選（尚未插入）：** `[ VICTORY — GRANT REWARDS ]`（`grantRewards` 前）、`[ AUDIO — CORE ]`、`[ CODEX — RESONANCE WHEEL ]`、`[ VUE RETURN ]`。
+**下一批候選（尚未插入）：** `[ VICTORY — GRANT REWARDS ]`（`grantRewards` 前）、`[ CODEX — RESONANCE WHEEL ]`、`[ VUE RETURN ]`。僅在 comment-only task 明示允許時插入。
 
 ```javascript
 // ================= [ PROGRESSION / SAVE SLOTS ] =================
@@ -501,6 +531,7 @@
 // ================= [ BATTLE — ATB TIMER ] =================
 // ================= [ QUESTION GENERATION ] =================           // DO NOT REFACTOR CASUALLY
 // ================= [ BATTLE — CHECK ANSWER ] =================         // DO NOT REFACTOR CASUALLY
+// ================= [ PROGRESSION & REWARDS ] =================
 ```
 
 ---
@@ -513,8 +544,8 @@
 
 ## 維護備註
 
-- 外移或大量刪除後：更新本表行號、`Last audited` 日期。
+- 外移、release sync、或大量刪除後：更新本表行號、`Last audited` 日期、總行數。
 - 驗證預設：`node --check assets/js/game.js`；音訊/iOS 變更需實機。
-- `docs/game-js-map.md` 舊版行號（~L10000 時代）已作廢，請以本版為準。
+- `docs/game-js-map.md` 舊版行號（~L10000 / ~11,549 時代）已作廢，請以本版為準。
 - **親密度存檔：** 僅 `skillMastery`；`skillCorrectCounts` 已退役（見 §E 已完成）。
 - **行號校正：** `rg -n "const saveProgression|setupMentorDialogue|const generateQuestionBySkill|const checkAnswer|const grantRewards|_jpApp.mount" assets/js/game.js`

@@ -1,8 +1,8 @@
 # JPAPP Code Ownership Map
 
 > **Purpose:** 跨檔責任邊界與 `index.html` 載入順序，搭配 [`game-js-map.md`](./game-js-map.md) 使用。  
-> **Last updated:** 2026-05-24
-> **Doc sync:** 2026-05-24 — 導師現況見 `mentor-dialogue-map.md` §導師 UI 現況（map overlay only；battle mentor removed）；legacy `corner-menu.js` **removed** — 戰鬥技能／藥水／設定由 V3 `#hud` `.battle-hud-actions` 負責
+> **Last updated:** 2026-05-26
+> **Doc sync:** 2026-05-26 — `game.js` audit: 11,651 lines; latest release `26052601` codex resonance layout was mostly `index.html` + CSS/layout, while `game.js` codex wheel runtime remains high-risk/frozen.
 
 ## Script 載入順序（`index.html` → `game.js` 前）
 
@@ -69,6 +69,23 @@
 | 只改導師 overlay 視覺 | `mentor.css` + `index.html` `.map-mentor-overlay` / `.stage-confirm-mentor-*` | 無 `.mentor-overlay` battle template（已移除 2026-05-24） |
 | 只改樣式 | [`css-map.md`](./css-map.md) | class 名自 `index.html` |
 
+### `game.js` quick entry points（2026-05-26 audit）
+
+| Area | First `rg` target | Current line | Risk |
+|------|-------------------|--------------|------|
+| Save core | `saveProgression` | ~556 | **DO NOT TOUCH** unless save task |
+| Open map | `openMap` | ~769 | **DO NOT TOUCH** flow/audio/mentor |
+| Return to map | `returnToMap` | ~1318 | **DO NOT TOUCH** fanfare/BGM flags |
+| Mentor runtime | `setupMentorDialogue` | ~1837 | **DO NOT TOUCH** runtime/TTS/audio |
+| Codex wheel runtime | `codexWheelSkills` | ~2142 | high caution; layout changes belong mostly in HTML/CSS |
+| BGM | `playBgm` | ~5436 | **DO NOT TOUCH** audio lifecycle |
+| Battle entry | `startLevel`, `initGame` | ~8582, ~9234 | **DO NOT TOUCH** unless battle-init task |
+| Question engine | `generateQuestionBySkill` | ~8861 | **DO NOT TOUCH**; content edits use data files |
+| Answer judgment | `checkAnswer` | ~10346 | **DO NOT TOUCH** |
+| Victory rewards | `grantRewards` | ~10742 | **DO NOT TOUCH** EXP/save/fanfare |
+| Result display wiring | `createVueBindings` | ~11324 | display-only tasks may start here |
+| Dev tools / mount | `debugJumpToLevel`, `return {`, `_jpApp.mount` | ~11512, ~11604, ~11648 | dev/bootstrap caution |
+
 ## 所有權矩陣（誰擁有什麼）
 
 | Domain | Owner file(s) | game.js role | Edit policy |
@@ -81,23 +98,23 @@
 | **Save / slots** | `game.js` + `storage-manager`（部分 key） | 主邏輯 | high-risk |
 | **Spirit affinity (`skillMastery`)** | `game.js` #5, `addSkillMasteryProgress` | `jpapp_progression_v1` 欄位 `skillMastery`；codex 顯示經 `spirit-codex-helpers` | high-risk（規則）；欄位已精簡 |
 | **Map display** | `map-chapters.json` + `settings-manager.js` + `index.html`（`showMap`）+ `result-display-manager`（確認窗最佳紀錄） | `game.js` 薄封裝；速查見 `game-js-map.md` §想改地圖… | **yes** — 顯示／資料／文案 |
-| **Map flow (home ↔ map ↔ result)** | `game.js` #8 `openMap`、#12 `returnToMap`、~L5225 `handleEscapeToMap` | `showLevelSelect`, `showMap`, `isFinished`；速查 §想改回地圖路徑 | **DO NOT TOUCH**（旗標＋BGM＋`saveProgression` 觸點） |
+| **Map flow (home ↔ map ↔ result)** | `game.js` #8 `openMap`、#12 `returnToMap`、~L5173 `handleEscapeToMap` | `showLevelSelect`, `showMap`, `isFinished`；速查 §想改回地圖路徑 | **DO NOT TOUCH**（旗標＋BGM＋`saveProgression` 觸點） |
 | **Map progression / enter battle** | `game.js` #11 + #33 | `confirmAndStartBattle`, `startLevel` | **DO NOT TOUCH**（開戰） |
 | **Mentor** | `game.js` #15–16 + `mentor-dialogue-helpers.js` + `mentor-dialogues.v1.json` | 地圖觸發見 `mentor-dialogue-map.md` §地圖觸發點；與 #8/#10/#11 交會 | **DO NOT TOUCH** runtime／audio |
-| **Codex wheel** | `game.js` + `spirit-codex-helpers` + `codex.css` | UI 狀態 + 動畫；**輪上技能順序**在 helpers | 改排序改 `spirit-codex-helpers.js`；RAF/拖曳仍在 game.js |
+| **Codex wheel** | `game.js` + `spirit-codex-helpers` + `index.html` + `assets/css/codex.css` | UI 狀態 + 動畫；**輪上技能順序**在 helpers；`26052601` resonance UI/layout 主要在 HTML/CSS | 改排序改 `spirit-codex-helpers.js`；改 layout 優先 `index.html`/`codex.css`；RAF/拖曳仍在 game.js 且 high-risk |
 | **Monster codex** | `codex-display-utils.js` + `game.js` computed/handlers + `enemies.v1.json` | computed 薄封裝；純組裝在 utils | 改顯示優先 utils；Vue 狀態留 game.js |
 | **Battle loop** | `game.js` | 唯一實作 | DO NOT TOUCH |
 | **Battle HUD actions（技能／藥水／設定）** | `index.html` `#hud` `.battle-hud-actions` + `styles.css` / `battle.css` | Vue handlers in `game.js`（`isSkillOpen`, `usePotion`, `isMenuOpen`） | **yes** — display；legacy `corner-menu.js` removed 2026-05-24 |
 | **Question content** | `earlyGamePools.v1.js` | 消費 pool | 改 data，不改 gen 除非允許 |
-| **Question generation** | `game.js` L7880–9339（§A #31） | 唯一實作 | DO NOT TOUCH |
-| **Audio playback** | `game.js` L4108–6731, L8165–8687（§A #24–26, #32）+ `audio-tts.js` | 主體在 game.js；gesture tail 與出題區檔案順序交錯 | DO NOT TOUCH |
+| **Question generation** | `game.js` L7773–9231（§A #31） | 唯一實作 | DO NOT TOUCH |
+| **Audio playback** | `game.js` L4001–6626, L8080–8581（§A #24–26, #32）+ `audio-tts.js` | 主體在 game.js；gesture tail 與出題區檔案順序交錯 | DO NOT TOUCH |
 | **Audio debug UI** | `audio-debug-manager.js` + game 接線 | 薄整合 | Phase 1 可外移接線 |
-| **Result display** | `result-display-manager.js` + `game-utils.js` + `index.html` L3884–4002 + `result-mistakes.css` | §A #38 `createVueBindings`；評價／星等／紀錄表；速查見 `game-js-map.md` §想改星等… | **yes** — 顯示與文案；`bestGrades`/`stageBestRecords` **寫入**仍在 #36 |
+| **Result display** | `result-display-manager.js` + `game-utils.js` + `index.html` L3884–4002 + `result-mistakes.css` | §A #38 `createVueBindings` ~L11324；評價／星等／紀錄表；速查見 `game-js-map.md` §想改星等… | **yes** — 顯示與文案；`bestGrades`/`stageBestRecords` **寫入**仍在 #36 |
 | **Result rewards / EXP tally** | `game.js` §A #36 `grantRewards` | 發獎、`processLevelUp`、EXP 條 `requestAnimationFrame` 動畫 | **DO NOT TOUCH** |
 | **Result fanfare audio** | `game.js` #12 `playResultFanfare` + #36 呼叫 | 結算音效 | **DO NOT TOUCH** |
 | **VFX** | `vfx-helpers.js`, `skill-vfx.js`, game 內 boss VFX | 混合 | 新特效優先放 helpers |
 | **Hero buff pills** | `hero-status.js` | 讀 `heroBuffs` | 改顯示改 hero-status |
-| **Dev tools** | `dev-tools.js`, `debug.js`, game L11584+（§A #40） | 注入 refs | dev-only |
+| **Dev tools** | `dev-tools.js`, `debug.js`, game ~L11512–11603（§A #40） | `debugJumpToLevel` + `__attachDebugTools` 注入 refs | dev-only |
 | **Styles** | `assets/css/*.css` | class 名由 HTML/game 使用 | 見 `css-map.md` |
 
 ## `window` 匯出（除錯用）
