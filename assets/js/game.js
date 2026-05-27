@@ -890,6 +890,7 @@ const _jpApp = Vue.createApp({
 
         };
 
+        // ---- [ MAP FLOW — SAVE SLOT ACTIONS ] ----
         const openSaveSlotPanel = (mode = 'select') => {
             if (!showLevelSelect.value) return;
             refreshSaveSlotsMetadata();
@@ -1055,6 +1056,7 @@ const _jpApp = Vue.createApp({
             playSfx('click');
         };
 
+        // ---- [ MAP FLOW — STAGE PICK & CONFIRM ] ----
         /** Map node click: opens battle-confirm overlay only (may intercept mentor). Does not call startLevel. */
         const selectStageFromMap = (n) => {
             const lvNum = Number(n);
@@ -1282,6 +1284,7 @@ const _jpApp = Vue.createApp({
             }
         };
 
+        // ---- [ MAP FLOW — RETURN & KNOWLEDGE CARDS ] ----
         /**
          * Battle result / escape → map. Sets isFinished + showMap; may delay playBgm if fanfare still playing.
          * Victory progression already saved in grantRewards — do not add save logic here for display-only tasks.

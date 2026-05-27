@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
-> **Last audited:** 2026-05-27 (M20 settings dev tools + M19 setup data refs)
-> **Doc sync:** 2026-05-27 — M20：`[ SETTINGS — UI & DEV TOOLS ]` ~L1398；`[ SETTINGS — DEV TOOLS STATE ]` ~L1415（**非** #13 changelog）。M19：`[ SETUP — DATA REFS ]` ~L179。
+> **Last audited:** 2026-05-27 (M21 map flow sub-anchors + M20 settings dev tools)
+> **Doc sync:** 2026-05-27 — M21：`[ MAP FLOW & MENTOR TRIGGERS ]` 內子錨 `SAVE SLOT ACTIONS` / `STAGE PICK & CONFIRM` / `RETURN & KNOWLEDGE CARDS`（**導航 only**；#8–12 函式本體 DO NOT TOUCH）。M20：settings anchors。
 > **File:** `assets/js/game.js` — **~11,656 lines** (1-indexed；M10 後以 `rg` 錨點為準)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -43,11 +43,11 @@
 | 6 | **Map / progression state** | 375–487 | `showMap`、`unlockedLevels`、知識卡佇列、spirit 薄封裝、**`skillMastery`**（非 `skillCorrectCounts`） | **High** | `unlockedLevels`, `skillMastery`, `pendingKnowledgeCards` | `spirit-codex-helpers.js` | **no** | 地圖進度、親密度 |
 | 6a | **Map — display helpers** | 449–505 | `[ MAP — DISPLAY HELPERS ]`：`activeSegment`、`currentMapBgm`、`getMapNodeStyle`、`scrollToStage`、`getStageFocus*`、`activateMapAmbient` / `activateMapAmbientSync` | Low | `activateMapAmbient`, `getMapNodeStyle`, `scrollToStage`, `getStageFocusLabel` | `settings-manager.js`, `map-ambient.js` | **yes**（顯示） | 地圖節點/HUD 薄封裝；**勿**改流程函式 |
 | 7 | **Player leveling & save I/O** | 542–735 | `processLevelUp`、`saveProgression`、`loadProgression`、開局 `loadProgression()` | **High** | `saveProgression`, `loadProgression`, `playerStats` | `levels.v1.json` | **no** | 升級、EXP、存檔欄位 |
-| 8 | **Prologue & map open** | 736–920 | `checkPrologueTrigger`、`openMap`、序章／結局場景回調（map mentor） | **High** | `checkPrologueTrigger`, `openMap`, `_resumeAfterMentor` | `mentor-dialogues.v1.json`, `mentor-dialogue-map.md` | **no** | 首次進地圖序章 |
-| 9 | **Home — save slot actions** | 921–1053 | 面板開關、選槽、新開局、刪槽確認（流程） | **High** | `openSaveSlotPanel`, `selectSaveSlot`, `confirmDeleteSaveSlot` | `index.html` `showLevelSelect` | **no** | 選槽／刪檔／新開局；卡面資料改 #5b |
-| 10 | **Map — stage pick & tab flow** | 1054–1085 | `handleMapTabClick`、`jumpToMapSegment`（流程；display glue 見 #6a） | **High** | `handleMapTabClick`, `jumpToMapSegment` | `settings-manager.js` | **no** | 地圖 tab／區段切換、BGM 觸發 |
-| 11 | **Map — battle confirm & endings** | 1086–1315 | `selectStageFromMap`、`confirmAndStartBattle`、L35/L36 結局、`playResultFanfare` 定義 | **High** | `selectStageFromMap`, `checkGlobalEndingTriggers`, `playMainEndingFinale` | `mentor-dialogue-map.md` | **no** | 關卡確認、結局 mentor |
-| 12 | **Map — return & knowledge cards** | 1316–1411 | `returnToMap`、知識卡吸收、`triggerNextKnowledgeCard` | **High** | `returnToMap`, `triggerNextKnowledgeCard`, `_afterKnowledgeCards` | `index.html` knowledge overlay | **no** | 破關回地圖、知識卡 |
+| 8 | **Prologue & map open** | 736–892 | `[ MAP FLOW & MENTOR TRIGGERS ]` umbrella 內：`checkPrologueTrigger`、`openMap`、序章／結局（**導航子錨前段**） | **High** | `MAP FLOW & MENTOR TRIGGERS`, `checkPrologueTrigger`, `openMap` | `mentor-dialogues.v1.json`, `mentor-dialogue-map.md` | **no** | 首次進地圖序章 |
+| 9 | **Home — save slot actions** | 893–1058 | `[ MAP FLOW — SAVE SLOT ACTIONS ]`：`openSaveSlotPanel`、`selectSaveSlot`、刪槽（**導航 only**） | **High** | `MAP FLOW — SAVE SLOT ACTIONS`, `openSaveSlotPanel`, `confirmDeleteSaveSlot` | `index.html` `showLevelSelect` | **no** | 選槽／刪檔／新開局；卡面資料改 #5b |
+| 10 | **Map — stage pick & tab flow** | 893–1058, 1059+ | `handleMapTabClick`、`jumpToMapSegment`（與 #9 同 umbrella；display glue 見 #6a） | **High** | `handleMapTabClick`, `jumpToMapSegment` | `settings-manager.js` | **no** | 地圖 tab／區段切換、BGM 觸發 |
+| 11 | **Map — battle confirm & endings** | 1059–1287 | `[ MAP FLOW — STAGE PICK & CONFIRM ]`：`selectStageFromMap`、`confirmAndStartBattle`、L35/L36 結局（**導航 only**） | **High** | `MAP FLOW — STAGE PICK & CONFIRM`, `selectStageFromMap`, `confirmAndStartBattle` | `mentor-dialogue-map.md` | **no** | 關卡確認、結局 mentor |
+| 12 | **Map — return & knowledge cards** | 1288–1380 | `[ MAP FLOW — RETURN & KNOWLEDGE CARDS ]`：`returnToMap`、`triggerNextKnowledgeCard`（**導航 only**） | **High** | `MAP FLOW — RETURN & KNOWLEDGE CARDS`, `returnToMap`, `triggerNextKnowledgeCard` | `index.html` knowledge overlay | **no** | 破關回地圖、知識卡 |
 | 13 | **Home — version & changelog display** | 1374–1391 | `[ HOME — VERSION & CHANGELOG DISPLAY ]`：`APP_VERSION`、`appVersion`、`versionImageAsset`、`createChangelogState`（`isChangelogOpen` / `changelogData` / `openChangelog`） | Low | `appVersion`, `openChangelog`, `versionImageAsset` | `changelog-manager.js`, `index.html`, `home.css` | **yes**（顯示） | 勿改 `APP_VERSION`／`changelog.json`；`versionImageAsset` 亦供導師圖 |
 | 13b | **Settings & dev tools** *(file-order)* | 1398–1478 | `[ SETTINGS — UI & DEV TOOLS ]`：`settings`、`devToolsState`、`answerMode`、`flickState`（**非** #13 changelog；UI/dev state only） | Low | `SETTINGS — UI & DEV TOOLS`, `settings`, `isDevToolsVisible`, `loadSettings` | `settings-manager.js`, `dev-tools.js` | defer | `devToolsState` 子錨見 #40b |
 | 14 | **Codex — wheel state (RAF vars)** | 1527–1574 | 共鳴輪 phase、拖曳、RAF 常數（非 ref） | Low | `codexWheelPhase`, `CODEX_WHEEL_` | `spirit-codex-helpers.js` | defer | 開共鳴輪不卡頓 |
@@ -206,6 +206,8 @@
 ### 地圖流程（Map flow / return-to-map）
 
 > **邊界：** 本節說明「如何從首頁／戰鬥／結算／逃跑進到地圖」以及三個主旗標的分工。**文件化 only**；改流程需任務明示且手測音訊＋存檔。與 §地圖顯示層（節點／HUD 長相）分開查。
+>
+> **M21 子錨（導航 only）：** `rg "MAP FLOW —"` 可定位 `#9`／`#11`／`#12` 起點；**勿**因錨點存在而修改 `openMap`／`returnToMap`／`saveProgression`／BGM／fanfare 函式本體。
 
 #### 主畫面旗標（`game.js`）
 
@@ -502,7 +504,7 @@
 ## F. Section header（`game.js` 內錨點）
 
 > **用途：** `rg "\[ .* \]" assets/js/game.js` 或下表 **Keywords** 定位；行號會漂移，以註解文字為準。
-> **2026-05-27（M20）：** `[ SETTINGS — UI & DEV TOOLS ]` ~L1398；`[ SETTINGS — DEV TOOLS STATE ]` ~L1415（**非** #13 changelog）。M19：`[ SETUP — DATA REFS ]` ~L179。
+> **2026-05-27（M21）：** `[ MAP FLOW — SAVE SLOT ACTIONS ]` ~L893；`STAGE PICK & CONFIRM` ~L1060；`RETURN & KNOWLEDGE CARDS` ~L1288（**導航 only**）。M20：settings ~L1398+。
 
 | Header 文字（`rg`） | 約略行 | §A 對照 | 備註 |
 |--------------------|--------|---------|------|
@@ -520,7 +522,10 @@
 | `[ SETTINGS — UI & DEV TOOLS ]` | ~1398 | **#13b** | **2026-05-27 M20**；`settings` / `answerMode` / `flickState`；**非** changelog |
 | `[ SETTINGS — DEV TOOLS STATE ]` | ~1415 | **#13b, #40b** | **2026-05-27 M20**；`devToolsState` / `debugControls` |
 | `[ MAP — DISPLAY HELPERS ]` | ~449 | **#6a** | **2026-05-27 M7 新增**；display glue only |
-| `[ MAP FLOW & MENTOR TRIGGERS ]` | ~698 | #8–12 | **2026-05-24 L2 新增**（`checkPrologueTrigger` / `openMap` 區） |
+| `[ MAP FLOW & MENTOR TRIGGERS ]` | ~705 | #8–12 | **2026-05-24 L2 新增**；umbrella |
+| `[ MAP FLOW — SAVE SLOT ACTIONS ]` | ~893 | **#9** | **2026-05-27 M21**；`openSaveSlotPanel`；**DO NOT TOUCH** 函式本體 |
+| `[ MAP FLOW — STAGE PICK & CONFIRM ]` | ~1060 | **#10–11** | **2026-05-27 M21**；`selectStageFromMap` / 確認窗；**DO NOT TOUCH** 進關 |
+| `[ MAP FLOW — RETURN & KNOWLEDGE CARDS ]` | ~1288 | **#12** | **2026-05-27 M21**；`returnToMap` / 知識卡；**DO NOT TOUCH** BGM 時序 |
 | `[ STATE — SKILLS & CODEX ]` | ~1509 | #14–19 | **既有** codex state umbrella |
 | `[ CODEX - STATE ]` | ~1529 | #14 | **既有** |
 | `[ MENTOR DIALOGUE ]` | ~1835 | #16 | **既有**（`setupMentorDialogue` 前；map-only） |
@@ -572,6 +577,9 @@
 // ---- [ SETTINGS — DEV TOOLS STATE ] ----
 // ================= [ MAP — DISPLAY HELPERS ] =================
 // ================= [ MAP FLOW & MENTOR TRIGGERS ] =================
+// ---- [ MAP FLOW — SAVE SLOT ACTIONS ] ----
+// ---- [ MAP FLOW — STAGE PICK & CONFIRM ] ----
+// ---- [ MAP FLOW — RETURN & KNOWLEDGE CARDS ] ----
 // ================= [ CODEX — DISPLAY GLUE ] =================
 // ================= [ CODEX — ESCAPE WATCHES ] =================
 // ================= [ RESULT — DISPLAY STATE ] =================
