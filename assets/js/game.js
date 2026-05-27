@@ -3686,6 +3686,10 @@ const _jpApp = Vue.createApp({
 
         const earnedExp = ref(0);
 
+        // ================= [ RESULT — DISPLAY STATE ] =================
+        // Result modal UI refs + stage-clear display metrics. EXP bar animation driven in grantRewards (#36).
+        // monsterResultShown: ~below with monster battle refs (modal visibility). resetBattleOutcomePresentation: ~L3846.
+
         const animatedExp = ref(0);
         const hasLeveledUp = ref(false);
         const displayedResultLevel = ref(playerStats.value.level);
@@ -3791,7 +3795,7 @@ const _jpApp = Vue.createApp({
 
         const monsterTrulyDead = ref(false); // 動畫結束，真正從畫面移除
 
-        const monsterResultShown = ref(false); // 結算視窗是否顯示
+        const monsterResultShown = ref(false); // 結算 modal（見 [ RESULT — DISPLAY STATE ]）
         const bossDeathVfxActive = ref(false); // Boss 專屬死亡演出 overlay
         const bossDeathStage = ref(0); // 1~4 對應四段演出
 
@@ -11245,6 +11249,9 @@ const _jpApp = Vue.createApp({
             showLevelSelect.value = true;
 
         };
+
+        // ================= [ RESULT — DISPLAY BINDINGS ] =================
+        // Result modal computed + stage best record display. Writes via updateStageBestRecord; tally in grantRewards (#36).
 
         const {
             accuracyPct,

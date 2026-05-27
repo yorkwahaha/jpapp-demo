@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
-> **Last audited:** 2026-05-27 (M13 home version/changelog + M12 escape watches)
-> **Doc sync:** 2026-05-27 — M13：`[ HOME — VERSION & CHANGELOG DISPLAY ]` ~L1374+。M12/M11 錨點見 §F；`applyVersionStoragePolicy` 仍在 #39 onMounted（**未搬**）。
+> **Last audited:** 2026-05-27 (M14 result display + M13 home version)
+> **Doc sync:** 2026-05-27 — M14：`[ RESULT — DISPLAY STATE ]` ~L3689+、`[ RESULT — DISPLAY BINDINGS ]` ~L11252+。`updateResultExpDisplay` / `animateRewards` 仍在 `grantRewards`（#36，**未搬**）。
 > **File:** `assets/js/game.js` — **~11,656 lines** (1-indexed；M10 後以 `rg` 錨點為準)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -60,8 +60,9 @@
 | 19b | **Codex — escape watches** | 3003–3018 | `[ CODEX — ESCAPE WATCHES ]`：`Escape` 關閉共鳴輪／怪物圖鑑；關閉時 `forceStopAllCodexWheelMotion` | Low | `keydown`, `watch(isCodexOpen` | — | **yes** | `closeCodex` 定義見 #25；Esc 行為勿改 |
 | 20 | **Data load & abilities** | 3008–3309 | `loadGameData`、`abilities` fetch | Low–Med | `loadGameData`, `skillsAll` | `skills.v1.json`, `abilities.v1.json` | defer | 開局資料齊全 |
 | 21 | **Battle — onomatope skills** | 3310–3521 | `castAbility`、`playSkillSfx`、技能 overlay；含 `onMounted(loadGameData)` | Med | `castAbility`, `heroBuffs` | `hero-status.js`, `abilities.v1.json` | defer | 擬聲詞施放 |
-| 22 | **Battle — core refs & combo UI** | 3522–3783 | 戰鬥常數、`showLevelSelect`、`player`/`monster`、結算 UI refs（含 #36b） | Med | `showLevelSelect`, `monsterResultShown`, `comboPopup` | `index.html` battle/home | defer | 首頁↔戰鬥切換 |
-| 23 | **Battle — boss death VFX** | 3784–4005 | `bossDeathVfxActive`、`spawnBossDeathBurst` 序列 | Med | `bossDeathVfxActive`, `spawnBossDeathBurst` | `vfx-helpers.js`, `battle.css` | defer | 魔王死亡演出 |
+| 22 | **Battle — core refs & combo UI** | 3522–3687 | 戰鬥常數、`showLevelSelect`、`player`/`monster`、mistakes（**不含** result display；見 #36b） | Med | `showLevelSelect`, `comboPopup` | `index.html` battle/home | defer | 首頁↔戰鬥切換 |
+| 36b | **Result — display state** | 3689–3759, 3798 | `[ RESULT — DISPLAY STATE ]`：`animatedExp`、`displayedResult*`、`stageClearElapsedSeconds`、`monsterResultShown` | Low–Med | `animatedExp`, `monsterResultShown`, `stageResultIsNewBest` | `index.html` result modal | defer | `resetBattleOutcomePresentation` ~L3849；計時起點耦合 #36 |
+| 23 | **Battle — boss death VFX** | 3788–4009 | `bossDeathVfxActive`、`spawnBossDeathBurst` 序列 | Med | `bossDeathVfxActive`, `spawnBossDeathBurst` | `vfx-helpers.js`, `battle.css` | defer | 魔王死亡演出 |
 | 24 | **Audio — refs & debug wiring** | 4006–4189 | `bgmAudio`、`audioCtx`、`JPAPPAudioDebugManager` 接線 | **High** | `audioDebug`, `bgmAudio`, `audioCtx` | `audio-debug-manager.js` | **no** | `?audioDebug=1` |
 | 25 | **Battle — pause / resume** | 4190–4246 | `pauseBattle`、`resumeBattle`（開圖鑑／**map** mentor 時） | Med | `pauseBattle`, `resumeBattle`, `closeCodex` | — | defer | 開圖鑑不推進 ATB |
 | 26 | **Audio — core (init / BGM / SFX)** | 4247–6626 | `initAudioCtx`、`initAudio`、`playBgm`、`playSfx`、pool、duck | **DO NOT TOUCH** | `initAudio`, `playBgm`, `stopAllAudio`, `playSfx` | `audio-tts.js`, `game-constants.js` | **no** | iOS 手勢、BGM 切換 |
@@ -75,9 +76,8 @@
 | 34 | **Battle — feedback voice** | 10034–10343 | `playFeedbackVoice`、`playCorrectFeedback` | **High** | `playFeedbackVoice`, `playCorrectFeedback` | `FEEDBACK_VOICE_PATHS` | **no** | 稱讚語音 |
 | 35 | **Battle — checkAnswer & nextQuestion** | 10344–10741 | 判定、傷害、combo、`nextQuestion`、`addSkillMasteryProgress` | **DO NOT TOUCH** | `checkAnswer`, `nextQuestion`, `addSkillMasteryProgress` | — | **no** | 答對/答錯全流程 |
 | 36 | **Victory — grantRewards** *(core)* | 10742–11227 | EXP 發放、勝利流程、EXP 條 `animateRewards`、`playResultFanfare` 觸發；錨點 `[ VICTORY — GRANT REWARDS ]`（§F） | **DO NOT TOUCH** | `grantRewards`, `animateRewards`, `playResultFanfare` | `result-display-manager.js`（讀取用） | **no** | 獎勵／升級；見 §結算畫面 |
-| 36b | **Result — UI state & timers** *(file-order)* | 3678–3748 | `animatedExp`、`displayedResult*`、通關計時、`resultUnlockedMilestones` | Low–Med | `animatedExp`, `stageClearElapsedSeconds`, `monsterResultShown` | `index.html` result modal | defer | 宣告在 #22；邏輯耦合 #36 |
-| 37 | **Handlers — retry / revive / potion** *(file-order)* | 8613, 11240–11294 | `usePotion`（音訊區）、`retryLevel`、`revive` | Med | `retryLevel`, `revive`, `usePotion` | — | defer | 重試關、喝藥 |
-| 38 | **Result — display bindings** | 11228–11363 | `PROGRESSION & REWARDS` header、`createVueBindings`、`updateStageBestRecord` | Med | `calculatedGrade`, `stageRecordRows`, `createVueBindings` | `result-display-manager.js` | **yes**（顯示） | 評價／星等／紀錄表 |
+| 37 | **Handlers — retry / revive / potion** *(file-order)* | 8613, 11198–11247 | `usePotion`（音訊區）、`retryLevel`、`revive`（`[ PROGRESSION & REWARDS ]` 區） | Med | `retryLevel`, `revive`, `usePotion` | — | defer | 重試關、喝藥 |
+| 38 | **Result — display bindings** | 11252–11318 | `[ RESULT — DISPLAY BINDINGS ]`：`createVueBindings`、`buildCurrentStageRecord`、`updateStageBestRecord` | Low–Med | `calculatedGrade`, `updateStageBestRecord`, `stageRecordRows` | `result-display-manager.js` | **yes**（顯示） | 寫入 `stageBestRecords`；EXP 動畫仍在 #36 |
 | 39 | **Boot hooks (2nd onMounted)** | 11364–11510 | changelog 版本 policy、音訊 unlock、`installTapChoicesLayoutHooks` | Med | `applyVersionStoragePolicy`, `unlockAudioOnce` | `changelog-manager.js` | defer | 首屏手勢後音訊 |
 | 40 | **Debug — dev helpers & level jump** | 11435–11607 | `[ DEBUG — DEV HELPERS ]` ~L11435：`window.__debugQMix`；`[ DEBUG TOOLS — LEVEL JUMP ]` ~L11515：`debugJumpToLevel`、`__attachDebugTools`、URL `?level=` | Low | `__debugQMix`, `debugJumpToLevel`, `__attachDebugTools` | `debug.js`, `dev-tools.js` | **yes** (dev) | Console `__debugQMix`；Dev 關卡跳轉 |
 | 40b | **Debug — early boot state** *(file-order)* | 1441–1458 | `devToolsState` boot fallback、`debugControls`（`heroBuffs` fallback） | Low | `isDevToolsVisible`, `debugControls` | `dev-tools.js` | defer | **未搬**（L4027 audio notice computed 需早期存在） |
@@ -272,8 +272,8 @@
 | **顯示格式化（優先改這裡）** | `assets/js/result-display-manager.js` | `accuracyPct`、`calculatedGrade`（S–E）、`stageStarRating` / `stageStarDisplay`（★☆）、`stageClearTimeText`、`stageRecordRows`、`formatStageBest*`、`buildCurrentStageRecordPayload` | **yes**（評價規則、星等、表格列） |
 | **時間字串** | `game-utils.js` `formatStageClearTime` | 通關秒數 → `X.XX 秒` | **yes** |
 | **等級獎勵卡片文案** | `result-display-manager.js` `RESULT_LEVEL_MILESTONE_REWARDS` | Lv5/10/20/25/30 浮層 `type` / `name` / `desc` | **yes** |
-| **Vue 注入** | `game.js` L11228–11363 | `createVueBindings` 接線、`updateStageBestRecord` | 紀錄比較：**defer** |
-| **結算 UI state** | `game.js` L3745–3817 | `animatedExp`、`displayedResult*`、`scheduleResultMilestoneRewards` | 動畫 state / 排程：**no**／defer |
+| **Vue 注入** | `game.js` **`[ RESULT — DISPLAY BINDINGS ]`** ~L11252–11318 | `createVueBindings` 接線、`updateStageBestRecord` | 紀錄比較：**defer** |
+| **結算 UI state** | `game.js` **`[ RESULT — DISPLAY STATE ]`** ~L3689–3759、3798 | `animatedExp`、`displayedResult*`、`scheduleResultMilestoneRewards`、`monsterResultShown` | 動畫 state / 排程：**no**／defer |
 | **結算模板** | `index.html` L3884–3970 | `v-if="monsterResultShown"` 內評價、EXP、按鈕 | **yes** |
 | **等級獎勵浮層** | `index.html` L3984–4002 | `resultUnlockedMilestones` | **yes** |
 | **關卡紀錄 modal** | `index.html` L3198+、L4618+ | `stageRecordRows` | **yes** |
@@ -292,7 +292,7 @@
 | **本場 S–E 評價門檻** | `createVueBindings` → `calculatedGrade`（註解內門檻表） | 結算 L3910–3912；評價色 `game-utils.js` `getGradeColor` | `grantRewards` 內 `bestGrades` 寫入邏輯（除非連動測存檔） |
 | **本場正確率數字** | `accuracyPct`（同上 `createVueBindings`） | 結算 L3914–3916 | — |
 | **通關時間字串** | `game-utils.js` `formatStageClearTime`；`stageClearTimeText` computed | 結算 L3902–3905 | `stageClearElapsedSeconds` 計時起點在 `game.js` #36b |
-| **歷史最佳星／時間（單關）** | `formatStageBestStarsDisplay`、`formatStageBestTimeDisplay`、`getStageBest*` | 選關確認 L2565–2570；全關卡表 L3233–3237 | `updateStageBestRecord`、`isStageRecordBetter`（#38，`game.js`） |
+| **歷史最佳星／時間（單關）** | `formatStageBestStarsDisplay`、`formatStageBestTimeDisplay`、`getStageBest*` | 選關確認 L2565–2570；全關卡表 L3233–3237 | `updateStageBestRecord`、`isStageRecordBetter`（**#38**，`[ RESULT — DISPLAY BINDINGS ]`） |
 | **全關卡成績表列文案** | `buildStageRecordTableRows` → `stageRecordRows` | `index.html` L3198–3244、L4618+（地圖／戰鬥各一份 modal） | `bestGrades` 寫入（`grantRewards`）；`clearedLevels` 解鎖 |
 | **全關卡表「S Rank N 關」** | `sRankCount`（掃 `stageRecordRows[].rank === 'S'`） | 摘要 L3215–3217 | — |
 | **等級獎勵浮層卡片**（技能名／描述） | `RESULT_LEVEL_MILESTONE_REWARDS` | 浮層 L3984–4002；標題「等級獎勵解放」在 HTML | `grantRewards` 內 `resultUnlockedMilestones` **篩選**（哪幾級出現） |
@@ -502,7 +502,7 @@
 ## F. Section header（`game.js` 內錨點）
 
 > **用途：** `rg "\[ .* \]" assets/js/game.js` 或下表 **Keywords** 定位；行號會漂移，以註解文字為準。
-> **2026-05-27（M13）：** `[ HOME — VERSION & CHANGELOG DISPLAY ]` ~L1374。M12 `[ CODEX — ESCAPE WATCHES ]` ~L3003。M11 `[ HOME — SAVE SLOT DISPLAY ]` ~L355。
+> **2026-05-27（M14）：** `[ RESULT — DISPLAY STATE ]` ~L3689；`[ RESULT — DISPLAY BINDINGS ]` ~L11252。M13 `[ HOME — VERSION & CHANGELOG DISPLAY ]` ~L1374。
 
 | Header 文字（`rg`） | 約略行 | §A 對照 | 備註 |
 |--------------------|--------|---------|------|
@@ -520,7 +520,8 @@
 | `[ CODEX - COMPUTED ]` | ~2107 | #17, #17b | **既有**；wheel data + runtime；display glue 見下行 |
 | `[ CODEX — DISPLAY GLUE ]` | ~2828 | **#17b** | **2026-05-27 M9**；非 runtime 顯示 helper |
 | `[ CODEX — ESCAPE WATCHES ]` | ~3003 | **#19b** | **2026-05-27 M12**；Escape／關閉 watch；`closeCodex` 見 #25 |
-| `[ STATE — GAME BATTLE CORE ]` | ~3543 | #22 | **既有** |
+| `[ STATE — GAME BATTLE CORE ]` | ~3554 | #22 | **既有** |
+| `[ RESULT — DISPLAY STATE ]` | ~3689 | **#36b** | **2026-05-27 M14**；結算 UI refs；`monsterResultShown` ~3798 |
 | `[ STATE — AUDIO REFS ]` | ~4001 | #24 | **既有** |
 | `[ BATTLE — PAUSE / RESUME ]` | ~4191 | #25 | **2026-05-24 L2 新增**（取代舊 `BATTLE CONTROL` 一行註解） |
 | `[ AUDIO & TTS ]` | ~4247 | #26 | **既有**；audio freeze |
@@ -531,7 +532,8 @@
 | `[ BATTLE LOGIC ]` | ~10161 | #34–35 | **既有** |
 | `[ BATTLE — CHECK ANSWER ]` | ~10346 | #35 | **2026-05-24 L2 新增**；DO NOT REFACTOR CASUALLY |
 | `[ VICTORY — GRANT REWARDS ]` | ~10742 | #36 | **2026-05-24 M2**；`grantRewards` 前；DO NOT TOUCH |
-| `[ PROGRESSION & REWARDS ]` | ~11229 | #38 | **既有**；`createVueBindings` / `updateStageBestRecord`（顯示接線；在 `grantRewards` 之後） |
+| `[ PROGRESSION & REWARDS ]` | ~11168 | #37 | **既有**；retry/revive；result bindings 見下行 |
+| `[ RESULT — DISPLAY BINDINGS ]` | ~11252 | **#38** | **2026-05-27 M14** |
 | `[ DEBUG — DEV HELPERS ]` | ~11435 | **#40** | **2026-05-27 M8**；`window.__debugQMix` |
 | `[ DEBUG TOOLS — LEVEL JUMP ]` | ~11515 | #40 | **既有**；`debugJumpToLevel`；dev-only |
 | `[ VUE RETURN & BINDINGS ]` | ~11608 | #41 | **2026-05-24 M2**；`return {…}` 前 |
@@ -546,6 +548,8 @@
 // ================= [ MAP FLOW & MENTOR TRIGGERS ] =================
 // ================= [ CODEX — DISPLAY GLUE ] =================
 // ================= [ CODEX — ESCAPE WATCHES ] =================
+// ================= [ RESULT — DISPLAY STATE ] =================
+// ================= [ RESULT — DISPLAY BINDINGS ] =================
 // ================= [ MENTOR DIALOGUE — RUNTIME ] =================   // 檔內為 [ MENTOR DIALOGUE ]
 // ================= [ BATTLE — PAUSE / RESUME ] =================
 // ================= [ BATTLE — ATB TIMER ] =================
