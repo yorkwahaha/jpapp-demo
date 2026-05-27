@@ -10569,6 +10569,116 @@ body.lock-scroll {
     }
 }
 
+/* RWD: Desktop / wide battle — long JP question line fits inside question card (mobile portrait uses block above) */
+@media (min-width: 900px) {
+    .battle-top-ui-layer .question-card.glass-panel {
+        overflow-x: clip;
+        overflow-y: visible;
+    }
+
+    .battle-top-ui-layer #question-area {
+        container-type: inline-size;
+        container-name: jpapp-battle-question;
+        overflow-x: clip;
+        overflow-y: visible;
+        max-width: 100%;
+    }
+
+    .battle-top-ui-layer #question-area .battle-question-main-row {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .battle-top-ui-layer #question-area .battle-question-phrase {
+        max-width: 100%;
+        min-width: 0;
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+
+    .battle-top-ui-layer #question-area {
+        --battle-question-jp-size: clamp(0.92rem, 1.65vmin + 0.62rem, 1.82rem);
+    }
+
+    .battle-top-ui-layer #question-area.question-size-medium {
+        --battle-question-jp-size: clamp(0.84rem, 1.2vmin + 0.54rem, 1.55rem);
+        --battle-question-row-gap: 0.26rem;
+    }
+
+    .battle-top-ui-layer #question-area.question-size-long {
+        --battle-question-jp-size: clamp(0.76rem, 0.95vmin + 0.46rem, 1.28rem);
+        --battle-question-row-gap: 0.14rem;
+    }
+
+    .battle-top-ui-layer #question-area.question-size-very-long {
+        --battle-question-jp-size: clamp(0.68rem, 0.78vmin + 0.38rem, 1.06rem);
+        --battle-question-row-gap: 0.08rem;
+    }
+
+    .battle-top-ui-layer #question-area .battle-question-jp {
+        max-width: 100%;
+        line-height: 1.16 !important;
+    }
+
+    @supports (width: 1cqi) {
+        .battle-top-ui-layer #question-area .battle-question-jp {
+            font-size: min(var(--battle-question-jp-size), clamp(0.62rem, 6.1cqi, 1.82rem)) !important;
+        }
+    }
+
+    .battle-top-ui-layer #question-area .ruby-text {
+        max-width: 100%;
+    }
+
+    .battle-top-ui-layer #question-area .ruby-text rt {
+        font-size: clamp(0.4em, 2.6cqi, 0.56em) !important;
+        line-height: 1 !important;
+        margin-bottom: 0 !important;
+        white-space: nowrap;
+    }
+
+    .battle-top-ui-layer #question-area.question-size-long .ruby-text rt,
+    .battle-top-ui-layer #question-area.question-size-very-long .ruby-text rt {
+        font-size: clamp(0.36em, 2.15cqi, 0.48em) !important;
+    }
+
+    .battle-top-ui-layer #question-area .battle-question-cn {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+
+    .battle-top-ui-layer #question-area.question-size-long .battle-question-cn,
+    .battle-top-ui-layer #question-area.question-size-long>div.battle-question-cn:last-child,
+    .battle-top-ui-layer #question-area.question-size-very-long .battle-question-cn,
+    .battle-top-ui-layer #question-area.question-size-very-long>div.battle-question-cn:last-child {
+        font-size: clamp(0.78rem, 0.95vmin + 0.42rem, 0.92rem) !important;
+        line-height: 1.28 !important;
+    }
+
+    .battle-top-ui-layer #question-area.question-compact {
+        --battle-question-jp-size: clamp(0.8rem, 1.05vmin + 0.48rem, 1.22rem);
+        --battle-question-row-gap: 0.12rem;
+    }
+
+    .battle-top-ui-layer #question-area.question-ultra-compact {
+        --battle-question-jp-size: clamp(0.72rem, 0.82vmin + 0.4rem, 1.02rem);
+        --battle-question-row-gap: 0.06rem;
+    }
+
+    .battle-top-ui-layer #question-area.question-compact .battle-question-jp,
+    .battle-top-ui-layer #question-area.question-ultra-compact .battle-question-jp {
+        line-height: 1.14 !important;
+    }
+
+    @supports (width: 1cqi) {
+        .battle-top-ui-layer #question-area.question-compact .battle-question-jp,
+        .battle-top-ui-layer #question-area.question-ultra-compact .battle-question-jp {
+            font-size: min(var(--battle-question-jp-size), clamp(0.58rem, 5.4cqi, 1.22rem)) !important;
+        }
+    }
+}
+
 /* RWD: Desktop >= 1181px
    Hover-only decoration; iPad behavior must not depend on hover/pointer queries. */
 @media (min-width: 1181px) and (hover:hover) {
