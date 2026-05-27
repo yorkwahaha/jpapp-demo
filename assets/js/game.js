@@ -3697,7 +3697,7 @@ const _jpApp = Vue.createApp({
 
         // ================= [ RESULT — DISPLAY STATE ] =================
         // Result modal UI refs + stage-clear display metrics. EXP bar animation driven in grantRewards (#36).
-        // monsterResultShown: ~below with monster battle refs (modal visibility). resetBattleOutcomePresentation: ~L3846.
+        // monsterResultShown: ~below with monster battle refs (modal visibility). resetBattleOutcomePresentation: ~L3862.
 
         const animatedExp = ref(0);
         const hasLeveledUp = ref(false);
@@ -3771,6 +3771,7 @@ const _jpApp = Vue.createApp({
             return stageClearElapsedSeconds.value;
         };
 
+        // ---- [ BATTLE — MONSTER PRESENTATION REFS ] ----
         const monsterHit = ref(false);
         const monsterHitGiragira = ref(false);
         const monsterGiraKnockActive = ref(false);
@@ -3805,6 +3806,8 @@ const _jpApp = Vue.createApp({
         const monsterTrulyDead = ref(false); // 動畫結束，真正從畫面移除
 
         const monsterResultShown = ref(false); // 結算 modal（見 [ RESULT — DISPLAY STATE ]）
+        // ================= [ BATTLE — BOSS DEATH VFX ] =================
+        // navigation-only. DO NOT TOUCH: flow helpers, SFX, tokens, delays, spawnBossDeathBurst, startBossDeathSequence.
         const bossDeathVfxActive = ref(false); // Boss 專屬死亡演出 overlay
         const bossDeathStage = ref(0); // 1~4 對應四段演出
 

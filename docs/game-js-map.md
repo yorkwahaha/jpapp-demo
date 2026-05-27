@@ -63,7 +63,8 @@
 | 21 | **Battle — onomatope skills** | 3310–3521 | `castAbility`、`playSkillSfx`、技能 overlay；含 `onMounted(loadGameData)` | Med | `castAbility`, `heroBuffs` | `hero-status.js`, `abilities.v1.json` | defer | 擬聲詞施放 |
 | 22 | **Battle — core refs & combo UI** | 3522–3687 | 戰鬥常數、`showLevelSelect`、`player`/`monster`、mistakes（**不含** result display；見 #36b） | Med | `showLevelSelect`, `comboPopup` | `index.html` battle/home | defer | 首頁↔戰鬥切換 |
 | 36b | **Result — display state** | 3689–3759, 3798 | `[ RESULT — DISPLAY STATE ]`：`animatedExp`、`displayedResult*`、`stageClearElapsedSeconds`、`monsterResultShown` | Low–Med | `animatedExp`, `monsterResultShown`, `stageResultIsNewBest` | `index.html` result modal | defer | `resetBattleOutcomePresentation` ~L3849；計時起點耦合 #36 |
-| 23 | **Battle — boss death VFX** | 3788–4009 | `bossDeathVfxActive`、`spawnBossDeathBurst` 序列 | Med | `bossDeathVfxActive`, `spawnBossDeathBurst` | `vfx-helpers.js`, `battle.css` | defer | 魔王死亡演出 |
+| 23 | **Battle — boss death VFX** | 3810–4025 | `[ BATTLE — BOSS DEATH VFX ]`：`bossDeathVfxActive`、`resetBattleOutcomePresentation`、`spawnBossDeathBurst`、`startBossDeathSequence`（**navigation-only**；**DO NOT TOUCH** 函式本體／timing／SFX／token） | Med | `BATTLE — BOSS DEATH VFX`, `bossDeathVfxActive`, `spawnBossDeathBurst` | `vfx-helpers.js`, `battle.css` | defer | 魔王死亡演出；見 #23a presentation |
+| 23a | **Battle — monster presentation refs** | 3775–3808 | `[ BATTLE — MONSTER PRESENTATION REFS ]`：`monsterHit`、進場／死亡狀態 refs（**不含** `monsterResultShown`；見 #36b） | Low–Med | `BATTLE — MONSTER PRESENTATION REFS`, `monsterIsDying` | `battle.css` | defer | **M23a**；presentation only |
 | 24 | **Audio — refs & debug wiring** | 4006–4189 | `bgmAudio`、`audioCtx`、`JPAPPAudioDebugManager` 接線 | **High** | `audioDebug`, `bgmAudio`, `audioCtx` | `audio-debug-manager.js` | **no** | `?audioDebug=1` |
 | 25 | **Battle — pause / resume** | 4190–4246 | `pauseBattle`、`resumeBattle`（開圖鑑／**map** mentor 時） | Med | `pauseBattle`, `resumeBattle`, `closeCodex` | — | defer | 開圖鑑不推進 ATB |
 | 26 | **Audio — core (init / BGM / SFX)** | 4247–6626 | `initAudioCtx`、`initAudio`、`playBgm`、`playSfx`、pool、duck | **DO NOT TOUCH** | `initAudio`, `playBgm`, `stopAllAudio`, `playSfx` | `audio-tts.js`, `game-constants.js` | **no** | iOS 手勢、BGM 切換 |
@@ -535,8 +536,10 @@
 | `[ CODEX — DISPLAY GLUE ]` | ~2839 | **#17b** | **2026-05-27 M9**；非 runtime 顯示 helper |
 | `[ CODEX — ESCAPE WATCHES ]` | ~3003 | **#19b** | **2026-05-27 M12**；Escape／關閉 watch；`closeCodex` 見 #25 |
 | `[ STATE — GAME BATTLE CORE ]` | ~3554 | #22 | **既有** |
-| `[ RESULT — DISPLAY STATE ]` | ~3689 | **#36b** | **2026-05-27 M14**；結算 UI refs；`monsterResultShown` ~3798 |
-| `[ STATE — AUDIO REFS ]` | ~4001 | #24 | **既有** |
+| `[ RESULT — DISPLAY STATE ]` | ~3689 | **#36b** | **2026-05-27 M14**；結算 UI refs；`monsterResultShown` ~3808 |
+| `[ BATTLE — MONSTER PRESENTATION REFS ]` | ~3774 | **#23a** | **2026-05-27 M23a**；`monsterHit`～`monsterTrulyDead`；**非** boss death |
+| `[ BATTLE — BOSS DEATH VFX ]` | ~3809 | **#23** | **2026-05-27 M23a**；ends before `[ STATE — AUDIO REFS ]`；**DO NOT TOUCH** 函式／timing／SFX／token |
+| `[ STATE — AUDIO REFS ]` | ~4027 | #24 | **既有** |
 | `[ BATTLE — PAUSE / RESUME ]` | ~4191 | #25 | **2026-05-24 L2 新增**（取代舊 `BATTLE CONTROL` 一行註解） |
 | `[ AUDIO & TTS ]` | ~4247 | #26 | **既有**；audio freeze |
 | `[ BATTLE — ATB TIMER ]` | ~6932 | #28 | **2026-05-24 L2 新增**（`runTimerLogic` 前） |
@@ -561,7 +564,7 @@
 | `[ RETURN — MAP / HOME BINDINGS ]` | ~11658 | #41 | **2026-05-27 M17**；地圖／存檔槽／知識卡 |
 | `[ APP — MOUNT / INIT ]` | ~11684 | **#41** | **2026-05-27 M16**；`_jpApp.mount('#app')` |
 
-**下一批候選（尚未插入）：** `[ CODEX — RESONANCE WHEEL ]`（wheel runtime 子錨；落在 `[ CODEX — COMPUTED ]` 大段內、`setCodexWheelPhase` 前；**DO NOT TOUCH** 除非任務明示）。
+**下一批候選（尚未插入）：** `[ CODEX — RESONANCE WHEEL ]`（wheel runtime 子錨；落在 `[ CODEX — COMPUTED ]` 大段內、`setCodexWheelPhase` 前；**DO NOT TOUCH** 除非任務明示）。`[ BATTLE — BOSS ATTACK VFX ]`（**M23b**；~7029–7520、`playBossVineAttackVfx` 等；**非** M23a；緊鄰 `applyMonsterAttack`；**DO NOT TOUCH** 除非任務明示）。
 
 ```javascript
 // ================= [ GLOBAL — VFX / SP HUD SHIMS ] =================
@@ -589,6 +592,8 @@
 // ================= [ CODEX — DISPLAY GLUE ] =================
 // ================= [ CODEX — ESCAPE WATCHES ] =================
 // ================= [ RESULT — DISPLAY STATE ] =================
+// ---- [ BATTLE — MONSTER PRESENTATION REFS ] ----
+// ================= [ BATTLE — BOSS DEATH VFX ] =================   // navigation-only; DO NOT TOUCH bodies/timing/SFX
 // ================= [ RESULT — DISPLAY BINDINGS ] =================
 // ================= [ MENTOR DIALOGUE — RUNTIME ] =================   // 檔內為 [ MENTOR DIALOGUE ]
 // ================= [ BATTLE — PAUSE / RESUME ] =================
