@@ -1,10 +1,29 @@
 # JPAPP `game.js` Code Map
 
-> **Last audited:** 2026-05-27 (M24a+b data load + combat constants)
-> **Doc sync:** 2026-05-27 — M24：`[ DATA — LOAD GAME DATA ]` ~L3032；`[ BATTLE — COMBAT CONSTANTS ]` ~L3528（**非** `[ STATE — GAME BATTLE CORE ]`）。M23b boss attack VFX；M23a boss death。
-> **File:** `assets/js/game.js` — **~11,656 lines** (1-indexed；M10 後以 `rg` 錨點為準)
+> **Last audited:** 2026-05-27 (M24d — anchor cleanup phase final docs sync)
+> **Doc sync:** 2026-05-27 — **Cleanup phase M15–M24b 已完成**（`game.js` 僅 navigation 註解；見下方清單）。後續任務以 `rg` 錨點 + §A 為準，**勿**再做大範圍錨點整理，除非新任務明示。
+> **File:** `assets/js/game.js` — **~11,700 lines** (1-indexed；以 `rg "\[ .* \]" assets/js/game.js` 為準)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
+
+### Anchor cleanup phase（M15–M24b）— 已完成
+
+| Milestone | 錨點（`game.js`） | 性質 |
+|-----------|-------------------|------|
+| M15 | `[ GLOBAL — VFX / SP HUD SHIMS ]` 子區 | navigation |
+| M16 | `[ APP — BOOTSTRAP ]`、`SETUP ROOT/INIT`、`MOUNT / INIT`、`GLOBAL EXPOSES` | navigation |
+| M17 | `[ VUE RETURN & BINDINGS ]` 子錨（return 未拆行） | navigation |
+| M19 | `[ SETUP — DATA REFS ]` | navigation |
+| M20 | `[ SETTINGS — UI & DEV TOOLS ]`、`DEV TOOLS STATE` | navigation |
+| M21 | `[ MAP FLOW — * ]` 三子錨 | navigation；函式 **DO NOT TOUCH** |
+| M22 | `[ CODEX — STATE REFS ]`、`SPIRIT HELPERS BOOT`、`COMPUTED` | navigation；wheel runtime **DO NOT TOUCH** |
+| M23a | `[ BATTLE — MONSTER PRESENTATION REFS ]`、`BOSS DEATH VFX` | navigation |
+| M23b | `[ BATTLE — BOSS ATTACK VFX ]` | navigation |
+| M24a | `[ DATA — LOAD GAME DATA ]` | navigation |
+| M24b | `[ BATTLE — COMBAT CONSTANTS ]` | navigation；**非** rename `STATE — GAME BATTLE CORE` |
+| **M24c** | （無）`[ BATTLE — ONOMATOPE ABILITIES ]` | **本 phase 略過**（#21；音訊相鄰；較高風險） |
+
+**仍凍結／非 cleanup 範圍：** save core（#5–7）、map flow 函式本體（#8–12）、mentor runtime（#16）、codex wheel RAF/detent/inertia（#17）、audio/TTS/BGM（#24–26,#32）、timer/ATB（#28）、`applyMonsterAttack`/damage/mistakes（#30）、`generateQuestionBySkill`/choices（#31）、`checkAnswer`（#35）、`grantRewards`（#36）。
 
 ## 使用方式
 
@@ -26,7 +45,7 @@
 
 ## A. 大區塊地圖
 
-> 行號區間以**主要入口**定位（2026-05-26 `rg` 對 `game.js` 實測；檔案 11,651 行）。#31/#32/#33、#36b、#37 等為**檔案順序**與邏輯區塊交錯者，見 **Notes**／**Keywords**。
+> 行號區間以**主要入口**定位（2026-05-27 `rg` 錨點對照；檔案 ~11,700 行）。#31/#32/#33、#36b、#37 等為**檔案順序**與邏輯區塊交錯者，見 **Notes**／**Keywords**。
 >
 > **Mentor 現況：** 僅 **map** overlay（`isMapMentorOpen`、`.map-mentor-overlay`）；**無** battle mentor modal。詳見 [`mentor-dialogue-map.md`](./mentor-dialogue-map.md) §導師 UI 現況。
 >
@@ -43,18 +62,18 @@
 | 6 | **Map / progression state** | 375–487 | `showMap`、`unlockedLevels`、知識卡佇列、spirit 薄封裝、**`skillMastery`**（非 `skillCorrectCounts`） | **High** | `unlockedLevels`, `skillMastery`, `pendingKnowledgeCards` | `spirit-codex-helpers.js` | **no** | 地圖進度、親密度 |
 | 6a | **Map — display helpers** | 449–505 | `[ MAP — DISPLAY HELPERS ]`：`activeSegment`、`currentMapBgm`、`getMapNodeStyle`、`scrollToStage`、`getStageFocus*`、`activateMapAmbient` / `activateMapAmbientSync` | Low | `activateMapAmbient`, `getMapNodeStyle`, `scrollToStage`, `getStageFocusLabel` | `settings-manager.js`, `map-ambient.js` | **yes**（顯示） | 地圖節點/HUD 薄封裝；**勿**改流程函式 |
 | 7 | **Player leveling & save I/O** | 542–735 | `processLevelUp`、`saveProgression`、`loadProgression`、開局 `loadProgression()` | **High** | `saveProgression`, `loadProgression`, `playerStats` | `levels.v1.json` | **no** | 升級、EXP、存檔欄位 |
-| 8 | **Prologue & map open** | 736–892 | `[ MAP FLOW & MENTOR TRIGGERS ]` umbrella 內：`checkPrologueTrigger`、`openMap`、序章／結局（**導航子錨前段**） | **High** | `MAP FLOW & MENTOR TRIGGERS`, `checkPrologueTrigger`, `openMap` | `mentor-dialogues.v1.json`, `mentor-dialogue-map.md` | **no** | 首次進地圖序章 |
-| 9 | **Home — save slot actions** | 893–1058 | `[ MAP FLOW — SAVE SLOT ACTIONS ]`：`openSaveSlotPanel`、`selectSaveSlot`、刪槽（**導航 only**） | **High** | `MAP FLOW — SAVE SLOT ACTIONS`, `openSaveSlotPanel`, `confirmDeleteSaveSlot` | `index.html` `showLevelSelect` | **no** | 選槽／刪檔／新開局；卡面資料改 #5b |
+| 8 | **Prologue & map open** | 736–892 | `[ MAP FLOW & MENTOR TRIGGERS ]` umbrella 內：`checkPrologueTrigger`、`openMap`、序章／結局（**M21** 子錨前段；**DO NOT TOUCH** 流程） | **High** | `MAP FLOW & MENTOR TRIGGERS`, `checkPrologueTrigger`, `openMap` | `mentor-dialogues.v1.json`, `mentor-dialogue-map.md` | **no** | 首次進地圖序章 |
+| 9 | **Home — save slot actions** | 893–1058 | `[ MAP FLOW — SAVE SLOT ACTIONS ]`（**M21**；navigation-only）：`openSaveSlotPanel`、`selectSaveSlot`、刪槽 | **High** | `MAP FLOW — SAVE SLOT ACTIONS`, `openSaveSlotPanel`, `confirmDeleteSaveSlot` | `index.html` `showLevelSelect` | **no** | 選槽／刪檔／新開局；卡面資料改 #5b |
 | 10 | **Map — stage pick & tab flow** | 893–1058, 1059+ | `handleMapTabClick`、`jumpToMapSegment`（與 #9 同 umbrella；display glue 見 #6a） | **High** | `handleMapTabClick`, `jumpToMapSegment` | `settings-manager.js` | **no** | 地圖 tab／區段切換、BGM 觸發 |
-| 11 | **Map — battle confirm & endings** | 1059–1287 | `[ MAP FLOW — STAGE PICK & CONFIRM ]`：`selectStageFromMap`、`confirmAndStartBattle`、L35/L36 結局（**導航 only**） | **High** | `MAP FLOW — STAGE PICK & CONFIRM`, `selectStageFromMap`, `confirmAndStartBattle` | `mentor-dialogue-map.md` | **no** | 關卡確認、結局 mentor |
-| 12 | **Map — return & knowledge cards** | 1288–1380 | `[ MAP FLOW — RETURN & KNOWLEDGE CARDS ]`：`returnToMap`、`triggerNextKnowledgeCard`（**導航 only**） | **High** | `MAP FLOW — RETURN & KNOWLEDGE CARDS`, `returnToMap`, `triggerNextKnowledgeCard` | `index.html` knowledge overlay | **no** | 破關回地圖、知識卡 |
+| 11 | **Map — battle confirm & endings** | 1059–1287 | `[ MAP FLOW — STAGE PICK & CONFIRM ]`（**M21**；navigation-only）：`selectStageFromMap`、`confirmAndStartBattle`、L35/L36 結局 | **High** | `MAP FLOW — STAGE PICK & CONFIRM`, `selectStageFromMap`, `confirmAndStartBattle` | `mentor-dialogue-map.md` | **no** | 關卡確認、結局 mentor |
+| 12 | **Map — return & knowledge cards** | 1288–1380 | `[ MAP FLOW — RETURN & KNOWLEDGE CARDS ]`（**M21**；navigation-only）：`returnToMap`、`triggerNextKnowledgeCard` | **High** | `MAP FLOW — RETURN & KNOWLEDGE CARDS`, `returnToMap`, `triggerNextKnowledgeCard` | `index.html` knowledge overlay | **no** | 破關回地圖、知識卡；BGM 時序 **DO NOT TOUCH** |
 | 13 | **Home — version & changelog display** | 1374–1391 | `[ HOME — VERSION & CHANGELOG DISPLAY ]`：`APP_VERSION`、`appVersion`、`versionImageAsset`、`createChangelogState`（`isChangelogOpen` / `changelogData` / `openChangelog`） | Low | `appVersion`, `openChangelog`, `versionImageAsset` | `changelog-manager.js`, `index.html`, `home.css` | **yes**（顯示） | 勿改 `APP_VERSION`／`changelog.json`；`versionImageAsset` 亦供導師圖 |
 | 13b | **Settings & dev tools** *(file-order)* | 1398–1478 | `[ SETTINGS — UI & DEV TOOLS ]`：`settings`、`devToolsState`、`answerMode`、`flickState`（**非** #13 changelog；UI/dev state only） | Low | `SETTINGS — UI & DEV TOOLS`, `settings`, `isDevToolsVisible`, `loadSettings` | `settings-manager.js`, `dev-tools.js` | defer | `devToolsState` 子錨見 #40b |
-| 14 | **Codex — state refs** | 1503–1548 | `[ CODEX — STATE REFS ]`：`isCodexOpen`、wheel RAF 常數／非 ref spin vars（**非** runtime 函式） | Low | `CODEX — STATE REFS`, `codexWheelPhase`, `CODEX_WHEEL_` | `spirit-codex-helpers.js` | defer | 開共鳴輪不卡頓；wheel runtime 見 #17 **DO NOT TOUCH** |
+| 14 | **Codex — state refs** | 1503–1548 | `[ CODEX — STATE REFS ]`（**M22**）：`isCodexOpen`、wheel RAF 常數／非 ref spin vars（**非** runtime 函式） | Low | `CODEX — STATE REFS`, `codexWheelPhase`, `CODEX_WHEEL_` | `spirit-codex-helpers.js` | defer | wheel runtime 見 #17 **DO NOT TOUCH** |
 | 15 | **Mentor — state & fallbacks** | 1575–1834 | map mentor refs、`isMapMentorOpen`、helpers fallback、`loadMentorState` | **High** | `mentorTutorialSeen`, `isMapMentorOpen` | `mentor-dialogue-helpers.js`, `mentor-dialogue-map.md` | **no** | map-only；無 battle modal |
 | 16 | **Mentor — dialogue runtime** | 1835–2139 | `setupMentorDialogue`（**`showMap` 必須**）、typing、video、mentor audio | **DO NOT TOUCH** | `setupMentorDialogue`, `playMentorAudioForCurrentPage`, `finishMentorDialogue` | `audio-tts.js`, `mentor-dialogue-map.md` | **no** | 地圖／確認窗導師；iOS 音訊 |
 | 17 | **Codex — wheel logic & UI** *(runtime)* | 2126–2836 | `[ CODEX — COMPUTED ]` 起：`codexWheelSkills` computed 後接共鳴輪 phase、拖曳／動畫、`openCodexDetail`（**runtime — DO NOT TOUCH**；display glue 見 #17b） | Low–Med | `CODEX — COMPUTED`, `setCodexWheelPhase`, `endCodexDrag` | `spirit-codex-helpers.js`, `codex.css` | defer | **勿**改 RAF/detent/inertia |
-| 17a | **Codex — spirit helpers boot** | 2106–2124 | `[ CODEX — SPIRIT HELPERS BOOT ]`：`spiritCodexHelpers` fallback + spirit 薄封裝（须在 #17 computed 前） | Low | `CODEX — SPIRIT HELPERS BOOT`, `spiritCodexHelpers` | `spirit-codex-helpers.js` | defer | boot glue only |
+| 17a | **Codex — spirit helpers boot** | 2106–2124 | `[ CODEX — SPIRIT HELPERS BOOT ]`（**M22**）：`spiritCodexHelpers` fallback + spirit 薄封裝（须在 #17 computed 前） | Low | `CODEX — SPIRIT HELPERS BOOT`, `spiritCodexHelpers` | `spirit-codex-helpers.js` | defer | boot glue only |
 | 17b | **Codex — display glue** | 2823–2906 | `[ CODEX — DISPLAY GLUE ]`：spirit 圖示、mastery 顯示、wheel item class、怪物圖鑑、技能類型標籤 | Low | `getCodexSkillDisplayName`, `monsterCodexEntries`, `getSkillTypeLabel`, `getSkillMastery` | `codex-display-utils.js`, `spirit-codex-helpers.js` | **yes**（顯示） | **非** wheel runtime |
 | 18 | **Codex — monster index** | 2870–2902 *(in #17b)* | `monsterCodexEntries` computed（薄）、開關／選取 | Low | `monsterCodexEntries`, `openMonsterCodex` | `codex-display-utils.js`, `enemies.v1.json` | **yes** | 怪物圖鑑列表/詳情 |
 | 19 | **Codex — open sync watch** *(file-order)* | 2980–2998 | 開共鳴輪時 `codexPage`／phase 同步（**runtime 接線**；**非** Escape） | Low–Med | `watch([isCodexOpen, codexWheelSkills` | — | defer | 勿併入 #19b；勿改 RAF/detent |
@@ -62,17 +81,17 @@
 | 20 | **Data load & abilities** | 3032–3231 | `[ DATA — LOAD GAME DATA ]`：`loadGameData`、`loadGameData()` boot 呼叫、skills/spirits/levels fetch（**navigation-only**；**DO NOT TOUCH** fetch／unlock 推導） | Low–Med | `DATA — LOAD GAME DATA`, `loadGameData`, `skillsAll` | `skills.v1.json`, `abilities.v1.json` | defer | 開局資料；abilities `.json` fetch 仍在檔內同段後續 |
 | 21 | **Battle — onomatope skills** | 3310–3526 | `castAbility`、`playSkillSfx`、技能 overlay（**無錨**；M24c **略過**／較高風險） | Med | `castAbility`, `heroBuffs` | `hero-status.js`, `abilities.v1.json` | defer | 擬聲詞；勿與 #20 混改 |
 | 22 | **Battle — core refs & combo UI** | 3528–3697 | `[ BATTLE — COMBAT CONSTANTS ]` ~3528–3562：`MONSTER_HP`、`getComboMaxDamage`；`[ STATE — GAME BATTLE CORE ]` ~3563+：`player`/`monster`、combo、mistakes（**不含** #36b） | Med | `BATTLE — COMBAT CONSTANTS`, `STATE — GAME BATTLE CORE`, `comboPopup` | `index.html` battle/home | defer | 常數子錨 **勿**更名 battle core |
-| 36b | **Result — display state** | 3689–3759, 3798 | `[ RESULT — DISPLAY STATE ]`：`animatedExp`、`displayedResult*`、`stageClearElapsedSeconds`、`monsterResultShown` | Low–Med | `animatedExp`, `monsterResultShown`, `stageResultIsNewBest` | `index.html` result modal | defer | `resetBattleOutcomePresentation` ~L3849；計時起點耦合 #36 |
-| 23 | **Battle — boss death VFX** | 3810–4025 | `[ BATTLE — BOSS DEATH VFX ]`：`bossDeathVfxActive`、`resetBattleOutcomePresentation`、`spawnBossDeathBurst`、`startBossDeathSequence`（**navigation-only**；**DO NOT TOUCH** 函式本體／timing／SFX／token） | Med | `BATTLE — BOSS DEATH VFX`, `bossDeathVfxActive`, `spawnBossDeathBurst` | `vfx-helpers.js`, `battle.css` | defer | 魔王死亡演出；見 #23a presentation |
-| 23a | **Battle — monster presentation refs** | 3775–3808 | `[ BATTLE — MONSTER PRESENTATION REFS ]`：`monsterHit`、進場／死亡狀態 refs（**不含** `monsterResultShown`；見 #36b） | Low–Med | `BATTLE — MONSTER PRESENTATION REFS`, `monsterIsDying` | `battle.css` | defer | **M23a**；presentation only |
-| 24 | **Audio — refs & debug wiring** | 4006–4189 | `bgmAudio`、`audioCtx`、`JPAPPAudioDebugManager` 接線 | **High** | `audioDebug`, `bgmAudio`, `audioCtx` | `audio-debug-manager.js` | **no** | `?audioDebug=1` |
+| 36b | **Result — display state** | 3700–3774, 3810 | `[ RESULT — DISPLAY STATE ]`：`animatedExp`、`displayedResult*`、`stageClearElapsedSeconds`；`monsterResultShown` ~3810（見註解） | Low–Med | `animatedExp`, `monsterResultShown`, `stageResultIsNewBest` | `index.html` result modal | defer | `resetBattleOutcomePresentation` ~L3862；計時耦合 #36 |
+| 23 | **Battle — boss death VFX** | 3811–4027 | `[ BATTLE — BOSS DEATH VFX ]`（**M23a**；navigation-only）：`bossDeathVfxActive`、`spawnBossDeathBurst`、`startBossDeathSequence` | Med | `BATTLE — BOSS DEATH VFX`, `bossDeathVfxActive`, `spawnBossDeathBurst` | `vfx-helpers.js`, `battle.css` | defer | **DO NOT TOUCH** timing／SFX／token；見 #23a |
+| 23a | **Battle — monster presentation refs** | 3776–3808 | `[ BATTLE — MONSTER PRESENTATION REFS ]`（**M23a**）：`monsterHit`、進場／死亡狀態 refs（**不含** `monsterResultShown`） | Low–Med | `BATTLE — MONSTER PRESENTATION REFS`, `monsterIsDying` | `battle.css` | defer | presentation only |
+| 24 | **Audio — refs & debug wiring** | 4030–4193 | `bgmAudio`、`audioCtx`、`JPAPPAudioDebugManager` 接線（**DO NOT TOUCH**） | **High** | `audioDebug`, `bgmAudio`, `audioCtx` | `audio-debug-manager.js` | **no** | `?audioDebug=1` |
 | 25 | **Battle — pause / resume** | 4190–4246 | `pauseBattle`、`resumeBattle`（開圖鑑／**map** mentor 時） | Med | `pauseBattle`, `resumeBattle`, `closeCodex` | — | defer | 開圖鑑不推進 ATB |
 | 26 | **Audio — core (init / BGM / SFX)** | 4247–6626 | `initAudioCtx`、`initAudio`、`playBgm`、`playSfx`、pool、duck | **DO NOT TOUCH** | `initAudio`, `playBgm`, `stopAllAudio`, `playSfx` | `audio-tts.js`, `game-constants.js` | **no** | iOS 手勢、BGM 切換 |
 | 27 | **Battle — Flick engine** | 6627–6929 | `handleRuneClick`、`startFlick`、`resolveFlickShot` | **High** | `flickState`, `FLICK_MIN`, `resolveFlickShot` | `vfx-helpers.js` | **no** | Flick 命中/擦過 |
 | 28 | **Battle — ATB & timer** | 6957–7028 | `[ BATTLE — ATB TIMER ]` / `[ TIMER ]`：`runTimerLogic`、`startTimer`（**DO NOT TOUCH**；上界 **#29** 前） | **High** | `BATTLE — ATB TIMER`, `runTimerLogic`, `startTimer` | `hero-status.js` | **no** | 倒數、超時；`runTimerLogic` 會呼叫 `applyMonsterAttack` |
-| 29 | **Battle — boss attack VFX** | 7034–7523 | `[ BATTLE — BOSS ATTACK VFX ]`：`_isBossSpecialAttackPlaying`、`playBoss*Vfx`、`playMonsterClawAttackVfx`（boss 分支 dispatch + 共用鎖；**navigation-only**；**DO NOT TOUCH** 函式／setTimeout／shake） | Med | `BATTLE — BOSS ATTACK VFX`, `playBossVineAttackVfx` | `battle.css` | defer | Boss 特殊攻擊畫面；抽取見 §F Phase 2（**非**本 patch） |
-| 30 | **Battle — applyMonsterAttack & mistakes** | 7525–7790 | `applyMonsterAttack`、`playMistakeVoice`、`clearMistakes`（**DO NOT TOUCH**；下界緊接 **#29**） | **High** | `applyMonsterAttack`, `playMistakeVoice` | — | **no** | 怪物攻擊、傷害、SFX 編排、錯題本 |
-| 31 | **Question generation** | 7769–9231 | `QUESTION_MIX_CONFIG`、`generateQuestionBySkill`、`getChoices`、`startBossQueue`；後段與 `startLevel` helper 交錯 | **DO NOT TOUCH** | `generateQuestionBySkill`, `startBossQueue` | `earlyGamePools.v1.js`, `levels.v1.json` | **no** | 關卡題型分布 |
+| 29 | **Battle — boss attack VFX** | 7034–7525 | `[ BATTLE — BOSS ATTACK VFX ]`（**M23b**；navigation-only）：`_isBossSpecialAttackPlaying`、`playBoss*Vfx`、`playMonsterClawAttackVfx`（boss dispatch + 共用鎖） | Med | `BATTLE — BOSS ATTACK VFX`, `playBossVineAttackVfx` | `battle.css` | defer | **DO NOT TOUCH** setTimeout／shake；抽取見 §F Phase 2 |
+| 30 | **Battle — applyMonsterAttack & mistakes** | 7527–7802 | `applyMonsterAttack`、`playMistakeVoice`、`clearMistakes`（**DO NOT TOUCH**；緊接 **#29** 下界） | **High** | `applyMonsterAttack`, `playMistakeVoice` | — | **no** | 傷害、SFX 編排、錯題本 |
+| 31 | **Question generation** | 7804–9235 | `[ QUESTION GENERATION ]`：`generateQuestionBySkill`、`getChoices`、`safeFallbackQuestion`、`startBossQueue` | **DO NOT TOUCH** | `QUESTION GENERATION`, `generateQuestionBySkill`, `getChoices` | `earlyGamePools.v1.js`, `levels.v1.json` | **no** | 關卡題型分布 |
 | 32 | **Audio — debug format & gesture tail** *(file-order)* | 8080–8581 | `formatAudioDebugValue`、`onUserGesture`、`ensureBgmElementSync` | **DO NOT TOUCH** | `onUserGesture`, `formatAudioDebugValue` | `audio-debug-manager.js` | **no** | 實體在 #31 之後；語意屬音訊 |
 | 33 | **Battle — startLevel & initGame** | 8582–10033 | `startLevel`、`initGame`、題庫組裝、knowledge card 佇列（**無** battle mentor） | **High** | `startLevel`, `initGame`, `questions` | `mentor-dialogue-map.md` §initGame | **no** | 開戰 → knowledge card → `startTimer` |
 | 34 | **Battle — feedback voice** | 10034–10343 | `playFeedbackVoice`、`playCorrectFeedback` | **High** | `playFeedbackVoice`, `playCorrectFeedback` | `FEEDBACK_VOICE_PATHS` | **no** | 稱讚語音 |
@@ -506,7 +525,7 @@
 ## F. Section header（`game.js` 內錨點）
 
 > **用途：** `rg "\[ .* \]" assets/js/game.js` 或下表 **Keywords** 定位；行號會漂移，以註解文字為準。
-> **2026-05-27（M22）：** `[ CODEX — STATE REFS ]` ~L1503；`SPIRIT HELPERS BOOT` ~L2106；`COMPUTED` ~L2126（wheel **runtime** 仍在同段、**DO NOT TOUCH**）。M21：map flow 子錨。
+> **Cleanup phase（M15–M24b）：** 下表已含 M15–M24 導航錨；**勿**將已完成者再列為「待插入」。M24c onomatope（#21）**未**插入錨。
 
 | Header 文字（`rg`） | 約略行 | §A 對照 | 備註 |
 |--------------------|--------|---------|------|
@@ -539,35 +558,44 @@
 | `[ BATTLE — COMBAT CONSTANTS ]` | ~3528 | **#22** | **2026-05-27 M24b**；ends before `[ STATE — GAME BATTLE CORE ]` |
 | `[ STATE — GAME BATTLE CORE ]` | ~3563 | #22 | **既有**；**勿**更名 |
 | `[ RESULT — DISPLAY STATE ]` | ~3689 | **#36b** | **2026-05-27 M14**；結算 UI refs；`monsterResultShown` ~3808 |
-| `[ BATTLE — MONSTER PRESENTATION REFS ]` | ~3774 | **#23a** | **2026-05-27 M23a**；`monsterHit`～`monsterTrulyDead`；**非** boss death |
-| `[ BATTLE — BOSS DEATH VFX ]` | ~3809 | **#23** | **2026-05-27 M23a**；ends before `[ STATE — AUDIO REFS ]`；**DO NOT TOUCH** 函式／timing／SFX／token |
-| `[ STATE — AUDIO REFS ]` | ~4027 | #24 | **既有** |
+| `[ BATTLE — MONSTER PRESENTATION REFS ]` | ~3776 | **#23a** | **2026-05-27 M23a**；`monsterHit`～`monsterTrulyDead`；**非** boss death |
+| `[ BATTLE — BOSS DEATH VFX ]` | ~3811 | **#23** | **2026-05-27 M23a**；ends before `[ STATE — AUDIO REFS ]`；**DO NOT TOUCH** 函式／timing／SFX／token |
+| `[ STATE — AUDIO REFS ]` | ~4030 | #24 | **既有**；audio **DO NOT TOUCH** |
 | `[ BATTLE — PAUSE / RESUME ]` | ~4191 | #25 | **2026-05-24 L2 新增**（取代舊 `BATTLE CONTROL` 一行註解） |
 | `[ AUDIO & TTS ]` | ~4247 | #26 | **既有**；audio freeze |
 | `[ BATTLE — ATB TIMER ]` | ~6957 | #28 | **2026-05-24 L2 新增**（`runTimerLogic` 前）；**DO NOT TOUCH** |
 | `[ TIMER ]` | ~7001 | #28 | **既有** inner timer anchor；ends ~7028；**非** #29 |
-| `[ BATTLE — BOSS ATTACK VFX ]` | ~7030 | **#29** | **2026-05-27 M23b**；ends before `runPauseTimerLogic` / **#30** `applyMonsterAttack`；**DO NOT TOUCH** bodies/timing/shake |
-| `[ QUESTION GENERATION ]` | ~7775 | #31 | **既有** |
-| `[ BATTLE INIT ]` | ~9232 | #33 | **既有** |
-| `[ BATTLE LOGIC ]` | ~10161 | #34–35 | **既有** |
-| `[ BATTLE — CHECK ANSWER ]` | ~10346 | #35 | **2026-05-24 L2 新增**；DO NOT REFACTOR CASUALLY |
-| `[ VICTORY — GRANT REWARDS ]` | ~10742 | #36 | **2026-05-24 M2**；`grantRewards` 前；DO NOT TOUCH |
-| `[ PROGRESSION & REWARDS ]` | ~11168 | #37 | **既有**；retry/revive；result bindings 見下行 |
-| `[ RESULT — DISPLAY BINDINGS ]` | ~11252 | **#38** | **2026-05-27 M14** |
-| `[ APP — SETUP INIT (boot onMounted) ]` | ~11413 | **#39** | **2026-05-27 M16**；changelog policy、音訊 unlock、layout hooks |
-| `[ APP — GLOBAL EXPOSES ]` | ~11458 | **#40** | **2026-05-27 M16**；`window.__debugQMix`、`__attachDebugTools` 等 |
-| `[ DEBUG — DEV HELPERS ]` | ~11460 | **#40** | **2026-05-27 M8**；`window.__debugQMix` |
-| `[ DEBUG TOOLS — LEVEL JUMP ]` | ~11539 | #40 | **既有**；`debugJumpToLevel`；dev-only |
-| `[ VUE RETURN & BINDINGS ]` | ~11633 | #41 | **2026-05-24 M2**；`return {…}` 前；M17 子錨見下行 |
+| `[ BATTLE — BOSS ATTACK VFX ]` | ~7032 | **#29** | **2026-05-27 M23b**；ends before `runPauseTimerLogic` / **#30** `applyMonsterAttack`；**DO NOT TOUCH** bodies/timing/shake |
+| `[ QUESTION GENERATION ]` | ~7804 | #31 | **DO NOT TOUCH**；`generateQuestionBySkill` / `getChoices` |
+| `[ BATTLE INIT ]` | ~9187 | #33 | **DO NOT TOUCH**；`startLevel` / `initGame` |
+| `[ BATTLE LOGIC ]` | ~10116 | #34–35 | **既有** umbrella；其內含 checkAnswer 鏈 |
+| `[ BATTLE — CHECK ANSWER ]` | ~10299 | #35 | **DO NOT REFACTOR CASUALLY** |
+| `[ VICTORY — GRANT REWARDS ]` | ~10697 | #36 | **DO NOT TOUCH**；`grantRewards` |
+| `[ PROGRESSION & REWARDS ]` | ~11184 | #37 | **既有**；retry/revive |
+| `[ RESULT — DISPLAY BINDINGS ]` | ~11269 | **#38** | **2026-05-27 M14** |
+| `[ APP — SETUP INIT (boot onMounted) ]` | ~11425 | **#39** | **2026-05-27 M16** |
+| `[ APP — GLOBAL EXPOSES ]` | ~11471 | **#40** | **2026-05-27 M16** |
+| `[ DEBUG — DEV HELPERS ]` | ~11472 | **#40** | **2026-05-27 M8** |
+| `[ DEBUG TOOLS — LEVEL JUMP ]` | ~11552 | #40 | dev-only |
+| `[ VUE RETURN & BINDINGS ]` | ~11645 | #41 | M17 子錨；**勿**重排 `return {…}` |
 | `[ RETURN — RESULT BINDINGS ]` | ~11635 | #41 | **2026-05-27 M17**；結算 EXP／`playerStats` |
 | `[ RETURN — SETTINGS / DEBUG BINDINGS ]` | ~11638, ~11678 | #41 | **2026-05-27 M17**；音訊 debug + dev/FPS（檔內兩段） |
 | `[ RETURN — CORE STATE ]` | ~11640 | #41 | **2026-05-27 M17**；首頁／戰鬥／共鳴輪主 template 行（**未拆行**） |
 | `[ RETURN — BATTLE BINDINGS ]` | ~11642 | #41 | **2026-05-27 M17**；逃跑／技能／buff |
 | `[ RETURN — CODEX BINDINGS ]` | ~11647 | #41 | **2026-05-27 M17**；`skillMastery`、怪物圖鑑、導師 export |
 | `[ RETURN — MAP / HOME BINDINGS ]` | ~11658 | #41 | **2026-05-27 M17**；地圖／存檔槽／知識卡 |
-| `[ APP — MOUNT / INIT ]` | ~11684 | **#41** | **2026-05-27 M16**；`_jpApp.mount('#app')` |
+| `[ APP — MOUNT / INIT ]` | ~11696 | **#41** | **2026-05-27 M16**；`_jpApp.mount('#app')` |
 
-**下一批候選（尚未插入）：** `[ CODEX — RESONANCE WHEEL ]`（wheel runtime；**DO NOT TOUCH**）。`[ BATTLE — ONOMATOPE ABILITIES ]`（#21／M24c **略過**，音訊相鄰）。Boss attack VFX **抽取**（§F Phase 2）為高風險未來項，**非** navigation patch。
+**未來／高風險（非 anchor cleanup phase；勿當立即任務）：**
+
+| 項目 | 說明 |
+|------|------|
+| `[ CODEX — RESONANCE WHEEL ]` 子錨 | 落在 `[ CODEX — COMPUTED ]` 內 wheel runtime 前；**DO NOT TOUCH** RAF/detent/inertia，除非任務明示 |
+| `[ BATTLE — ONOMATOPE ABILITIES ]`（M24c） | #21；**本 phase 略過**；`playSkillSfx`／`castAbility` 音訊相鄰 |
+| Boss/battle VFX **抽取** | §F Phase 2；模組外移；**非** navigation |
+| `#19` open sync `watch` | codex wheel 接線；與 runtime 同帶 |
+
+**Cleanup phase 狀態：** M15–M24b 導航錨已齊；後續預設 **停止** 大範圍 `game.js` 註解整理，改以功能任務 + `rg` 為主。
 
 ```javascript
 // ================= [ GLOBAL — VFX / SP HUD SHIMS ] =================
