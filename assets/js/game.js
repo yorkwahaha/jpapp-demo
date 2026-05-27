@@ -351,6 +351,11 @@ const _jpApp = Vue.createApp({
             writeSaveSlotsMetadata(metadata);
             refreshSaveSlotsMetadata();
         };
+
+        // ================= [ HOME — SAVE SLOT DISPLAY ] =================
+        // Home save-panel card text only. formatSaveSlotTime / calculateSaveSlotResonanceText from __JPAPP_UTILS (setup above).
+        // Metadata refs + isSlotProgressionReadable stay in [ PROGRESSION / SAVE SLOTS ] — do not move save core here.
+
         const saveSlotCards = computed(() => SAVE_SLOT_IDS.map(slotId => {
             const slot = saveSlotsMetadata.value?.slots?.[String(slotId)] || buildEmptySaveSlotsMetadata().slots[String(slotId)];
             const isEmpty = slot.isEmpty || !isSlotProgressionReadable(slotId);

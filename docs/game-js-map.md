@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
-> **Last audited:** 2026-05-27 (M10 M7–M9 integration smoke + M9/M8/M7 map anchors)
-> **Doc sync:** 2026-05-27 — M9：`[ CODEX — DISPLAY GLUE ]` ~L2823+；`spiritCodexHelpers` ~L2088+（须在 `[ CODEX - COMPUTED ]` 前）。M8：`[ DEBUG — DEV HELPERS ]` ~L11435+。M7：`[ MAP — DISPLAY HELPERS ]` ~L444+（`rg` 錨點為準，勿只依行號）。
+> **Last audited:** 2026-05-27 (M11 home save-slot display + M10 anchors)
+> **Doc sync:** 2026-05-27 — M11：`[ HOME — SAVE SLOT DISPLAY ]` ~L355+（`saveSlotCards`）。M9/M8/M7 錨點見 §F；`formatSaveSlotTime` / `calculateSaveSlotResonanceText` 仍於 setup `__JPAPP_UTILS` 解構（**未搬**）。
 > **File:** `assets/js/game.js` — **~11,656 lines** (1-indexed；M10 後以 `rg` 錨點為準)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -38,17 +38,17 @@
 | 2 | **Global — SP HUD** | 61–100 | `window.__sp`, `updateSpUI`, `canAffordSP` | Med | `__sp`, `spendSP`, `regenSP` | Vue `spState` + `.hud-bar-sp-fill`（`updateSpUI`/`#spFill` 為 legacy no-op DOM path，DOM 已移除） | defer | 施放技能扣 SP、答對回 SP |
 | 3 | **Vue bootstrap** | 101–173 | `createApp`, `setup` 開頭、首個 `onMounted` 載入 `map-chapters` | Med | `mapChapters`, `createApp` | `map-chapters.json` | defer | 進地圖章節是否載入 |
 | 4 | **Setup — data refs** | 174–197 | `EARLY_GAME_POOLS`、`LEVEL_CONFIG`、`SKILLS` 等 ref 宣告 | Low | `EARLY_GAME_POOLS`, `LEVEL_CONFIG` | `earlyGamePools.v1.js` | defer | 開局前 ref 存在 |
-| 5 | **Save slots — storage & metadata** | 198–352 | keys、migration、metadata 讀寫、`setActiveSaveSlotId`、`isSlotProgressionReadable` | **High** | `PROGRESSION_KEY`, `ensureSaveSlotMigration`, `writeSaveSlotsMetadata` | `storage-manager.js` | **no** | 切槽、migration、metadata |
-| 5b | **Home — saveSlotCards display** | 353–368 | `saveSlotCards` computed；共鳴率經 `__JPAPP_UTILS`（**非** save/load 寫入） | Low–Med | `saveSlotCards`, `calculateSaveSlotResonanceText` | `game-utils.js`, `index.html`, `home.css` | **yes**（顯示） | 見 §首頁存檔卡 |
-| 6 | **Map / progression state** | 369–484 | `showMap`、`unlockedLevels`、知識卡佇列、spirit 薄封裝、**`skillMastery`**（非 `skillCorrectCounts`） | **High** | `unlockedLevels`, `skillMastery`, `pendingKnowledgeCards` | `spirit-codex-helpers.js` | **no** | 地圖進度、親密度 |
-| 6a | **Map — display helpers** | 444–500 | `[ MAP — DISPLAY HELPERS ]`：`activeSegment`、`currentMapBgm`、`getMapNodeStyle`、`scrollToStage`、`getStageFocus*`、`activateMapAmbient` / `activateMapAmbientSync` | Low | `activateMapAmbient`, `getMapNodeStyle`, `scrollToStage`, `getStageFocusLabel` | `settings-manager.js`, `map-ambient.js` | **yes**（顯示） | 地圖節點/HUD 薄封裝；**勿**改流程函式 |
+| 5 | **Save slots — storage & metadata** | 198–353 | keys、migration、metadata 讀寫、`setActiveSaveSlotId`、`isSlotProgressionReadable`（**save core**；display 見 #5b） | **High** | `PROGRESSION_KEY`, `ensureSaveSlotMigration`, `writeSaveSlotsMetadata` | `storage-manager.js` | **no** | 切槽、migration、metadata |
+| 5b | **Home — save slot display** | 355–373 | `[ HOME — SAVE SLOT DISPLAY ]`：`saveSlotCards` computed；共鳴率／時間經 `__JPAPP_UTILS`（**非** save/load 寫入） | Low–Med | `saveSlotCards`, `calculateSaveSlotResonanceText`, `formatSaveSlotTime` | `game-utils.js`, `index.html`, `home.css` | **yes**（顯示） | 見 §首頁存檔卡；選槽流程見 #9 |
+| 6 | **Map / progression state** | 375–487 | `showMap`、`unlockedLevels`、知識卡佇列、spirit 薄封裝、**`skillMastery`**（非 `skillCorrectCounts`） | **High** | `unlockedLevels`, `skillMastery`, `pendingKnowledgeCards` | `spirit-codex-helpers.js` | **no** | 地圖進度、親密度 |
+| 6a | **Map — display helpers** | 449–505 | `[ MAP — DISPLAY HELPERS ]`：`activeSegment`、`currentMapBgm`、`getMapNodeStyle`、`scrollToStage`、`getStageFocus*`、`activateMapAmbient` / `activateMapAmbientSync` | Low | `activateMapAmbient`, `getMapNodeStyle`, `scrollToStage`, `getStageFocusLabel` | `settings-manager.js`, `map-ambient.js` | **yes**（顯示） | 地圖節點/HUD 薄封裝；**勿**改流程函式 |
 | 7 | **Player leveling & save I/O** | 542–735 | `processLevelUp`、`saveProgression`、`loadProgression`、開局 `loadProgression()` | **High** | `saveProgression`, `loadProgression`, `playerStats` | `levels.v1.json` | **no** | 升級、EXP、存檔欄位 |
 | 8 | **Prologue & map open** | 736–920 | `checkPrologueTrigger`、`openMap`、序章／結局場景回調（map mentor） | **High** | `checkPrologueTrigger`, `openMap`, `_resumeAfterMentor` | `mentor-dialogues.v1.json`, `mentor-dialogue-map.md` | **no** | 首次進地圖序章 |
 | 9 | **Home — save slot actions** | 921–1053 | 面板開關、選槽、新開局、刪槽確認（流程） | **High** | `openSaveSlotPanel`, `selectSaveSlot`, `confirmDeleteSaveSlot` | `index.html` `showLevelSelect` | **no** | 選槽／刪檔／新開局；卡面資料改 #5b |
 | 10 | **Map — stage pick & tab flow** | 1054–1085 | `handleMapTabClick`、`jumpToMapSegment`（流程；display glue 見 #6a） | **High** | `handleMapTabClick`, `jumpToMapSegment` | `settings-manager.js` | **no** | 地圖 tab／區段切換、BGM 觸發 |
 | 11 | **Map — battle confirm & endings** | 1086–1315 | `selectStageFromMap`、`confirmAndStartBattle`、L35/L36 結局、`playResultFanfare` 定義 | **High** | `selectStageFromMap`, `checkGlobalEndingTriggers`, `playMainEndingFinale` | `mentor-dialogue-map.md` | **no** | 關卡確認、結局 mentor |
 | 12 | **Map — return & knowledge cards** | 1316–1411 | `returnToMap`、知識卡吸收、`triggerNextKnowledgeCard` | **High** | `returnToMap`, `triggerNextKnowledgeCard`, `_afterKnowledgeCards` | `index.html` knowledge overlay | **no** | 破關回地圖、知識卡 |
-| 13 | **Home — version, settings, changelog** | 1412–1526 | `APP_VERSION`、`appVersion`、`openChangelog`、`versionImageAsset`、settings、devTools | Low | `appVersion`, `openChangelog`, `isDevToolsVisible` | `changelog-manager.js`, `home.css`, `index.html` | **yes** | 首頁版本字、changelog、設定 |
+| 13 | **Home — version, settings, changelog** | 1412–1526 | `APP_VERSION`、`appVersion`、`openChangelog`、`versionImageAsset`、settings、devTools（**未併入** #5b；語意鄰首頁但非存檔卡） | Low | `appVersion`, `openChangelog`, `isDevToolsVisible` | `changelog-manager.js`, `home.css`, `index.html` | **yes** | 首頁版本字、changelog、設定 |
 | 14 | **Codex — wheel state (RAF vars)** | 1527–1574 | 共鳴輪 phase、拖曳、RAF 常數（非 ref） | Low | `codexWheelPhase`, `CODEX_WHEEL_` | `spirit-codex-helpers.js` | defer | 開共鳴輪不卡頓 |
 | 15 | **Mentor — state & fallbacks** | 1575–1834 | map mentor refs、`isMapMentorOpen`、helpers fallback、`loadMentorState` | **High** | `mentorTutorialSeen`, `isMapMentorOpen` | `mentor-dialogue-helpers.js`, `mentor-dialogue-map.md` | **no** | map-only；無 battle modal |
 | 16 | **Mentor — dialogue runtime** | 1835–2139 | `setupMentorDialogue`（**`showMap` 必須**）、typing、video、mentor audio | **DO NOT TOUCH** | `setupMentorDialogue`, `playMentorAudioForCurrentPage`, `finishMentorDialogue` | `audio-tts.js`, `mentor-dialogue-map.md` | **no** | 地圖／確認窗導師；iOS 音訊 |
@@ -99,9 +99,9 @@
 
 | 層 | 位置 | 責任 | 可改？ |
 |----|------|------|--------|
-| **Vue computed** | `game.js` L353–368 `saveSlotCards` | 合併 metadata + 顯示欄位：`statusText`, `playerLevelText`, `highestUnlockedText`, `resonanceText`, `lastPlayedText`, `isEmpty`, `isActive` | 文案/欄位名可改；`isEmpty` 依 #5 `isSlotProgressionReadable`（慎改） |
+| **Vue computed** | `game.js` **`[ HOME — SAVE SLOT DISPLAY ]`** ~L355–373 `saveSlotCards` | 合併 metadata + 顯示欄位：`statusText`, `playerLevelText`, `highestUnlockedText`, `resonanceText`, `lastPlayedText`, `isEmpty`, `isActive` | 文案/欄位名可改；`isEmpty` 依 #5 `isSlotProgressionReadable`（慎改） |
 | **顯示 helper** | `game-utils.js` `calculateSaveSlotResonanceText(isEmpty, progressionStorageKey)` | 讀槽內 progression **僅供**共鳴率字串；key 由 `game.js` `slotProgressionKey(slotId)` 傳入（不寫入） | 可改公式/文案；**勿**改 `PROGRESSION_KEY` / migration |
-| **時間格式** | `game-utils.js` `formatSaveSlotTime` | `lastPlayedAt` → `zh-TW` 日期時間 | **yes** |
+| **時間格式** | `game-utils.js` `formatSaveSlotTime`；setup 解構 ~L113–136（**未搬**入 #5b 區） | `lastPlayedAt` → `zh-TW` 日期時間 | **yes** |
 | **metadata 來源** | `game.js` L212+ `buildEmptySaveSlotsMetadata` 等 | `playerLevel`, `highestUnlockedLevel`, `lastPlayedAt` 由 `updateActiveSaveSlotMetadata` 寫入 | **no**（屬 #5 核心） |
 | **模板** | `index.html` L2102–2149 | `v-for="slot in saveSlotCards"`、四欄摘要（`sr-only` 標籤 + `<strong>`）、刪除鈕 | **yes**（結構/文案/a11y） |
 | **樣式** | `assets/css/home.css` L257–617（RWD L674+） | `.save-slot-*` 面板、格線、卡面、刪除確認 | **yes**；見 `css-map.md` Phase 1-E |
@@ -500,16 +500,17 @@
 ## F. Section header（`game.js` 內錨點）
 
 > **用途：** `rg "\[ .* \]" assets/js/game.js` 或下表 **Keywords** 定位；行號會漂移，以註解文字為準。
-> **2026-05-27（M9–M10）：** `[ CODEX — DISPLAY GLUE ]` ~L2823；`spiritCodexHelpers` ~L2088（须在 `[ CODEX - COMPUTED ]` 前）。M8 `[ DEBUG — DEV HELPERS ]` ~L11435。M7 `[ MAP — DISPLAY HELPERS ]` ~L444；`[ MAP FLOW & MENTOR TRIGGERS ]` ~L695。
+> **2026-05-27（M11）：** `[ HOME — SAVE SLOT DISPLAY ]` ~L355（`saveSlotCards`）。M9–M10：`[ CODEX — DISPLAY GLUE ]` ~L2826；M8 ~L11438；M7 `[ MAP — DISPLAY HELPERS ]` ~L449。
 
 | Header 文字（`rg`） | 約略行 | §A 對照 | 備註 |
 |--------------------|--------|---------|------|
 | `[ GLOBAL — VFX SHIMS ]` | （見檔首 `rectCenter`） | #1 | 檔首無正式 header；可 `rg rectCenter` |
 | `[ VUE APP — MAIN COMPONENT ]` | ~99 | #3 | **既有**（`createApp` 前） |
 | `[ CONFIG & STATE — VUE REACTIVE SETUP ]` | ~174 | #4 | **既有** |
-| `[ PROGRESSION / SAVE SLOTS ]` | ~196 | #5–7 | **2026-05-24 L2 新增**（`PROGRESSION_KEY` 前） |
-| `[ MAP — DISPLAY HELPERS ]` | ~444 | **#6a** | **2026-05-27 M7 新增**；display glue only |
-| `[ MAP FLOW & MENTOR TRIGGERS ]` | ~695 | #8–12 | **2026-05-24 L2 新增**（`checkPrologueTrigger` / `openMap` 區） |
+| `[ PROGRESSION / SAVE SLOTS ]` | ~196 | #5, #7 | **2026-05-24 L2 新增**；save core only（`saveSlotCards` 見下行） |
+| `[ HOME — SAVE SLOT DISPLAY ]` | ~355 | **#5b** | **2026-05-27 M11**；`saveSlotCards`；utils 解構仍在 setup 頂 |
+| `[ MAP — DISPLAY HELPERS ]` | ~449 | **#6a** | **2026-05-27 M7 新增**；display glue only |
+| `[ MAP FLOW & MENTOR TRIGGERS ]` | ~698 | #8–12 | **2026-05-24 L2 新增**（`checkPrologueTrigger` / `openMap` 區） |
 | `[ STATE — SKILLS & CODEX ]` | ~1509 | #14–19 | **既有** codex state umbrella |
 | `[ CODEX - STATE ]` | ~1529 | #14 | **既有** |
 | `[ MENTOR DIALOGUE ]` | ~1835 | #16 | **既有**（`setupMentorDialogue` 前；map-only） |
@@ -536,6 +537,7 @@
 
 ```javascript
 // ================= [ PROGRESSION / SAVE SLOTS ] =================
+// ================= [ HOME — SAVE SLOT DISPLAY ] =================
 // ================= [ MAP — DISPLAY HELPERS ] =================
 // ================= [ MAP FLOW & MENTOR TRIGGERS ] =================
 // ================= [ CODEX — DISPLAY GLUE ] =================
