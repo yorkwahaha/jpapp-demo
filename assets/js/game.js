@@ -401,47 +401,6 @@ const _jpApp = Vue.createApp({
         const isKnowledgeCardAbsorbing = ref(false);
         const resultSpirit = ref(null);
 
-        // --- NEW: Spirit Icon Fallback Mechanism ---
-        const failedSpiritIcons = ref({});
-        const normalizeResonanceChoiceParticle = (choice) => {
-            if (choice && typeof choice === 'object') {
-                return String(choice.value ?? choice.particle ?? choice.label ?? '').trim();
-            }
-            return String(choice || '').trim();
-        };
-
-        const getSpiritIconPath = (choice) => window.JPAPPCodexDisplayUtils.getSpiritIconPath(normalizeResonanceChoiceParticle(choice));
-
-        const shouldShowSpiritIcon = (choice) => {
-            const particle = normalizeResonanceChoiceParticle(choice);
-            return Boolean(getSpiritIconPath(choice)) && !failedSpiritIcons.value[particle];
-        };
-
-        const handleSpiritIconError = (choice) => {
-            const particle = normalizeResonanceChoiceParticle(choice);
-            if (!particle) return;
-            failedSpiritIcons.value = { ...failedSpiritIcons.value, [particle]: true };
-        };
-
-        const spiritCodexHelpers = window.JPAPPSpiritCodexHelpers || {
-            getSpiritForSkillId: () => null,
-            getSpiritForSkill: () => null,
-            getSpiritForKnowledgeCard: () => null,
-            decorateSkillWithSpirit: (s) => s,
-            orderCodexWheelSkillsForResonance: (skills) => (Array.isArray(skills) ? skills : [])
-        };
-
-        const getSpiritForSkillId = (skillId) => spiritCodexHelpers.getSpiritForSkillId ? spiritCodexHelpers.getSpiritForSkillId(spiritsBySkillId.value, skillId) : null;
-
-        const getSpiritForSkill = (skill) => spiritCodexHelpers.getSpiritForSkill ? spiritCodexHelpers.getSpiritForSkill(spiritsBySkillId.value, skill) : null;
-
-        const getSpiritForKnowledgeCard = (card) => spiritCodexHelpers.getSpiritForKnowledgeCard ? spiritCodexHelpers.getSpiritForKnowledgeCard(spiritsBySkillId.value, card) : null;
-
-        const decorateSkillWithSpirit = (skill) => spiritCodexHelpers.decorateSkillWithSpirit ? spiritCodexHelpers.decorateSkillWithSpirit(spiritsBySkillId.value, skill) : skill;
-
-        const getSpiritImageSrc = (spirit, isWheel = false, isLocked = false) => window.JPAPPCodexDisplayUtils.getSpiritImageSrc(spirit, isWheel, isLocked);
-        const handleSpiritImageError = (event, spirit, isWheel = false, isLocked = false) => window.JPAPPCodexDisplayUtils.handleSpiritImageError(event, spirit, isWheel, isLocked);
-
         const getResultSpiritForLevel = (levelId) => {
             const pendingSpirit = pendingKnowledgeCards.value
                 .map(card => getSpiritForKnowledgeCard(card))
@@ -482,6 +441,9 @@ const _jpApp = Vue.createApp({
         // thresholds: hp-based steady-state expression; hpPct is lower bound (>= value uses expression)
         const HERO_VISUAL_CONFIG = GAME_CONSTANTS.HERO_VISUAL_CONFIG;
 
+        // ================= [ MAP — DISPLAY HELPERS ] =================
+        // Thin wrappers → settings-manager. Battle entry NOT here — confirmAndStartBattle → startLevel (#33).
+
         const activeSegment = computed(() => {
             const ch = mapChapters.value[activeChapter.value];
             if (!ch || !ch.segments) return null;
@@ -501,8 +463,41 @@ const _jpApp = Vue.createApp({
 
         const getMapNodeStyle = (node) => window.JPAPPSettingsManager.getMapNodePositionStyle(node);
 
-        // Map display helpers below delegate to settings-manager / result-display-manager.
-        // Battle entry is NOT here — see confirmAndStartBattle → startLevel (#33).
+        const scrollToStage = (n) => window.JPAPPSettingsManager.scrollStageNodeIntoView(n, Vue.nextTick);
+
+        const isLevelUnlocked = (n) => unlockedLevels.value.includes(Number(n));
+
+        const isLevelCleared = (n) => clearedLevels.value.includes(Number(n));
+
+        const getStageNodeClass = (n) => window.JPAPPSettingsManager.getStageNodeClassForMap(
+            n,
+            unlockedLevels.value,
+            clearedLevels.value
+        );
+
+        const getStageFocusParticle = (n) => window.JPAPPSettingsManager.computeStageFocusParticleDisplay(
+            n,
+            LEVEL_CONFIG.value,
+            skillsAll.value
+        );
+
+        const getStageFocusLabel = (n) => window.JPAPPSettingsManager.computeStageFocusLabelDisplay(
+            n,
+            LEVEL_CONFIG.value,
+            skillsAll.value
+        );
+
+        const hasMentor = (n) => window.JPAPPSettingsManager.stageConfigHasMentorSkillPath(n, LEVEL_CONFIG.value);
+
+        const activateMapAmbientSync = () => {
+            if (typeof MapAmbient === 'undefined') return;
+            MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value, activeSegment.value?.themeKey);
+        };
+
+        const activateMapAmbient = () => {
+            if (typeof MapAmbient === 'undefined') return;
+            Vue.nextTick(() => activateMapAmbientSync());
+        };
 
         let _pendingAbilityIds = null;
         let applyUnlockedAbilityIds = (ids) => { _pendingAbilityIds = Array.isArray(ids) ? ids : []; };
@@ -720,9 +715,7 @@ const _jpApp = Vue.createApp({
 
                     // Proceed to normal map BGM
                     Vue.nextTick(() => {
-                        if (typeof MapAmbient !== 'undefined') {
-                            MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value, activeSegment.value?.themeKey);
-                        }
+                        activateMapAmbientSync();
                         ensureBgmPlaying(currentMapBgm.value);
                     });
                 };
@@ -883,9 +876,7 @@ const _jpApp = Vue.createApp({
             checkGlobalEndingTriggers();
 
             // ── Ambient animation ──
-            if (typeof MapAmbient !== 'undefined') {
-                Vue.nextTick(() => MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value, activeSegment.value?.themeKey));
-            }
+            activateMapAmbient();
 
         };
 
@@ -1019,34 +1010,6 @@ const _jpApp = Vue.createApp({
             isSaveSlotPanelOpen.value = true;
         };
 
-        // --- Map display bindings (scroll / node class / stage focus labels) ---
-
-        const scrollToStage = (n) => window.JPAPPSettingsManager.scrollStageNodeIntoView(n, Vue.nextTick);
-
-        const isLevelUnlocked = (n) => unlockedLevels.value.includes(Number(n));
-
-        const isLevelCleared = (n) => clearedLevels.value.includes(Number(n));
-
-        const getStageNodeClass = (n) => window.JPAPPSettingsManager.getStageNodeClassForMap(
-            n,
-            unlockedLevels.value,
-            clearedLevels.value
-        );
-
-        const getStageFocusParticle = (n) => window.JPAPPSettingsManager.computeStageFocusParticleDisplay(
-            n,
-            LEVEL_CONFIG.value,
-            skillsAll.value
-        );
-
-        const getStageFocusLabel = (n) => window.JPAPPSettingsManager.computeStageFocusLabelDisplay(
-            n,
-            LEVEL_CONFIG.value,
-            skillsAll.value
-        );
-
-        const hasMentor = (n) => window.JPAPPSettingsManager.stageConfigHasMentorSkillPath(n, LEVEL_CONFIG.value);
-
         const handleMapTabClick = (idx) => {
             if (!isSegmentUnlocked(idx)) {
                 if (typeof showStatusToast === 'function') showStatusToast('🔒 區域尚未解鎖', { bg: 'rgba(0,0,0,0.7)', border: '#555', color: '#fff' });
@@ -1072,9 +1035,7 @@ const _jpApp = Vue.createApp({
             saveProgression();
 
             // Refresh ambient for new chapter
-            if (typeof MapAmbient !== 'undefined') {
-                Vue.nextTick(() => MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value, activeSegment.value?.themeKey));
-            }
+            activateMapAmbient();
         };
 
         const closeBattleConfirm = () => {
@@ -1358,9 +1319,7 @@ const _jpApp = Vue.createApp({
                     if (returnAudioToken !== returnToMapAudioToken) return;
                     playBgm();
                     checkGlobalEndingTriggers();
-                    if (typeof MapAmbient !== 'undefined') {
-                        Vue.nextTick(() => MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value, activeSegment.value?.themeKey));
-                    }
+                    activateMapAmbient();
                 }, 500);
                 return;
             }
@@ -1370,9 +1329,7 @@ const _jpApp = Vue.createApp({
 
             // [Knowledge Card Refined] Moved to grantRewards (victory moment)
             // ── Ambient animation ──
-            if (typeof MapAmbient !== 'undefined') {
-                Vue.nextTick(() => MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value, activeSegment.value?.themeKey));
-            }
+            activateMapAmbient();
         };
 
         const triggerNextKnowledgeCard = () => {
@@ -1388,9 +1345,7 @@ const _jpApp = Vue.createApp({
                 }
 
                 // Resume map ambient if triggered from map (legacy support or safety)
-                if (typeof MapAmbient !== 'undefined' && showMap.value) {
-                    Vue.nextTick(() => MapAmbient.activate(activeChapter.value, selectedSegmentIdx.value, activeSegment.value?.themeKey));
-                }
+                if (showMap.value) activateMapAmbient();
                 return;
             }
             activeKnowledgeCard.value = pendingKnowledgeCards.value.shift();
@@ -2130,6 +2085,25 @@ const _jpApp = Vue.createApp({
 
         };
 
+        const spiritCodexHelpers = window.JPAPPSpiritCodexHelpers || {
+            getSpiritForSkillId: () => null,
+            getSpiritForSkill: () => null,
+            getSpiritForKnowledgeCard: () => null,
+            decorateSkillWithSpirit: (s) => s,
+            orderCodexWheelSkillsForResonance: (skills) => (Array.isArray(skills) ? skills : [])
+        };
+
+        const getSpiritForSkillId = (skillId) => spiritCodexHelpers.getSpiritForSkillId ? spiritCodexHelpers.getSpiritForSkillId(spiritsBySkillId.value, skillId) : null;
+
+        const getSpiritForSkill = (skill) => spiritCodexHelpers.getSpiritForSkill ? spiritCodexHelpers.getSpiritForSkill(spiritsBySkillId.value, skill) : null;
+
+        const getSpiritForKnowledgeCard = (card) => spiritCodexHelpers.getSpiritForKnowledgeCard ? spiritCodexHelpers.getSpiritForKnowledgeCard(spiritsBySkillId.value, card) : null;
+
+        const decorateSkillWithSpirit = (skill) => spiritCodexHelpers.decorateSkillWithSpirit ? spiritCodexHelpers.decorateSkillWithSpirit(spiritsBySkillId.value, skill) : skill;
+
+        const getSpiritImageSrc = (spirit, isWheel = false, isLocked = false) => window.JPAPPCodexDisplayUtils.getSpiritImageSrc(spirit, isWheel, isLocked);
+        const handleSpiritImageError = (event, spirit, isWheel = false, isLocked = false) => window.JPAPPCodexDisplayUtils.handleSpiritImageError(event, spirit, isWheel, isLocked);
+
         // [ CODEX - COMPUTED ]
         const skillsWithUnlockLevel = computed(() =>
             spiritCodexHelpers.buildSkillsWithUnlockLevel(SKILLS.value, unlockedSkillIds.value, skillUnlockMap.value)
@@ -2703,20 +2677,6 @@ const _jpApp = Vue.createApp({
             };
         };
 
-        const getCodexSkillDisplayName = (skill) => getSpiritForSkill(skill)?.nameJa || skill?.name?.split('：')[1] || skill?.name || '???';
-
-        const getCodexWheelItemClass = (skill, index) => {
-            const abs = Math.abs(normalizeCodexWheelOffset(index, codexWheelPhase));
-            return {
-                'is-selected': !isCodexWheelAnimating.value && normalizeCodexWheelOffset(index, codexPage.value) === 0,
-                'is-foreground': abs <= 2.6,
-                'is-midground': abs > 2.6 && abs <= 5.6,
-                'is-background': abs > 5.6,
-                'is-locked': !isCodexSkillUnlocked(skill),
-                'is-bond-max': isBondMaxSkill(skill?.id)
-            };
-        };
-
         const openCodexDetail = (skill, index) => {
             if (codexSuppressClick.value) return;
             if (!skill) return;
@@ -2860,14 +2820,92 @@ const _jpApp = Vue.createApp({
             }
         };
 
+        // ================= [ CODEX — DISPLAY GLUE ] =================
+        // Non-runtime display/format helpers. Wheel RAF/drag/detent above — do not move.
+
+        const failedSpiritIcons = ref({});
+        const normalizeResonanceChoiceParticle = (choice) => {
+            if (choice && typeof choice === 'object') {
+                return String(choice.value ?? choice.particle ?? choice.label ?? '').trim();
+            }
+            return String(choice || '').trim();
+        };
+
+        const getSpiritIconPath = (choice) => window.JPAPPCodexDisplayUtils.getSpiritIconPath(normalizeResonanceChoiceParticle(choice));
+
+        const shouldShowSpiritIcon = (choice) => {
+            const particle = normalizeResonanceChoiceParticle(choice);
+            return Boolean(getSpiritIconPath(choice)) && !failedSpiritIcons.value[particle];
+        };
+
+        const handleSpiritIconError = (choice) => {
+            const particle = normalizeResonanceChoiceParticle(choice);
+            if (!particle) return;
+            failedSpiritIcons.value = { ...failedSpiritIcons.value, [particle]: true };
+        };
+
         const getSkillMastery = (skillId) => {
             if (!skillId || typeof skillId !== 'string') return 0;
             return spiritCodexHelpers.normalizeMasteryPercent(skillMastery.value[skillId]);
         };
 
-        const FULL_BOND_EVASION_PENALTY = 0.03;
-
         const isBondMaxSkill = (skillId) => spiritCodexHelpers.isMasteryMax(getSkillMastery(skillId));
+
+        const getSkillMasteryStyle = (skillId) => spiritCodexHelpers.getMasteryStyle(getSkillMastery(skillId));
+
+        const getCodexSkillDisplayName = (skill) => getSpiritForSkill(skill)?.nameJa || skill?.name?.split('：')[1] || skill?.name || '???';
+
+        const getCodexWheelItemClass = (skill, index) => {
+            const abs = Math.abs(normalizeCodexWheelOffset(index, codexWheelPhase));
+            return {
+                'is-selected': !isCodexWheelAnimating.value && normalizeCodexWheelOffset(index, codexPage.value) === 0,
+                'is-foreground': abs <= 2.6,
+                'is-midground': abs > 2.6 && abs <= 5.6,
+                'is-background': abs > 5.6,
+                'is-locked': !isCodexSkillUnlocked(skill),
+                'is-bond-max': isBondMaxSkill(skill?.id)
+            };
+        };
+
+        const monsterCodexEntries = computed(() => {
+            const codexDisplay = window.JPAPPCodexDisplayUtils;
+            const buildEntries = codexDisplay?.buildMonsterCodexEntries;
+            if (typeof buildEntries !== 'function') return [];
+            return buildEntries.call(codexDisplay, ENEMIES.value, {
+                clearedLevels: clearedLevels.value,
+                levelConfig: LEVEL_CONFIG.value,
+                defaultMonsterSprite: DEFAULT_IMAGE_PATHS.monsterSprite
+            });
+        });
+
+        const selectedMonsterCodexEntry = computed(() => {
+            if (!monsterCodexEntries.value.length) return null;
+            return monsterCodexEntries.value.find(entry => entry.id === selectedMonsterCodexId.value) || monsterCodexEntries.value[0];
+        });
+
+        const openMonsterCodex = () => {
+            if (!selectedMonsterCodexId.value && monsterCodexEntries.value[0]) {
+                selectedMonsterCodexId.value = monsterCodexEntries.value[0].id;
+            }
+            isMonsterCodexOpen.value = true;
+            playSfx('uiPop');
+        };
+
+        const selectMonsterCodexEntry = (entry) => {
+            if (!entry) return;
+            selectedMonsterCodexId.value = entry.id;
+            playSfx('click');
+        };
+
+        const handleMonsterCodexImageError = (event) => {
+            window.JPAPPCodexDisplayUtils.handleMonsterImageError(event, DEFAULT_IMAGE_PATHS.monsterSprite);
+        };
+
+        const getSkillTypeLabel = (type) => window.JPAPPCodexDisplayUtils.getSkillTypeLabel(type);
+
+        // [ /CODEX - COMPUTED ]
+
+        const FULL_BOND_EVASION_PENALTY = 0.03;
 
         const getCurrentQuestionSkillId = () => {
             const skillId = currentQuestion.value?.skillId;
@@ -2933,43 +2971,6 @@ const _jpApp = Vue.createApp({
                 ? Math.max(0, safeBaseRate - FULL_BOND_EVASION_PENALTY)
                 : safeBaseRate;
         };
-
-        const getSkillMasteryStyle = (skillId) => spiritCodexHelpers.getMasteryStyle(getSkillMastery(skillId));
-
-        const monsterCodexEntries = computed(() => {
-            const codexDisplay = window.JPAPPCodexDisplayUtils;
-            const buildEntries = codexDisplay?.buildMonsterCodexEntries;
-            if (typeof buildEntries !== 'function') return [];
-            return buildEntries.call(codexDisplay, ENEMIES.value, {
-                clearedLevels: clearedLevels.value,
-                levelConfig: LEVEL_CONFIG.value,
-                defaultMonsterSprite: DEFAULT_IMAGE_PATHS.monsterSprite
-            });
-        });
-
-        const selectedMonsterCodexEntry = computed(() => {
-            if (!monsterCodexEntries.value.length) return null;
-            return monsterCodexEntries.value.find(entry => entry.id === selectedMonsterCodexId.value) || monsterCodexEntries.value[0];
-        });
-
-        const openMonsterCodex = () => {
-            if (!selectedMonsterCodexId.value && monsterCodexEntries.value[0]) {
-                selectedMonsterCodexId.value = monsterCodexEntries.value[0].id;
-            }
-            isMonsterCodexOpen.value = true;
-            playSfx('uiPop');
-        };
-
-        const selectMonsterCodexEntry = (entry) => {
-            if (!entry) return;
-            selectedMonsterCodexId.value = entry.id;
-            playSfx('click');
-        };
-
-        const handleMonsterCodexImageError = (event) => {
-            window.JPAPPCodexDisplayUtils.handleMonsterImageError(event, DEFAULT_IMAGE_PATHS.monsterSprite);
-        };
-        // [ /CODEX - COMPUTED ]
 
         watch(isCodexOpen, (open) => {
             if (!open) forceStopAllCodexWheelMotion();
@@ -3159,8 +3160,6 @@ const _jpApp = Vue.createApp({
             );
             return [...fromUnlocked, ...fromLevel];
         });
-
-        const getSkillTypeLabel = (type) => window.JPAPPCodexDisplayUtils.getSkillTypeLabel(type);
 
         const isSkillOpen = ref(false);
 
@@ -7817,82 +7816,6 @@ const _jpApp = Vue.createApp({
 
         const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
 
-        // debug: window.__debugQMix() 在戰鬥中呼叫，依關卡模式輸出正確欄位
-        window.__debugQMix = () => {
-            const qs = questions?.value;
-            if (!qs || qs.length === 0) { console.warn('[QMix] 尚無題庫'); return; }
-            const lv = currentLevel?.value || 0;
-            const cfg = LEVEL_CONFIG.value[lv] || {};
-            const total = qs.length;
-
-            // skill 分布（所有模式共用）
-            const skillCount = {};
-            qs.forEach(q => {
-                const sid = q.skillId || 'FALLBACK';
-                skillCount[sid] = (skillCount[sid] || 0) + 1;
-            });
-
-            // 題面重複偵測（所有模式共用）
-            const fps = qs.map(q => q.segments?.map(s => s.isBlank ? '□' : s.text).join('') || '');
-            const dupCount = fps.length - new Set(fps).size;
-
-            const pct = (n) => `${n}(${(n / total * 100).toFixed(1)}%)`;
-
-            const isL36 = cfg.skillId === 'HIDDEN_BOSS_36';
-            const isBoss = !isL36 && isBossLevel(lv);
-
-            if (isL36) {
-                // L36 隱藏魔王：按 tier 歸類（與 startBossQueue 同步）
-                const tier3 = new Set(['KARA_REASON', 'YORI_COMPARE', 'NI_FREQUENCY', 'DE_MATERIAL', 'TO_QUOTE', 'NI_PURPOSE', 'GA_BUT', 'TO_CONDITIONAL']);
-                const tier2 = new Set(['KARA_SOURCE_START', 'MADE_LIMIT_END', 'TO_WITH', 'DE_TOOL_MEANS', 'HE_DIRECTION', 'NI_TARGET', 'NI_DESTINATION', 'MO_COMPLETE_NEGATION', 'TO_AND', 'DE_SCOPE']);
-                const tier1 = new Set(['NI_TIME', 'NI_EXIST_PLACE', 'YA_AND_OTHERS', 'WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE', 'WO_OBJECT_BASIC', 'DE_ACTION_PLACE', 'GA_EXIST_SUBJECT', 'MO_ALSO_BASIC']);
-                let nT3 = 0, nT2 = 0, nT1 = 0, nOther = 0;
-                qs.forEach(q => {
-                    const sid = q.skillId || '';
-                    if (tier3.has(sid)) nT3++;
-                    else if (tier2.has(sid)) nT2++;
-                    else if (tier1.has(sid)) nT1++;
-                    else nOther++;
-                });
-                if (window.__DEBUG__) {
-                    console.log(`[QMix] L36 (HiddenBoss) | Total:${total} Tier3:${pct(nT3)} Tier2:${pct(nT2)} Tier1:${pct(nT1)} Other:${nOther} | Dup:${dupCount}`);
-                }
-
-            } else if (isBoss) {
-                // 魔王關：sameMap (lv-4 ~ lv-1) vs previousMap
-                const sameMapIds = new Set();
-                for (let i = lv - 4; i < lv; i++) {
-                    (LEVEL_CONFIG.value[i]?.unlockSkills || []).forEach(id => sameMapIds.add(id));
-                }
-                let nSame = 0, nPrev = 0, nFallback = 0;
-                qs.forEach(q => {
-                    const sid = q.skillId || 'FALLBACK';
-                    if (sid === 'FALLBACK') nFallback++;
-                    else if (sameMapIds.has(sid)) nSame++;
-                    else nPrev++;
-                });
-                if (window.__DEBUG__) {
-                    console.log(`[QMix] L${lv} (Boss) | Total:${total} SameMap:${pct(nSame)} PrevMap:${pct(nPrev)} Fallback:${nFallback} | Dup:${dupCount}`);
-                }
-
-            } else {
-                // 一般關：new (本關 unlockSkills) vs old
-                const newIds = new Set(cfg.unlockSkills || []);
-                let nNew = 0, nOld = 0, nFallback = 0;
-                qs.forEach(q => {
-                    const sid = q.skillId || 'FALLBACK';
-                    if (sid === 'FALLBACK') nFallback++;
-                    else if (newIds.has(sid)) nNew++;
-                    else nOld++;
-                });
-                if (window.__DEBUG__) {
-                    console.log(`[QMix] L${lv} (Normal) | Total:${total} New:${pct(nNew)} Old:${pct(nOld)} Fallback:${nFallback} | Dup:${dupCount}`);
-                }
-            }
-
-            if (window.__DEBUG__) console.table(skillCount);
-        };
-
         const getChoiceCountForLevel = (lv) => {
             if (lv === 1 || lv === 2) return 2;
             return (lv % 5 === 0 || lv >= 36) ? 4 : 3;
@@ -11508,6 +11431,86 @@ const _jpApp = Vue.createApp({
             return false;
 
         });
+
+        // ================= [ DEBUG — DEV HELPERS ] =================
+        // Dev-only console hooks. Audio overlay debug (formatAudioDebugValue) stays §A #32 — do not move here.
+        // devToolsState / debugControls remain ~L1441 (early setup; used by audio notice computed before this block).
+
+        // 戰鬥中於 console 呼叫 window.__debugQMix()，依關卡模式輸出題庫分布
+        window.__debugQMix = () => {
+            const qs = questions?.value;
+            if (!qs || qs.length === 0) { console.warn('[QMix] 尚無題庫'); return; }
+            const lv = currentLevel?.value || 0;
+            const cfg = LEVEL_CONFIG.value[lv] || {};
+            const total = qs.length;
+
+            // skill 分布（所有模式共用）
+            const skillCount = {};
+            qs.forEach(q => {
+                const sid = q.skillId || 'FALLBACK';
+                skillCount[sid] = (skillCount[sid] || 0) + 1;
+            });
+
+            // 題面重複偵測（所有模式共用）
+            const fps = qs.map(q => q.segments?.map(s => s.isBlank ? '□' : s.text).join('') || '');
+            const dupCount = fps.length - new Set(fps).size;
+
+            const pct = (n) => `${n}(${(n / total * 100).toFixed(1)}%)`;
+
+            const isL36 = cfg.skillId === 'HIDDEN_BOSS_36';
+            const isBoss = !isL36 && isBossLevel(lv);
+
+            if (isL36) {
+                // L36 隱藏魔王：按 tier 歸類（與 startBossQueue 同步）
+                const tier3 = new Set(['KARA_REASON', 'YORI_COMPARE', 'NI_FREQUENCY', 'DE_MATERIAL', 'TO_QUOTE', 'NI_PURPOSE', 'GA_BUT', 'TO_CONDITIONAL']);
+                const tier2 = new Set(['KARA_SOURCE_START', 'MADE_LIMIT_END', 'TO_WITH', 'DE_TOOL_MEANS', 'HE_DIRECTION', 'NI_TARGET', 'NI_DESTINATION', 'MO_COMPLETE_NEGATION', 'TO_AND', 'DE_SCOPE']);
+                const tier1 = new Set(['NI_TIME', 'NI_EXIST_PLACE', 'YA_AND_OTHERS', 'WA_TOPIC_BASIC', 'NO_POSSESSIVE', 'GA_INTRANSITIVE', 'WO_OBJECT_BASIC', 'DE_ACTION_PLACE', 'GA_EXIST_SUBJECT', 'MO_ALSO_BASIC']);
+                let nT3 = 0, nT2 = 0, nT1 = 0, nOther = 0;
+                qs.forEach(q => {
+                    const sid = q.skillId || '';
+                    if (tier3.has(sid)) nT3++;
+                    else if (tier2.has(sid)) nT2++;
+                    else if (tier1.has(sid)) nT1++;
+                    else nOther++;
+                });
+                if (window.__DEBUG__) {
+                    console.log(`[QMix] L36 (HiddenBoss) | Total:${total} Tier3:${pct(nT3)} Tier2:${pct(nT2)} Tier1:${pct(nT1)} Other:${nOther} | Dup:${dupCount}`);
+                }
+
+            } else if (isBoss) {
+                // 魔王關：sameMap (lv-4 ~ lv-1) vs previousMap
+                const sameMapIds = new Set();
+                for (let i = lv - 4; i < lv; i++) {
+                    (LEVEL_CONFIG.value[i]?.unlockSkills || []).forEach(id => sameMapIds.add(id));
+                }
+                let nSame = 0, nPrev = 0, nFallback = 0;
+                qs.forEach(q => {
+                    const sid = q.skillId || 'FALLBACK';
+                    if (sid === 'FALLBACK') nFallback++;
+                    else if (sameMapIds.has(sid)) nSame++;
+                    else nPrev++;
+                });
+                if (window.__DEBUG__) {
+                    console.log(`[QMix] L${lv} (Boss) | Total:${total} SameMap:${pct(nSame)} PrevMap:${pct(nPrev)} Fallback:${nFallback} | Dup:${dupCount}`);
+                }
+
+            } else {
+                // 一般關：new (本關 unlockSkills) vs old
+                const newIds = new Set(cfg.unlockSkills || []);
+                let nNew = 0, nOld = 0, nFallback = 0;
+                qs.forEach(q => {
+                    const sid = q.skillId || 'FALLBACK';
+                    if (sid === 'FALLBACK') nFallback++;
+                    else if (newIds.has(sid)) nNew++;
+                    else nOld++;
+                });
+                if (window.__DEBUG__) {
+                    console.log(`[QMix] L${lv} (Normal) | Total:${total} New:${pct(nNew)} Old:${pct(nOld)} Fallback:${nFallback} | Dup:${dupCount}`);
+                }
+            }
+
+            if (window.__DEBUG__) console.table(skillCount);
+        };
 
         // ================= [ DEBUG TOOLS — LEVEL JUMP ] =================
         const debugJumpToLevel = (level) => {
