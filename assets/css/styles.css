@@ -10569,11 +10569,18 @@ body.lock-scroll {
     }
 }
 
-/* RWD: Desktop / wide battle — long JP question line fits inside question card (mobile portrait uses block above) */
+/* RWD: Desktop / wide battle — readable short lines; shrink long lines inside card (mobile portrait: block above) */
 @media (min-width: 900px) {
+    .battle-top-ui-layer > .w-full.max-w-md {
+        max-width: min(42rem, 94vw) !important;
+        width: min(100%, 42rem);
+    }
+
     .battle-top-ui-layer .question-card.glass-panel {
         overflow-x: clip;
         overflow-y: visible;
+        min-height: clamp(92px, 13vh, 132px);
+        padding: clamp(12px, 1.5vh, 18px) clamp(18px, 2.4vw, 28px) !important;
     }
 
     .battle-top-ui-layer #question-area {
@@ -10582,12 +10589,15 @@ body.lock-scroll {
         overflow-x: clip;
         overflow-y: visible;
         max-width: 100%;
+        min-height: clamp(68px, 9.5vh, 100px);
+        padding: 0.4rem 0.55rem;
     }
 
     .battle-top-ui-layer #question-area .battle-question-main-row {
         width: 100%;
         max-width: 100%;
         min-width: 0;
+        margin-bottom: 0.45rem !important;
     }
 
     .battle-top-ui-layer #question-area .battle-question-phrase {
@@ -10597,33 +10607,42 @@ body.lock-scroll {
         justify-content: center;
     }
 
-    .battle-top-ui-layer #question-area {
-        --battle-question-jp-size: clamp(0.92rem, 1.65vmin + 0.62rem, 1.82rem);
+    .battle-top-ui-layer #question-area.question-size-short,
+    .battle-top-ui-layer #question-area.question-size-medium {
+        --battle-question-row-gap: 0.42rem;
+    }
+
+    .battle-top-ui-layer #question-area.question-size-short {
+        --battle-question-jp-size: clamp(1.35rem, 2.35vmin + 0.88rem, 2.35rem);
     }
 
     .battle-top-ui-layer #question-area.question-size-medium {
-        --battle-question-jp-size: clamp(0.84rem, 1.2vmin + 0.54rem, 1.55rem);
-        --battle-question-row-gap: 0.26rem;
+        --battle-question-jp-size: clamp(1.2rem, 2vmin + 0.76rem, 2.05rem);
+        --battle-question-row-gap: 0.34rem;
     }
 
     .battle-top-ui-layer #question-area.question-size-long {
-        --battle-question-jp-size: clamp(0.76rem, 0.95vmin + 0.46rem, 1.28rem);
-        --battle-question-row-gap: 0.14rem;
+        --battle-question-jp-size: clamp(0.88rem, 1.15vmin + 0.52rem, 1.48rem);
+        --battle-question-row-gap: 0.16rem;
     }
 
     .battle-top-ui-layer #question-area.question-size-very-long {
-        --battle-question-jp-size: clamp(0.68rem, 0.78vmin + 0.38rem, 1.06rem);
-        --battle-question-row-gap: 0.08rem;
+        --battle-question-jp-size: clamp(0.74rem, 0.92vmin + 0.42rem, 1.2rem);
+        --battle-question-row-gap: 0.1rem;
     }
 
     .battle-top-ui-layer #question-area .battle-question-jp {
         max-width: 100%;
-        line-height: 1.16 !important;
+        font-size: var(--battle-question-jp-size) !important;
+        line-height: 1.2 !important;
     }
 
     @supports (width: 1cqi) {
-        .battle-top-ui-layer #question-area .battle-question-jp {
-            font-size: min(var(--battle-question-jp-size), clamp(0.62rem, 6.1cqi, 1.82rem)) !important;
+        .battle-top-ui-layer #question-area.question-size-long .battle-question-jp,
+        .battle-top-ui-layer #question-area.question-size-very-long .battle-question-jp,
+        .battle-top-ui-layer #question-area.question-compact .battle-question-jp,
+        .battle-top-ui-layer #question-area.question-ultra-compact .battle-question-jp {
+            font-size: min(var(--battle-question-jp-size), clamp(0.64rem, 5.6cqi, var(--battle-question-jp-size))) !important;
         }
     }
 
@@ -10632,50 +10651,54 @@ body.lock-scroll {
     }
 
     .battle-top-ui-layer #question-area .ruby-text rt {
-        font-size: clamp(0.4em, 2.6cqi, 0.56em) !important;
+        position: relative;
+        top: -4px !important;
+        font-size: clamp(0.48em, 2.2cqi, 0.58em) !important;
         line-height: 1 !important;
-        margin-bottom: 0 !important;
+        margin-bottom: 0.08em !important;
         white-space: nowrap;
     }
 
     .battle-top-ui-layer #question-area.question-size-long .ruby-text rt,
     .battle-top-ui-layer #question-area.question-size-very-long .ruby-text rt {
-        font-size: clamp(0.36em, 2.15cqi, 0.48em) !important;
+        top: -3px !important;
+        font-size: clamp(0.42em, 1.9cqi, 0.5em) !important;
     }
 
-    .battle-top-ui-layer #question-area .battle-question-cn {
+    .battle-top-ui-layer #question-area .battle-question-cn,
+    .battle-top-ui-layer #question-area>div.battle-question-cn:last-child {
         max-width: 100%;
         overflow-wrap: anywhere;
+        font-size: clamp(0.95rem, 1.05vmin + 0.58rem, 1.125rem) !important;
+        line-height: 1.34 !important;
+    }
+
+    .battle-top-ui-layer #question-area.question-size-medium .battle-question-cn,
+    .battle-top-ui-layer #question-area.question-size-medium>div.battle-question-cn:last-child {
+        font-size: clamp(0.9rem, 1vmin + 0.52rem, 1.05rem) !important;
     }
 
     .battle-top-ui-layer #question-area.question-size-long .battle-question-cn,
     .battle-top-ui-layer #question-area.question-size-long>div.battle-question-cn:last-child,
     .battle-top-ui-layer #question-area.question-size-very-long .battle-question-cn,
     .battle-top-ui-layer #question-area.question-size-very-long>div.battle-question-cn:last-child {
-        font-size: clamp(0.78rem, 0.95vmin + 0.42rem, 0.92rem) !important;
+        font-size: clamp(0.82rem, 0.95vmin + 0.44rem, 0.98rem) !important;
         line-height: 1.28 !important;
     }
 
     .battle-top-ui-layer #question-area.question-compact {
-        --battle-question-jp-size: clamp(0.8rem, 1.05vmin + 0.48rem, 1.22rem);
+        --battle-question-jp-size: clamp(0.86rem, 1.08vmin + 0.5rem, 1.32rem);
         --battle-question-row-gap: 0.12rem;
     }
 
     .battle-top-ui-layer #question-area.question-ultra-compact {
-        --battle-question-jp-size: clamp(0.72rem, 0.82vmin + 0.4rem, 1.02rem);
-        --battle-question-row-gap: 0.06rem;
+        --battle-question-jp-size: clamp(0.76rem, 0.88vmin + 0.42rem, 1.1rem);
+        --battle-question-row-gap: 0.08rem;
     }
 
     .battle-top-ui-layer #question-area.question-compact .battle-question-jp,
     .battle-top-ui-layer #question-area.question-ultra-compact .battle-question-jp {
         line-height: 1.14 !important;
-    }
-
-    @supports (width: 1cqi) {
-        .battle-top-ui-layer #question-area.question-compact .battle-question-jp,
-        .battle-top-ui-layer #question-area.question-ultra-compact .battle-question-jp {
-            font-size: min(var(--battle-question-jp-size), clamp(0.58rem, 5.4cqi, 1.22rem)) !important;
-        }
     }
 }
 
