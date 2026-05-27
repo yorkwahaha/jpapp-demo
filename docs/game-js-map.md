@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
-> **Last audited:** 2026-05-27 (M17 vue return bindings + M16 app bootstrap)
-> **Doc sync:** 2026-05-27 — M17：`[ VUE RETURN & BINDINGS ]` 內子錨 `RETURN — RESULT` / `CORE STATE` / `BATTLE` / `CODEX` / `MAP / HOME` / `SETTINGS / DEBUG`（見 §F）。M16：app bootstrap anchors。
+> **Last audited:** 2026-05-27 (M19 setup data refs + M17 vue return bindings)
+> **Doc sync:** 2026-05-27 — M19：`[ SETUP — DATA REFS ]` ~L179（`pool` / `LEVEL_CONFIG` / `SKILLS` 等；**非** save core）。M17：return bindings 子錨。
 > **File:** `assets/js/game.js` — **~11,656 lines** (1-indexed；M10 後以 `rg` 錨點為準)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -37,7 +37,7 @@
 | 1 | **Global — VFX shims** | 1–60 | `[ GLOBAL — VFX SHIMS ]`：`rectCenter`, `getVfxLayer`, `spawnProjectile` 開機 fallback | Med | `GLOBAL — VFX SHIMS`, `rectCenter`, `getVfxLayer` | `vfx-helpers.js`, `skill-vfx.js` | defer | 戰鬥投射物、滿絆特效 |
 | 2 | **Global — SP HUD** | 1–2, 63–100 | `[ GLOBAL — SP HUD SHIMS ]`：`window.__sp`, `updateSpUI`, `canAffordSP`（`__sp` 在 umbrella 下、VFX 子區之前） | Med | `GLOBAL — SP HUD SHIMS`, `__sp`, `spendSP`, `regenSP` | Vue `spState` + `.hud-bar-sp-fill`（`updateSpUI`/`#spFill` 為 legacy no-op DOM path，DOM 已移除） | defer | 施放技能扣 SP、答對回 SP |
 | 3 | **App — bootstrap** | 101–178 | `[ APP — BOOTSTRAP ]`：`createApp`、`[ APP — SETUP ROOT ]`、`[ APP — SETUP INIT ]`（1st onMounted 載入 `map-chapters`） | Med | `APP — BOOTSTRAP`, `APP — SETUP ROOT`, `mapChapters`, `createApp` | `map-chapters.json` | defer | 進地圖章節是否載入 |
-| 4 | **Setup — data refs** | 174–197 | `EARLY_GAME_POOLS`、`LEVEL_CONFIG`、`SKILLS` 等 ref 宣告 | Low | `EARLY_GAME_POOLS`, `LEVEL_CONFIG` | `earlyGamePools.v1.js` | defer | 開局前 ref 存在 |
+| 4 | **Setup — data refs** | 179–199 | `[ SETUP — DATA REFS ]`：`pool` / `EARLY_GAME_POOLS`、`LEVEL_CONFIG`、`SKILLS`、`SPIRITS`、`ENEMIES` 等 ref（**非** `[ PROGRESSION / SAVE SLOTS ]`） | Low | `SETUP — DATA REFS`, `EARLY_GAME_POOLS`, `LEVEL_CONFIG` | `earlyGamePools.v1.js` | defer | 開局前 ref 存在；save keys 見 #5 |
 | 5 | **Save slots — storage & metadata** | 198–353 | keys、migration、metadata 讀寫、`setActiveSaveSlotId`、`isSlotProgressionReadable`（**save core**；display 見 #5b） | **High** | `PROGRESSION_KEY`, `ensureSaveSlotMigration`, `writeSaveSlotsMetadata` | `storage-manager.js` | **no** | 切槽、migration、metadata |
 | 5b | **Home — save slot display** | 355–373 | `[ HOME — SAVE SLOT DISPLAY ]`：`saveSlotCards` computed；共鳴率／時間經 `__JPAPP_UTILS`（**非** save/load 寫入） | Low–Med | `saveSlotCards`, `calculateSaveSlotResonanceText`, `formatSaveSlotTime` | `game-utils.js`, `index.html`, `home.css` | **yes**（顯示） | 見 §首頁存檔卡；選槽流程見 #9 |
 | 6 | **Map / progression state** | 375–487 | `showMap`、`unlockedLevels`、知識卡佇列、spirit 薄封裝、**`skillMastery`**（非 `skillCorrectCounts`） | **High** | `unlockedLevels`, `skillMastery`, `pendingKnowledgeCards` | `spirit-codex-helpers.js` | **no** | 地圖進度、親密度 |
@@ -502,7 +502,7 @@
 ## F. Section header（`game.js` 內錨點）
 
 > **用途：** `rg "\[ .* \]" assets/js/game.js` 或下表 **Keywords** 定位；行號會漂移，以註解文字為準。
-> **2026-05-27（M17）：** `[ VUE RETURN & BINDINGS ]` 內 `RETURN — *` 子錨（**未重排** export 列）。M16：app bootstrap ~L101+。
+> **2026-05-27（M19）：** `[ SETUP — DATA REFS ]` ~L179（umbrella 內子錨；緊接 `[ PROGRESSION / SAVE SLOTS ]` ~L201，**非** save core）。M17：return bindings 子錨。
 
 | Header 文字（`rg`） | 約略行 | §A 對照 | 備註 |
 |--------------------|--------|---------|------|
@@ -512,8 +512,9 @@
 | `[ APP — BOOTSTRAP ]` | ~101 | #3 | **2026-05-27 M16**；`Vue.createApp`；取代舊 `[ VUE APP — MAIN COMPONENT ]` |
 | `[ APP — SETUP ROOT ]` | ~105 | #3 | **2026-05-27 M16**；`setup()` 入口 |
 | `[ APP — SETUP INIT ]` | ~145 | #3 | **2026-05-27 M16**；1st `onMounted`（map-chapters + local config） |
-| `[ CONFIG & STATE — VUE REACTIVE SETUP ]` | ~178 | #4 | **既有** |
-| `[ PROGRESSION / SAVE SLOTS ]` | ~196 | #5, #7 | **2026-05-24 L2 新增**；save core only（`saveSlotCards` 見下行） |
+| `[ CONFIG & STATE — VUE REACTIVE SETUP ]` | ~178 | #4 | **既有**；umbrella |
+| `[ SETUP — DATA REFS ]` | ~179 | **#4** | **2026-05-27 M19**；`pool` / `LEVEL_CONFIG` / `SKILLS`；下一區 `[ PROGRESSION / SAVE SLOTS ]` 為 save core |
+| `[ PROGRESSION / SAVE SLOTS ]` | ~201 | #5, #7 | **2026-05-24 L2 新增**；save core only（`saveSlotCards` 見下行） |
 | `[ HOME — SAVE SLOT DISPLAY ]` | ~355 | **#5b** | **2026-05-27 M11**；`saveSlotCards`；utils 解構仍在 setup 頂 |
 | `[ HOME — VERSION & CHANGELOG DISPLAY ]` | ~1374 | **#13** | **2026-05-27 M13**；`appVersion` / changelog modal；policy 見 #39 |
 | `[ MAP — DISPLAY HELPERS ]` | ~449 | **#6a** | **2026-05-27 M7 新增**；display glue only |
@@ -561,6 +562,7 @@
 // ---- [ APP — SETUP ROOT ] ----
 // ---- [ APP — SETUP INIT ] ----
 // ================= [ CONFIG & STATE — VUE REACTIVE SETUP ] =================
+// ---- [ SETUP — DATA REFS ] ----
 // ================= [ PROGRESSION / SAVE SLOTS ] =================
 // ================= [ HOME — SAVE SLOT DISPLAY ] =================
 // ================= [ HOME — VERSION & CHANGELOG DISPLAY ] =================

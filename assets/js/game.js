@@ -176,6 +176,7 @@ const _jpApp = Vue.createApp({
         });
 
         // ================= [ CONFIG & STATE — VUE REACTIVE SETUP ] =================
+        // ---- [ SETUP — DATA REFS ] ----
         // --- 資料抽離：讀取全域早期關卡資料庫 ---
 
         const pool = window.EARLY_GAME_POOLS || { skills: {} };
