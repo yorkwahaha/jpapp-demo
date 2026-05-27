@@ -10614,24 +10614,24 @@ body.lock-scroll {
 
     .battle-top-ui-layer #question-area.question-size-short {
         --battle-question-jp-size: clamp(1.35rem, 2.35vmin + 0.88rem, 2.35rem);
-        --battle-question-cn-size: clamp(1.8rem, 2.1vmin + 1.08rem, 2.25rem);
+        --battle-question-cn-size: clamp(1.44rem, 1.68vmin + 0.86rem, 1.8rem);
     }
 
     .battle-top-ui-layer #question-area.question-size-medium {
         --battle-question-jp-size: clamp(1.2rem, 2vmin + 0.76rem, 2.05rem);
-        --battle-question-cn-size: clamp(1.65rem, 1.92vmin + 0.99rem, 2.1rem);
+        --battle-question-cn-size: clamp(1.32rem, 1.54vmin + 0.79rem, 1.68rem);
         --battle-question-row-gap: 0.34rem;
     }
 
     .battle-top-ui-layer #question-area.question-size-long {
         --battle-question-jp-size: clamp(0.88rem, 1.15vmin + 0.52rem, 1.48rem);
-        --battle-question-cn-size: clamp(1.5rem, 1.68vmin + 0.87rem, 1.8rem);
+        --battle-question-cn-size: clamp(1.2rem, 1.34vmin + 0.7rem, 1.44rem);
         --battle-question-row-gap: 0.16rem;
     }
 
     .battle-top-ui-layer #question-area.question-size-very-long {
         --battle-question-jp-size: clamp(0.74rem, 0.92vmin + 0.42rem, 1.2rem);
-        --battle-question-cn-size: clamp(1.38rem, 1.53vmin + 0.78rem, 1.65rem);
+        --battle-question-cn-size: clamp(1.1rem, 1.22vmin + 0.62rem, 1.32rem);
         --battle-question-row-gap: 0.1rem;
     }
 
@@ -10675,7 +10675,7 @@ body.lock-scroll {
     .battle-top-ui-layer #question-area.question-size-short>div.battle-question-cn:last-child {
         max-width: 100%;
         overflow-wrap: anywhere;
-        font-size: var(--battle-question-cn-size, clamp(1.8rem, 2.1vmin + 1.08rem, 2.25rem)) !important;
+        font-size: var(--battle-question-cn-size, clamp(1.44rem, 1.68vmin + 0.86rem, 1.8rem)) !important;
         line-height: 1.36 !important;
     }
 
