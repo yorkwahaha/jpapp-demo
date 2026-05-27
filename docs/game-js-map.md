@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
-> **Last audited:** 2026-05-27 (M16 app bootstrap + M15 global shims)
-> **Doc sync:** 2026-05-27 — M16：`[ APP — BOOTSTRAP ]` ~L101；`[ APP — SETUP ROOT ]` ~L105；`[ APP — SETUP INIT ]` ~L145（1st onMounted）；`[ APP — SETUP INIT (boot onMounted) ]` ~L11413；`[ APP — GLOBAL EXPOSES ]` ~L11458；`[ APP — MOUNT / INIT ]` ~L11676。M15：檔首 global shims。
+> **Last audited:** 2026-05-27 (M17 vue return bindings + M16 app bootstrap)
+> **Doc sync:** 2026-05-27 — M17：`[ VUE RETURN & BINDINGS ]` 內子錨 `RETURN — RESULT` / `CORE STATE` / `BATTLE` / `CODEX` / `MAP / HOME` / `SETTINGS / DEBUG`（見 §F）。M16：app bootstrap anchors。
 > **File:** `assets/js/game.js` — **~11,656 lines** (1-indexed；M10 後以 `rg` 錨點為準)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -81,7 +81,7 @@
 | 39 | **Boot hooks (2nd onMounted)** | 11413–11446 | `[ APP — SETUP INIT (boot onMounted) ]`：changelog 版本 policy、音訊 unlock、`installTapChoicesLayoutHooks` | Med | `APP — SETUP INIT (boot onMounted)`, `applyVersionStoragePolicy`, `unlockAudioOnce` | `changelog-manager.js` | defer | 首屏手勢後音訊 |
 | 40 | **Debug — dev helpers & level jump** | 11458–11607 | `[ APP — GLOBAL EXPOSES ]` 下：`[ DEBUG — DEV HELPERS ]` ~L11460：`window.__debugQMix`；`[ DEBUG TOOLS — LEVEL JUMP ]` ~L11539：`debugJumpToLevel`、`__attachDebugTools`、URL `?level=` | Low | `APP — GLOBAL EXPOSES`, `__debugQMix`, `debugJumpToLevel`, `__attachDebugTools` | `debug.js`, `dev-tools.js` | **yes** (dev) | Console `__debugQMix`；Dev 關卡跳轉 |
 | 40b | **Debug — early boot state** *(file-order)* | 1441–1458 | `devToolsState` boot fallback、`debugControls`（`heroBuffs` fallback） | Low | `isDevToolsVisible`, `debugControls` | `dev-tools.js` | defer | **未搬**（L4027 audio notice computed 需早期存在） |
-| 41 | **App — mount** | 11633–11682 | `[ VUE RETURN & BINDINGS ]` ~L11633；`[ APP — MOUNT / INIT ]` ~L11676：`_jpApp.mount('#app')` | Low–Med | `APP — MOUNT / INIT`, `return {`, `_jpApp.mount`, `VUE RETURN` | `debug.js`, `index.html` | defer | 啟動不報錯 |
+| 41 | **App — mount & return** | 11633–11690 | `[ VUE RETURN & BINDINGS ]` ~L11633（含 M17 子錨，見 §F）；`[ APP — MOUNT / INIT ]` ~L11684 | Low–Med | `VUE RETURN`, `RETURN — CORE STATE`, `RETURN — MAP / HOME`, `_jpApp.mount` | `debug.js`, `index.html` | defer | 啟動不報錯；**勿**重排 `return {…}` |
 
 **區塊數量：** 41（含 #32 檔案順序備註列）
 **High-risk / DO NOT TOUCH 區塊：** #5–12, #15–16, #24, #26–28, #30–32, #35–36
@@ -502,7 +502,7 @@
 ## F. Section header（`game.js` 內錨點）
 
 > **用途：** `rg "\[ .* \]" assets/js/game.js` 或下表 **Keywords** 定位；行號會漂移，以註解文字為準。
-> **2026-05-27（M16）：** `[ APP — BOOTSTRAP ]` ~L101（原 `VUE APP — MAIN COMPONENT`）；`SETUP ROOT` / `SETUP INIT` / `GLOBAL EXPOSES` / `MOUNT / INIT` 見下表。M15：global shims ~L1+。
+> **2026-05-27（M17）：** `[ VUE RETURN & BINDINGS ]` 內 `RETURN — *` 子錨（**未重排** export 列）。M16：app bootstrap ~L101+。
 
 | Header 文字（`rg`） | 約略行 | §A 對照 | 備註 |
 |--------------------|--------|---------|------|
@@ -542,8 +542,14 @@
 | `[ APP — GLOBAL EXPOSES ]` | ~11458 | **#40** | **2026-05-27 M16**；`window.__debugQMix`、`__attachDebugTools` 等 |
 | `[ DEBUG — DEV HELPERS ]` | ~11460 | **#40** | **2026-05-27 M8**；`window.__debugQMix` |
 | `[ DEBUG TOOLS — LEVEL JUMP ]` | ~11539 | #40 | **既有**；`debugJumpToLevel`；dev-only |
-| `[ VUE RETURN & BINDINGS ]` | ~11633 | #41 | **2026-05-24 M2**；`return {…}` 前 |
-| `[ APP — MOUNT / INIT ]` | ~11676 | **#41** | **2026-05-27 M16**；`_jpApp.mount('#app')` |
+| `[ VUE RETURN & BINDINGS ]` | ~11633 | #41 | **2026-05-24 M2**；`return {…}` 前；M17 子錨見下行 |
+| `[ RETURN — RESULT BINDINGS ]` | ~11635 | #41 | **2026-05-27 M17**；結算 EXP／`playerStats` |
+| `[ RETURN — SETTINGS / DEBUG BINDINGS ]` | ~11638, ~11678 | #41 | **2026-05-27 M17**；音訊 debug + dev/FPS（檔內兩段） |
+| `[ RETURN — CORE STATE ]` | ~11640 | #41 | **2026-05-27 M17**；首頁／戰鬥／共鳴輪主 template 行（**未拆行**） |
+| `[ RETURN — BATTLE BINDINGS ]` | ~11642 | #41 | **2026-05-27 M17**；逃跑／技能／buff |
+| `[ RETURN — CODEX BINDINGS ]` | ~11647 | #41 | **2026-05-27 M17**；`skillMastery`、怪物圖鑑、導師 export |
+| `[ RETURN — MAP / HOME BINDINGS ]` | ~11658 | #41 | **2026-05-27 M17**；地圖／存檔槽／知識卡 |
+| `[ APP — MOUNT / INIT ]` | ~11684 | **#41** | **2026-05-27 M16**；`_jpApp.mount('#app')` |
 
 **下一批候選（尚未插入）：** `[ CODEX — RESONANCE WHEEL ]`（wheel runtime 子錨；#17 大段仍用 `[ CODEX - COMPUTED ]` umbrella）。`spiritCodexHelpers` boot ~L2088 须在 computed 前，**未**併入 DISPLAY GLUE。
 
@@ -575,6 +581,12 @@
 // ================= [ DEBUG — DEV HELPERS ] =================
 // ================= [ DEBUG TOOLS — LEVEL JUMP ] =================
 // ================= [ VUE RETURN & BINDINGS ] =================
+// ---- [ RETURN — RESULT BINDINGS ] ----
+// ---- [ RETURN — SETTINGS / DEBUG BINDINGS ] ----
+// ---- [ RETURN — CORE STATE ] ----
+// ---- [ RETURN — BATTLE BINDINGS ] ----
+// ---- [ RETURN — CODEX BINDINGS ] ----
+// ---- [ RETURN — MAP / HOME BINDINGS ] ----
 // ================= [ APP — MOUNT / INIT ] =================
 ```
 
