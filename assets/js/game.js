@@ -1500,7 +1500,7 @@ const _jpApp = Vue.createApp({
             unlockedSkillIds.value = [];
         };
 
-        // [ CODEX - STATE ]
+        // ---- [ CODEX — STATE REFS ] ----
         const isCodexOpen = ref(false);
         const codexPage = ref(0);
         const codexDetailMode = ref(false);
@@ -1546,7 +1546,6 @@ const _jpApp = Vue.createApp({
         const codexWheelArrowSuppressClick = ref(false);
         const isMonsterCodexOpen = ref(false);
         const selectedMonsterCodexId = ref(null);
-        // [ /CODEX - STATE ]
 
         const mentorTutorialSeen = ref([]);
 
@@ -2104,6 +2103,7 @@ const _jpApp = Vue.createApp({
 
         };
 
+        // ---- [ CODEX — SPIRIT HELPERS BOOT ] ----
         const spiritCodexHelpers = window.JPAPPSpiritCodexHelpers || {
             getSpiritForSkillId: () => null,
             getSpiritForSkill: () => null,
@@ -2123,7 +2123,7 @@ const _jpApp = Vue.createApp({
         const getSpiritImageSrc = (spirit, isWheel = false, isLocked = false) => window.JPAPPCodexDisplayUtils.getSpiritImageSrc(spirit, isWheel, isLocked);
         const handleSpiritImageError = (event, spirit, isWheel = false, isLocked = false) => window.JPAPPCodexDisplayUtils.handleSpiritImageError(event, spirit, isWheel, isLocked);
 
-        // [ CODEX - COMPUTED ]
+        // ---- [ CODEX — COMPUTED ] ----
         const skillsWithUnlockLevel = computed(() =>
             spiritCodexHelpers.buildSkillsWithUnlockLevel(SKILLS.value, unlockedSkillIds.value, skillUnlockMap.value)
         );

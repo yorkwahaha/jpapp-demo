@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
-> **Last audited:** 2026-05-27 (M21 map flow sub-anchors + M20 settings dev tools)
-> **Doc sync:** 2026-05-27 — M21：`[ MAP FLOW & MENTOR TRIGGERS ]` 內子錨 `SAVE SLOT ACTIONS` / `STAGE PICK & CONFIRM` / `RETURN & KNOWLEDGE CARDS`（**導航 only**；#8–12 函式本體 DO NOT TOUCH）。M20：settings anchors。
+> **Last audited:** 2026-05-27 (M22 codex state refs + M21 map flow)
+> **Doc sync:** 2026-05-27 — M22：`[ CODEX — STATE REFS ]` ~L1503；`[ CODEX — SPIRIT HELPERS BOOT ]` ~L2106；`[ CODEX — COMPUTED ]` ~L2126（**非** wheel runtime）。M21：map flow 子錨。
 > **File:** `assets/js/game.js` — **~11,656 lines** (1-indexed；M10 後以 `rg` 錨點為準)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -50,11 +50,12 @@
 | 12 | **Map — return & knowledge cards** | 1288–1380 | `[ MAP FLOW — RETURN & KNOWLEDGE CARDS ]`：`returnToMap`、`triggerNextKnowledgeCard`（**導航 only**） | **High** | `MAP FLOW — RETURN & KNOWLEDGE CARDS`, `returnToMap`, `triggerNextKnowledgeCard` | `index.html` knowledge overlay | **no** | 破關回地圖、知識卡 |
 | 13 | **Home — version & changelog display** | 1374–1391 | `[ HOME — VERSION & CHANGELOG DISPLAY ]`：`APP_VERSION`、`appVersion`、`versionImageAsset`、`createChangelogState`（`isChangelogOpen` / `changelogData` / `openChangelog`） | Low | `appVersion`, `openChangelog`, `versionImageAsset` | `changelog-manager.js`, `index.html`, `home.css` | **yes**（顯示） | 勿改 `APP_VERSION`／`changelog.json`；`versionImageAsset` 亦供導師圖 |
 | 13b | **Settings & dev tools** *(file-order)* | 1398–1478 | `[ SETTINGS — UI & DEV TOOLS ]`：`settings`、`devToolsState`、`answerMode`、`flickState`（**非** #13 changelog；UI/dev state only） | Low | `SETTINGS — UI & DEV TOOLS`, `settings`, `isDevToolsVisible`, `loadSettings` | `settings-manager.js`, `dev-tools.js` | defer | `devToolsState` 子錨見 #40b |
-| 14 | **Codex — wheel state (RAF vars)** | 1527–1574 | 共鳴輪 phase、拖曳、RAF 常數（非 ref） | Low | `codexWheelPhase`, `CODEX_WHEEL_` | `spirit-codex-helpers.js` | defer | 開共鳴輪不卡頓 |
+| 14 | **Codex — state refs** | 1503–1548 | `[ CODEX — STATE REFS ]`：`isCodexOpen`、wheel RAF 常數／非 ref spin vars（**非** runtime 函式） | Low | `CODEX — STATE REFS`, `codexWheelPhase`, `CODEX_WHEEL_` | `spirit-codex-helpers.js` | defer | 開共鳴輪不卡頓；wheel runtime 見 #17 **DO NOT TOUCH** |
 | 15 | **Mentor — state & fallbacks** | 1575–1834 | map mentor refs、`isMapMentorOpen`、helpers fallback、`loadMentorState` | **High** | `mentorTutorialSeen`, `isMapMentorOpen` | `mentor-dialogue-helpers.js`, `mentor-dialogue-map.md` | **no** | map-only；無 battle modal |
 | 16 | **Mentor — dialogue runtime** | 1835–2139 | `setupMentorDialogue`（**`showMap` 必須**）、typing、video、mentor audio | **DO NOT TOUCH** | `setupMentorDialogue`, `playMentorAudioForCurrentPage`, `finishMentorDialogue` | `audio-tts.js`, `mentor-dialogue-map.md` | **no** | 地圖／確認窗導師；iOS 音訊 |
-| 17 | **Codex — wheel logic & UI** | 2140–2821 | 共鳴輪 phase、拖曳／動畫、`openCodexDetail`（**runtime**；display glue 見 #17b） | Low–Med | `setCodexWheelPhase`, `openCodexDetail`, `endCodexDrag` | `spirit-codex-helpers.js`, `codex.css` | defer | 共鳴輪旋轉；**勿**改 RAF/detent |
-| 17b | **Codex — display glue** | 2088–2105, 2823–2906 | `[ CODEX — DISPLAY GLUE ]`：spirit 圖示、mastery 顯示、wheel item class、怪物圖鑑、技能類型標籤 | Low | `getCodexSkillDisplayName`, `monsterCodexEntries`, `getSkillTypeLabel`, `getSkillMastery` | `codex-display-utils.js`, `spirit-codex-helpers.js` | **yes**（顯示） | `spiritCodexHelpers` boot 须在 #17 computed 前 |
+| 17 | **Codex — wheel logic & UI** *(runtime)* | 2126–2836 | `[ CODEX — COMPUTED ]` 起：`codexWheelSkills` computed 後接共鳴輪 phase、拖曳／動畫、`openCodexDetail`（**runtime — DO NOT TOUCH**；display glue 見 #17b） | Low–Med | `CODEX — COMPUTED`, `setCodexWheelPhase`, `endCodexDrag` | `spirit-codex-helpers.js`, `codex.css` | defer | **勿**改 RAF/detent/inertia |
+| 17a | **Codex — spirit helpers boot** | 2106–2124 | `[ CODEX — SPIRIT HELPERS BOOT ]`：`spiritCodexHelpers` fallback + spirit 薄封裝（须在 #17 computed 前） | Low | `CODEX — SPIRIT HELPERS BOOT`, `spiritCodexHelpers` | `spirit-codex-helpers.js` | defer | boot glue only |
+| 17b | **Codex — display glue** | 2823–2906 | `[ CODEX — DISPLAY GLUE ]`：spirit 圖示、mastery 顯示、wheel item class、怪物圖鑑、技能類型標籤 | Low | `getCodexSkillDisplayName`, `monsterCodexEntries`, `getSkillTypeLabel`, `getSkillMastery` | `codex-display-utils.js`, `spirit-codex-helpers.js` | **yes**（顯示） | **非** wheel runtime |
 | 18 | **Codex — monster index** | 2870–2902 *(in #17b)* | `monsterCodexEntries` computed（薄）、開關／選取 | Low | `monsterCodexEntries`, `openMonsterCodex` | `codex-display-utils.js`, `enemies.v1.json` | **yes** | 怪物圖鑑列表/詳情 |
 | 19 | **Codex — open sync watch** *(file-order)* | 2980–2998 | 開共鳴輪時 `codexPage`／phase 同步（**runtime 接線**；**非** Escape） | Low–Med | `watch([isCodexOpen, codexWheelSkills` | — | defer | 勿併入 #19b；勿改 RAF/detent |
 | 19b | **Codex — escape watches** | 3003–3018 | `[ CODEX — ESCAPE WATCHES ]`：`Escape` 關閉共鳴輪／怪物圖鑑；關閉時 `forceStopAllCodexWheelMotion` | Low | `keydown`, `watch(isCodexOpen` | — | **yes** | `closeCodex` 定義見 #25；Esc 行為勿改 |
@@ -504,7 +505,7 @@
 ## F. Section header（`game.js` 內錨點）
 
 > **用途：** `rg "\[ .* \]" assets/js/game.js` 或下表 **Keywords** 定位；行號會漂移，以註解文字為準。
-> **2026-05-27（M21）：** `[ MAP FLOW — SAVE SLOT ACTIONS ]` ~L893；`STAGE PICK & CONFIRM` ~L1060；`RETURN & KNOWLEDGE CARDS` ~L1288（**導航 only**）。M20：settings ~L1398+。
+> **2026-05-27（M22）：** `[ CODEX — STATE REFS ]` ~L1503；`SPIRIT HELPERS BOOT` ~L2106；`COMPUTED` ~L2126（wheel **runtime** 仍在同段、**DO NOT TOUCH**）。M21：map flow 子錨。
 
 | Header 文字（`rg`） | 約略行 | §A 對照 | 備註 |
 |--------------------|--------|---------|------|
@@ -526,11 +527,12 @@
 | `[ MAP FLOW — SAVE SLOT ACTIONS ]` | ~893 | **#9** | **2026-05-27 M21**；`openSaveSlotPanel`；**DO NOT TOUCH** 函式本體 |
 | `[ MAP FLOW — STAGE PICK & CONFIRM ]` | ~1060 | **#10–11** | **2026-05-27 M21**；`selectStageFromMap` / 確認窗；**DO NOT TOUCH** 進關 |
 | `[ MAP FLOW — RETURN & KNOWLEDGE CARDS ]` | ~1288 | **#12** | **2026-05-27 M21**；`returnToMap` / 知識卡；**DO NOT TOUCH** BGM 時序 |
-| `[ STATE — SKILLS & CODEX ]` | ~1509 | #14–19 | **既有** codex state umbrella |
-| `[ CODEX - STATE ]` | ~1529 | #14 | **既有** |
-| `[ MENTOR DIALOGUE ]` | ~1835 | #16 | **既有**（`setupMentorDialogue` 前；map-only） |
-| `[ CODEX - COMPUTED ]` | ~2107 | #17, #17b | **既有**；wheel data + runtime；display glue 見下行 |
-| `[ CODEX — DISPLAY GLUE ]` | ~2828 | **#17b** | **2026-05-27 M9**；非 runtime 顯示 helper |
+| `[ STATE — SKILLS & CODEX ]` | ~1483 | #14–19 | **既有**；skills + codex umbrella |
+| `[ CODEX — STATE REFS ]` | ~1503 | **#14** | **2026-05-27 M22**；`isCodexOpen` / RAF 常數；**非** runtime |
+| `[ MENTOR DIALOGUE ]` | ~1809 | #16 | **既有**（`setupMentorDialogue` 前；map-only） |
+| `[ CODEX — SPIRIT HELPERS BOOT ]` | ~2106 | **#17a** | **2026-05-27 M22**；`spiritCodexHelpers` boot；须在 computed 前 |
+| `[ CODEX — COMPUTED ]` | ~2126 | **#17** | **2026-05-27 M22**；computed 入口；其後 wheel runtime **DO NOT TOUCH** |
+| `[ CODEX — DISPLAY GLUE ]` | ~2839 | **#17b** | **2026-05-27 M9**；非 runtime 顯示 helper |
 | `[ CODEX — ESCAPE WATCHES ]` | ~3003 | **#19b** | **2026-05-27 M12**；Escape／關閉 watch；`closeCodex` 見 #25 |
 | `[ STATE — GAME BATTLE CORE ]` | ~3554 | #22 | **既有** |
 | `[ RESULT — DISPLAY STATE ]` | ~3689 | **#36b** | **2026-05-27 M14**；結算 UI refs；`monsterResultShown` ~3798 |
@@ -559,7 +561,7 @@
 | `[ RETURN — MAP / HOME BINDINGS ]` | ~11658 | #41 | **2026-05-27 M17**；地圖／存檔槽／知識卡 |
 | `[ APP — MOUNT / INIT ]` | ~11684 | **#41** | **2026-05-27 M16**；`_jpApp.mount('#app')` |
 
-**下一批候選（尚未插入）：** `[ CODEX — RESONANCE WHEEL ]`（wheel runtime 子錨；#17 大段仍用 `[ CODEX - COMPUTED ]` umbrella）。`spiritCodexHelpers` boot ~L2088 须在 computed 前，**未**併入 DISPLAY GLUE。
+**下一批候選（尚未插入）：** `[ CODEX — RESONANCE WHEEL ]`（wheel runtime 子錨；落在 `[ CODEX — COMPUTED ]` 大段內、`setCodexWheelPhase` 前；**DO NOT TOUCH** 除非任務明示）。
 
 ```javascript
 // ================= [ GLOBAL — VFX / SP HUD SHIMS ] =================
@@ -580,6 +582,10 @@
 // ---- [ MAP FLOW — SAVE SLOT ACTIONS ] ----
 // ---- [ MAP FLOW — STAGE PICK & CONFIRM ] ----
 // ---- [ MAP FLOW — RETURN & KNOWLEDGE CARDS ] ----
+// ---- [ STATE — SKILLS & CODEX ] ----
+// ---- [ CODEX — STATE REFS ] ----
+// ---- [ CODEX — SPIRIT HELPERS BOOT ] ----
+// ---- [ CODEX — COMPUTED ] ----
 // ================= [ CODEX — DISPLAY GLUE ] =================
 // ================= [ CODEX — ESCAPE WATCHES ] =================
 // ================= [ RESULT — DISPLAY STATE ] =================
