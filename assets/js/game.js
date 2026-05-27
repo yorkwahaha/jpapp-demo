@@ -1395,7 +1395,7 @@ const _jpApp = Vue.createApp({
             fetch: typeof window.fetch === 'function' ? window.fetch.bind(window) : null
         });
 
-        // ---- [ SETTINGS & DEV TOOLS ] ----
+        // ================= [ SETTINGS — UI & DEV TOOLS ] =================
         const DEFAULT_TTS_VOICE = 'ja-JP-Neural2-B';
 
         const { settings, loadSettings, saveSettings } = window.JPAPPSettingsManager.createVueBoundGeneralSettings(
@@ -1412,6 +1412,7 @@ const _jpApp = Vue.createApp({
             window.__JPAPP_VFX_HELPERS_READY = true;
         }
 
+        // ---- [ SETTINGS — DEV TOOLS STATE ] ----
         const devToolsState = (window.JPAPPDevToolsManager?.createDevToolsState || (() => ({
             isDevToolsVisible: ref(false),
             showFpsDebug: ref(false),

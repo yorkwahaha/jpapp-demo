@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
-> **Last audited:** 2026-05-27 (M19 setup data refs + M17 vue return bindings)
-> **Doc sync:** 2026-05-27 — M19：`[ SETUP — DATA REFS ]` ~L179（`pool` / `LEVEL_CONFIG` / `SKILLS` 等；**非** save core）。M17：return bindings 子錨。
+> **Last audited:** 2026-05-27 (M20 settings dev tools + M19 setup data refs)
+> **Doc sync:** 2026-05-27 — M20：`[ SETTINGS — UI & DEV TOOLS ]` ~L1398；`[ SETTINGS — DEV TOOLS STATE ]` ~L1415（**非** #13 changelog）。M19：`[ SETUP — DATA REFS ]` ~L179。
 > **File:** `assets/js/game.js` — **~11,656 lines** (1-indexed；M10 後以 `rg` 錨點為準)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -49,7 +49,7 @@
 | 11 | **Map — battle confirm & endings** | 1086–1315 | `selectStageFromMap`、`confirmAndStartBattle`、L35/L36 結局、`playResultFanfare` 定義 | **High** | `selectStageFromMap`, `checkGlobalEndingTriggers`, `playMainEndingFinale` | `mentor-dialogue-map.md` | **no** | 關卡確認、結局 mentor |
 | 12 | **Map — return & knowledge cards** | 1316–1411 | `returnToMap`、知識卡吸收、`triggerNextKnowledgeCard` | **High** | `returnToMap`, `triggerNextKnowledgeCard`, `_afterKnowledgeCards` | `index.html` knowledge overlay | **no** | 破關回地圖、知識卡 |
 | 13 | **Home — version & changelog display** | 1374–1391 | `[ HOME — VERSION & CHANGELOG DISPLAY ]`：`APP_VERSION`、`appVersion`、`versionImageAsset`、`createChangelogState`（`isChangelogOpen` / `changelogData` / `openChangelog`） | Low | `appVersion`, `openChangelog`, `versionImageAsset` | `changelog-manager.js`, `index.html`, `home.css` | **yes**（顯示） | 勿改 `APP_VERSION`／`changelog.json`；`versionImageAsset` 亦供導師圖 |
-| 13b | **Settings & dev tools** *(file-order)* | 1393–1526 | `settings`、`devToolsState`、`answerMode`、flickState 起點（**非** changelog） | Low | `settings`, `isDevToolsVisible`, `loadSettings` | `settings-manager.js`, `dev-tools.js` | defer | `devToolsState` 見 #40b 備註 |
+| 13b | **Settings & dev tools** *(file-order)* | 1398–1478 | `[ SETTINGS — UI & DEV TOOLS ]`：`settings`、`devToolsState`、`answerMode`、`flickState`（**非** #13 changelog；UI/dev state only） | Low | `SETTINGS — UI & DEV TOOLS`, `settings`, `isDevToolsVisible`, `loadSettings` | `settings-manager.js`, `dev-tools.js` | defer | `devToolsState` 子錨見 #40b |
 | 14 | **Codex — wheel state (RAF vars)** | 1527–1574 | 共鳴輪 phase、拖曳、RAF 常數（非 ref） | Low | `codexWheelPhase`, `CODEX_WHEEL_` | `spirit-codex-helpers.js` | defer | 開共鳴輪不卡頓 |
 | 15 | **Mentor — state & fallbacks** | 1575–1834 | map mentor refs、`isMapMentorOpen`、helpers fallback、`loadMentorState` | **High** | `mentorTutorialSeen`, `isMapMentorOpen` | `mentor-dialogue-helpers.js`, `mentor-dialogue-map.md` | **no** | map-only；無 battle modal |
 | 16 | **Mentor — dialogue runtime** | 1835–2139 | `setupMentorDialogue`（**`showMap` 必須**）、typing、video、mentor audio | **DO NOT TOUCH** | `setupMentorDialogue`, `playMentorAudioForCurrentPage`, `finishMentorDialogue` | `audio-tts.js`, `mentor-dialogue-map.md` | **no** | 地圖／確認窗導師；iOS 音訊 |
@@ -80,7 +80,7 @@
 | 38 | **Result — display bindings** | 11252–11318 | `[ RESULT — DISPLAY BINDINGS ]`：`createVueBindings`、`buildCurrentStageRecord`、`updateStageBestRecord` | Low–Med | `calculatedGrade`, `updateStageBestRecord`, `stageRecordRows` | `result-display-manager.js` | **yes**（顯示） | 寫入 `stageBestRecords`；EXP 動畫仍在 #36 |
 | 39 | **Boot hooks (2nd onMounted)** | 11413–11446 | `[ APP — SETUP INIT (boot onMounted) ]`：changelog 版本 policy、音訊 unlock、`installTapChoicesLayoutHooks` | Med | `APP — SETUP INIT (boot onMounted)`, `applyVersionStoragePolicy`, `unlockAudioOnce` | `changelog-manager.js` | defer | 首屏手勢後音訊 |
 | 40 | **Debug — dev helpers & level jump** | 11458–11607 | `[ APP — GLOBAL EXPOSES ]` 下：`[ DEBUG — DEV HELPERS ]` ~L11460：`window.__debugQMix`；`[ DEBUG TOOLS — LEVEL JUMP ]` ~L11539：`debugJumpToLevel`、`__attachDebugTools`、URL `?level=` | Low | `APP — GLOBAL EXPOSES`, `__debugQMix`, `debugJumpToLevel`, `__attachDebugTools` | `debug.js`, `dev-tools.js` | **yes** (dev) | Console `__debugQMix`；Dev 關卡跳轉 |
-| 40b | **Debug — early boot state** *(file-order)* | 1441–1458 | `devToolsState` boot fallback、`debugControls`（`heroBuffs` fallback） | Low | `isDevToolsVisible`, `debugControls` | `dev-tools.js` | defer | **未搬**（L4027 audio notice computed 需早期存在） |
+| 40b | **Debug — early boot state** *(file-order)* | 1415–1433 | `[ SETTINGS — DEV TOOLS STATE ]`：`devToolsState`、`debugControls`（`heroBuffs` fallback） | Low | `SETTINGS — DEV TOOLS STATE`, `isDevToolsVisible`, `debugControls` | `dev-tools.js` | defer | **未搬**（audio notice computed 需早期存在）；late debug 見 #40 |
 | 41 | **App — mount & return** | 11633–11690 | `[ VUE RETURN & BINDINGS ]` ~L11633（含 M17 子錨，見 §F）；`[ APP — MOUNT / INIT ]` ~L11684 | Low–Med | `VUE RETURN`, `RETURN — CORE STATE`, `RETURN — MAP / HOME`, `_jpApp.mount` | `debug.js`, `index.html` | defer | 啟動不報錯；**勿**重排 `return {…}` |
 
 **區塊數量：** 41（含 #32 檔案順序備註列）
@@ -502,7 +502,7 @@
 ## F. Section header（`game.js` 內錨點）
 
 > **用途：** `rg "\[ .* \]" assets/js/game.js` 或下表 **Keywords** 定位；行號會漂移，以註解文字為準。
-> **2026-05-27（M19）：** `[ SETUP — DATA REFS ]` ~L179（umbrella 內子錨；緊接 `[ PROGRESSION / SAVE SLOTS ]` ~L201，**非** save core）。M17：return bindings 子錨。
+> **2026-05-27（M20）：** `[ SETTINGS — UI & DEV TOOLS ]` ~L1398；`[ SETTINGS — DEV TOOLS STATE ]` ~L1415（**非** #13 changelog）。M19：`[ SETUP — DATA REFS ]` ~L179。
 
 | Header 文字（`rg`） | 約略行 | §A 對照 | 備註 |
 |--------------------|--------|---------|------|
@@ -516,7 +516,9 @@
 | `[ SETUP — DATA REFS ]` | ~179 | **#4** | **2026-05-27 M19**；`pool` / `LEVEL_CONFIG` / `SKILLS`；下一區 `[ PROGRESSION / SAVE SLOTS ]` 為 save core |
 | `[ PROGRESSION / SAVE SLOTS ]` | ~201 | #5, #7 | **2026-05-24 L2 新增**；save core only（`saveSlotCards` 見下行） |
 | `[ HOME — SAVE SLOT DISPLAY ]` | ~355 | **#5b** | **2026-05-27 M11**；`saveSlotCards`；utils 解構仍在 setup 頂 |
-| `[ HOME — VERSION & CHANGELOG DISPLAY ]` | ~1374 | **#13** | **2026-05-27 M13**；`appVersion` / changelog modal；policy 見 #39 |
+| `[ HOME — VERSION & CHANGELOG DISPLAY ]` | ~1379 | **#13** | **2026-05-27 M13**；`appVersion` / changelog modal；policy 見 #39 |
+| `[ SETTINGS — UI & DEV TOOLS ]` | ~1398 | **#13b** | **2026-05-27 M20**；`settings` / `answerMode` / `flickState`；**非** changelog |
+| `[ SETTINGS — DEV TOOLS STATE ]` | ~1415 | **#13b, #40b** | **2026-05-27 M20**；`devToolsState` / `debugControls` |
 | `[ MAP — DISPLAY HELPERS ]` | ~449 | **#6a** | **2026-05-27 M7 新增**；display glue only |
 | `[ MAP FLOW & MENTOR TRIGGERS ]` | ~698 | #8–12 | **2026-05-24 L2 新增**（`checkPrologueTrigger` / `openMap` 區） |
 | `[ STATE — SKILLS & CODEX ]` | ~1509 | #14–19 | **既有** codex state umbrella |
@@ -566,6 +568,8 @@
 // ================= [ PROGRESSION / SAVE SLOTS ] =================
 // ================= [ HOME — SAVE SLOT DISPLAY ] =================
 // ================= [ HOME — VERSION & CHANGELOG DISPLAY ] =================
+// ================= [ SETTINGS — UI & DEV TOOLS ] =================
+// ---- [ SETTINGS — DEV TOOLS STATE ] ----
 // ================= [ MAP — DISPLAY HELPERS ] =================
 // ================= [ MAP FLOW & MENTOR TRIGGERS ] =================
 // ================= [ CODEX — DISPLAY GLUE ] =================
