@@ -98,10 +98,11 @@ function resetSP() {
     if (window.updateSpUI) window.updateSpUI();
 }
 
-// ================= [ VUE APP — MAIN COMPONENT ] =================
+// ================= [ APP — BOOTSTRAP ] =================
 const { ref, reactive, computed, watch, onMounted, nextTick } = Vue;
 const _jpApp = Vue.createApp({
 
+    // ---- [ APP — SETUP ROOT ] ----
     setup() {
         const GAME_CONSTANTS = window.JPAPP_CONSTANTS || {}, SCENE_IMAGE_PATHS = GAME_CONSTANTS.SCENE_IMAGE_PATHS || {}, DEFAULT_IMAGE_PATHS = GAME_CONSTANTS.DEFAULT_IMAGE_PATHS || {};
         const {
@@ -141,6 +142,7 @@ const _jpApp = Vue.createApp({
         const PROLOGUE_BGM = ''; // Add path here if needed
         const MAIN_ENDING_BGM = ''; // Add path here if needed
 
+        // ---- [ APP — SETUP INIT ] ----
         onMounted(async () => {
             // Load Map Chapter Data (Ensuring this runs on all environments)
             try {
@@ -11408,6 +11410,7 @@ const _jpApp = Vue.createApp({
             document.addEventListener('dblclick', onDblClick, { capture: true });
         };
 
+        // ---- [ APP — SETUP INIT (boot onMounted) ] ----
         onMounted(() => {
 
             changelogManager.applyVersionStoragePolicy(APP_VERSION);
@@ -11453,6 +11456,7 @@ const _jpApp = Vue.createApp({
 
         });
 
+        // ---- [ APP — GLOBAL EXPOSES ] ----
         // ================= [ DEBUG — DEV HELPERS ] =================
         // Dev-only console hooks. Audio overlay debug (formatAudioDebugValue) stays §A #32 — do not move here.
         // devToolsState / debugControls remain ~L1441 (early setup; used by audio notice computed before this block).
@@ -11670,6 +11674,7 @@ const _jpApp = Vue.createApp({
     }
 
 });
+// ================= [ APP — MOUNT / INIT ] =================
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => _jpApp.mount('#app'));
 } else {

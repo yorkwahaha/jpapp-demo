@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
-> **Last audited:** 2026-05-27 (M15 global shims + M14 result display)
-> **Doc sync:** 2026-05-27 — M15：檔首 `[ GLOBAL — VFX / SP HUD SHIMS ]` ~L1；子錨 `[ GLOBAL — VFX SHIMS ]` ~L4+、`[ GLOBAL — SP HUD SHIMS ]` ~L63+（`window.__sp` 在 umbrella 下、VFX 子區之前）。M14：`[ RESULT — DISPLAY STATE ]` ~L3689+、`[ RESULT — DISPLAY BINDINGS ]` ~L11252+。
+> **Last audited:** 2026-05-27 (M16 app bootstrap + M15 global shims)
+> **Doc sync:** 2026-05-27 — M16：`[ APP — BOOTSTRAP ]` ~L101；`[ APP — SETUP ROOT ]` ~L105；`[ APP — SETUP INIT ]` ~L145（1st onMounted）；`[ APP — SETUP INIT (boot onMounted) ]` ~L11413；`[ APP — GLOBAL EXPOSES ]` ~L11458；`[ APP — MOUNT / INIT ]` ~L11676。M15：檔首 global shims。
 > **File:** `assets/js/game.js` — **~11,656 lines** (1-indexed；M10 後以 `rg` 錨點為準)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -36,7 +36,7 @@
 |---|--------------|-----------------|----------------|------|---------------|---------------|-------|------------|
 | 1 | **Global — VFX shims** | 1–60 | `[ GLOBAL — VFX SHIMS ]`：`rectCenter`, `getVfxLayer`, `spawnProjectile` 開機 fallback | Med | `GLOBAL — VFX SHIMS`, `rectCenter`, `getVfxLayer` | `vfx-helpers.js`, `skill-vfx.js` | defer | 戰鬥投射物、滿絆特效 |
 | 2 | **Global — SP HUD** | 1–2, 63–100 | `[ GLOBAL — SP HUD SHIMS ]`：`window.__sp`, `updateSpUI`, `canAffordSP`（`__sp` 在 umbrella 下、VFX 子區之前） | Med | `GLOBAL — SP HUD SHIMS`, `__sp`, `spendSP`, `regenSP` | Vue `spState` + `.hud-bar-sp-fill`（`updateSpUI`/`#spFill` 為 legacy no-op DOM path，DOM 已移除） | defer | 施放技能扣 SP、答對回 SP |
-| 3 | **Vue bootstrap** | 101–173 | `createApp`, `setup` 開頭、首個 `onMounted` 載入 `map-chapters` | Med | `mapChapters`, `createApp` | `map-chapters.json` | defer | 進地圖章節是否載入 |
+| 3 | **App — bootstrap** | 101–178 | `[ APP — BOOTSTRAP ]`：`createApp`、`[ APP — SETUP ROOT ]`、`[ APP — SETUP INIT ]`（1st onMounted 載入 `map-chapters`） | Med | `APP — BOOTSTRAP`, `APP — SETUP ROOT`, `mapChapters`, `createApp` | `map-chapters.json` | defer | 進地圖章節是否載入 |
 | 4 | **Setup — data refs** | 174–197 | `EARLY_GAME_POOLS`、`LEVEL_CONFIG`、`SKILLS` 等 ref 宣告 | Low | `EARLY_GAME_POOLS`, `LEVEL_CONFIG` | `earlyGamePools.v1.js` | defer | 開局前 ref 存在 |
 | 5 | **Save slots — storage & metadata** | 198–353 | keys、migration、metadata 讀寫、`setActiveSaveSlotId`、`isSlotProgressionReadable`（**save core**；display 見 #5b） | **High** | `PROGRESSION_KEY`, `ensureSaveSlotMigration`, `writeSaveSlotsMetadata` | `storage-manager.js` | **no** | 切槽、migration、metadata |
 | 5b | **Home — save slot display** | 355–373 | `[ HOME — SAVE SLOT DISPLAY ]`：`saveSlotCards` computed；共鳴率／時間經 `__JPAPP_UTILS`（**非** save/load 寫入） | Low–Med | `saveSlotCards`, `calculateSaveSlotResonanceText`, `formatSaveSlotTime` | `game-utils.js`, `index.html`, `home.css` | **yes**（顯示） | 見 §首頁存檔卡；選槽流程見 #9 |
@@ -78,10 +78,10 @@
 | 36 | **Victory — grantRewards** *(core)* | 10742–11227 | EXP 發放、勝利流程、EXP 條 `animateRewards`、`playResultFanfare` 觸發；錨點 `[ VICTORY — GRANT REWARDS ]`（§F） | **DO NOT TOUCH** | `grantRewards`, `animateRewards`, `playResultFanfare` | `result-display-manager.js`（讀取用） | **no** | 獎勵／升級；見 §結算畫面 |
 | 37 | **Handlers — retry / revive / potion** *(file-order)* | 8613, 11198–11247 | `usePotion`（音訊區）、`retryLevel`、`revive`（`[ PROGRESSION & REWARDS ]` 區） | Med | `retryLevel`, `revive`, `usePotion` | — | defer | 重試關、喝藥 |
 | 38 | **Result — display bindings** | 11252–11318 | `[ RESULT — DISPLAY BINDINGS ]`：`createVueBindings`、`buildCurrentStageRecord`、`updateStageBestRecord` | Low–Med | `calculatedGrade`, `updateStageBestRecord`, `stageRecordRows` | `result-display-manager.js` | **yes**（顯示） | 寫入 `stageBestRecords`；EXP 動畫仍在 #36 |
-| 39 | **Boot hooks (2nd onMounted)** | 11364–11510 | changelog 版本 policy、音訊 unlock、`installTapChoicesLayoutHooks` | Med | `applyVersionStoragePolicy`, `unlockAudioOnce` | `changelog-manager.js` | defer | 首屏手勢後音訊 |
-| 40 | **Debug — dev helpers & level jump** | 11435–11607 | `[ DEBUG — DEV HELPERS ]` ~L11435：`window.__debugQMix`；`[ DEBUG TOOLS — LEVEL JUMP ]` ~L11515：`debugJumpToLevel`、`__attachDebugTools`、URL `?level=` | Low | `__debugQMix`, `debugJumpToLevel`, `__attachDebugTools` | `debug.js`, `dev-tools.js` | **yes** (dev) | Console `__debugQMix`；Dev 關卡跳轉 |
+| 39 | **Boot hooks (2nd onMounted)** | 11413–11446 | `[ APP — SETUP INIT (boot onMounted) ]`：changelog 版本 policy、音訊 unlock、`installTapChoicesLayoutHooks` | Med | `APP — SETUP INIT (boot onMounted)`, `applyVersionStoragePolicy`, `unlockAudioOnce` | `changelog-manager.js` | defer | 首屏手勢後音訊 |
+| 40 | **Debug — dev helpers & level jump** | 11458–11607 | `[ APP — GLOBAL EXPOSES ]` 下：`[ DEBUG — DEV HELPERS ]` ~L11460：`window.__debugQMix`；`[ DEBUG TOOLS — LEVEL JUMP ]` ~L11539：`debugJumpToLevel`、`__attachDebugTools`、URL `?level=` | Low | `APP — GLOBAL EXPOSES`, `__debugQMix`, `debugJumpToLevel`, `__attachDebugTools` | `debug.js`, `dev-tools.js` | **yes** (dev) | Console `__debugQMix`；Dev 關卡跳轉 |
 | 40b | **Debug — early boot state** *(file-order)* | 1441–1458 | `devToolsState` boot fallback、`debugControls`（`heroBuffs` fallback） | Low | `isDevToolsVisible`, `debugControls` | `dev-tools.js` | defer | **未搬**（L4027 audio notice computed 需早期存在） |
-| 41 | **Vue return & mount** | 11608–11656 | `return {…}`、`_jpApp.mount`；錨點 `[ VUE RETURN & BINDINGS ]`（§F） | Low–Med | `return {`, `_jpApp.mount`, `VUE RETURN` | `debug.js`, `index.html` | defer | 啟動不報錯 |
+| 41 | **App — mount** | 11633–11682 | `[ VUE RETURN & BINDINGS ]` ~L11633；`[ APP — MOUNT / INIT ]` ~L11676：`_jpApp.mount('#app')` | Low–Med | `APP — MOUNT / INIT`, `return {`, `_jpApp.mount`, `VUE RETURN` | `debug.js`, `index.html` | defer | 啟動不報錯 |
 
 **區塊數量：** 41（含 #32 檔案順序備註列）
 **High-risk / DO NOT TOUCH 區塊：** #5–12, #15–16, #24, #26–28, #30–32, #35–36
@@ -502,15 +502,17 @@
 ## F. Section header（`game.js` 內錨點）
 
 > **用途：** `rg "\[ .* \]" assets/js/game.js` 或下表 **Keywords** 定位；行號會漂移，以註解文字為準。
-> **2026-05-27（M15）：** 檔首 umbrella `[ GLOBAL — VFX / SP HUD SHIMS ]` ~L1；子錨 VFX ~L4+、SP HUD ~L63+。M14：`[ RESULT — DISPLAY STATE ]` ~L3689；`[ RESULT — DISPLAY BINDINGS ]` ~L11252。M13 `[ HOME — VERSION & CHANGELOG DISPLAY ]` ~L1374。
+> **2026-05-27（M16）：** `[ APP — BOOTSTRAP ]` ~L101（原 `VUE APP — MAIN COMPONENT`）；`SETUP ROOT` / `SETUP INIT` / `GLOBAL EXPOSES` / `MOUNT / INIT` 見下表。M15：global shims ~L1+。
 
 | Header 文字（`rg`） | 約略行 | §A 對照 | 備註 |
 |--------------------|--------|---------|------|
 | `[ GLOBAL — VFX / SP HUD SHIMS ]` | ~1 | #1–2 | **2026-05-27 M15**；檔首 umbrella；`window.__sp` 緊接其下 |
 | `[ GLOBAL — VFX SHIMS ]` | ~4 | #1 | **2026-05-27 M15**；`spawnFloatingDamage` / `rectCenter` / `getVfxLayer` |
 | `[ GLOBAL — SP HUD SHIMS ]` | ~63 | #2 | **2026-05-27 M15**；`updateSpUI`；`canAffordSP` 等見下行 `SP 統一操作函式` |
-| `[ VUE APP — MAIN COMPONENT ]` | ~101 | #3 | **既有**（`createApp` 前） |
-| `[ CONFIG & STATE — VUE REACTIVE SETUP ]` | ~174 | #4 | **既有** |
+| `[ APP — BOOTSTRAP ]` | ~101 | #3 | **2026-05-27 M16**；`Vue.createApp`；取代舊 `[ VUE APP — MAIN COMPONENT ]` |
+| `[ APP — SETUP ROOT ]` | ~105 | #3 | **2026-05-27 M16**；`setup()` 入口 |
+| `[ APP — SETUP INIT ]` | ~145 | #3 | **2026-05-27 M16**；1st `onMounted`（map-chapters + local config） |
+| `[ CONFIG & STATE — VUE REACTIVE SETUP ]` | ~178 | #4 | **既有** |
 | `[ PROGRESSION / SAVE SLOTS ]` | ~196 | #5, #7 | **2026-05-24 L2 新增**；save core only（`saveSlotCards` 見下行） |
 | `[ HOME — SAVE SLOT DISPLAY ]` | ~355 | **#5b** | **2026-05-27 M11**；`saveSlotCards`；utils 解構仍在 setup 頂 |
 | `[ HOME — VERSION & CHANGELOG DISPLAY ]` | ~1374 | **#13** | **2026-05-27 M13**；`appVersion` / changelog modal；policy 見 #39 |
@@ -536,9 +538,12 @@
 | `[ VICTORY — GRANT REWARDS ]` | ~10742 | #36 | **2026-05-24 M2**；`grantRewards` 前；DO NOT TOUCH |
 | `[ PROGRESSION & REWARDS ]` | ~11168 | #37 | **既有**；retry/revive；result bindings 見下行 |
 | `[ RESULT — DISPLAY BINDINGS ]` | ~11252 | **#38** | **2026-05-27 M14** |
-| `[ DEBUG — DEV HELPERS ]` | ~11435 | **#40** | **2026-05-27 M8**；`window.__debugQMix` |
-| `[ DEBUG TOOLS — LEVEL JUMP ]` | ~11515 | #40 | **既有**；`debugJumpToLevel`；dev-only |
-| `[ VUE RETURN & BINDINGS ]` | ~11608 | #41 | **2026-05-24 M2**；`return {…}` 前 |
+| `[ APP — SETUP INIT (boot onMounted) ]` | ~11413 | **#39** | **2026-05-27 M16**；changelog policy、音訊 unlock、layout hooks |
+| `[ APP — GLOBAL EXPOSES ]` | ~11458 | **#40** | **2026-05-27 M16**；`window.__debugQMix`、`__attachDebugTools` 等 |
+| `[ DEBUG — DEV HELPERS ]` | ~11460 | **#40** | **2026-05-27 M8**；`window.__debugQMix` |
+| `[ DEBUG TOOLS — LEVEL JUMP ]` | ~11539 | #40 | **既有**；`debugJumpToLevel`；dev-only |
+| `[ VUE RETURN & BINDINGS ]` | ~11633 | #41 | **2026-05-24 M2**；`return {…}` 前 |
+| `[ APP — MOUNT / INIT ]` | ~11676 | **#41** | **2026-05-27 M16**；`_jpApp.mount('#app')` |
 
 **下一批候選（尚未插入）：** `[ CODEX — RESONANCE WHEEL ]`（wheel runtime 子錨；#17 大段仍用 `[ CODEX - COMPUTED ]` umbrella）。`spiritCodexHelpers` boot ~L2088 须在 computed 前，**未**併入 DISPLAY GLUE。
 
@@ -546,6 +551,10 @@
 // ================= [ GLOBAL — VFX / SP HUD SHIMS ] =================
 // ---- [ GLOBAL — VFX SHIMS ] ----
 // ---- [ GLOBAL — SP HUD SHIMS ] ----
+// ================= [ APP — BOOTSTRAP ] =================
+// ---- [ APP — SETUP ROOT ] ----
+// ---- [ APP — SETUP INIT ] ----
+// ================= [ CONFIG & STATE — VUE REACTIVE SETUP ] =================
 // ================= [ PROGRESSION / SAVE SLOTS ] =================
 // ================= [ HOME — SAVE SLOT DISPLAY ] =================
 // ================= [ HOME — VERSION & CHANGELOG DISPLAY ] =================
@@ -562,9 +571,11 @@
 // ================= [ BATTLE — CHECK ANSWER ] =================         // DO NOT REFACTOR CASUALLY
 // ================= [ VICTORY — GRANT REWARDS ] =================       // DO NOT TOUCH
 // ================= [ PROGRESSION & REWARDS ] =================
+// ---- [ APP — GLOBAL EXPOSES ] ----
 // ================= [ DEBUG — DEV HELPERS ] =================
 // ================= [ DEBUG TOOLS — LEVEL JUMP ] =================
 // ================= [ VUE RETURN & BINDINGS ] =================
+// ================= [ APP — MOUNT / INIT ] =================
 ```
 
 ---
