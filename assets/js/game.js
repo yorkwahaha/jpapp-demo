@@ -1371,7 +1371,11 @@ const _jpApp = Vue.createApp({
             }, 1200);
         };
 
-        // ---- [ CONSTANTS & SETTINGS ] ----
+        // ================= [ HOME — VERSION & CHANGELOG DISPLAY ] =================
+        // Home v{{ appVersion }}, changelog modal (isChangelogOpen / changelogData / openChangelog).
+        // versionImageAsset: cache-bust via changelog-manager; also used by mentor/map images below.
+        // applyVersionStoragePolicy(APP_VERSION): 2nd onMounted — see boot hooks; not moved here.
+
         const APP_VERSION = window.APP_VERSION || "26052601";
         const changelogManager = window.JPAPPChangelogManager;
         const versionImageAsset = (path) => {
@@ -1386,6 +1390,7 @@ const _jpApp = Vue.createApp({
             fetch: typeof window.fetch === 'function' ? window.fetch.bind(window) : null
         });
 
+        // ---- [ SETTINGS & DEV TOOLS ] ----
         const DEFAULT_TTS_VOICE = 'ja-JP-Neural2-B';
 
         const { settings, loadSettings, saveSettings } = window.JPAPPSettingsManager.createVueBoundGeneralSettings(

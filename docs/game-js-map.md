@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
-> **Last audited:** 2026-05-27 (M12 codex escape watches + M11 home display)
-> **Doc sync:** 2026-05-27 — M12：`[ CODEX — ESCAPE WATCHES ]` ~L3003+（Escape／關閉 watch）。開輪同步 `watch([isCodexOpen, …])` 留其前（**非** Escape）。M11/M9 錨點見 §F。
+> **Last audited:** 2026-05-27 (M13 home version/changelog + M12 escape watches)
+> **Doc sync:** 2026-05-27 — M13：`[ HOME — VERSION & CHANGELOG DISPLAY ]` ~L1374+。M12/M11 錨點見 §F；`applyVersionStoragePolicy` 仍在 #39 onMounted（**未搬**）。
 > **File:** `assets/js/game.js` — **~11,656 lines** (1-indexed；M10 後以 `rg` 錨點為準)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -48,7 +48,8 @@
 | 10 | **Map — stage pick & tab flow** | 1054–1085 | `handleMapTabClick`、`jumpToMapSegment`（流程；display glue 見 #6a） | **High** | `handleMapTabClick`, `jumpToMapSegment` | `settings-manager.js` | **no** | 地圖 tab／區段切換、BGM 觸發 |
 | 11 | **Map — battle confirm & endings** | 1086–1315 | `selectStageFromMap`、`confirmAndStartBattle`、L35/L36 結局、`playResultFanfare` 定義 | **High** | `selectStageFromMap`, `checkGlobalEndingTriggers`, `playMainEndingFinale` | `mentor-dialogue-map.md` | **no** | 關卡確認、結局 mentor |
 | 12 | **Map — return & knowledge cards** | 1316–1411 | `returnToMap`、知識卡吸收、`triggerNextKnowledgeCard` | **High** | `returnToMap`, `triggerNextKnowledgeCard`, `_afterKnowledgeCards` | `index.html` knowledge overlay | **no** | 破關回地圖、知識卡 |
-| 13 | **Home — version, settings, changelog** | 1412–1526 | `APP_VERSION`、`appVersion`、`openChangelog`、`versionImageAsset`、settings、devTools（**未併入** #5b；語意鄰首頁但非存檔卡） | Low | `appVersion`, `openChangelog`, `isDevToolsVisible` | `changelog-manager.js`, `home.css`, `index.html` | **yes** | 首頁版本字、changelog、設定 |
+| 13 | **Home — version & changelog display** | 1374–1391 | `[ HOME — VERSION & CHANGELOG DISPLAY ]`：`APP_VERSION`、`appVersion`、`versionImageAsset`、`createChangelogState`（`isChangelogOpen` / `changelogData` / `openChangelog`） | Low | `appVersion`, `openChangelog`, `versionImageAsset` | `changelog-manager.js`, `index.html`, `home.css` | **yes**（顯示） | 勿改 `APP_VERSION`／`changelog.json`；`versionImageAsset` 亦供導師圖 |
+| 13b | **Settings & dev tools** *(file-order)* | 1393–1526 | `settings`、`devToolsState`、`answerMode`、flickState 起點（**非** changelog） | Low | `settings`, `isDevToolsVisible`, `loadSettings` | `settings-manager.js`, `dev-tools.js` | defer | `devToolsState` 見 #40b 備註 |
 | 14 | **Codex — wheel state (RAF vars)** | 1527–1574 | 共鳴輪 phase、拖曳、RAF 常數（非 ref） | Low | `codexWheelPhase`, `CODEX_WHEEL_` | `spirit-codex-helpers.js` | defer | 開共鳴輪不卡頓 |
 | 15 | **Mentor — state & fallbacks** | 1575–1834 | map mentor refs、`isMapMentorOpen`、helpers fallback、`loadMentorState` | **High** | `mentorTutorialSeen`, `isMapMentorOpen` | `mentor-dialogue-helpers.js`, `mentor-dialogue-map.md` | **no** | map-only；無 battle modal |
 | 16 | **Mentor — dialogue runtime** | 1835–2139 | `setupMentorDialogue`（**`showMap` 必須**）、typing、video、mentor audio | **DO NOT TOUCH** | `setupMentorDialogue`, `playMentorAudioForCurrentPage`, `finishMentorDialogue` | `audio-tts.js`, `mentor-dialogue-map.md` | **no** | 地圖／確認窗導師；iOS 音訊 |
@@ -89,7 +90,7 @@
 
 | 玩家看到的 | 主要 `game.js` | 主要其他檔 |
 |------------|----------------|------------|
-| 封面／開始／版本字 `v{{ appVersion }}` | #13 `appVersion`；#22 `showLevelSelect` | `index.html`（`v-if="showLevelSelect"`）、`assets/css/home.css` |
+| 封面／開始／版本字 `v{{ appVersion }}` | **#13** `appVersion`；#22 `showLevelSelect` | `index.html`（`v-if="showLevelSelect"`）、`assets/css/home.css` |
 | 三槽存檔面板（流程） | #9 | `index.html` L2102–2148 |
 | 存檔卡四行摘要 | #5b `saveSlotCards` | 見 §首頁存檔卡 |
 | 進地圖（非首頁） | #8 `openMap`；#22 `showMap` | `settings-manager.js` 地圖節點樣式 |
@@ -311,7 +312,7 @@
 | 首頁／封面／版本字 | `showLevelSelect`, `appVersion` | #13, #22 | `index.html`, `home.css` |
 | 存檔卡顯示（四行摘要、共鳴率文案） | `saveSlotCards`, `calculateSaveSlotResonanceText` | **#5b** | `index.html`, `home.css`, `game-utils.js` |
 | 存檔槽流程／新開局／刪檔 | `openSaveSlotPanel`, `selectSaveSlot` | #5, #7, #9 | `game.js`（高風險） |
-| 設定／changelog | `openChangelog`, `createChangelogState` | #13 | `changelog-manager.js` |
+| 設定／changelog | `openChangelog`, `createChangelogState` | **#13**, #13b（settings） | `changelog-manager.js` |
 | 地圖 UI／HUD／確認窗文案 | `activateMapAmbient`, `getStageFocusLabel`, `getMapNodeStyle`, `map-chapters.json` | **#6a**, **§地圖顯示層** | `settings-manager.js`, `index.html`, `map-chapters.json` |
 | 回地圖／首頁↔地圖流程 | `returnToMap`, `openMap`, `handleEscapeToMap` | **§地圖流程** | **DO NOT TOUCH**（BGM／fanfare／旗標） |
 | 地圖／確認窗導師出現時機 | `checkPrologueTrigger`, `selectStageFromMap`, `startStageWithExplanation` | **mentor-dialogue-map** §地圖觸發點 | mentor runtime／JSON／audio **DO NOT TOUCH** |
@@ -351,7 +352,7 @@
 
 | 任務 | 先看 game.js 區塊 | 也看 | 風險備註 |
 |------|-------------------|------|----------|
-| 首頁 UI／版本顯示 | #13, #22 | `index.html`, `home.css`, `changelog-manager.js` | 低風險；勿動 `showLevelSelect` 切換邏輯除非任務要求 |
+| 首頁 UI／版本顯示 | **#13**, #22 | `index.html`, `home.css`, `changelog-manager.js` | 低風險；勿動 `showLevelSelect` 切換邏輯除非任務要求 |
 | 存檔卡顯示格式 | #5b | `game-utils.js`, `home.css` | 勿碰 #5/#9 寫入與刪槽 |
 | 存檔 / 多槽 / 新開局（流程） | #5, #7, #9 | `storage-manager.js` | **high-risk** |
 | 地圖顯示（背景／節點／HUD／確認窗） | §地圖顯示層 | `map-chapters.json`, `settings-manager.js`, `index.html` | 勿改 `confirmAndStartBattle` / `startLevel` |
@@ -372,7 +373,7 @@
 | 親密度 / `skillMastery` | #6, #35 | `addSkillMasteryProgress`；勿與已退役 `skillCorrectCounts` 混淆 | 存檔相容 |
 | 導師對話 runtime | #15–16 | `mentor-dialogue-helpers.js`, `mentor-dialogues.v1.json` | **DO NOT TOUCH**（音訊） |
 | 音訊 / BGM / TTS / 手勢恢復 | #24–26, #32 | `audio-tts.js`, `audio-debug-manager.js` | **DO NOT TOUCH**；#32 行號在出題區之後 |
-| Changelog / 版本 reload | #13, #39 | `changelog-manager.js`, `index.html` `APP_VERSION` | 低風險 |
+| Changelog / 版本 reload | **#13**, #39 | `changelog-manager.js`, `index.html` `APP_VERSION` | #39 `applyVersionStoragePolicy` 在 onMounted；勿與 #13 混淆 |
 | Dev / debug | #13, **#40**, #40b, #41 | `debug.js`, `dev-tools.js` | 僅 dev；`__debugQMix` 見 #40 |
 | 題庫文案 / 正解 | —（**不要**先改 game.js） | `earlyGamePools.v1.js` 等 | 凍結時只改 data |
 
@@ -501,7 +502,7 @@
 ## F. Section header（`game.js` 內錨點）
 
 > **用途：** `rg "\[ .* \]" assets/js/game.js` 或下表 **Keywords** 定位；行號會漂移，以註解文字為準。
-> **2026-05-27（M12）：** `[ CODEX — ESCAPE WATCHES ]` ~L3003。M11 `[ HOME — SAVE SLOT DISPLAY ]` ~L355。開輪 sync watch ~L2980（**未**併入 Escape 區）。
+> **2026-05-27（M13）：** `[ HOME — VERSION & CHANGELOG DISPLAY ]` ~L1374。M12 `[ CODEX — ESCAPE WATCHES ]` ~L3003。M11 `[ HOME — SAVE SLOT DISPLAY ]` ~L355。
 
 | Header 文字（`rg`） | 約略行 | §A 對照 | 備註 |
 |--------------------|--------|---------|------|
@@ -510,6 +511,7 @@
 | `[ CONFIG & STATE — VUE REACTIVE SETUP ]` | ~174 | #4 | **既有** |
 | `[ PROGRESSION / SAVE SLOTS ]` | ~196 | #5, #7 | **2026-05-24 L2 新增**；save core only（`saveSlotCards` 見下行） |
 | `[ HOME — SAVE SLOT DISPLAY ]` | ~355 | **#5b** | **2026-05-27 M11**；`saveSlotCards`；utils 解構仍在 setup 頂 |
+| `[ HOME — VERSION & CHANGELOG DISPLAY ]` | ~1374 | **#13** | **2026-05-27 M13**；`appVersion` / changelog modal；policy 見 #39 |
 | `[ MAP — DISPLAY HELPERS ]` | ~449 | **#6a** | **2026-05-27 M7 新增**；display glue only |
 | `[ MAP FLOW & MENTOR TRIGGERS ]` | ~698 | #8–12 | **2026-05-24 L2 新增**（`checkPrologueTrigger` / `openMap` 區） |
 | `[ STATE — SKILLS & CODEX ]` | ~1509 | #14–19 | **既有** codex state umbrella |
@@ -539,6 +541,7 @@
 ```javascript
 // ================= [ PROGRESSION / SAVE SLOTS ] =================
 // ================= [ HOME — SAVE SLOT DISPLAY ] =================
+// ================= [ HOME — VERSION & CHANGELOG DISPLAY ] =================
 // ================= [ MAP — DISPLAY HELPERS ] =================
 // ================= [ MAP FLOW & MENTOR TRIGGERS ] =================
 // ================= [ CODEX — DISPLAY GLUE ] =================
