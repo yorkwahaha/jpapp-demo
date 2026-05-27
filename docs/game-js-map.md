@@ -69,9 +69,9 @@
 | 25 | **Battle — pause / resume** | 4190–4246 | `pauseBattle`、`resumeBattle`（開圖鑑／**map** mentor 時） | Med | `pauseBattle`, `resumeBattle`, `closeCodex` | — | defer | 開圖鑑不推進 ATB |
 | 26 | **Audio — core (init / BGM / SFX)** | 4247–6626 | `initAudioCtx`、`initAudio`、`playBgm`、`playSfx`、pool、duck | **DO NOT TOUCH** | `initAudio`, `playBgm`, `stopAllAudio`, `playSfx` | `audio-tts.js`, `game-constants.js` | **no** | iOS 手勢、BGM 切換 |
 | 27 | **Battle — Flick engine** | 6627–6929 | `handleRuneClick`、`startFlick`、`resolveFlickShot` | **High** | `flickState`, `FLICK_MIN`, `resolveFlickShot` | `vfx-helpers.js` | **no** | Flick 命中/擦過 |
-| 28 | **Battle — ATB & timer** | 6930–7005 | `runTimerLogic`、`startTimer`（開局計時；**無** battle mentor） | **High** | `runTimerLogic`, `startTimer`, `timeLeft` | `hero-status.js` | **no** | 倒數、超時 |
-| 29 | **Battle — boss attack VFX** | 7006–7512 | `playBossVineAttackVfx`、`playBossSmashAttackVfx` 等 | Low | `playBossVineAttackVfx`, `playBossSmashAttackVfx` | `battle.css` | **yes** | Boss 特殊攻擊畫面 |
-| 30 | **Battle — applyMonsterAttack & mistakes** | 7513–7778 | `applyMonsterAttack`、`playMistakeVoice`、`clearMistakes` | **High** | `applyMonsterAttack`, `playMistakeVoice` | — | **no** | 怪物攻擊、錯題本 |
+| 28 | **Battle — ATB & timer** | 6957–7028 | `[ BATTLE — ATB TIMER ]` / `[ TIMER ]`：`runTimerLogic`、`startTimer`（**DO NOT TOUCH**；上界 **#29** 前） | **High** | `BATTLE — ATB TIMER`, `runTimerLogic`, `startTimer` | `hero-status.js` | **no** | 倒數、超時；`runTimerLogic` 會呼叫 `applyMonsterAttack` |
+| 29 | **Battle — boss attack VFX** | 7034–7523 | `[ BATTLE — BOSS ATTACK VFX ]`：`_isBossSpecialAttackPlaying`、`playBoss*Vfx`、`playMonsterClawAttackVfx`（boss 分支 dispatch + 共用鎖；**navigation-only**；**DO NOT TOUCH** 函式／setTimeout／shake） | Med | `BATTLE — BOSS ATTACK VFX`, `playBossVineAttackVfx` | `battle.css` | defer | Boss 特殊攻擊畫面；抽取見 §F Phase 2（**非**本 patch） |
+| 30 | **Battle — applyMonsterAttack & mistakes** | 7525–7790 | `applyMonsterAttack`、`playMistakeVoice`、`clearMistakes`（**DO NOT TOUCH**；下界緊接 **#29**） | **High** | `applyMonsterAttack`, `playMistakeVoice` | — | **no** | 怪物攻擊、傷害、SFX 編排、錯題本 |
 | 31 | **Question generation** | 7769–9231 | `QUESTION_MIX_CONFIG`、`generateQuestionBySkill`、`getChoices`、`startBossQueue`；後段與 `startLevel` helper 交錯 | **DO NOT TOUCH** | `generateQuestionBySkill`, `startBossQueue` | `earlyGamePools.v1.js`, `levels.v1.json` | **no** | 關卡題型分布 |
 | 32 | **Audio — debug format & gesture tail** *(file-order)* | 8080–8581 | `formatAudioDebugValue`、`onUserGesture`、`ensureBgmElementSync` | **DO NOT TOUCH** | `onUserGesture`, `formatAudioDebugValue` | `audio-debug-manager.js` | **no** | 實體在 #31 之後；語意屬音訊 |
 | 33 | **Battle — startLevel & initGame** | 8582–10033 | `startLevel`、`initGame`、題庫組裝、knowledge card 佇列（**無** battle mentor） | **High** | `startLevel`, `initGame`, `questions` | `mentor-dialogue-map.md` §initGame | **no** | 開戰 → knowledge card → `startTimer` |
@@ -542,9 +542,10 @@
 | `[ STATE — AUDIO REFS ]` | ~4027 | #24 | **既有** |
 | `[ BATTLE — PAUSE / RESUME ]` | ~4191 | #25 | **2026-05-24 L2 新增**（取代舊 `BATTLE CONTROL` 一行註解） |
 | `[ AUDIO & TTS ]` | ~4247 | #26 | **既有**；audio freeze |
-| `[ BATTLE — ATB TIMER ]` | ~6932 | #28 | **2026-05-24 L2 新增**（`runTimerLogic` 前） |
-| `[ TIMER ]` | ~6974 | #28 | **既有** inner timer anchor |
-| `[ QUESTION GENERATION ]` | ~7773 | #31 | **既有** |
+| `[ BATTLE — ATB TIMER ]` | ~6957 | #28 | **2026-05-24 L2 新增**（`runTimerLogic` 前）；**DO NOT TOUCH** |
+| `[ TIMER ]` | ~7001 | #28 | **既有** inner timer anchor；ends ~7028；**非** #29 |
+| `[ BATTLE — BOSS ATTACK VFX ]` | ~7030 | **#29** | **2026-05-27 M23b**；ends before `runPauseTimerLogic` / **#30** `applyMonsterAttack`；**DO NOT TOUCH** bodies/timing/shake |
+| `[ QUESTION GENERATION ]` | ~7775 | #31 | **既有** |
 | `[ BATTLE INIT ]` | ~9232 | #33 | **既有** |
 | `[ BATTLE LOGIC ]` | ~10161 | #34–35 | **既有** |
 | `[ BATTLE — CHECK ANSWER ]` | ~10346 | #35 | **2026-05-24 L2 新增**；DO NOT REFACTOR CASUALLY |
@@ -564,7 +565,7 @@
 | `[ RETURN — MAP / HOME BINDINGS ]` | ~11658 | #41 | **2026-05-27 M17**；地圖／存檔槽／知識卡 |
 | `[ APP — MOUNT / INIT ]` | ~11684 | **#41** | **2026-05-27 M16**；`_jpApp.mount('#app')` |
 
-**下一批候選（尚未插入）：** `[ CODEX — RESONANCE WHEEL ]`（wheel runtime 子錨；落在 `[ CODEX — COMPUTED ]` 大段內、`setCodexWheelPhase` 前；**DO NOT TOUCH** 除非任務明示）。`[ BATTLE — BOSS ATTACK VFX ]`（**M23b**；~7029–7520、`playBossVineAttackVfx` 等；**非** M23a；緊鄰 `applyMonsterAttack`；**DO NOT TOUCH** 除非任務明示）。
+**下一批候選（尚未插入）：** `[ CODEX — RESONANCE WHEEL ]`（wheel runtime 子錨；落在 `[ CODEX — COMPUTED ]` 大段內、`setCodexWheelPhase` 前；**DO NOT TOUCH** 除非任務明示）。Boss attack VFX **抽取**（§F Phase 2）仍為高風險未來項，**非** navigation patch。
 
 ```javascript
 // ================= [ GLOBAL — VFX / SP HUD SHIMS ] =================
@@ -598,6 +599,8 @@
 // ================= [ MENTOR DIALOGUE — RUNTIME ] =================   // 檔內為 [ MENTOR DIALOGUE ]
 // ================= [ BATTLE — PAUSE / RESUME ] =================
 // ================= [ BATTLE — ATB TIMER ] =================
+// ---- [ TIMER ] ----
+// ================= [ BATTLE — BOSS ATTACK VFX ] =================   // navigation-only; DO NOT TOUCH bodies/timing/shake
 // ================= [ QUESTION GENERATION ] =================           // DO NOT REFACTOR CASUALLY
 // ================= [ BATTLE — CHECK ANSWER ] =================         // DO NOT REFACTOR CASUALLY
 // ================= [ VICTORY — GRANT REWARDS ] =================       // DO NOT TOUCH

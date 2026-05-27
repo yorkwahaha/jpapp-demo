@@ -7027,6 +7027,8 @@ const _jpApp = Vue.createApp({
 
         };
 
+        // ================= [ BATTLE — BOSS ATTACK VFX ] =================
+        // navigation-only. DO NOT TOUCH: _isBossSpecialAttackPlaying, playBoss*Vfx, playMonsterClawAttackVfx, setTimeout, bossScreenShake.
         // 預防 Boss 特殊攻擊重複播出的鎖定狀態
 
         let _isBossSpecialAttackPlaying = false;
