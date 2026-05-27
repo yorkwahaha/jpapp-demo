@@ -82,6 +82,47 @@
         return record ? formatStageClearTime(record.bestTimeSeconds) : '--.-- \u79d2';
     }
 
+    var HIDDEN_STAGE_SCORE_NAME = '？？？';
+
+    /**
+     * 全關卡成績表：是否顯示關卡主題名（助詞／焦點標籤）。
+     * 已通關、或有 stageBest 紀錄、或目前在 unlockedLevels 內 → reveal；其餘未來關 → hide。
+     */
+    function shouldRevealScoreStageName(stageNumber, snapshot) {
+        var n = Number(stageNumber);
+        if (!Number.isFinite(n) || n < 1) return false;
+        snapshot = snapshot || {};
+        var clearedLevels = snapshot.clearedLevels || [];
+        var unlockedLevels = snapshot.unlockedLevels || [];
+        var stageBestRecords = snapshot.stageBestRecords || {};
+        var normalizeStageBestRecord = snapshot.normalizeStageBestRecord || function (r) { return r; };
+        var record = pickNormalizedStageBestRecord(n, stageBestRecords, normalizeStageBestRecord);
+        if (clearedLevels.indexOf(n) !== -1 || !!record) return true;
+        for (var i = 0; i < unlockedLevels.length; i++) {
+            if (Number(unlockedLevels[i]) === n) return true;
+        }
+        return false;
+    }
+
+    /** 全關卡成績表：主標題列字串（焦點 label；未 reveal 時為「？？？」）。 */
+    function getScoreStageDisplayName(stageNumber, snapshot) {
+        return getScoreStageDisplayFields(stageNumber, snapshot).focusLabel;
+    }
+
+    function getScoreStageDisplayFields(stageNumber, snapshot) {
+        snapshot = snapshot || {};
+        var sm = global.JPAPPSettingsManager;
+        var LEVEL_CONFIG = snapshot.LEVEL_CONFIG || {};
+        var skillsAll = snapshot.skillsAll || {};
+        if (!shouldRevealScoreStageName(stageNumber, snapshot)) {
+            return { focusParticle: '', focusLabel: HIDDEN_STAGE_SCORE_NAME };
+        }
+        return {
+            focusParticle: sm.computeStageFocusParticleDisplay(stageNumber, LEVEL_CONFIG, skillsAll),
+            focusLabel: sm.computeStageFocusLabelDisplay(stageNumber, LEVEL_CONFIG, skillsAll)
+        };
+    }
+
     /**
      * 全關卡成績 modal 的列資料（stageRecordRows computed 的來源）。
      * 每列：關卡標題、焦點助詞、歷史 S–E（bestGrades）、最佳時間字串、通關狀態。
@@ -89,11 +130,11 @@
      * 星等規則與結算卡共用 calculateStageStars；寫入 stageBestRecords / bestGrades 在 game.js grantRewards 鏈。
      */
     function buildStageRecordTableRows(snapshot) {
-        var sm = global.JPAPPSettingsManager;
         var total = Math.max(0, Number(snapshot.total) || 0);
         var LEVEL_CONFIG = snapshot.LEVEL_CONFIG || {};
         var skillsAll = snapshot.skillsAll || {};
         var clearedLevels = snapshot.clearedLevels || [];
+        var unlockedLevels = snapshot.unlockedLevels || [];
         var bestGrades = snapshot.bestGrades || {};
         var stageBestRecords = snapshot.stageBestRecords || {};
         var normalizeStageBestRecord = snapshot.normalizeStageBestRecord || function (r) { return r; };
@@ -106,11 +147,20 @@
             var isCleared = clearedLevels.indexOf(stageNumber) !== -1 || !!record;
             var rank = isCleared ? (bestGrades[stageNumber] || '—') : '—';
             var bestTimeText = record ? formatStageClearTime(record.bestTimeSeconds) : '—';
+            var rowSnapshot = {
+                clearedLevels: clearedLevels,
+                unlockedLevels: unlockedLevels,
+                stageBestRecords: stageBestRecords,
+                normalizeStageBestRecord: normalizeStageBestRecord,
+                LEVEL_CONFIG: LEVEL_CONFIG,
+                skillsAll: skillsAll
+            };
+            var displayFields = getScoreStageDisplayFields(stageNumber, rowSnapshot);
             rows.push({
                 stageNumber: stageNumber,
                 title: config.title || config.name || ('Stage ' + String(stageNumber).padStart(2, '0')),
-                focusParticle: sm.computeStageFocusParticleDisplay(stageNumber, LEVEL_CONFIG, skillsAll),
-                focusLabel: sm.computeStageFocusLabelDisplay(stageNumber, LEVEL_CONFIG, skillsAll),
+                focusParticle: displayFields.focusParticle,
+                focusLabel: displayFields.focusLabel,
                 rank: rank,
                 bestTimeText: bestTimeText,
                 isCleared: isCleared,
@@ -169,6 +219,7 @@
         var maxLevel = deps.maxLevel;
         var skillsAll = deps.skillsAll;
         var clearedLevels = deps.clearedLevels;
+        var unlockedLevels = deps.unlockedLevels;
         var bestGrades = deps.bestGrades;
         var stageBestRecords = deps.stageBestRecords;
         var normalizeStageBestRecord = deps.normalizeStageBestRecord;
@@ -231,6 +282,7 @@
                 LEVEL_CONFIG: LEVEL_CONFIG.value,
                 skillsAll: skillsAll.value,
                 clearedLevels: clearedLevels.value,
+                unlockedLevels: unlockedLevels.value,
                 bestGrades: bestGrades.value,
                 stageBestRecords: stageBestRecords.value,
                 normalizeStageBestRecord: normalizeStageBestRecord,
@@ -272,6 +324,10 @@
         pickNormalizedStageBestRecord: pickNormalizedStageBestRecord,
         formatStageBestStarsDisplay: formatStageBestStarsDisplay,
         formatStageBestTimeDisplay: formatStageBestTimeDisplay,
+        HIDDEN_STAGE_SCORE_NAME: HIDDEN_STAGE_SCORE_NAME,
+        shouldRevealScoreStageName: shouldRevealScoreStageName,
+        getScoreStageDisplayName: getScoreStageDisplayName,
+        getScoreStageDisplayFields: getScoreStageDisplayFields,
         buildStageRecordTableRows: buildStageRecordTableRows,
         buildCurrentStageRecordPayload: buildCurrentStageRecordPayload,
         isAllStagesSRank: isAllStagesSRank,

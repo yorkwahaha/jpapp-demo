@@ -11294,6 +11294,7 @@ const _jpApp = Vue.createApp({
                 maxLevel,
                 skillsAll,
                 clearedLevels,
+                unlockedLevels,
                 bestGrades,
                 stageBestRecords,
                 normalizeStageBestRecord
