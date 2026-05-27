@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
-> **Last audited:** 2026-05-27 (M11 home save-slot display + M10 anchors)
-> **Doc sync:** 2026-05-27 — M11：`[ HOME — SAVE SLOT DISPLAY ]` ~L355+（`saveSlotCards`）。M9/M8/M7 錨點見 §F；`formatSaveSlotTime` / `calculateSaveSlotResonanceText` 仍於 setup `__JPAPP_UTILS` 解構（**未搬**）。
+> **Last audited:** 2026-05-27 (M12 codex escape watches + M11 home display)
+> **Doc sync:** 2026-05-27 — M12：`[ CODEX — ESCAPE WATCHES ]` ~L3003+（Escape／關閉 watch）。開輪同步 `watch([isCodexOpen, …])` 留其前（**非** Escape）。M11/M9 錨點見 §F。
 > **File:** `assets/js/game.js` — **~11,656 lines** (1-indexed；M10 後以 `rg` 錨點為準)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -55,7 +55,8 @@
 | 17 | **Codex — wheel logic & UI** | 2140–2821 | 共鳴輪 phase、拖曳／動畫、`openCodexDetail`（**runtime**；display glue 見 #17b） | Low–Med | `setCodexWheelPhase`, `openCodexDetail`, `endCodexDrag` | `spirit-codex-helpers.js`, `codex.css` | defer | 共鳴輪旋轉；**勿**改 RAF/detent |
 | 17b | **Codex — display glue** | 2088–2105, 2823–2906 | `[ CODEX — DISPLAY GLUE ]`：spirit 圖示、mastery 顯示、wheel item class、怪物圖鑑、技能類型標籤 | Low | `getCodexSkillDisplayName`, `monsterCodexEntries`, `getSkillTypeLabel`, `getSkillMastery` | `codex-display-utils.js`, `spirit-codex-helpers.js` | **yes**（顯示） | `spiritCodexHelpers` boot 须在 #17 computed 前 |
 | 18 | **Codex — monster index** | 2870–2902 *(in #17b)* | `monsterCodexEntries` computed（薄）、開關／選取 | Low | `monsterCodexEntries`, `openMonsterCodex` | `codex-display-utils.js`, `enemies.v1.json` | **yes** | 怪物圖鑑列表/詳情 |
-| 19 | **Codex — watches & Escape** | 2996–3007 | `Escape` 關閉共鳴輪／怪物圖鑑 | Low | `isCodexOpen`, `keydown` | — | **yes** | Esc 關閉、開輪同步 |
+| 19 | **Codex — open sync watch** *(file-order)* | 2980–2998 | 開共鳴輪時 `codexPage`／phase 同步（**runtime 接線**；**非** Escape） | Low–Med | `watch([isCodexOpen, codexWheelSkills` | — | defer | 勿併入 #19b；勿改 RAF/detent |
+| 19b | **Codex — escape watches** | 3003–3018 | `[ CODEX — ESCAPE WATCHES ]`：`Escape` 關閉共鳴輪／怪物圖鑑；關閉時 `forceStopAllCodexWheelMotion` | Low | `keydown`, `watch(isCodexOpen` | — | **yes** | `closeCodex` 定義見 #25；Esc 行為勿改 |
 | 20 | **Data load & abilities** | 3008–3309 | `loadGameData`、`abilities` fetch | Low–Med | `loadGameData`, `skillsAll` | `skills.v1.json`, `abilities.v1.json` | defer | 開局資料齊全 |
 | 21 | **Battle — onomatope skills** | 3310–3521 | `castAbility`、`playSkillSfx`、技能 overlay；含 `onMounted(loadGameData)` | Med | `castAbility`, `heroBuffs` | `hero-status.js`, `abilities.v1.json` | defer | 擬聲詞施放 |
 | 22 | **Battle — core refs & combo UI** | 3522–3783 | 戰鬥常數、`showLevelSelect`、`player`/`monster`、結算 UI refs（含 #36b） | Med | `showLevelSelect`, `monsterResultShown`, `comboPopup` | `index.html` battle/home | defer | 首頁↔戰鬥切換 |
@@ -500,7 +501,7 @@
 ## F. Section header（`game.js` 內錨點）
 
 > **用途：** `rg "\[ .* \]" assets/js/game.js` 或下表 **Keywords** 定位；行號會漂移，以註解文字為準。
-> **2026-05-27（M11）：** `[ HOME — SAVE SLOT DISPLAY ]` ~L355（`saveSlotCards`）。M9–M10：`[ CODEX — DISPLAY GLUE ]` ~L2826；M8 ~L11438；M7 `[ MAP — DISPLAY HELPERS ]` ~L449。
+> **2026-05-27（M12）：** `[ CODEX — ESCAPE WATCHES ]` ~L3003。M11 `[ HOME — SAVE SLOT DISPLAY ]` ~L355。開輪 sync watch ~L2980（**未**併入 Escape 區）。
 
 | Header 文字（`rg`） | 約略行 | §A 對照 | 備註 |
 |--------------------|--------|---------|------|
@@ -515,8 +516,8 @@
 | `[ CODEX - STATE ]` | ~1529 | #14 | **既有** |
 | `[ MENTOR DIALOGUE ]` | ~1835 | #16 | **既有**（`setupMentorDialogue` 前；map-only） |
 | `[ CODEX - COMPUTED ]` | ~2107 | #17, #17b | **既有**；wheel data + runtime；display glue 見下行 |
-| `[ CODEX — DISPLAY GLUE ]` | ~2823 | **#17b** | **2026-05-27 M9**；非 runtime 顯示 helper |
-| `[ CODEX - GLOBAL EVENTS ]` | ~2998 | #19 | **既有** |
+| `[ CODEX — DISPLAY GLUE ]` | ~2828 | **#17b** | **2026-05-27 M9**；非 runtime 顯示 helper |
+| `[ CODEX — ESCAPE WATCHES ]` | ~3003 | **#19b** | **2026-05-27 M12**；Escape／關閉 watch；`closeCodex` 見 #25 |
 | `[ STATE — GAME BATTLE CORE ]` | ~3543 | #22 | **既有** |
 | `[ STATE — AUDIO REFS ]` | ~4001 | #24 | **既有** |
 | `[ BATTLE — PAUSE / RESUME ]` | ~4191 | #25 | **2026-05-24 L2 新增**（取代舊 `BATTLE CONTROL` 一行註解） |
@@ -541,6 +542,7 @@
 // ================= [ MAP — DISPLAY HELPERS ] =================
 // ================= [ MAP FLOW & MENTOR TRIGGERS ] =================
 // ================= [ CODEX — DISPLAY GLUE ] =================
+// ================= [ CODEX — ESCAPE WATCHES ] =================
 // ================= [ MENTOR DIALOGUE — RUNTIME ] =================   // 檔內為 [ MENTOR DIALOGUE ]
 // ================= [ BATTLE — PAUSE / RESUME ] =================
 // ================= [ BATTLE — ATB TIMER ] =================

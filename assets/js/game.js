@@ -2977,10 +2977,7 @@ const _jpApp = Vue.createApp({
                 : safeBaseRate;
         };
 
-        watch(isCodexOpen, (open) => {
-            if (!open) forceStopAllCodexWheelMotion();
-        });
-
+        // Codex open/page sync when wheel opens or skills change — wheel runtime; not Escape UI.
         watch([isCodexOpen, codexWheelSkills, codexUnlockedWheelIndices], () => {
             if (!isCodexOpen.value) return;
             const total = codexWheelSkills.value.length;
@@ -3001,7 +2998,13 @@ const _jpApp = Vue.createApp({
             syncCodexWheelAfterRender();
         });
 
-        // [ CODEX - GLOBAL EVENTS ]
+        // ================= [ CODEX — ESCAPE WATCHES ] =================
+        // UI close only: Escape key + stop wheel motion when codex closes. closeCodex() in [ BATTLE — PAUSE / RESUME ].
+
+        watch(isCodexOpen, (open) => {
+            if (!open) forceStopAllCodexWheelMotion();
+        });
+
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && isCodexOpen.value) {
                 closeCodex();
@@ -3011,7 +3014,6 @@ const _jpApp = Vue.createApp({
                 isMonsterCodexOpen.value = false;
             }
         });
-        // [ /CODEX - GLOBAL EVENTS ]
 
         const loadGameData = async () => {
 
