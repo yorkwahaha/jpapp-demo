@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
-> **Last audited:** 2026-05-27 (M14 result display + M13 home version)
-> **Doc sync:** 2026-05-27 — M14：`[ RESULT — DISPLAY STATE ]` ~L3689+、`[ RESULT — DISPLAY BINDINGS ]` ~L11252+。`updateResultExpDisplay` / `animateRewards` 仍在 `grantRewards`（#36，**未搬**）。
+> **Last audited:** 2026-05-27 (M15 global shims + M14 result display)
+> **Doc sync:** 2026-05-27 — M15：檔首 `[ GLOBAL — VFX / SP HUD SHIMS ]` ~L1；子錨 `[ GLOBAL — VFX SHIMS ]` ~L4+、`[ GLOBAL — SP HUD SHIMS ]` ~L63+（`window.__sp` 在 umbrella 下、VFX 子區之前）。M14：`[ RESULT — DISPLAY STATE ]` ~L3689+、`[ RESULT — DISPLAY BINDINGS ]` ~L11252+。
 > **File:** `assets/js/game.js` — **~11,656 lines** (1-indexed；M10 後以 `rg` 錨點為準)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -34,8 +34,8 @@
 
 | # | Section name | Lines (approx.) | Responsibility | Risk | Keywords (rg) | Related files | Safe? | Validation |
 |---|--------------|-----------------|----------------|------|---------------|---------------|-------|------------|
-| 1 | **Global — VFX shims** | 1–60 | `rectCenter`, `getVfxLayer`, `spawnProjectile` 開機 fallback | Med | `rectCenter`, `getVfxLayer` | `vfx-helpers.js`, `skill-vfx.js` | defer | 戰鬥投射物、滿絆特效 |
-| 2 | **Global — SP HUD** | 61–100 | `window.__sp`, `updateSpUI`, `canAffordSP` | Med | `__sp`, `spendSP`, `regenSP` | Vue `spState` + `.hud-bar-sp-fill`（`updateSpUI`/`#spFill` 為 legacy no-op DOM path，DOM 已移除） | defer | 施放技能扣 SP、答對回 SP |
+| 1 | **Global — VFX shims** | 1–60 | `[ GLOBAL — VFX SHIMS ]`：`rectCenter`, `getVfxLayer`, `spawnProjectile` 開機 fallback | Med | `GLOBAL — VFX SHIMS`, `rectCenter`, `getVfxLayer` | `vfx-helpers.js`, `skill-vfx.js` | defer | 戰鬥投射物、滿絆特效 |
+| 2 | **Global — SP HUD** | 1–2, 63–100 | `[ GLOBAL — SP HUD SHIMS ]`：`window.__sp`, `updateSpUI`, `canAffordSP`（`__sp` 在 umbrella 下、VFX 子區之前） | Med | `GLOBAL — SP HUD SHIMS`, `__sp`, `spendSP`, `regenSP` | Vue `spState` + `.hud-bar-sp-fill`（`updateSpUI`/`#spFill` 為 legacy no-op DOM path，DOM 已移除） | defer | 施放技能扣 SP、答對回 SP |
 | 3 | **Vue bootstrap** | 101–173 | `createApp`, `setup` 開頭、首個 `onMounted` 載入 `map-chapters` | Med | `mapChapters`, `createApp` | `map-chapters.json` | defer | 進地圖章節是否載入 |
 | 4 | **Setup — data refs** | 174–197 | `EARLY_GAME_POOLS`、`LEVEL_CONFIG`、`SKILLS` 等 ref 宣告 | Low | `EARLY_GAME_POOLS`, `LEVEL_CONFIG` | `earlyGamePools.v1.js` | defer | 開局前 ref 存在 |
 | 5 | **Save slots — storage & metadata** | 198–353 | keys、migration、metadata 讀寫、`setActiveSaveSlotId`、`isSlotProgressionReadable`（**save core**；display 見 #5b） | **High** | `PROGRESSION_KEY`, `ensureSaveSlotMigration`, `writeSaveSlotsMetadata` | `storage-manager.js` | **no** | 切槽、migration、metadata |
@@ -502,12 +502,14 @@
 ## F. Section header（`game.js` 內錨點）
 
 > **用途：** `rg "\[ .* \]" assets/js/game.js` 或下表 **Keywords** 定位；行號會漂移，以註解文字為準。
-> **2026-05-27（M14）：** `[ RESULT — DISPLAY STATE ]` ~L3689；`[ RESULT — DISPLAY BINDINGS ]` ~L11252。M13 `[ HOME — VERSION & CHANGELOG DISPLAY ]` ~L1374。
+> **2026-05-27（M15）：** 檔首 umbrella `[ GLOBAL — VFX / SP HUD SHIMS ]` ~L1；子錨 VFX ~L4+、SP HUD ~L63+。M14：`[ RESULT — DISPLAY STATE ]` ~L3689；`[ RESULT — DISPLAY BINDINGS ]` ~L11252。M13 `[ HOME — VERSION & CHANGELOG DISPLAY ]` ~L1374。
 
 | Header 文字（`rg`） | 約略行 | §A 對照 | 備註 |
 |--------------------|--------|---------|------|
-| `[ GLOBAL — VFX SHIMS ]` | （見檔首 `rectCenter`） | #1 | 檔首無正式 header；可 `rg rectCenter` |
-| `[ VUE APP — MAIN COMPONENT ]` | ~99 | #3 | **既有**（`createApp` 前） |
+| `[ GLOBAL — VFX / SP HUD SHIMS ]` | ~1 | #1–2 | **2026-05-27 M15**；檔首 umbrella；`window.__sp` 緊接其下 |
+| `[ GLOBAL — VFX SHIMS ]` | ~4 | #1 | **2026-05-27 M15**；`spawnFloatingDamage` / `rectCenter` / `getVfxLayer` |
+| `[ GLOBAL — SP HUD SHIMS ]` | ~63 | #2 | **2026-05-27 M15**；`updateSpUI`；`canAffordSP` 等見下行 `SP 統一操作函式` |
+| `[ VUE APP — MAIN COMPONENT ]` | ~101 | #3 | **既有**（`createApp` 前） |
 | `[ CONFIG & STATE — VUE REACTIVE SETUP ]` | ~174 | #4 | **既有** |
 | `[ PROGRESSION / SAVE SLOTS ]` | ~196 | #5, #7 | **2026-05-24 L2 新增**；save core only（`saveSlotCards` 見下行） |
 | `[ HOME — SAVE SLOT DISPLAY ]` | ~355 | **#5b** | **2026-05-27 M11**；`saveSlotCards`；utils 解構仍在 setup 頂 |
@@ -541,6 +543,9 @@
 **下一批候選（尚未插入）：** `[ CODEX — RESONANCE WHEEL ]`（wheel runtime 子錨；#17 大段仍用 `[ CODEX - COMPUTED ]` umbrella）。`spiritCodexHelpers` boot ~L2088 须在 computed 前，**未**併入 DISPLAY GLUE。
 
 ```javascript
+// ================= [ GLOBAL — VFX / SP HUD SHIMS ] =================
+// ---- [ GLOBAL — VFX SHIMS ] ----
+// ---- [ GLOBAL — SP HUD SHIMS ] ----
 // ================= [ PROGRESSION / SAVE SLOTS ] =================
 // ================= [ HOME — SAVE SLOT DISPLAY ] =================
 // ================= [ HOME — VERSION & CHANGELOG DISPLAY ] =================

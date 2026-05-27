@@ -1,6 +1,7 @@
-
+// ================= [ GLOBAL — VFX / SP HUD SHIMS ] =================
 window.__sp = { cur: 20, max: 20 };
 
+// ---- [ GLOBAL — VFX SHIMS ] ----
 const spawnFloatingDamage = window.__JPAPP_VFX?.spawnFloatingDamage || function () { };
 window.spawnFloatingDamage = spawnFloatingDamage;
 
@@ -58,6 +59,7 @@ window.getCenterOrFallback = window.getCenterOrFallback || getCenterOrFallback;
 window.getVfxLayer = window.getVfxLayer || getVfxLayer;
 window.spawnProjectile = window.spawnProjectile || spawnProjectile;
 
+// ---- [ GLOBAL — SP HUD SHIMS ] ----
 window.updateSpUI = function () {
 
     const fill = document.getElementById("spFill");
