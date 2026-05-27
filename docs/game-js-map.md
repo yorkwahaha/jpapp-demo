@@ -1,7 +1,7 @@
 # JPAPP `game.js` Code Map
 
-> **Last audited:** 2026-05-27 (M22 codex state refs + M21 map flow)
-> **Doc sync:** 2026-05-27 — M22：`[ CODEX — STATE REFS ]` ~L1503；`[ CODEX — SPIRIT HELPERS BOOT ]` ~L2106；`[ CODEX — COMPUTED ]` ~L2126（**非** wheel runtime）。M21：map flow 子錨。
+> **Last audited:** 2026-05-27 (M24a+b data load + combat constants)
+> **Doc sync:** 2026-05-27 — M24：`[ DATA — LOAD GAME DATA ]` ~L3032；`[ BATTLE — COMBAT CONSTANTS ]` ~L3528（**非** `[ STATE — GAME BATTLE CORE ]`）。M23b boss attack VFX；M23a boss death。
 > **File:** `assets/js/game.js` — **~11,656 lines** (1-indexed；M10 後以 `rg` 錨點為準)
 > **Purpose:** 讓 Agent 用最小搜尋範圍定位區塊；**本文件不取代** `node --check` 或手動測試。
 > **Companion:** [`code-ownership-map.md`](./code-ownership-map.md)（跨檔依賴與 script 載入順序）
@@ -59,9 +59,9 @@
 | 18 | **Codex — monster index** | 2870–2902 *(in #17b)* | `monsterCodexEntries` computed（薄）、開關／選取 | Low | `monsterCodexEntries`, `openMonsterCodex` | `codex-display-utils.js`, `enemies.v1.json` | **yes** | 怪物圖鑑列表/詳情 |
 | 19 | **Codex — open sync watch** *(file-order)* | 2980–2998 | 開共鳴輪時 `codexPage`／phase 同步（**runtime 接線**；**非** Escape） | Low–Med | `watch([isCodexOpen, codexWheelSkills` | — | defer | 勿併入 #19b；勿改 RAF/detent |
 | 19b | **Codex — escape watches** | 3003–3018 | `[ CODEX — ESCAPE WATCHES ]`：`Escape` 關閉共鳴輪／怪物圖鑑；關閉時 `forceStopAllCodexWheelMotion` | Low | `keydown`, `watch(isCodexOpen` | — | **yes** | `closeCodex` 定義見 #25；Esc 行為勿改 |
-| 20 | **Data load & abilities** | 3008–3309 | `loadGameData`、`abilities` fetch | Low–Med | `loadGameData`, `skillsAll` | `skills.v1.json`, `abilities.v1.json` | defer | 開局資料齊全 |
-| 21 | **Battle — onomatope skills** | 3310–3521 | `castAbility`、`playSkillSfx`、技能 overlay；含 `onMounted(loadGameData)` | Med | `castAbility`, `heroBuffs` | `hero-status.js`, `abilities.v1.json` | defer | 擬聲詞施放 |
-| 22 | **Battle — core refs & combo UI** | 3522–3687 | 戰鬥常數、`showLevelSelect`、`player`/`monster`、mistakes（**不含** result display；見 #36b） | Med | `showLevelSelect`, `comboPopup` | `index.html` battle/home | defer | 首頁↔戰鬥切換 |
+| 20 | **Data load & abilities** | 3032–3231 | `[ DATA — LOAD GAME DATA ]`：`loadGameData`、`loadGameData()` boot 呼叫、skills/spirits/levels fetch（**navigation-only**；**DO NOT TOUCH** fetch／unlock 推導） | Low–Med | `DATA — LOAD GAME DATA`, `loadGameData`, `skillsAll` | `skills.v1.json`, `abilities.v1.json` | defer | 開局資料；abilities `.json` fetch 仍在檔內同段後續 |
+| 21 | **Battle — onomatope skills** | 3310–3526 | `castAbility`、`playSkillSfx`、技能 overlay（**無錨**；M24c **略過**／較高風險） | Med | `castAbility`, `heroBuffs` | `hero-status.js`, `abilities.v1.json` | defer | 擬聲詞；勿與 #20 混改 |
+| 22 | **Battle — core refs & combo UI** | 3528–3697 | `[ BATTLE — COMBAT CONSTANTS ]` ~3528–3562：`MONSTER_HP`、`getComboMaxDamage`；`[ STATE — GAME BATTLE CORE ]` ~3563+：`player`/`monster`、combo、mistakes（**不含** #36b） | Med | `BATTLE — COMBAT CONSTANTS`, `STATE — GAME BATTLE CORE`, `comboPopup` | `index.html` battle/home | defer | 常數子錨 **勿**更名 battle core |
 | 36b | **Result — display state** | 3689–3759, 3798 | `[ RESULT — DISPLAY STATE ]`：`animatedExp`、`displayedResult*`、`stageClearElapsedSeconds`、`monsterResultShown` | Low–Med | `animatedExp`, `monsterResultShown`, `stageResultIsNewBest` | `index.html` result modal | defer | `resetBattleOutcomePresentation` ~L3849；計時起點耦合 #36 |
 | 23 | **Battle — boss death VFX** | 3810–4025 | `[ BATTLE — BOSS DEATH VFX ]`：`bossDeathVfxActive`、`resetBattleOutcomePresentation`、`spawnBossDeathBurst`、`startBossDeathSequence`（**navigation-only**；**DO NOT TOUCH** 函式本體／timing／SFX／token） | Med | `BATTLE — BOSS DEATH VFX`, `bossDeathVfxActive`, `spawnBossDeathBurst` | `vfx-helpers.js`, `battle.css` | defer | 魔王死亡演出；見 #23a presentation |
 | 23a | **Battle — monster presentation refs** | 3775–3808 | `[ BATTLE — MONSTER PRESENTATION REFS ]`：`monsterHit`、進場／死亡狀態 refs（**不含** `monsterResultShown`；見 #36b） | Low–Med | `BATTLE — MONSTER PRESENTATION REFS`, `monsterIsDying` | `battle.css` | defer | **M23a**；presentation only |
@@ -535,7 +535,9 @@
 | `[ CODEX — COMPUTED ]` | ~2126 | **#17** | **2026-05-27 M22**；computed 入口；其後 wheel runtime **DO NOT TOUCH** |
 | `[ CODEX — DISPLAY GLUE ]` | ~2839 | **#17b** | **2026-05-27 M9**；非 runtime 顯示 helper |
 | `[ CODEX — ESCAPE WATCHES ]` | ~3003 | **#19b** | **2026-05-27 M12**；Escape／關閉 watch；`closeCodex` 見 #25 |
-| `[ STATE — GAME BATTLE CORE ]` | ~3554 | #22 | **既有** |
+| `[ DATA — LOAD GAME DATA ]` | ~3032 | **#20** | **2026-05-27 M24a**；`loadGameData`；**DO NOT TOUCH** fetch／unlock |
+| `[ BATTLE — COMBAT CONSTANTS ]` | ~3528 | **#22** | **2026-05-27 M24b**；ends before `[ STATE — GAME BATTLE CORE ]` |
+| `[ STATE — GAME BATTLE CORE ]` | ~3563 | #22 | **既有**；**勿**更名 |
 | `[ RESULT — DISPLAY STATE ]` | ~3689 | **#36b** | **2026-05-27 M14**；結算 UI refs；`monsterResultShown` ~3808 |
 | `[ BATTLE — MONSTER PRESENTATION REFS ]` | ~3774 | **#23a** | **2026-05-27 M23a**；`monsterHit`～`monsterTrulyDead`；**非** boss death |
 | `[ BATTLE — BOSS DEATH VFX ]` | ~3809 | **#23** | **2026-05-27 M23a**；ends before `[ STATE — AUDIO REFS ]`；**DO NOT TOUCH** 函式／timing／SFX／token |
@@ -565,7 +567,7 @@
 | `[ RETURN — MAP / HOME BINDINGS ]` | ~11658 | #41 | **2026-05-27 M17**；地圖／存檔槽／知識卡 |
 | `[ APP — MOUNT / INIT ]` | ~11684 | **#41** | **2026-05-27 M16**；`_jpApp.mount('#app')` |
 
-**下一批候選（尚未插入）：** `[ CODEX — RESONANCE WHEEL ]`（wheel runtime 子錨；落在 `[ CODEX — COMPUTED ]` 大段內、`setCodexWheelPhase` 前；**DO NOT TOUCH** 除非任務明示）。Boss attack VFX **抽取**（§F Phase 2）仍為高風險未來項，**非** navigation patch。
+**下一批候選（尚未插入）：** `[ CODEX — RESONANCE WHEEL ]`（wheel runtime；**DO NOT TOUCH**）。`[ BATTLE — ONOMATOPE ABILITIES ]`（#21／M24c **略過**，音訊相鄰）。Boss attack VFX **抽取**（§F Phase 2）為高風險未來項，**非** navigation patch。
 
 ```javascript
 // ================= [ GLOBAL — VFX / SP HUD SHIMS ] =================
@@ -592,6 +594,8 @@
 // ---- [ CODEX — COMPUTED ] ----
 // ================= [ CODEX — DISPLAY GLUE ] =================
 // ================= [ CODEX — ESCAPE WATCHES ] =================
+// ================= [ DATA — LOAD GAME DATA ] =================   // navigation-only; DO NOT TOUCH loadGameData/fetch
+// ---- [ BATTLE — COMBAT CONSTANTS ] ----                            // file-order: before [ RESULT — DISPLAY STATE ]
 // ================= [ RESULT — DISPLAY STATE ] =================
 // ---- [ BATTLE — MONSTER PRESENTATION REFS ] ----
 // ================= [ BATTLE — BOSS DEATH VFX ] =================   // navigation-only; DO NOT TOUCH bodies/timing/SFX

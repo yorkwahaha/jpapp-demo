@@ -3029,6 +3029,7 @@ const _jpApp = Vue.createApp({
             }
         });
 
+        // ================= [ DATA — LOAD GAME DATA ] =================
         const loadGameData = async () => {
 
             try {
@@ -3525,6 +3526,7 @@ const _jpApp = Vue.createApp({
 
         });
 
+        // ---- [ BATTLE — COMBAT CONSTANTS ] ----
         // --- 遊戲核心常數 ---
         const MONSTER_HP = 100;
         const POTION_HP = 30;
