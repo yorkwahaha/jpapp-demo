@@ -210,8 +210,6 @@ function updateHeroStatusBar() {
         }
     }
 
-    if (window.updateSpUI) window.updateSpUI();
-
     // --- Battle Buff Overlay (GIRAGIRA visual) ---
     const overlay = document.getElementById('battleBuffOverlay');
     if (overlay) {
