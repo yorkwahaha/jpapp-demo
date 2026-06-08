@@ -60,42 +60,23 @@ window.getVfxLayer = window.getVfxLayer || getVfxLayer;
 window.spawnProjectile = window.spawnProjectile || spawnProjectile;
 
 // ---- [ GLOBAL — SP HUD SHIMS ] ----
-window.updateSpUI = function () {
-
-    const fill = document.getElementById("spFill");
-
-    const text = document.getElementById("spText");
-
-    if (fill && text) {
-
-        text.textContent = `${window.__sp.cur}/${window.__sp.max}`;
-
-        const pct = Math.max(0, Math.min(100, (window.__sp.cur / window.__sp.max) * 100));
-
-        fill.style.width = `${pct}%`;
-
-    }
-
-};
+// (Direct DOM update path removed; Vue spState handles reactive rendering)
 
 // ---- [ SP 統一操作函式 ] ----
 function canAffordSP(cost) { return window.__sp.cur >= cost; }
 
 function spendSP(cost) {
     window.__sp.cur -= cost;
-    if (window.updateSpUI) window.updateSpUI();
 }
 
 function regenSP() {
     if (window.__sp.cur < window.__sp.max) {
         window.__sp.cur++;
-        if (window.updateSpUI) window.updateSpUI();
     }
 }
 
 function resetSP() {
     window.__sp.cur = window.__sp.max;
-    if (window.updateSpUI) window.updateSpUI();
 }
 
 // ================= [ APP — BOOTSTRAP ] =================
@@ -112,6 +93,8 @@ const _jpApp = Vue.createApp({
             FEEDBACK_VOICE_PATHS,
             GRADE_RANK
         } = GAME_CONSTANTS;
+
+        const BGM_BASE = 'assets/audio/bgm_m4a/';
 
         const {
             normalizeStageBestRecord = (r) => r,
@@ -4298,8 +4281,6 @@ const _jpApp = Vue.createApp({
             } catch (e) { }
             updateGainVolumes();
         };
-
-        const BGM_BASE = 'assets/audio/bgm_m4a/';
 
         const currentBattleBgmPick = ref(BGM_BASE + 'BGM_1.m4a');
 
@@ -9877,9 +9858,7 @@ const _jpApp = Vue.createApp({
 
         }
 
-        const praiseToast = ref({ show: false, text: '' });
-
-        let praiseToastTimer = null;
+        // (Praise Toast definitions removed; UI layer is disabled)
 
         const FEEDBACK_VOICE_BASE = 'assets/audio/feedback_m4a/';
 
@@ -10059,17 +10038,7 @@ const _jpApp = Vue.createApp({
             playComboTierFeedbackVoice(combo, { delayMs: 1200 });
         };
 
-        const showPraiseToast = (text, ms = 900) => {
-
-            praiseToast.value.text = text;
-
-            praiseToast.value.show = true;
-
-            if (praiseToastTimer) clearTimeout(praiseToastTimer);
-
-            praiseToastTimer = setTimeout(() => { praiseToast.value.show = false; }, ms);
-
-        };
+        // (showPraiseToast definition removed)
 
         const playCorrectFeedback = (combo) => {
 
@@ -10104,7 +10073,6 @@ const _jpApp = Vue.createApp({
 
                 const text = ONEESAN_PRAISES[praiseIndex];
 
-                showPraiseToast(text);
                 if ((settings.feedbackVoiceMode || 'combo') === 'correct') {
                     playFeedbackVoice('correct', { fallbackText: text });
                 }
@@ -11594,7 +11562,6 @@ const _jpApp = Vue.createApp({
 
             isLevelJumpOpen.value = false;
 
-            praiseToast.value.show = false;
             comboPopup.value.show = false;
 
             startLevel(lv);

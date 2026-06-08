@@ -676,7 +676,7 @@
     }
 }
 
-@media (max-width: 960px) and (min-width: 769px) {
+@media (max-width: 1024px) and (min-width: 769px) {
     .save-slot-panel {
         width: min(820px, 100%);
     }
@@ -686,7 +686,7 @@
     }
 
     .save-slot-card-main {
-        grid-template-columns: minmax(6rem, 0.6fr) minmax(18rem, 2.2fr) minmax(4.25rem, 0.36fr);
+        grid-template-columns: minmax(6rem, 0.6fr) minmax(16rem, 2fr) minmax(4.25rem, 0.36fr);
         gap: 0.75rem;
     }
 

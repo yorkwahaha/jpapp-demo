@@ -158,8 +158,14 @@
             if (!node) return {};
             var x = node.x;
             var y = node.y;
-            if (node.desktopX !== undefined) x = node.desktopX;
-            if (node.desktopY !== undefined) y = node.desktopY;
+            var isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+            if (isMobile) {
+                if (node.mobileX !== undefined) x = node.mobileX;
+                if (node.mobileY !== undefined) y = node.mobileY;
+            } else {
+                if (node.desktopX !== undefined) x = node.desktopX;
+                if (node.desktopY !== undefined) y = node.desktopY;
+            }
             return {
                 left: x + '%',
                 bottom: y + '%',
