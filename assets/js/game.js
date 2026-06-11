@@ -2151,26 +2151,6 @@ const _jpApp = Vue.createApp({
             return ((phase % total) + total) % total;
         };
 
-        const getCodexWheelVisualState = (index, phase, rect) => {
-            const offset = normalizeCodexWheelOffset(index, phase);
-            const abs = Math.abs(offset);
-            const total = Math.max(1, codexWheelSkills.value.length);
-            const angle = (Math.PI / 2) + offset * ((Math.PI * 2) / total);
-            const frontDepth = (Math.sin(angle) + 1) / 2;
-            const centerFocus = Math.max(0, 1 - Math.min(abs, total - abs) / 2.5);
-            const radiusX = (rect?.width || 0) * 0.4;
-            const radiusY = (rect?.height || 0) * 0.22;
-            const centerOffsetY = (rect?.height || 0) * 0.088;
-            return {
-                x: Math.cos(angle) * radiusX,
-                y: centerOffsetY + Math.sin(angle) * radiusY,
-                scale: 0.42 + Math.pow(frontDepth, 1.32) * 0.62 + centerFocus * 0.3,
-                opacity: 0.36 + frontDepth * 0.42 + centerFocus * 0.22,
-                zIndex: Math.round(36 + frontDepth * 84 + centerFocus * 24),
-                pointerEvents: abs <= 2.6 ? 'auto' : 'none'
-            };
-        };
-
         const setCodexWheelMotionClass = (isActive) => {
             // Use cached orbit el if available, else query once
             const orbit = _codexOrbitEl || document.querySelector('.codex-wheel-orbit');
@@ -7783,8 +7763,6 @@ const _jpApp = Vue.createApp({
         const clearMistakes = () => { mistakes.value = []; saveMistakes(); };
 
         // ================= [ QUESTION GENERATION ] =================
-        const ALL_PARTICLES = ['は', 'が', 'を', 'に', 'で', 'へ', 'と'];
-
         // --- 出題比例資料化設定 ---
         // normal.newRatio: 一般關新技能題比例 (0~1)，其餘為舊題
         // boss.sameMapRatio: 魔王關同張地圖題比例，其餘為前地圖歷史題
@@ -7825,97 +7803,9 @@ const _jpApp = Vue.createApp({
         // _forceOldNext: new skill combo 枯竭時，強制下次 pickSkillForNormalLevel 從 old pool 補位
         let _forceOldNext = false;
 
-        const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
-
-        const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
-
         const getChoiceCountForLevel = (lv) => {
             if (lv === 1 || lv === 2) return 2;
             return (lv % 5 === 0 || lv >= 36) ? 4 : 3;
-        };
-
-        const makeChoices = (correct) => {
-
-            const lv = currentLevel.value;
-            const targetCount = getChoiceCountForLevel(lv);
-
-            const correctArr = Array.isArray(correct) ? correct : [correct];
-
-            let pool = ALL_PARTICLES;
-            if (lv === 1 || lv === 2) {
-                pool = ['は', 'の'];
-            } else if (lv === 3) {
-                pool = ['は', 'の', 'が'];
-            } else if (lv === 4 || lv === 5) {
-                pool = ['は', 'の', 'が', 'を'];
-            } else if (lv === 6) {
-                pool = ['は', 'の', 'が', 'を', 'へ'];
-            } else if (lv === 7) {
-                pool = ['は', 'の', 'が', 'を', 'へ', 'も'];
-            } else if (lv === 8) {
-                pool = ['は', 'の', 'が', 'を', 'へ', 'も', 'に'];
-            } else if (lv === 9 || lv === 10) {
-                pool = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と'];
-            } else if (lv >= 11 && lv <= 15) {
-                pool = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で'];
-            } else if (lv === 16) {
-                pool = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で', 'から'];
-            } else if (lv >= 17 && lv <= 25) {
-                pool = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で', 'から', 'まで'];
-            } else if (lv >= 26 && lv <= 31) {
-                pool = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で', 'から', 'まで', 'や'];
-            } else if (lv >= 32 && lv <= 35) {
-                pool = ['は', 'の', 'が', 'を', 'へ', 'も', 'に', 'と', 'で', 'から', 'まで', 'や', 'より'];
-            }
-
-            let wrongCandidates = pool.filter(p => !correctArr.includes(p));
-
-            let pickedWrong = [];
-            let needed = targetCount - 1;
-
-            if (lv >= 6 && lv <= 34 && needed > 0) {
-                let focusParticle = '';
-                if (lv === 6) focusParticle = 'へ';
-                else if (lv === 7) focusParticle = 'も';
-                else if (lv === 8) focusParticle = 'に';
-                else if (lv === 9) focusParticle = 'と';
-                else if (lv === 11) focusParticle = 'で';
-                else if (lv === 12) focusParticle = 'に';
-                else if (lv === 13) focusParticle = 'が';
-                else if (lv === 14) focusParticle = 'と';
-                else if (lv === 16) focusParticle = 'から';
-                else if (lv === 17) focusParticle = 'まで';
-                else if (lv === 18) focusParticle = 'に';
-                else if (lv === 19) focusParticle = 'で';
-                else if (lv === 21) focusParticle = 'に';
-                else if (lv === 22) focusParticle = 'が';
-                else if (lv === 23) focusParticle = 'も';
-                else if (lv === 24) focusParticle = 'と';
-                else if (lv === 26) focusParticle = 'や';
-                else if (lv === 27) focusParticle = 'で';
-                else if (lv === 28) focusParticle = 'に';
-                else if (lv === 29) focusParticle = 'と';
-                else if (lv === 31) focusParticle = 'から';
-                else if (lv === 32) focusParticle = 'より';
-                else if (lv === 33) focusParticle = 'に';
-                else if (lv === 34) focusParticle = 'で';
-
-                if (focusParticle && wrongCandidates.includes(focusParticle)) {
-                    // 55% chance to forcefully inject the new focus particle as a distractor
-                    if (Math.random() < 0.55) {
-                        pickedWrong.push(focusParticle);
-                        wrongCandidates = wrongCandidates.filter(x => x !== focusParticle);
-                        needed--;
-                    }
-                }
-            }
-
-            pickedWrong = pickedWrong.concat(shuffle(wrongCandidates).slice(0, needed));
-
-            const picked = [correctArr[0], ...pickedWrong];
-
-            return shuffle(picked);
-
         };
 
         const _audioUnlockTried = ref(false);
@@ -8458,40 +8348,6 @@ const _jpApp = Vue.createApp({
 
         const isChoiceMode = computed(() => levelConfig.value.blanks === 1);
 
-        const playBeep = (frequency, duration, type) => {
-
-            try {
-
-                if (!audioCtx.value) initAudioCtx();
-
-                const ctx = audioCtx.value;
-
-                if (ctx.state === 'suspended') ctx.resume();
-
-                const osc = ctx.createOscillator();
-
-                const gain = ctx.createGain();
-
-                osc.connect(gain);
-
-                gain.connect(ctx.destination);
-
-                osc.frequency.value = frequency;
-
-                osc.type = type || 'sine';
-
-                gain.gain.setValueAtTime(0.15, ctx.currentTime);
-
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
-
-                osc.start(ctx.currentTime);
-
-                osc.stop(ctx.currentTime + duration);
-
-            } catch (_) { }
-
-        };
-
         const ensureBgmElementSync = () => {
 
             let bgm = audioPool.get(BGM_BASE + 'BGM_1.m4a');
@@ -8943,12 +8799,6 @@ const _jpApp = Vue.createApp({
                         return true;
                     }
                 });
-
-                // Logging filtered items (low-noise debug)
-                const filteredOut = rawPool.filter(p => !safePool.includes(p) && p !== correctAns);
-                if (filteredOut.length > 0) {
-
-                }
 
                 if (correctAns && !safePool.includes(correctAns)) {
                     safePool.push(correctAns);
