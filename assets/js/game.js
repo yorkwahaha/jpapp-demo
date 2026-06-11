@@ -372,6 +372,8 @@ const _jpApp = Vue.createApp({
         const bestGrades = ref({}); // { stageNumber: 'S' }
         const stageBestRecords = ref({}); // { stageNumber: { bestStars, bestTimeMs, bestTimeSeconds, bestCorrectRate, bestMaxCombo, updatedAt } }
 
+        const srsMode = ref(false);
+
         const clearedLevels = ref([]);
 
         const mapChapters = ref({});
@@ -930,6 +932,7 @@ const _jpApp = Vue.createApp({
             mistakes.value = [];
             window.JPAPPStorageManager.saveMentorSeen([]);
             window.JPAPPStorageManager.saveMistakes([]);
+            window.JPAPPSrsHelpers?.clearSlotWeights();
             SLOT_SCOPED_STORY_KEYS.forEach(key => localStorage.removeItem(slotScopedKey(key, normalized)));
             saveProgression();
             refreshSaveSlotsMetadata();
@@ -1083,6 +1086,39 @@ const _jpApp = Vue.createApp({
             selectedStageToConfirm.value = lvNum;
             playSfx('uiPop'); // Added for stage selection from map
             isBattleConfirmOpen.value = true;
+        };
+
+        const srsAvailable = computed(() => {
+            if (mistakes.value.length > 0) return true;
+            const mastery = skillMastery.value;
+            return unlockedSkillIds.value.some(id => (mastery[id] ?? 0) < 50);
+        });
+
+        const startSrsMode = () => {
+            if (!window.JPAPPSrsHelpers) return;
+
+            // Derive available skill pool: prefer unlockedSkillIds; fallback to skills inferred from mistake levelIds
+            let targetUnlocked = unlockedSkillIds.value;
+            if (!targetUnlocked.length && mistakes.value.length > 0) {
+                const derived = new Set();
+                mistakes.value.forEach(m => {
+                    if (m.skillId) {
+                        derived.add(m.skillId);
+                    } else if (m.levelId) {
+                        const cfg = LEVEL_CONFIG.value[m.levelId];
+                        if (cfg?.skillId && cfg.skillId !== 'SRS_MODE') derived.add(cfg.skillId);
+                        (cfg?.unlockSkills || []).forEach(s => derived.add(s));
+                    }
+                });
+                targetUnlocked = [...derived];
+            }
+
+            srsSkillQueue = window.JPAPPSrsHelpers.buildSrsSkillQueue(
+                mistakes.value, skillMastery.value, targetUnlocked
+            );
+            if (!srsSkillQueue.length) return;
+            srsMode.value = true;
+            startLevel(0);
         };
 
         /** Battle entry from map — DO NOT TOUCH for display-only / map-docs tasks. */
@@ -1282,6 +1318,7 @@ const _jpApp = Vue.createApp({
             resetBattleOutcomePresentation();
             resetStageClearMetrics();
             isFinished.value = true;
+            srsMode.value = false;
             showLevelSelect.value = false;
 
             const maxUnlocked = Math.max(...unlockedLevels.value, 1);
@@ -3065,6 +3102,9 @@ const _jpApp = Vue.createApp({
                     });
 
                     LEVEL_CONFIG.value = mappedLevels;
+
+                    // Virtual level 0: SRS 特訓之間（不計入正規進度）
+                    LEVEL_CONFIG.value[0] = { title: '特訓之間', name: '特訓之間', blanks: 1, skillId: 'SRS_MODE', srsMode: true, bgImage: '' };
 
                     maxLevel.value = data.length;
 
@@ -7706,13 +7746,17 @@ const _jpApp = Vue.createApp({
 
                 timestamp: new Date().toISOString(),
 
-                levelId: currentLevel.value
+                levelId: currentLevel.value,
+
+                skillId: q?.skillId || null
 
             };
 
             mistakes.value.unshift(entry);
 
             saveMistakes();
+
+            if (srsMode.value) window.JPAPPSrsHelpers?.recordWrong(entry.skillId);
 
         };
 
@@ -8433,7 +8477,8 @@ const _jpApp = Vue.createApp({
         /** 載入並啟動指定關卡：停止舊音效、選播 BGM、呼叫 initGame。 */
         const startLevel = async (level) => {
 
-            const lv = Number(level) || parseInt(level, 10) || 1;
+            const _parsedLv = parseInt(level, 10);
+            const lv = Number.isNaN(_parsedLv) ? 1 : _parsedLv;
 
             // Cancel any residual codex wheel motion / map ambient before entering battle
             forceStopAllCodexWheelMotion();
@@ -8551,6 +8596,7 @@ const _jpApp = Vue.createApp({
 
         let bossSkillQueue = [];
         let bossQuestionQueue = []; // L36 專用：不重複題目的完整對列
+        let srsSkillQueue = []; // SRS 特訓之間：按 SRS 權重排列的 skillId 序列
 
         const startBossQueue = (unlockedIds, levelOverride) => {
 
@@ -9236,8 +9282,8 @@ const _jpApp = Vue.createApp({
 
             const qList = [];
 
-            // 一般關：預建確定性比例 slot bag（L1/L2/boss 關不使用）
-            const _isBossOrSpecial = isBossLevel(lv) || lv === 1 || lv === 2;
+            // 一般關：預建確定性比例 slot bag（L1/L2/boss/SRS 關不使用）
+            const _isBossOrSpecial = isBossLevel(lv) || lv === 1 || lv === 2 || lv === 0;
             const normalNewRatio = Number.isFinite(config?.skillMix?.newSkillWeight)
                 ? config.skillMix.newSkillWeight
                 : QUESTION_MIX_CONFIG.normal.newRatio;
@@ -9280,7 +9326,7 @@ const _jpApp = Vue.createApp({
 
             }
 
-            const _totalQ = (config.skillId === 'HIDDEN_BOSS_36') ? bossQuestionQueue.length : 100;
+            const _totalQ = (config.skillId === 'HIDDEN_BOSS_36') ? bossQuestionQueue.length : (lv === 0) ? 10 : 100;
             for (let i = 0; i < _totalQ; i++) {
 
                 let q = null;
@@ -9289,7 +9335,12 @@ const _jpApp = Vue.createApp({
 
                 let isReview = false;
 
-                if (lv === 1) {
+                if (lv === 0) {
+
+                    // SRS 特訓：從 srsSkillQueue 依序取技能
+                    skillId = srsSkillQueue.length > 0 ? srsSkillQueue[i % srsSkillQueue.length] : null;
+
+                } else if (lv === 1) {
 
                     skillId = Math.random() < 0.5 ? allowSkills[0] : allowSkills[1];
 
@@ -9999,6 +10050,7 @@ const _jpApp = Vue.createApp({
             if (!skillId || typeof skillId !== 'string') return;
             if (getSkillMastery(skillId) >= 100) return;
             skillMastery.value[skillId] = Math.min(100, getSkillMastery(skillId) + 1);
+            if (srsMode.value) window.JPAPPSrsHelpers?.recordCorrect(skillId);
             saveProgression();
         };
 
@@ -10646,41 +10698,44 @@ const _jpApp = Vue.createApp({
 
                 monsterResultShown.value = true;
 
-                // Update progression
+                // Update progression (skip for SRS mode — level 0)
+                if (currentLevel.value !== 0) {
 
-                lastClearedLevel.value = currentLevel.value;
+                    lastClearedLevel.value = currentLevel.value;
 
-                if (!clearedLevels.value.includes(currentLevel.value)) {
+                    if (!clearedLevels.value.includes(currentLevel.value)) {
 
-                    clearedLevels.value.push(currentLevel.value);
+                        clearedLevels.value.push(currentLevel.value);
 
-                }
+                    }
 
-                // Update best grade
+                    // Update best grade
 
-                const currentG = calculatedGrade.value;
+                    const currentG = calculatedGrade.value;
 
-                const oldG = bestGrades.value[currentLevel.value];
+                    const oldG = bestGrades.value[currentLevel.value];
 
-                if (window.JPAPPResultDisplayManager.shouldUpdateBestGrade(currentG, oldG, GRADE_RANK)) {
+                    if (window.JPAPPResultDisplayManager.shouldUpdateBestGrade(currentG, oldG, GRADE_RANK)) {
 
-                    bestGrades.value[currentLevel.value] = currentG;
+                        bestGrades.value[currentLevel.value] = currentG;
 
-                }
+                    }
 
-                updateStageBestRecord();
+                    updateStageBestRecord();
 
-                const nextLv = currentLevel.value + 1;
+                    const nextLv = currentLevel.value + 1;
 
-                if (nextLv < maxLevel.value && !unlockedLevels.value.includes(nextLv)) {
+                    if (nextLv < maxLevel.value && !unlockedLevels.value.includes(nextLv)) {
 
-                    unlockedLevels.value.push(nextLv);
+                        unlockedLevels.value.push(nextLv);
 
-                    newUnlockLv.value = nextLv; // Mark for highlight and scroll
+                        newUnlockLv.value = nextLv; // Mark for highlight and scroll
 
-                } else {
+                    } else {
 
-                    newUnlockLv.value = null;
+                        newUnlockLv.value = null;
+
+                    }
 
                 }
 
@@ -11555,6 +11610,7 @@ const _jpApp = Vue.createApp({
             startActiveSaveSlot, openSaveSlotPanel, selectSaveSlot, requestDeleteSaveSlot, cancelDeleteSaveSlot, confirmDeleteSaveSlot, pendingDeleteSaveSlotId, isSaveSlotPanelOpen, saveSlotCards, activeSaveSlotId, saveSlotPanelMode, isLevelUnlocked, isLevelCleared, getStageNodeClass, getStageFocusParticle, getStageFocusLabel, hasMentor,
 
             selectStageFromMap, startStageWithExplanation, returnToMap,
+            srsAvailable, startSrsMode,
 
             newUnlockLv, bestGrades, getGradeColor, sRankCount,
 

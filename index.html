@@ -304,6 +304,11 @@
             s10m.async = false;
             document.head.appendChild(s10m);
 
+            const s10p = document.createElement('script');
+            s10p.src = 'assets/js/srs-helpers.js?v=' + v;
+            s10p.async = false;
+            document.head.appendChild(s10p);
+
             const s11 = document.createElement('script');
 
             s11.src = 'assets/js/game.js?v=' + v;
@@ -2397,9 +2402,11 @@
                                     aria-label="小助靈共鳴輪"><span>✨</span></button>
                                 <button @click="openMonsterCodex" class="map-hud-btn map-hud-btn--monster-codex"
                                     type="button" aria-label="怪物圖鑑"><span>🐾</span></button>
-                                <button @click="isMenuOpen = true; playSfx('uiPop');"
-                                    class="map-hud-btn map-hud-btn--system" type="button"
-                                    aria-label="系統選單"><span>⚙️</span></button>
+                                <button @click="isMenuOpen = true; playSfx('uiPop');" class="map-hud-btn map-hud-btn--system"
+                                    type="button" aria-label="系統選單"><span>⚙️</span></button>
+                                <button v-if="srsAvailable" @click="startSrsMode(); playSfx('uiPop');"
+                                    class="map-hud-btn map-hud-btn--srs" type="button"
+                                    aria-label="特訓之間"><span>⚔️</span></button>
 
                             </div>
 
@@ -2523,6 +2530,9 @@
                                 type="button" aria-label="怪物圖鑑"><span>🐾</span></button>
                             <button @click="isMenuOpen = true; playSfx('uiPop');" class="map-hud-btn map-hud-btn--system"
                                 type="button" aria-label="系統選單"><span>⚙️</span></button>
+                            <button v-if="srsAvailable" @click="startSrsMode(); playSfx('uiPop');"
+                                class="map-hud-btn map-hud-btn--srs" type="button"
+                                aria-label="特訓之間"><span>⚔️</span></button>
                         </div>
 
                     </div>
