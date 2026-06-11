@@ -387,6 +387,8 @@
 | 結算畫面顯示（評價／星等／紀錄表） | #38, `result-display-manager.js` | `index.html`, `result-mistakes.css` | **勿**改 `grantRewards` 內 EXP 計算 |
 | 結算 EXP 動畫／發獎 | #36 | — | **DO NOT TOUCH** |
 | 錯題本（mistakes） | #30, `mistakes` ref | `index.html` mistakes modal | 與結算 modal 不同 DOM |
+| 答錯對比教學（battle tip） | `particleContrastPairs` / `getWrongAnswerExplanation` / `wrongAnswerTip`（~7721–7752，#30 與 `logStageQuestion` 之間） | `particle-contrasts.v1.json`、`index.html` L3671、`result-mistakes.css` 檔尾 | 純顯示層；**勿動** `checkAnswer`；查無對比 key 回退題目 grammarTip |
+| 結算後自動開出題本＋錯題置頂 | `stageMistakes` / `stageLogMistakesFirst` / `sortedStageLog` / `maybeAutoOpenMistakesReview`（~7752–7775）；呼叫點：`finishTallyUi` 內與能力解鎖後路徑（兩處 `isNextBtnVisible.value = true` 之後）；`logStageQuestion` 新欄位 `userAnswer` / `explainTip` | `index.html` 出題本 modal（置頂鈕 ~L4901、答案行 ~L4948）、設定開關 ×2（~L2970 / ~L4665）、`result-mistakes.css` 檔尾 | 勝利且有錯題才自動開（全對不開）；設定鍵 `autoOpenMistakesAfterResult`（`settings-manager.js` 預設 true）；`stageLogMistakesFirst` 於 `initGame` 重置；敗北不自動開 |
 | 技能（擬聲詞）施放 | #21 | `abilities.v1.json`, `hero-status.js` | buff 與 ATB 互動 |
 | 藥水 / 重試 / 復活 | #37 | — | 會動到 `initGame` / `stopAllAudio` |
 | 戰鬥特效（一般命中） | #27, #23 | `vfx-helpers.js`, `skill-vfx.js` | 勿改投射物時序 |

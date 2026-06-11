@@ -42,6 +42,7 @@
 | `assets/data/enemies.v1.json` | `loadGameData` | 怪物圖鑑 |
 | `assets/data/mentor-dialogues.v1.json` | `loadGameData` | 導師台詞 / audio map |
 | `assets/data/abilities.v1.json` | fetch in setup | 擬聲詞技能 |
+| `assets/data/particle-contrasts.v1.json` | fetch in setup（~7722） | 答錯對比說明（key「正解｜誤選」→ 一行對比文案）；載入失敗回退 grammarTip |
 | `assets/data/changelog.json` | changelog manager | 低 |
 | `assets/data/map-chapters.json` | `onMounted` fetch | 地圖章節 |
 

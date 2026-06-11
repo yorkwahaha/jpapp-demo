@@ -101,6 +101,7 @@
             const reactive = vueApis.reactive;
             const settingsDefaults = {
                 autoReadOnWrong: true,
+                autoOpenMistakesAfterResult: true,
                 correctAdvanceDelayMs: null,
                 wrongAdvanceDelayMs: null,
                 enemyAttackMode: 'atb',

@@ -2962,6 +2962,28 @@
 
                         </div>
 
+                        <div class="modal-section-card">
+
+                            <label class="flex items-center justify-between cursor-pointer">
+
+                                <span
+                                    class="text-sm font-bold text-white transition-colors">結算後自動開啟出題本</span>
+
+                                <div class="relative inline-flex items-center cursor-pointer">
+
+                                    <input type="checkbox" v-model="settings.autoOpenMistakesAfterResult" class="sr-only peer">
+
+                                    <div
+                                        class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+
+                                    </div>
+
+                                </div>
+
+                            </label>
+
+                        </div>
+
 
                         <div class="modal-section-card space-y-4">
 
@@ -3666,6 +3688,7 @@
                                 {{ currentQuestion?.chinese || '' }}
 
                             </div>
+
 
                         </div>
 
@@ -4632,6 +4655,28 @@
 
                         </div>
 
+                        <div class="modal-section-card">
+
+                            <label class="flex items-center justify-between cursor-pointer">
+
+                                <span
+                                    class="text-sm font-bold text-white transition-colors">結算後自動開啟出題本</span>
+
+                                <div class="relative inline-flex items-center cursor-pointer">
+
+                                    <input type="checkbox" v-model="settings.autoOpenMistakesAfterResult" class="sr-only peer">
+
+                                    <div
+                                        class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+
+                                    </div>
+
+                                </div>
+
+                            </label>
+
+                        </div>
+
                         <div class="modal-section-card space-y-4">
 
                             <div>
@@ -4850,11 +4895,18 @@
                         <span class="mistakes-voice-hint">點擊卡片聽發音</span>
                     </div>
 
+                    <!-- 錯題置頂切換:有錯題時才顯示 -->
+                    <button v-if="stageMistakes.length && stageLog.length > stageMistakes.length"
+                        @click="stageLogMistakesFirst = !stageLogMistakesFirst; playSfx('click');"
+                        class="mistakes-sort-btn" :class="{ 'is-active': stageLogMistakesFirst }">
+                        {{ stageLogMistakesFirst ? '⬆️ 錯題置頂中・點擊恢復出題順序' : '⬆️ 把錯題集中到最上方' }}
+                    </button>
+
                     <div v-if="stageLog.length === 0" class="text-slate-400 text-center py-6">本關尚無出題紀錄</div>
 
                     <div v-else class="stage-log-list space-y-3 mb-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
 
-                        <div v-for="(m, i) in stageLog" :key="i"
+                        <div v-for="(m, i) in sortedStageLog" :key="i"
                             class="stage-log-card p-4 rounded-2xl border border-white/10 shadow-lg transition-all backdrop-blur-md"
                             role="button" tabindex="0" @click="playMistakeVoice(m)"
                             @keydown.enter.prevent="playMistakeVoice(m)"
@@ -4891,10 +4943,15 @@
 
                             <div class="stage-log-prompt text-slate-400 text-sm mb-2 font-medium brightness-125">{{ m.prompt }}</div>
 
-                            <div v-if="m.grammarTip"
+                            <div v-if="!m.isCorrect && m.userAnswer" class="stage-log-ans">
+                                <span class="stage-log-ans__wrong">你的答案:{{ m.userAnswer }}</span>
+                                <span class="stage-log-ans__correct">正解:{{ m.correct }}</span>
+                            </div>
+
+                            <div v-if="(!m.isCorrect && m.explainTip) || m.grammarTip"
                                 class="stage-log-tip text-slate-400 text-xs mt-2 bg-slate-900/40 p-3 rounded-xl leading-relaxed border border-white/5">
 
-                                <span class="text-amber-400/80 font-bold mr-1">💡</span> {{ m.grammarTip }}
+                                <span class="text-amber-400/80 font-bold mr-1">💡</span> {{ (!m.isCorrect && m.explainTip) ? m.explainTip : m.grammarTip }}
 
                             </div>
 

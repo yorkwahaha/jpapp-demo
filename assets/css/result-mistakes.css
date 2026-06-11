@@ -781,3 +781,73 @@
     }
 }
 
+
+/* ── 答錯對比教學(戰鬥題目卡下方,答錯後解答窗口內顯示)── */
+.battle-wrong-tip {
+    margin: 8px auto 0;
+    max-width: 92%;
+    padding: 6px 14px;
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(251, 191, 36, 0.35);
+    color: #fde68a;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.7;
+    text-align: center;
+    animation: battle-wrong-tip-in 0.25s ease-out;
+}
+
+@keyframes battle-wrong-tip-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── 出題本:錯題置頂切換 + 答案對比行 ── */
+.mistakes-sort-btn {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 7px 10px;
+    border-radius: 0.7rem;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    color: #cbd5e1;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    transition: all 0.15s ease;
+}
+
+.mistakes-sort-btn:active {
+    transform: scale(0.98);
+}
+
+.mistakes-sort-btn.is-active {
+    background: rgba(244, 63, 94, 0.16);
+    border-color: rgba(251, 113, 133, 0.45);
+    color: #fda4af;
+}
+
+.stage-log-ans {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    margin-bottom: 2px;
+}
+
+.stage-log-ans__wrong {
+    color: #fda4af;
+}
+
+.stage-log-ans__correct {
+    color: #6ee7b7;
+}

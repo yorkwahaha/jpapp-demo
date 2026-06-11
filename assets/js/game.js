@@ -7716,6 +7716,60 @@ const _jpApp = Vue.createApp({
 
         };
 
+        // ---- [ 答錯對比教學 ] ----
+        // particle-contrasts.v1.json:「正解|誤選」→ 一行對比說明;載入失敗時保持空表,全部回退 grammarTip
+        const particleContrastPairs = ref({});
+        fetch(`assets/data/particle-contrasts.v1.json?v=${appVersion.value}`)
+            .then(res => res.json())
+            .then(data => { particleContrastPairs.value = (data && data.pairs) || {}; })
+            .catch(() => { particleContrastPairs.value = {}; });
+
+        // getWrongAnswerExplanation(q, userAns): 找第一個答錯的空格,優先回傳「正解|誤選」對比說明,查無回退題目 grammarTip
+        const getWrongAnswerExplanation = (q, userAns) => {
+            const fallbackTip = q?.tip || q?.grammar || q?.grammarTip || '';
+            const blanks = levelConfig.value.blanks || 1;
+            const answers = (q?.answers || []).slice(0, blanks);
+            const userList = Array.isArray(userAns) ? userAns : [];
+            const userAnswerText = answers.map((_, i) => (userList[i] || '').trim() || '—').join('、');
+            let contrastTip = '';
+            for (let i = 0; i < answers.length; i++) {
+                const acceptable = parseAcceptableAnswers(answers[i]);
+                const chosen = (userList[i] || '').trim();
+                if (!chosen || acceptable.includes(chosen)) continue;
+                contrastTip = particleContrastPairs.value[`${acceptable[0]}|${chosen}`] || '';
+                if (contrastTip) break;
+            }
+            return { userAnswerText, tipText: contrastTip || fallbackTip };
+        };
+
+        // 答錯後 3 秒解答窗口顯示在題目卡下方(wrongAdvanceDelayMs 期間)
+        const wrongAnswerTip = computed(() => {
+            if (!hasSubmitted.value || isCurrentCorrect.value) return '';
+            return getWrongAnswerExplanation(currentQuestion.value, userAnswers.value).tipText;
+        });
+
+        // 本關答錯的條目(結算後自動開啟出題本的判斷依據)
+        const stageMistakes = computed(() => stageLog.value.filter(e => !e.isCorrect));
+
+        // 出題本「錯題置頂」排序開關;預設依出題順序
+        const stageLogMistakesFirst = ref(false);
+        const sortedStageLog = computed(() => {
+            if (!stageLogMistakesFirst.value) return stageLog.value;
+            return stageLog.value.filter(e => !e.isCorrect).concat(stageLog.value.filter(e => e.isCorrect));
+        });
+
+        // 結算動畫跑完後自動開啟出題本複習(設定可關;全對不打擾;自動開啟時錯題置頂)
+        const maybeAutoOpenMistakesReview = () => {
+            if (!settings.autoOpenMistakesAfterResult) return;
+            if (!stageMistakes.value.length) return;
+            stageLogMistakesFirst.value = true;
+            scheduleBattleFlowTimeout(() => {
+                if (monsterDead.value && !playerDead.value && !isFinished.value) {
+                    isMistakesOpen.value = true;
+                }
+            }, 650);
+        };
+
         const logStageQuestion = (isCorrect) => {
 
             const q = currentQuestion.value;
@@ -7723,6 +7777,8 @@ const _jpApp = Vue.createApp({
             if (!q) return;
 
             const questionText = buildQuestionLogText(q);
+
+            const wrongInfo = isCorrect ? null : getWrongAnswerExplanation(q, userAnswers.value);
 
             const entry = {
 
@@ -7739,6 +7795,10 @@ const _jpApp = Vue.createApp({
                 grammarTip: q.tip || q.grammar || q.grammarTip || "",
 
                 isCorrect: isCorrect,
+
+                userAnswer: wrongInfo ? wrongInfo.userAnswerText : '',
+
+                explainTip: wrongInfo ? wrongInfo.tipText : '',
 
                 timestamp: new Date().toISOString(),
 
@@ -9137,6 +9197,8 @@ const _jpApp = Vue.createApp({
             isChangelogOpen.value = false;
 
             stageLog.value = [];
+
+            stageLogMistakesFirst.value = false;
 
             const lv = level ?? currentLevel.value;
 
@@ -10696,6 +10758,7 @@ const _jpApp = Vue.createApp({
                             }
                         }
                         isNextBtnVisible.value = true;
+                        maybeAutoOpenMistakesReview();
                     }, 300);
                 };
 
@@ -11022,6 +11085,8 @@ const _jpApp = Vue.createApp({
                 // 來自結算後即時發放路徑：只需顯示 Next 鈕
 
                 isNextBtnVisible.value = true;
+
+                maybeAutoOpenMistakesReview();
 
             }
 
@@ -11468,7 +11533,7 @@ const _jpApp = Vue.createApp({
             // ---- [ RETURN — SETTINGS / DEBUG BINDINGS ] ----
             isAudioDebugEnabled, isAudioDebugOpen, isAudioDebugDragging, audioDebugOverlayStyle, audioDebugSections, refreshAudioDebugState, startAudioDebugDrag, debugResumeAudioContext, debugTestSfx, debugTestBgmPlay, debugPauseBgm, debugTestRawAudio, debugEnableHtmlAudioFallback, debugDisableHtmlAudioFallback, debugEnableFallbackAudioContextV2, debugDisableFallbackAudioContextV2, debugResumeFallbackAudioContext, debugTestFallbackContextBgm, debugTestFallbackBgm, debugTestFallbackSfx, debugShowAudioState,
             // ---- [ RETURN — CORE STATE ] ----
-            setDefaultAttackMode, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, levelPassiveVfx, counterSlashVfx, mistakes, stageLog, isMenuOpen, isMistakesOpen, monsterHit, monsterHitGiragira, monsterGiraKnockActive, monsterGiraKnockStyle, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, battleQuestionSizeClass, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, codexWheelSkills, codexSelectedSkill, codexDetailMode, getCodexWheelItemStyle, getCodexWheelItemClass, getCodexSkillDisplayName, startCodexWheelArrowPress, stopCodexWheelArrowPress, handleCodexWheelArrowClick, openCodexDetail, closeCodexDetail, startCodexDrag, moveCodexDrag, endCodexDrag, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
+            setDefaultAttackMode, answerMode, flickState, handleRuneClick, startFlick, moveFlick, endFlick, appVersion, isChangelogOpen, changelogData, changelogError, openChangelog, questions, currentIndex, currentQuestion, userAnswers, hasSubmitted, comboCount, maxComboCount, currentLevel, maxLevel, LEVEL_CONFIG, levelConfig, isChoiceMode, showLevelSelect, difficulty, player, monster, inventory, playerBlink, hpBarDanger, isFinished, isCurrentCorrect, timeLeft, timeUp, battleMessage, levelPassiveVfx, counterSlashVfx, mistakes, stageLog, stageMistakes, sortedStageLog, stageLogMistakesFirst, wrongAnswerTip, isMenuOpen, isMistakesOpen, monsterHit, monsterHitGiragira, monsterGiraKnockActive, monsterGiraKnockStyle, screenShake, bossScreenShake, flashOverlay, bgmVolume, sfxVolume, isMuted, isPreloading, monsterDead, playerDead, displaySegments, battleQuestionSizeClass, getAnswerForDisplay, selectChoice, getChoiceBtnClass, checkAnswer, nextQuestion, getInputStyle, initGame, retryLevel, revive, startLevel, usePotion, clearMistakes, playBgm, playSfx, playMistakeVoice, saveAudioSettings, startRunAwayPress, cancelRunAwayPress, isRunAwayPressing, onUserGesture, currentBg, accuracyPct, calculatedGrade, stageStarRating, stageStarDisplay, stageClearTimeText, stageResultIsNewBest, getStageBestRecord, getStageBestStarsDisplay, getStageBestTimeText, resultSpirit, skillsAll, unlockedSkillIds, isCodexOpen, codexWheelSkills, codexSelectedSkill, codexDetailMode, getCodexWheelItemStyle, getCodexWheelItemClass, getCodexSkillDisplayName, startCodexWheelArrowPress, stopCodexWheelArrowPress, handleCodexWheelArrowClick, openCodexDetail, closeCodexDetail, startCodexDrag, moveCodexDrag, endCodexDrag, closeCodex, pauseBattle, resumeBattle, isPlayerDodging, isSkillOpen, openSkillOverlay, closeSkillOverlay,
             // ---- [ RETURN — BATTLE BINDINGS ] ----
             handleEscapeToMap, retryCurrentStageWithTransition, escapeOverlayVisible, escapeOverlayOpacity, isEscaping, retryTransitionActive,
             heroBuffs: (typeof heroBuffs !== 'undefined' && heroBuffs) ? heroBuffs : debugControls,
