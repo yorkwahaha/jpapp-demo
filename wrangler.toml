@@ -1,3 +1,6 @@
+# 唯一的 wrangler 設定檔，請從 repo 根目錄部署。
+# 入口：worker/google-tts.js（Google Cloud TTS proxy）
+# worker/azure-tts.js 保留備用，勿設為 main
 name = "jpapp-tts-proxy"
 main = "worker/google-tts.js"
 compatibility_date = "2024-03-20"

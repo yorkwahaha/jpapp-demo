@@ -12,3 +12,5 @@ config.local.*
 
 ffmpeg.exe
 assets/audio/bgm_test_m4a/
+.wrangler/
+worker/.wrangler/

@@ -281,42 +281,6 @@ window.playTtsKey = playTtsKey;
 
 
 
-function getAzureSpeechKey() {
-
-    try {
-
-        if (window.__AZURE_SPEECH_KEY) return window.__AZURE_SPEECH_KEY;
-
-        const m = document.querySelector('meta[name="azure-speech-key"]');
-
-        if (m && m.content) return m.content;
-
-    } catch { }
-
-    return null;
-
-}
-
-
-
-function getAzureSpeechRegion() {
-
-    try {
-
-        if (window.__AZURE_SPEECH_REGION) return window.__AZURE_SPEECH_REGION;
-
-        const m = document.querySelector('meta[name="azure-speech-region"]');
-
-        if (m && m.content) return m.content;
-
-    } catch { }
-
-    return "japaneast";
-
-}
-
-
-
 // ================= [ AZURE TTS — PROXY & SPEAK ] =================
 const TTS_PROXY_URL = "https://jpapp-tts-proxy.yorkwahaha.workers.dev/tts";
 
@@ -483,27 +447,5 @@ async function speakCloudTts(text, voiceShortName = null) {
         return false;
 
     }
-
-}
-
-
-
-function getCurrentQuestionTtsKey() {
-
-    try {
-
-        if (typeof currentQuestionId !== "undefined" && currentQuestionId) return "question." + currentQuestionId;
-
-        if (typeof questionId !== "undefined" && questionId) return "question." + questionId;
-
-        if (typeof qId !== "undefined" && qId) return "question." + qId;
-
-        if (typeof questionKey !== "undefined" && questionKey) return "question." + questionKey;
-
-        if (typeof skillId !== "undefined" && skillId) return "question.skill_" + skillId;
-
-    } catch { }
-
-    return "question.dynamic";
 
 }

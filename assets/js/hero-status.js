@@ -135,26 +135,6 @@ function clearSpeedStatus() {
 
 
 
-function getHeroHpRatioBestEffort() {
-
-    try {
-
-        if (typeof heroHP !== "undefined" && typeof heroMaxHP !== "undefined" && heroMaxHP) return heroHP / heroMaxHP;
-
-    } catch { }
-
-    try {
-
-        const hpText = document.querySelector(".hero-hp-text, [data-hero-hp]")?.textContent;
-
-    } catch { }
-
-    return null;
-
-}
-
-
-
 function hasSpeedOrEvadeBuffBestEffort() {
 
     if (Date.now() < heroStatusTimers.speedUntil) return true;
