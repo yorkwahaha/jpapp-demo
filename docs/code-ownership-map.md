@@ -27,6 +27,8 @@
 | before game | `mentor-dialogue-helpers.js` | `JPAPPMentorDialogueHelpers` | 導師分頁、emotion 圖 |
 | before game | `changelog-manager.js` | `JPAPPChangelogManager` | changelog modal、版本 reload policy、`appendVersionQuery` |
 | before game | `result-display-manager.js` | `JPAPPResultDisplayManager` | 結算評價／星等／`stageRecordRows`／`RESULT_LEVEL_MILESTONE_REWARDS` 文案 |
+| before game | `srs-helpers.js` | `JPAPPSrsHelpers` | SRS 選題權重、錯題排序 |
+| before game | `stats-display.js` | `JPAPPStatsDisplay` | 學習統計彙整（第4批A）：`computeStats({ skills, skillMastery, stageBestRecords, bestGrades, mistakes })` → `{ particleStats, overallMastery, weakest3, clearedCount, sRankCount, mistakeCount }` |
 | **last** | **`game.js`** | Vue app、`debugJumpToLevel`, `__debugQMix` | 主 runtime |
 | after | `global-hooks.js` | — | 全域 error / keydown |
 | parallel | `debug.js` | `jpDebug` | 開發者 console API（需 game mount 後） |

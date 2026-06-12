@@ -6,15 +6,16 @@ This document maps `assets/css/styles.css` and proposes a safe CSS split plan. L
 
 `index.html` currently loads CSS in this order:
 
-1. `assets/css/styles.css?v=26050901`
-2. `assets/css/home.css?v=26050901`
-3. `assets/css/settings.css?v=26050901`
-4. `assets/css/mentor.css?v=26050901`
-5. `assets/css/battle.css?v=26050901`
-6. `assets/css/battle-vfx.css?v=26050901`
-7. `assets/css/codex.css?v=26050901`
-8. `assets/css/result-mistakes.css?v=26050901`
-9. `assets/css/escape.css?v=26050901`
+1. `assets/css/styles.css?v=26052601`
+2. `assets/css/home.css?v=26052601`
+3. `assets/css/settings.css?v=26052601`
+4. `assets/css/mentor.css?v=26052601`
+5. `assets/css/battle.css?v=26052601`
+6. `assets/css/battle-vfx.css?v=26052601`
+7. `assets/css/codex.css?v=26052601`
+8. `assets/css/result-mistakes.css?v=26052601`
+9. `assets/css/escape.css?v=26052601`
+10. `assets/css/stats.css?v=26061201` — 學習統計面板（第4批A）
 
 Future split files should preserve cascade intent by keeping broad/base rules first, feature rules next, RWD overrides late, and `escape.css` last unless its scope is audited separately. **逃跑回地圖：** `.escape-fade-overlay`（`index.html` ~L5181+）由 `handleEscapeToMap` → `returnToMap`；流程見 `game-js-map.md` §地圖流程。
 

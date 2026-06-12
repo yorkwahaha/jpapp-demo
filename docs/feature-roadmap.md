@@ -69,11 +69,11 @@
 
 ## 第 4 批:呈現與統計
 
-### 4A. 學習統計頁
+### 4A. 學習統計頁 — ✅ 已完成（2026-06-12）
 
-- **範圍:** 各助詞/家族掌握度(由 `skillMastery` 彙整)、最弱三個用法、累計答題數與正確率。入口放設定或地圖選單。
+- **範圍:** 各助詞掌握度進度條（`skillMastery` 彙整）、最需加強三技能、通關／S Rank／待複習錯題卡片。地圖 HUD 加 📊 按鈕。
 - **風險:** 低。純讀取呈現,零新資料結構。
-- **主要檔案:** 新增 `assets/js/stats-display.js`(純函式彙整)、`index.html` 模板、新 CSS 或併入現有。
+- **主要檔案:** 新增 `assets/js/stats-display.js`（`window.JPAPPStatsDisplay.computeStats()`）、`assets/css/stats.css`、`index.html` 模板、`game.js`（`isStatsOpen` ref + `statsData` computed）。
 
 ### 4B. 地圖總覽進度
 

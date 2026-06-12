@@ -107,6 +107,13 @@
 **區塊數量：** 41（含 #32 檔案順序備註列）
 **High-risk / DO NOT TOUCH 區塊：** #5–12, #15–16, #24, #26–28, #30–32, #35–36
 
+### 第 4 批 A 新增（2026-06-12）
+
+| 新增 | 位置 | 說明 |
+|------|------|------|
+| `isStatsOpen` ref | ~#22 區（`isStageRecordsOpen` 附近） | 學習統計 modal 開關 |
+| `statsData` computed | ~#11 區（`srsAvailable` 附近） | 呼叫 `window.JPAPPStatsDisplay.computeStats()`；依賴 `SKILLS`, `skillMastery`, `stageBestRecords`, `bestGrades`, `mistakes` |
+
 ### 首頁／存檔入口（跨檔）
 
 | 玩家看到的 | 主要 `game.js` | 主要其他檔 |
