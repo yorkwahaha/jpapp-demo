@@ -8253,8 +8253,9 @@ body.lock-scroll {
 
 .zzz-indicator-wrap {
     position: absolute;
-    top: -0.5rem;
-    right: -1rem;
+    top: -1.25rem;
+    left: 50%;
+    transform: translateX(-15%);
     pointer-events: none;
     z-index: 50;
     user-select: none;
@@ -8458,102 +8459,36 @@ body.lock-scroll {
     position: absolute;
     left: 0;
     right: 0;
-    top: -22px;
-    /* Move higher to accommodate larger size and avoid covering eyes */
-    height: 32px;
+    top: -20px;
+    height: 50px;
     pointer-events: none;
     z-index: 4;
 }
 
 .odoodo-sweat {
     position: absolute;
-    width: 15px;
-    /* Scaled up ~3x */
-    height: 22px;
-    border-radius: 50% 50% 48% 48% / 62% 62% 38% 38%;
-    background: linear-gradient(165deg, rgba(236, 254, 255, 0.95) 0%, rgba(165, 243, 252, 0.8) 42%, rgba(56, 189, 248, 0.6) 100%);
-    box-shadow:
-        0 0 0 1px rgba(8, 145, 178, 0.25),
-        0 2px 5px rgba(15, 23, 42, 0.28);
-    opacity: 0.85;
-    animation: odoodo-sweat-pulse 1.45s linear infinite;
+    width: 7px;
+    height: 11px;
+    /* Teardrop: round at bottom-right, pointed at top-left */
+    border-radius: 0% 50% 50% 50%;
+    background: linear-gradient(135deg, rgba(224, 247, 255, 0.96) 0%, rgba(125, 211, 252, 0.88) 55%, rgba(14, 165, 233, 0.65) 100%);
+    box-shadow: 0 0 0 1px rgba(7, 182, 213, 0.18), 0 1px 3px rgba(0, 30, 60, 0.16);
+    opacity: 0;
+    animation: odoodo-sweat-fly var(--sw-dur, 1.5s) ease-out infinite;
+    animation-delay: var(--sw-delay, 0s);
 }
 
-.odoodo-sweat--1 {
-    left: 12%;
-    top: 4px;
-    transform: rotate(14deg);
-}
+.odoodo-sweat--1 { left: 8%;   top: 8px;  width: 8px;  height: 13px; --sw-ang: -52deg; --sw-tx: -14px; --sw-ty: -22px; --sw-delay: 0s;     --sw-dur: 1.6s; }
+.odoodo-sweat--2 { left: 24%;  top: 14px; width: 6px;  height: 10px; --sw-ang: -42deg; --sw-tx: -11px; --sw-ty: -17px; --sw-delay: 0.32s;  --sw-dur: 1.5s; }
+.odoodo-sweat--3 { left: 42%;  top: 5px;  width: 7px;  height: 11px; --sw-ang: -58deg; --sw-tx: -12px; --sw-ty: -23px; --sw-delay: 0.65s;  --sw-dur: 1.55s; }
+.odoodo-sweat--4 { right: 26%; top: 11px; width: 6px;  height: 9px;  --sw-ang: -38deg; --sw-tx: -9px;  --sw-ty: -15px; --sw-delay: 0.98s;  --sw-dur: 1.45s; }
+.odoodo-sweat--5 { right: 10%; top: 6px;  width: 5px;  height: 8px;  --sw-ang: -64deg; --sw-tx: -11px; --sw-ty: -21px; --sw-delay: 1.28s;  --sw-dur: 1.4s; }
 
-.odoodo-sweat--2 {
-    left: 30%;
-    top: 12px;
-    width: 12px;
-    /* Scaled up ~3x */
-    height: 18px;
-    transform: rotate(30deg);
-    animation: odoodo-sweat-pulse-b 1.45s linear infinite;
-    animation-delay: 0.1s;
-}
-
-@keyframes odoodo-sweat-pulse {
-
-    0%,
-    58%,
-    100% {
-        opacity: 0.22;
-        transform: translate3d(0, 0, 0) rotate(14deg);
-    }
-
-    10% {
-        opacity: 0.95;
-        transform: translate3d(0.5px, 0.5px, 0) rotate(16deg);
-    }
-
-    22% {
-        opacity: 0.45;
-        transform: translate3d(-0.3px, 0.3px, 0) rotate(12deg);
-    }
-
-    35% {
-        opacity: 1;
-        transform: translate3d(0.3px, 0.8px, 0) rotate(15deg);
-    }
-
-    48% {
-        opacity: 0.55;
-        transform: translate3d(-0.2px, 0.4px, 0) rotate(13deg);
-    }
-}
-
-@keyframes odoodo-sweat-pulse-b {
-
-    0%,
-    58%,
-    100% {
-        opacity: 0.2;
-        transform: translate3d(0, 0, 0) rotate(-16deg);
-    }
-
-    12% {
-        opacity: 0.92;
-        transform: translate3d(-0.4px, 0.6px, 0) rotate(-14deg);
-    }
-
-    26% {
-        opacity: 0.4;
-        transform: translate3d(0.3px, 0.25px, 0) rotate(-17deg);
-    }
-
-    38% {
-        opacity: 0.98;
-        transform: translate3d(-0.2px, 0.7px, 0) rotate(-15deg);
-    }
-
-    50% {
-        opacity: 0.5;
-        transform: translate3d(0.2px, 0.35px, 0) rotate(-16deg);
-    }
+@keyframes odoodo-sweat-fly {
+    0%   { opacity: 0;    transform: rotate(var(--sw-ang)) translate(0, 0) scale(0.3); }
+    9%   { opacity: 0.95; transform: rotate(var(--sw-ang)) translate(-1px, -3px) scale(1); }
+    85%  { opacity: 0.28; transform: rotate(var(--sw-ang)) translate(var(--sw-tx), var(--sw-ty)) scale(0.55); }
+    100% { opacity: 0;    transform: rotate(var(--sw-ang)) translate(var(--sw-tx), var(--sw-ty)) scale(0.3); }
 }
 
 /* RWD: iPad Landscape 900px-1180px
