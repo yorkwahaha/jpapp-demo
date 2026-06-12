@@ -67,6 +67,7 @@
     <link rel="stylesheet" href="assets/css/codex.css?v=26052601">
     <link rel="stylesheet" href="assets/css/result-mistakes.css?v=26052601">
     <link rel="stylesheet" href="assets/css/escape.css?v=26052601">
+    <link rel="stylesheet" href="assets/css/stats.css?v=26061201">
 
 
 
@@ -308,6 +309,11 @@
             s10p.src = 'assets/js/srs-helpers.js?v=' + v;
             s10p.async = false;
             document.head.appendChild(s10p);
+
+            const s10q = document.createElement('script');
+            s10q.src = 'assets/js/stats-display.js?v=' + v;
+            s10q.async = false;
+            document.head.appendChild(s10q);
 
             const s11 = document.createElement('script');
 
@@ -2402,6 +2408,8 @@
                                     aria-label="小助靈共鳴輪"><span>✨</span></button>
                                 <button @click="openMonsterCodex" class="map-hud-btn map-hud-btn--monster-codex"
                                     type="button" aria-label="怪物圖鑑"><span>🐾</span></button>
+                                <button @click="isStatsOpen = true; playSfx('uiPop');" class="map-hud-btn map-hud-btn--stats"
+                                    type="button" aria-label="學習統計"><span>📊</span></button>
                                 <button @click="isMenuOpen = true; playSfx('uiPop');" class="map-hud-btn map-hud-btn--system"
                                     type="button" aria-label="系統選單"><span>⚙️</span></button>
                                 <button v-if="srsAvailable" @click="startSrsMode(); playSfx('uiPop');"
@@ -2533,6 +2541,8 @@
                                 aria-label="小助靈共鳴輪"><span>✨</span></button>
                             <button @click="openMonsterCodex" class="map-hud-btn map-hud-btn--monster-codex"
                                 type="button" aria-label="怪物圖鑑"><span>🐾</span></button>
+                            <button @click="isStatsOpen = true; playSfx('uiPop');" class="map-hud-btn map-hud-btn--stats"
+                                type="button" aria-label="學習統計"><span>📊</span></button>
                             <button @click="isMenuOpen = true; playSfx('uiPop');" class="map-hud-btn map-hud-btn--system"
                                 type="button" aria-label="系統選單"><span>⚙️</span></button>
                             <button v-if="srsAvailable" @click="startSrsMode(); playSfx('uiPop');"
@@ -3299,6 +3309,80 @@
                     </div>
 
                     <button @click="isStageRecordsOpen = false; playSfx('click');"
+                        class="stage-records-close">關閉</button>
+
+                </div>
+
+            </div>
+
+
+            <!-- 學習統計（4A） -->
+            <div v-if="isStatsOpen"
+                class="fixed inset-0 z-[5000] flex items-center justify-center p-3 sm:p-4 bg-slate-950/[0.05] backdrop-blur-[2px]"
+                @click.self="isStatsOpen = false; playSfx('click');">
+
+                <div class="stats-modal w-full max-w-[420px] confirm-modal-glass stage-confirm-modal rounded-[2rem] p-5 sm:p-6 flex flex-col">
+
+                    <div class="modal-header-row flex-shrink-0">
+                        <h2 class="text-2xl font-black text-violet-300 tracking-[0.08em] drop-shadow-lg">學習統計 <span class="modal-caption uppercase">STATS</span></h2>
+                        <button @click="isStatsOpen = false; playSfx('click');" class="modal-close-btn">✕</button>
+                    </div>
+
+                    <!-- 全體掌握度 -->
+                    <div class="mb-4 mt-1">
+                        <div class="stats-section-title">全體掌握度</div>
+                        <div class="stats-overall-track">
+                            <div class="stats-overall-fill" :style="{ width: statsData.overallMastery + '%' }"></div>
+                        </div>
+                        <div class="stats-overall-pct">{{ statsData.overallMastery }}%</div>
+                    </div>
+
+                    <!-- 各助詞掌握度 -->
+                    <div class="mb-4">
+                        <div class="stats-section-title">助詞掌握度</div>
+                        <div v-for="item in statsData.particleStats" :key="item.particle" class="stats-bar-row">
+                            <span class="stats-bar-label">{{ item.particle }}</span>
+                            <div class="stats-bar-track">
+                                <div class="stats-bar-fill"
+                                    :class="item.avg >= 70 ? 'stats-bar-fill--high' : item.avg >= 40 ? 'stats-bar-fill--mid' : 'stats-bar-fill--low'"
+                                    :style="{ width: item.avg + '%' }"></div>
+                            </div>
+                            <span class="stats-bar-pct">{{ item.avg }}%</span>
+                        </div>
+                        <div v-if="!statsData.particleStats.length" class="text-xs text-white/30 text-center py-2">尚無資料</div>
+                    </div>
+
+                    <!-- 最弱三個用法 -->
+                    <div class="mb-4">
+                        <div class="stats-section-title">最需加強</div>
+                        <div v-for="(item, i) in statsData.weakest3" :key="i" class="stats-weak-item">
+                            <span class="stats-weak-rank">{{ i + 1 }}</span>
+                            <span class="stats-weak-name">{{ item.name }}</span>
+                            <span class="stats-weak-pct">{{ item.mastery }}%</span>
+                        </div>
+                        <div v-if="!statsData.weakest3.length" class="text-xs text-white/30 text-center py-2">尚無資料</div>
+                    </div>
+
+                    <!-- 關卡統計 -->
+                    <div class="mb-5">
+                        <div class="stats-section-title">關卡成就</div>
+                        <div class="stats-card-row">
+                            <div class="stats-card">
+                                <div class="stats-card-value">{{ statsData.clearedCount }}</div>
+                                <div class="stats-card-label">通關</div>
+                            </div>
+                            <div class="stats-card">
+                                <div class="stats-card-value text-amber-300">{{ statsData.sRankCount }}</div>
+                                <div class="stats-card-label">S RANK</div>
+                            </div>
+                            <div class="stats-card">
+                                <div class="stats-card-value text-rose-400">{{ statsData.mistakeCount }}</div>
+                                <div class="stats-card-label">待複習錯題</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button @click="isStatsOpen = false; playSfx('click');"
                         class="stage-records-close">關閉</button>
 
                 </div>

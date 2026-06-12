@@ -1102,6 +1102,16 @@ const _jpApp = Vue.createApp({
             return unlockedSkillIds.value.some(id => (mastery[id] ?? 0) < 50);
         });
 
+        const statsData = computed(() =>
+            window.JPAPPStatsDisplay?.computeStats({
+                skills: SKILLS.value,
+                skillMastery: skillMastery.value,
+                stageBestRecords: stageBestRecords.value,
+                bestGrades: bestGrades.value,
+                mistakes: mistakes.value,
+            }) ?? { particleStats: [], overallMastery: 0, weakest3: [], clearedCount: 0, sRankCount: 0, mistakeCount: 0 }
+        );
+
         const startSrsMode = () => {
             if (!window.JPAPPSrsHelpers) return;
 
@@ -3639,6 +3649,8 @@ const _jpApp = Vue.createApp({
         const isAdvancedSettingsOpen = ref(false);
 
         const isStageRecordsOpen = ref(false);
+
+        const isStatsOpen = ref(false);
 
         const isMapDropdownOpen = ref(false);
 
@@ -11706,6 +11718,7 @@ const _jpApp = Vue.createApp({
             srsAvailable, startSrsMode,
             practiceMode, confirmAndStartBattle, confirmAndStartPractice,
             dailyMode, dailyAvailable, isDailyDone, dailySeleneText, startDailyMode,
+            isStatsOpen, statsData,
 
             newUnlockLv, bestGrades, getGradeColor, sRankCount,
 
