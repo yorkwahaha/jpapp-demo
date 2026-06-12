@@ -2407,6 +2407,11 @@
                                 <button v-if="srsAvailable" @click="startSrsMode(); playSfx('uiPop');"
                                     class="map-hud-btn map-hud-btn--srs" type="button"
                                     aria-label="特訓之間"><span>⚔️</span></button>
+                                <button v-if="dailyAvailable || isDailyDone"
+                                    @click="!isDailyDone && (startDailyMode(), playSfx('uiPop'));"
+                                    class="map-hud-btn" :class="isDailyDone ? 'map-hud-btn--daily-done' : 'map-hud-btn--daily'"
+                                    type="button" :aria-label="isDailyDone ? '今日修行完成' : '今日修行'">
+                                    <span>{{ isDailyDone ? '✅' : '⭐' }}</span></button>
 
                             </div>
 
@@ -2533,6 +2538,11 @@
                             <button v-if="srsAvailable" @click="startSrsMode(); playSfx('uiPop');"
                                 class="map-hud-btn map-hud-btn--srs" type="button"
                                 aria-label="特訓之間"><span>⚔️</span></button>
+                            <button v-if="dailyAvailable || isDailyDone"
+                                @click="!isDailyDone && (startDailyMode(), playSfx('uiPop'));"
+                                class="map-hud-btn" :class="isDailyDone ? 'map-hud-btn--daily-done' : 'map-hud-btn--daily'"
+                                type="button" :aria-label="isDailyDone ? '今日修行完成' : '今日修行'">
+                                <span>{{ isDailyDone ? '✅' : '⭐' }}</span></button>
                         </div>
 
                     </div>
@@ -3628,9 +3638,15 @@
                         <span v-if="practiceMode"
                             class="px-1.5 py-0.5 bg-sky-500/20 border border-sky-400/40 rounded text-[9px] font-black text-sky-300 tracking-wider uppercase">修行</span>
 
+                        <span v-if="dailyMode"
+                            class="px-1.5 py-0.5 bg-amber-500/20 border border-amber-400/40 rounded text-[9px] font-black text-amber-300 tracking-wider uppercase">今日</span>
+
                     </div>
 
-                    <div id="battleLog"
+                    <div v-if="dailyMode"
+                        class="flex-1 mx-2 text-center text-[10px] font-bold text-amber-200/80 drop-shadow-md truncate italic">
+                        {{ dailySeleneText }}</div>
+                    <div v-else id="battleLog"
                         class="flex-1 mx-2 text-center text-xs font-bold text-amber-300 drop-shadow-md truncate"
                         aria-live="polite"></div>
 

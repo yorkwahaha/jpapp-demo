@@ -374,6 +374,8 @@ const _jpApp = Vue.createApp({
 
         const srsMode = ref(false);
         const practiceMode = ref(false);
+        const dailyMode = ref(false);
+        const dailyLastDate = ref('');
 
         const clearedLevels = ref([]);
 
@@ -566,7 +568,9 @@ const _jpApp = Vue.createApp({
 
                     lastViewedMap: { chapter: activeChapter.value, segment: selectedSegmentIdx.value },
 
-                    playerStats: playerStats.value
+                    playerStats: playerStats.value,
+
+                    dailyLastDate: dailyLastDate.value
 
                 };
                 const hasLevelConfig = Object.keys(LEVEL_CONFIG.value || {}).length > 0;
@@ -634,6 +638,8 @@ const _jpApp = Vue.createApp({
 
                     if (parsed.skillMastery) skillMastery.value = normalizeSkillMasteryMap(parsed.skillMastery);
 
+                    if (parsed.dailyLastDate) dailyLastDate.value = parsed.dailyLastDate;
+
                     if (parsed.playerStats) {
                         playerStats.value = parsed.playerStats;
                     } else {
@@ -665,6 +671,7 @@ const _jpApp = Vue.createApp({
             unlockedOnomatopeIds.value = [];
             skillMastery.value = {};
             playerStats.value = { level: 1, exp: 0 };
+            dailyLastDate.value = '';
             activeChapter.value = 'chapter1';
             selectedSegmentIdx.value = 0;
             lastClearedLevel.value = null;
@@ -1122,6 +1129,68 @@ const _jpApp = Vue.createApp({
             startLevel(0);
         };
 
+        // ---- [ DAILY MODE — 每日修行 ] ----
+        const DAILY_SELENE_LINES = [
+            '每天一點，助詞就在心裡扎根了。',
+            '昨天沒記住的，今天再來一次！',
+            '這些助詞就像路標，記住它們就不會迷路。',
+            '今天也好好修行，Selene 陪著你。',
+            '不急不慌，一天五題，已經很棒了。',
+            '助詞是心意的橋，慢慢搭，穩穩走。',
+            '今日份的努力已記錄在冒險日記裡！',
+            '每一題都是勇氣，你今天很勇！',
+            '練習不是重複，是把感覺記進身體裡。',
+            '小助靈們都在為你加油，感覺到了嗎？',
+            '今日修行圓滿，明天繼續前行！',
+            '助詞的力量，來自每天的積累。',
+            '五題不多，但每題都有重量。',
+            '你的堅持，Selene 都有看到。',
+        ];
+
+        const _todayDateStr = () => {
+            const t = new Date();
+            return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+        };
+
+        const isDailyDone = computed(() => !!dailyLastDate.value && dailyLastDate.value === _todayDateStr());
+
+        const dailyAvailable = computed(() => {
+            if (isDailyDone.value) return false;
+            if (mistakes.value.length > 0) return true;
+            const mastery = skillMastery.value;
+            return unlockedSkillIds.value.some(id => (mastery[id] ?? 0) < 50);
+        });
+
+        const dailySeleneText = computed(() => {
+            const t = new Date();
+            const doy = Math.floor((t - new Date(t.getFullYear(), 0, 0)) / 86400000);
+            return DAILY_SELENE_LINES[doy % DAILY_SELENE_LINES.length];
+        });
+
+        const startDailyMode = () => {
+            if (!window.JPAPPSrsHelpers || isDailyDone.value) return;
+            let targetUnlocked = unlockedSkillIds.value;
+            if (!targetUnlocked.length && mistakes.value.length > 0) {
+                const derived = new Set();
+                mistakes.value.forEach(m => {
+                    if (m.skillId) {
+                        derived.add(m.skillId);
+                    } else if (m.levelId) {
+                        const cfg = LEVEL_CONFIG.value[m.levelId];
+                        if (cfg?.skillId && cfg.skillId !== 'SRS_MODE') derived.add(cfg.skillId);
+                        (cfg?.unlockSkills || []).forEach(s => derived.add(s));
+                    }
+                });
+                targetUnlocked = [...derived];
+            }
+            srsSkillQueue = window.JPAPPSrsHelpers.buildSrsSkillQueue(
+                mistakes.value, skillMastery.value, targetUnlocked
+            );
+            if (!srsSkillQueue.length) return;
+            dailyMode.value = true;
+            startLevel(0);
+        };
+
         /** Battle entry from map — DO NOT TOUCH for display-only / map-docs tasks. */
         const confirmAndStartBattle = () => {
             if (selectedStageToConfirm.value !== null) {
@@ -1333,6 +1402,7 @@ const _jpApp = Vue.createApp({
             isFinished.value = true;
             srsMode.value = false;
             practiceMode.value = false;
+            dailyMode.value = false;
             showLevelSelect.value = false;
 
             const maxUnlocked = Math.max(...unlockedLevels.value, 1);
@@ -9341,7 +9411,7 @@ const _jpApp = Vue.createApp({
 
             }
 
-            const _totalQ = (config.skillId === 'HIDDEN_BOSS_36') ? bossQuestionQueue.length : (lv === 0) ? 10 : 100;
+            const _totalQ = (config.skillId === 'HIDDEN_BOSS_36') ? bossQuestionQueue.length : (lv === 0) ? (dailyMode.value ? 5 : 10) : 100;
             for (let i = 0; i < _totalQ; i++) {
 
                 let q = null;
@@ -10759,6 +10829,11 @@ const _jpApp = Vue.createApp({
 
                 // Boss ability rewards are now handled in the tally sequence via rewardAbilityId
 
+                // Mark daily complete on victory
+                if (currentLevel.value === 0 && dailyMode.value) {
+                    dailyLastDate.value = _todayDateStr();
+                }
+
                 saveProgression();
 
                 stopAllAudio();
@@ -11630,6 +11705,7 @@ const _jpApp = Vue.createApp({
             selectStageFromMap, startStageWithExplanation, returnToMap,
             srsAvailable, startSrsMode,
             practiceMode, confirmAndStartBattle, confirmAndStartPractice,
+            dailyMode, dailyAvailable, isDailyDone, dailySeleneText, startDailyMode,
 
             newUnlockLv, bestGrades, getGradeColor, sRankCount,
 
