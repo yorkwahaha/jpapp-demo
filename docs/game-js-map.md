@@ -113,6 +113,7 @@
 |------|------|------|
 | `isStatsOpen` ref | ~#22 區（`isStageRecordsOpen` 附近） | 學習統計 modal 開關 |
 | `statsData` computed | ~#11 區（`srsAvailable` 附近） | 呼叫 `window.JPAPPStatsDisplay.computeStats()`；依賴 `SKILLS`, `skillMastery`, `stageBestRecords`, `bestGrades`, `mistakes` |
+| `totalStars` computed | ~#11 區（`statsData` 下方） | `Object.values(stageBestRecords).reduce(bestStars 總和)`；HUD 進度列用（第4批B） |
 
 ### 首頁／存檔入口（跨檔）
 

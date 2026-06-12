@@ -75,11 +75,11 @@
 - **風險:** 低。純讀取呈現,零新資料結構。
 - **主要檔案:** 新增 `assets/js/stats-display.js`（`window.JPAPPStatsDisplay.computeStats()`）、`assets/css/stats.css`、`index.html` 模板、`game.js`（`isStatsOpen` ref + `statsData` computed）。
 
-### 4B. 地圖總覽進度
+### 4B. 地圖總覽進度 — ✅ 已完成（2026-06-12）
 
-- **範圍:** 地圖 HUD 顯示章節完成率與總星數(`stageBestRecords` 已有資料)。
+- **範圍:** 地圖 HUD 新增進度列，顯示「通關 N/36」與「★ N 顆」。桌機＋手機兩處 HUD 同步。
 - **風險:** 低。地圖 HUD 呈現層。
-- **主要檔案:** `game.js` computed(窄改)、`index.html`、地圖相關 CSS。
+- **主要檔案:** `game.js`（新增 `totalStars` computed）、`index.html`（兩處 `.map-hud-progress`）、`assets/css/stats.css`（`.map-hud-progress` 樣式）。
 
 ---
 
