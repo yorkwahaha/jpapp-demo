@@ -373,6 +373,7 @@ const _jpApp = Vue.createApp({
         const stageBestRecords = ref({}); // { stageNumber: { bestStars, bestTimeMs, bestTimeSeconds, bestCorrectRate, bestMaxCombo, updatedAt } }
 
         const srsMode = ref(false);
+        const practiceMode = ref(false);
 
         const clearedLevels = ref([]);
 
@@ -1124,6 +1125,18 @@ const _jpApp = Vue.createApp({
         /** Battle entry from map — DO NOT TOUCH for display-only / map-docs tasks. */
         const confirmAndStartBattle = () => {
             if (selectedStageToConfirm.value !== null) {
+                practiceMode.value = false;
+                const lv = selectedStageToConfirm.value;
+                isBattleConfirmOpen.value = false;
+                selectedStageToConfirm.value = null;
+                if (typeof MapAmbient !== 'undefined') MapAmbient.deactivate();
+                startLevel(lv);
+            }
+        };
+
+        const confirmAndStartPractice = () => {
+            if (selectedStageToConfirm.value !== null) {
+                practiceMode.value = true;
                 const lv = selectedStageToConfirm.value;
                 isBattleConfirmOpen.value = false;
                 selectedStageToConfirm.value = null;
@@ -1319,6 +1332,7 @@ const _jpApp = Vue.createApp({
             resetStageClearMetrics();
             isFinished.value = true;
             srsMode.value = false;
+            practiceMode.value = false;
             showLevelSelect.value = false;
 
             const maxUnlocked = Math.max(...unlockedLevels.value, 1);
@@ -7544,6 +7558,7 @@ const _jpApp = Vue.createApp({
         };
 
         const applyMonsterAttack = () => {
+            if (practiceMode.value) return;
             monsterAttackLunge.value = true;
             setTimeout(() => { monsterAttackLunge.value = false; }, 300);
 
@@ -10709,19 +10724,22 @@ const _jpApp = Vue.createApp({
 
                     }
 
-                    // Update best grade
+                    // Update best grade + record (skip in practice mode)
+                    if (!practiceMode.value) {
 
-                    const currentG = calculatedGrade.value;
+                        const currentG = calculatedGrade.value;
 
-                    const oldG = bestGrades.value[currentLevel.value];
+                        const oldG = bestGrades.value[currentLevel.value];
 
-                    if (window.JPAPPResultDisplayManager.shouldUpdateBestGrade(currentG, oldG, GRADE_RANK)) {
+                        if (window.JPAPPResultDisplayManager.shouldUpdateBestGrade(currentG, oldG, GRADE_RANK)) {
 
-                        bestGrades.value[currentLevel.value] = currentG;
+                            bestGrades.value[currentLevel.value] = currentG;
+
+                        }
+
+                        updateStageBestRecord();
 
                     }
-
-                    updateStageBestRecord();
 
                     const nextLv = currentLevel.value + 1;
 
@@ -11611,6 +11629,7 @@ const _jpApp = Vue.createApp({
 
             selectStageFromMap, startStageWithExplanation, returnToMap,
             srsAvailable, startSrsMode,
+            practiceMode, confirmAndStartBattle, confirmAndStartPractice,
 
             newUnlockLv, bestGrades, getGradeColor, sRankCount,
 
