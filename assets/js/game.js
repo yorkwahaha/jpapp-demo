@@ -1112,6 +1112,10 @@ const _jpApp = Vue.createApp({
             }) ?? { particleStats: [], overallMastery: 0, weakest3: [], clearedCount: 0, sRankCount: 0, mistakeCount: 0 }
         );
 
+        const totalStars = computed(() =>
+            Object.values(stageBestRecords.value).reduce((s, r) => s + (Number(r.bestStars) || 0), 0)
+        );
+
         const startSrsMode = () => {
             if (!window.JPAPPSrsHelpers) return;
 
@@ -11720,7 +11724,7 @@ const _jpApp = Vue.createApp({
             dailyMode, dailyAvailable, isDailyDone, dailySeleneText, startDailyMode,
             isStatsOpen, statsData,
 
-            newUnlockLv, bestGrades, getGradeColor, sRankCount,
+            newUnlockLv, bestGrades, getGradeColor, sRankCount, totalStars,
 
             mapChapters, activeChapter, getMapNodeStyle, selectedSegmentIdx, isSegmentUnlocked, jumpToMapSegment, isMapDropdownOpen,
 

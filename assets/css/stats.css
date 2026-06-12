@@ -158,6 +158,35 @@
     flex-shrink: 0;
 }
 
+/* 4B — 地圖 HUD 進度列 */
+.map-hud-progress {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.1875rem 0.125rem 0.25rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.map-hud-progress-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.map-hud-progress-val {
+    color: rgba(255, 255, 255, 0.75);
+    font-weight: 800;
+    font-size: 0.6875rem;
+}
+
+.map-hud-progress-star {
+    color: #fbbf24;
+}
+
 /* HUD button */
 .map-hud-btn--stats {
     background:

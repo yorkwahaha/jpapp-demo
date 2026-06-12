@@ -2401,6 +2401,11 @@
                                 </div>
                             </div>
 
+                            <div class="map-hud-progress" aria-label="關卡進度">
+                                <span class="map-hud-progress-item">通關 <span class="map-hud-progress-val">{{ clearedLevels.length }}/{{ maxLevel }}</span></span>
+                                <span class="map-hud-progress-item"><span class="map-hud-progress-star">★</span><span class="map-hud-progress-val">{{ totalStars }}</span></span>
+                            </div>
+
                             <div class="map-hud-actions">
 
                                 <button @click="isCodexOpen = true; playSfx('uiPop');"
@@ -2533,6 +2538,11 @@
                                 </div>
                                 <span class="hud-bar-value">{{ spState ? spState.cur : 0 }}</span>
                             </div>
+                        </div>
+
+                        <div class="map-hud-progress" aria-label="關卡進度">
+                            <span class="map-hud-progress-item">通關 <span class="map-hud-progress-val">{{ clearedLevels.length }}/{{ maxLevel }}</span></span>
+                            <span class="map-hud-progress-item"><span class="map-hud-progress-star">★</span><span class="map-hud-progress-val">{{ totalStars }}</span></span>
                         </div>
 
                         <div class="map-hud-actions">
