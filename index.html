@@ -3373,6 +3373,22 @@
                         <div v-if="!statsData.weakest3.length" class="text-xs text-white/30 text-center py-2">尚無資料</div>
                     </div>
 
+                    <!-- 家族羈絆 -->
+                    <div class="mb-4" v-if="statsData.familyStats && statsData.familyStats.length">
+                        <div class="stats-section-title">家族羈絆</div>
+                        <div v-for="f in statsData.familyStats" :key="f.family" class="stats-family-row">
+                            <span class="stats-family-name">{{ f.family }}</span>
+                            <div class="stats-family-track">
+                                <div class="stats-family-fill"
+                                    :class="{ 'stats-family-fill--complete': f.resonated >= f.total }"
+                                    :style="{ width: (f.total ? Math.round(f.resonated / f.total * 100) : 0) + '%' }">
+                                </div>
+                            </div>
+                            <span class="stats-family-count">{{ f.resonated }}/{{ f.total }}</span>
+                            <span class="stats-family-complete" v-if="f.resonated >= f.total">✦</span>
+                        </div>
+                    </div>
+
                     <!-- 關卡統計 -->
                     <div class="mb-5">
                         <div class="stats-section-title">關卡成就</div>

@@ -1105,11 +1105,12 @@ const _jpApp = Vue.createApp({
         const statsData = computed(() =>
             window.JPAPPStatsDisplay?.computeStats({
                 skills: SKILLS.value,
+                spirits: SPIRITS.value,
                 skillMastery: skillMastery.value,
                 stageBestRecords: stageBestRecords.value,
                 bestGrades: bestGrades.value,
                 mistakes: mistakes.value,
-            }) ?? { particleStats: [], overallMastery: 0, weakest3: [], clearedCount: 0, sRankCount: 0, mistakeCount: 0 }
+            }) ?? { particleStats: [], overallMastery: 0, weakest3: [], clearedCount: 0, sRankCount: 0, mistakeCount: 0, familyStats: [] }
         );
 
         const totalStars = computed(() =>

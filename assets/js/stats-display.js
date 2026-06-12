@@ -6,9 +6,23 @@ window.JPAPPStatsDisplay = (() => {
         return p === '複習' || p === '極限' || p.startsWith('複習');
     };
 
-    function computeStats({ skills, skillMastery, stageBestRecords, bestGrades, mistakes }) {
+    function computeFamilyStats({ spirits, skillMastery }) {
+        if (!Array.isArray(spirits) || !spirits.length) return [];
+        const familyMap = {};
+        for (const spirit of spirits) {
+            const f = spirit.family || spirit.particle;
+            if (!familyMap[f]) familyMap[f] = { family: f, total: 0, resonated: 0 };
+            familyMap[f].total++;
+            if ((skillMastery[spirit.skillId] ?? 0) > 0) familyMap[f].resonated++;
+        }
+        return Object.values(familyMap)
+            .filter(f => f.total >= 2)
+            .sort((a, b) => b.total - a.total || a.family.localeCompare(b.family));
+    }
+
+    function computeStats({ skills, spirits, skillMastery, stageBestRecords, bestGrades, mistakes }) {
         if (!Array.isArray(skills) || !skills.length) {
-            return { particleStats: [], overallMastery: 0, weakest3: [], clearedCount: 0, sRankCount: 0, mistakeCount: 0 };
+            return { particleStats: [], overallMastery: 0, weakest3: [], clearedCount: 0, sRankCount: 0, mistakeCount: 0, familyStats: [] };
         }
 
         const nonBoss = skills.filter(s => !isBossSkill(s));
@@ -43,7 +57,9 @@ window.JPAPPStatsDisplay = (() => {
         const sRankCount = Object.values(bestGrades ?? {}).filter(g => g === 'S').length;
         const mistakeCount = (mistakes ?? []).length;
 
-        return { particleStats, overallMastery, weakest3, clearedCount, sRankCount, mistakeCount };
+        const familyStats = computeFamilyStats({ spirits: spirits ?? [], skillMastery });
+
+        return { particleStats, overallMastery, weakest3, clearedCount, sRankCount, mistakeCount, familyStats };
     }
 
     return { computeStats };

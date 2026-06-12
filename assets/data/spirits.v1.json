@@ -2,6 +2,7 @@
   {
     "skillId": "WA_TOPIC_BASIC",
     "particle": "は",
+    "family": "は",
     "spiritId": "spirit-wa-topic",
     "nameZh": "主題之子",
     "nameJa": "は・主題の子",
@@ -21,6 +22,7 @@
   {
     "skillId": "NO_POSSESSIVE",
     "particle": "の",
+    "family": "の",
     "spiritId": "spirit-no-possessive",
     "nameZh": "所屬之子",
     "nameJa": "の・所屬の子",
@@ -40,6 +42,7 @@
   {
     "skillId": "GA_INTRANSITIVE",
     "particle": "が",
+    "family": "が",
     "spiritId": "spirit-ga-intransitive",
     "nameZh": "自然發生之子",
     "nameJa": "が・自然發生の子",
@@ -59,6 +62,7 @@
   {
     "skillId": "WO_OBJECT_BASIC",
     "particle": "を",
+    "family": "を",
     "spiritId": "spirit-wo-object",
     "nameZh": "對象之子",
     "nameJa": "を・對象の子",
@@ -78,6 +82,7 @@
   {
     "skillId": "HE_DIRECTION",
     "particle": "へ",
+    "family": "へ",
     "spiritId": "spirit-he-direction",
     "nameZh": "方向之子",
     "nameJa": "へ・方向の子",
@@ -97,6 +102,7 @@
   {
     "skillId": "MO_ALSO_BASIC",
     "particle": "も",
+    "family": "も",
     "spiritId": "spirit-mo-also",
     "nameZh": "也之子",
     "nameJa": "も・也の子",
@@ -116,6 +122,7 @@
   {
     "skillId": "NI_TIME",
     "particle": "に",
+    "family": "に",
     "spiritId": "spirit-ni-time",
     "nameZh": "時間之子",
     "nameJa": "に・時間の子",
@@ -135,6 +142,7 @@
   {
     "skillId": "TO_AND",
     "particle": "と",
+    "family": "と",
     "spiritId": "spirit-to-and",
     "nameZh": "並列之子",
     "nameJa": "と・並列の子",
@@ -154,6 +162,7 @@
   {
     "skillId": "DE_ACTION_PLACE",
     "particle": "で",
+    "family": "で",
     "spiritId": "spirit-de-place",
     "nameZh": "場所之子",
     "nameJa": "で・場所の子",
@@ -173,6 +182,7 @@
   {
     "skillId": "NI_EXIST_PLACE",
     "particle": "に",
+    "family": "に",
     "spiritId": "spirit-ni-exist-place",
     "nameZh": "存在地點之子",
     "nameJa": "に・存在地點の子",
@@ -192,6 +202,7 @@
   {
     "skillId": "GA_EXIST_SUBJECT",
     "particle": "が",
+    "family": "が",
     "spiritId": "spirit-ga-subject",
     "nameZh": "主體之子",
     "nameJa": "が・主體の子",
@@ -211,6 +222,7 @@
   {
     "skillId": "TO_WITH",
     "particle": "と",
+    "family": "と",
     "spiritId": "spirit-to-together",
     "nameZh": "共同之子",
     "nameJa": "と・共同の子",
@@ -230,6 +242,7 @@
   {
     "skillId": "KARA_SOURCE_START",
     "particle": "から",
+    "family": "から",
     "spiritId": "spirit-kara-source",
     "nameZh": "起點之子",
     "nameJa": "から・起點の子",
@@ -249,6 +262,7 @@
   {
     "skillId": "MADE_LIMIT_END",
     "particle": "まで",
+    "family": "まで",
     "spiritId": "spirit-made-limit",
     "nameZh": "終點之子",
     "nameJa": "まで・終點の子",
@@ -268,6 +282,7 @@
   {
     "skillId": "NI_DESTINATION",
     "particle": "に",
+    "family": "に",
     "spiritId": "spirit-ni-destination",
     "nameZh": "歸著點之子",
     "nameJa": "に・歸著點の子",
@@ -287,6 +302,7 @@
   {
     "skillId": "DE_TOOL_MEANS",
     "particle": "で",
+    "family": "で",
     "spiritId": "spirit-de-means",
     "nameZh": "手段之子",
     "nameJa": "で・手段の子",
@@ -306,6 +322,7 @@
   {
     "skillId": "NI_TARGET",
     "particle": "に",
+    "family": "に",
     "spiritId": "spirit-ni-target",
     "nameZh": "目標之子",
     "nameJa": "に・目標の子",
@@ -325,6 +342,7 @@
   {
     "skillId": "GA_BUT",
     "particle": "が",
+    "family": "が",
     "spiritId": "spirit-ga-but",
     "nameZh": "轉折之子",
     "nameJa": "が・轉折の子",
@@ -344,6 +362,7 @@
   {
     "skillId": "MO_COMPLETE_NEGATION",
     "particle": "も",
+    "family": "も",
     "spiritId": "spirit-mo-negation",
     "nameZh": "全否定之子",
     "nameJa": "も・全否定の子",
@@ -363,6 +382,7 @@
   {
     "skillId": "TO_CONDITIONAL",
     "particle": "と",
+    "family": "と",
     "spiritId": "spirit-to-conditional",
     "nameZh": "條件之子",
     "nameJa": "と・條件の子",
@@ -382,6 +402,7 @@
   {
     "skillId": "YA_AND_OTHERS",
     "particle": "や",
+    "family": "や",
     "spiritId": "spirit-ya-and-others",
     "nameZh": "列舉之子",
     "nameJa": "や・列舉の子",
@@ -401,6 +422,7 @@
   {
     "skillId": "DE_SCOPE",
     "particle": "で",
+    "family": "で",
     "spiritId": "spirit-de-scope",
     "nameZh": "範圍之子",
     "nameJa": "で・範圍の子",
@@ -420,6 +442,7 @@
   {
     "skillId": "NI_PURPOSE",
     "particle": "に",
+    "family": "に",
     "spiritId": "spirit-ni-purpose",
     "nameZh": "目的之子",
     "nameJa": "に・目的の子",
@@ -439,6 +462,7 @@
   {
     "skillId": "TO_QUOTE",
     "particle": "と",
+    "family": "と",
     "spiritId": "spirit-to-quote",
     "nameZh": "引用之子",
     "nameJa": "と・引用の子",
@@ -458,6 +482,7 @@
   {
     "skillId": "KARA_REASON",
     "particle": "から",
+    "family": "から",
     "spiritId": "spirit-kara-reason",
     "nameZh": "理由之子",
     "nameJa": "から・理由の子",
@@ -477,6 +502,7 @@
   {
     "skillId": "YORI_COMPARE",
     "particle": "より",
+    "family": "より",
     "spiritId": "spirit-yori-compare",
     "nameZh": "比較之子",
     "nameJa": "より・比較の子",
@@ -496,6 +522,7 @@
   {
     "skillId": "NI_FREQUENCY",
     "particle": "に",
+    "family": "に",
     "spiritId": "spirit-ni-frequency",
     "nameZh": "頻率之子",
     "nameJa": "に・頻率の子",
@@ -515,6 +542,7 @@
   {
     "skillId": "DE_MATERIAL",
     "particle": "で",
+    "family": "で",
     "spiritId": "spirit-de-material",
     "nameZh": "材料之子",
     "nameJa": "で・材料の子",
@@ -529,6 +557,26 @@
     "trueResonanceLines": [
       "何でできているか、手ざわりまで言葉にするね。",
       "由什麼構成的質地，祂會連觸感都替你說清楚。"
+    ]
+  },
+  {
+    "skillId": "TO_COMPANION",
+    "particle": "と",
+    "family": "と",
+    "spiritId": "spirit-to-companion",
+    "nameZh": "同行之子",
+    "nameJa": "と・同行の子",
+    "flavorText": "不管去哪裡都想一起，提醒喚語者「和誰共同行動」這份溫暖。",
+    "unlockText": "你聽見了「と・同行之子」的聲音。\n祂現在願意加入你的共鳴輪。",
+    "imageBase": "assets/images/spirits/display/spirit-to-companion",
+    "implemented": false,
+    "fallbackType": "particle-card",
+    "trueResonanceTitleZh": "と的同行者",
+    "trueResonanceTitleJa": "と共に往く者",
+    "trueResonanceBadge": "共行の印",
+    "trueResonanceLines": [
+      "どこへでも、一緒に歩いていくね。",
+      "不管走到哪裡，祂都會在你旁邊一起前進。"
     ]
   }
 ]

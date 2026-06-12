@@ -93,11 +93,10 @@
 - **主要檔案:** `game.js`(題型分支,窄改)、`audio-tts.js`(盡量只呼叫不改)、`index.html`。
 - **驗證:** iOS Safari 實機;TTS 失敗 fallback;與 BGM/SFX 不互搶;舊題型零迴歸。
 
-### 5B. 小助靈家族羈絆
+### 5B. 小助靈家族羈絆 — ✅ 已完成（2026-06-12）
 
-- **範圍:** 家族定義資料化(に家族、と家族…,對應 spirits 資料);共鳴輪或統計頁顯示家族集合進度;集滿家族給獎勵(稱號/對話/小 buff 擇一,從簡)。
-- **風險:** 低-中。資料 + 呈現為主;獎勵若涉 battle buff 則需窄 guard。
-- **主要檔案:** `assets/data/spirits.v1.json`(加 family 欄位)、codex 顯示層、`game.js` 獎勵判定(窄改)。
+- **範圍:** 家族定義資料化(に家族、と家族…)；統計頁顯示家族集合進度條 + 集滿✦徽章。
+- **主要檔案:** `assets/data/spirits.v1.json`（加 `family` 欄位，並補齊 TO_COMPANION spirit）、`assets/js/stats-display.js`（新增 `computeFamilyStats()`，`computeStats()` 加入 `spirits` 參數與 `familyStats` 回傳）、`assets/css/stats.css`（家族列樣式）、`index.html`（統計 modal 家族羈絆區塊）、`game.js`（`statsData` 加 `spirits: SPIRITS.value`）。
 
 ---
 
