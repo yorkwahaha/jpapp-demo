@@ -42,7 +42,7 @@
 
     <script>
 
-        window.APP_VERSION = '26052601'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
+        window.APP_VERSION = '26061314'; // 🟢 單一版本號來源，影響所有 JS 與快取清理邏輯
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -58,7 +58,7 @@
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+TC:wght@500;700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/styles.css?v=26061202">
+    <link rel="stylesheet" href="assets/css/styles.css?v=26061314">
     <link rel="stylesheet" href="assets/css/home.css?v=26052601">
     <link rel="stylesheet" href="assets/css/settings.css?v=26052601">
     <link rel="stylesheet" href="assets/css/mentor.css?v=26052601">
@@ -76,7 +76,7 @@
 
             // 老闆專業的破快取機制 - 使用全域單一版本號
 
-            const v = window.APP_VERSION || '26052601';
+            const v = window.APP_VERSION || '26061314';
 
 
 
@@ -303,11 +303,6 @@
             s10m.src = 'assets/js/result-display-manager.js?v=' + v;
             s10m.async = false;
             document.head.appendChild(s10m);
-
-            const s10p = document.createElement('script');
-            s10p.src = 'assets/js/srs-helpers.js?v=' + v;
-            s10p.async = false;
-            document.head.appendChild(s10p);
 
             const s11 = document.createElement('script');
 
@@ -2291,6 +2286,15 @@
 
 
 
+                    <!-- Training Palace Node (chapter1-a only) -->
+                    <template v-if="!isSpecialSceneActive && activeChapter === 'chapter1' && selectedSegmentIdx === 0 && trainingClearedStages.length > 0">
+                        <button class="training-palace-node" @click="openTrainingPalace()" type="button" aria-label="修行宮殿入口">
+                            <div class="training-palace-glow"></div>
+                            <div class="training-palace-icon">🏯</div>
+                            <div class="training-palace-label">修行宮殿</div>
+                        </button>
+                    </template>
+
                     <!-- [DESKTOP ONLY UI] (Anchored to map width) -->
 
                     <div v-if="!isSpecialSceneActive" class="map-ui-desktop-zone">
@@ -2404,14 +2408,6 @@
                                     type="button" aria-label="怪物圖鑑"><span>🐾</span></button>
                                 <button @click="isMenuOpen = true; playSfx('uiPop');" class="map-hud-btn map-hud-btn--system"
                                     type="button" aria-label="系統選單"><span>⚙️</span></button>
-                                <button v-if="srsAvailable" @click="startSrsMode(); playSfx('uiPop');"
-                                    class="map-hud-btn map-hud-btn--srs" type="button"
-                                    aria-label="特訓之間"><span>⚔️</span></button>
-                                <button v-if="dailyAvailable || isDailyDone"
-                                    @click="!isDailyDone && (startDailyMode(), playSfx('uiPop'));"
-                                    class="map-hud-btn" :class="isDailyDone ? 'map-hud-btn--daily-done' : 'map-hud-btn--daily'"
-                                    type="button" :aria-label="isDailyDone ? '今日修行完成' : '今日修行'">
-                                    <span>{{ isDailyDone ? '✅' : '⭐' }}</span></button>
 
                             </div>
 
@@ -2535,14 +2531,6 @@
                                 type="button" aria-label="怪物圖鑑"><span>🐾</span></button>
                             <button @click="isMenuOpen = true; playSfx('uiPop');" class="map-hud-btn map-hud-btn--system"
                                 type="button" aria-label="系統選單"><span>⚙️</span></button>
-                            <button v-if="srsAvailable" @click="startSrsMode(); playSfx('uiPop');"
-                                class="map-hud-btn map-hud-btn--srs" type="button"
-                                aria-label="特訓之間"><span>⚔️</span></button>
-                            <button v-if="dailyAvailable || isDailyDone"
-                                @click="!isDailyDone && (startDailyMode(), playSfx('uiPop'));"
-                                class="map-hud-btn" :class="isDailyDone ? 'map-hud-btn--daily-done' : 'map-hud-btn--daily'"
-                                type="button" :aria-label="isDailyDone ? '今日修行完成' : '今日修行'">
-                                <span>{{ isDailyDone ? '✅' : '⭐' }}</span></button>
                         </div>
 
                     </div>
@@ -2625,23 +2613,15 @@
                         <div class="flex items-center p-4 gap-2 bg-black/10">
 
                             <button @click="closeBattleConfirm" type="button"
-                                class="basis-1/4 px-3 py-2.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 rounded-xl text-white/60 text-xs font-black transition-all active:scale-95 uppercase tracking-widest"
+                                class="basis-1/3 px-3 py-2.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 rounded-xl text-white/60 text-xs font-black transition-all active:scale-95 uppercase tracking-widest"
                                 aria-label="取消，關閉關卡確認">
 
                                 取消
 
                             </button>
 
-                            <button @click="confirmAndStartPractice(); playSfx('uiPop');" type="button"
-                                class="basis-1/3 px-3 py-2.5 bg-sky-600/70 hover:bg-sky-500/80 border border-sky-400/40 rounded-xl text-sky-100 text-xs font-black transition-all active:scale-95"
-                                aria-label="修行模式，無計時攻擊">
-
-                                🏯 修行
-
-                            </button>
-
                             <button @click="confirmAndStartBattle(); playSfx('uiPop');" type="button"
-                                class="basis-5/12 px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-sm font-black rounded-xl transition-all active:scale-95 shadow-[0_4px_15px_rgba(245,158,11,0.3)] border border-amber-400/60"
+                                class="basis-2/3 px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-sm font-black rounded-xl transition-all active:scale-95 shadow-[0_4px_15px_rgba(245,158,11,0.3)] border border-amber-400/60"
                                 aria-label="出發，開始本關戰鬥">
 
                                 出發！
@@ -2655,6 +2635,61 @@
             </div>
 
 
+
+            <!-- Training Palace Panel -->
+            <transition name="fade">
+                <div v-if="isTrainingPalaceOpen"
+                    class="battle-confirm-overlay fixed inset-0 z-[105] flex items-center justify-center px-8"
+                    @click="closeTrainingPalace()">
+                    <div class="w-full max-w-xs confirm-modal-glass stage-confirm-modal rounded-[2rem] overflow-hidden" @click.stop>
+
+                        <div class="stage-confirm-header p-6 pb-4 text-center bg-gradient-to-b from-white/5 to-transparent">
+                            <div class="text-2xl mb-1">🏯</div>
+                            <h2 class="text-white font-black text-lg tracking-wide">修行宮殿</h2>
+                            <p class="text-white/40 text-xs mt-1">選擇想練習的關卡題庫</p>
+                        </div>
+
+                        <div class="training-stage-list px-4 pb-3 max-h-[45vh] overflow-y-auto">
+                            <div class="flex gap-2 mb-3">
+                                <button @click="trainingSelectedStages = [...trainingClearedStages]" type="button"
+                                    class="flex-1 py-1.5 rounded-lg bg-sky-600/20 border border-sky-500/30 text-sky-300 text-xs font-bold active:scale-95 transition-all">
+                                    全選
+                                </button>
+                                <button @click="trainingSelectedStages = []" type="button"
+                                    class="flex-1 py-1.5 rounded-lg bg-white/[0.05] border border-white/10 text-white/40 text-xs font-bold active:scale-95 transition-all">
+                                    清除
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <button
+                                    v-for="n in trainingClearedStages" :key="'ts_' + n"
+                                    @click="toggleTrainingStage(n)"
+                                    type="button"
+                                    class="training-stage-chip"
+                                    :class="{ 'is-selected': trainingSelectedStages.includes(n) }">
+                                    <span class="training-stage-chip-num">{{ String(n).padStart(2, '0') }}</span>
+                                    <span class="training-stage-chip-particle">{{ getStageFocusParticle(n) }}</span>
+                                    <span class="training-stage-chip-label">{{ getStageFocusLabel(n) }}</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center p-4 gap-2 bg-black/10">
+                            <button @click="closeTrainingPalace()" type="button"
+                                class="basis-1/3 px-3 py-2.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 rounded-xl text-white/60 text-xs font-black transition-all active:scale-95 uppercase tracking-widest">
+                                取消
+                            </button>
+                            <button @click="startTrainingSession(); playSfx('uiPop');" type="button"
+                                :disabled="trainingSkillPool.length === 0"
+                                class="basis-2/3 px-4 py-2.5 bg-sky-500 hover:bg-sky-400 disabled:opacity-40 disabled:pointer-events-none text-white text-sm font-black rounded-xl transition-all active:scale-95 shadow-[0_4px_15px_rgba(14,165,233,0.35)] border border-sky-400/40">
+                                進入修行
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </transition>
 
             <transition name="fade">
 
@@ -2968,7 +3003,7 @@
 
                     <div class="flex-1 overflow-y-auto pr-1 space-y-4 custom-scrollbar max-h-[60vh]">
 
-                        <div class="modal-section-card">
+                        <div class="modal-section-card space-y-3">
 
                             <label class="flex items-center justify-between cursor-pointer">
 
@@ -2988,9 +3023,7 @@
 
                             </label>
 
-                        </div>
-
-                        <div class="modal-section-card">
+                            <div class="border-t border-white/10"></div>
 
                             <label class="flex items-center justify-between cursor-pointer">
 
@@ -3079,8 +3112,9 @@
                                         即時戰鬥
                                     </button>
 
-                                    <button disabled
-                                        class="py-2.5 px-1 text-sm font-bold rounded-xl border border-white/5 bg-black/10 text-white/45 cursor-not-allowed italic">
+                                    <button @click="settings.enemyAttackMode = 'turn'"
+                                        class="py-2.5 px-1 text-sm font-bold rounded-xl border transition-all"
+                                        :class="settings.enemyAttackMode === 'turn' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-100 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'bg-black/20 border-white/5 text-white/85 hover:text-white'">
                                         回合制
                                     </button>
 
@@ -3265,13 +3299,13 @@
                     </div>
 
                     <div class="stage-records-summary">
-                        <span>已通關 {{ clearedLevels.length }} / {{ maxLevel }}</span>
+                        <span>已通關 {{ clearedLevels.length }} 關</span>
                         <span>S Rank {{ sRankCount }} 關</span>
                     </div>
 
                     <div class="stage-records-list custom-scrollbar">
-                        <div v-for="row in stageRecordRows" :key="row.stageNumber" class="stage-record-row"
-                            :class="{ 'is-uncleared': !row.isCleared }">
+                        <template v-for="row in stageRecordRows" :key="row.stageNumber">
+                        <div v-if="row.isCleared" class="stage-record-row">
                             <div class="stage-record-main">
                                 <div class="stage-record-no">STAGE {{ String(row.stageNumber).padStart(2, '0') }}</div>
                                 <div class="stage-record-name">
@@ -3296,6 +3330,7 @@
                                 </template>
                             </div>
                         </div>
+                        </template>
                     </div>
 
                     <button @click="isStageRecordsOpen = false; playSfx('click');"
@@ -3456,6 +3491,23 @@
                                                     '--body-frag-y': (20 + (Math.floor((n - 1) / 4) * 32)) + '%',
                                                     '--body-frag-angle': (((n - 4) * 11)) + 'deg',
                                                     '--body-frag-delay': ((n - 1) * 0.1) + 's'
+                                                }"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- 普通怪死亡 VFX：白閃核心 + 碎片飛散 -->
+                                    <div v-if="monsterIsDying && currentLevel % 5 !== 0 && currentLevel !== 36"
+                                        class="normal-death-vfx-wrap">
+                                        <div class="normal-death-burst-core"></div>
+                                        <div class="normal-death-shard-field">
+                                            <span v-for="n in 12" :key="'ndeath-s-' + n" class="normal-death-shard"
+                                                :style="{
+                                                    '--angle': ((n - 1) * 30) + 'deg',
+                                                    '--dist':  (48 + (n % 4) * 14) + 'px',
+                                                    '--delay': ((n - 1) * 0.015) + 's',
+                                                    '--spin':  ((n % 2 === 0 ? 1 : -1) * (55 + n * 14)) + 'deg',
+                                                    '--sw':    (7 + (n % 3) * 4) + 'px',
+                                                    '--sh':    (3 + (n % 4) * 2) + 'px'
                                                 }"></span>
                                         </div>
                                     </div>
@@ -3641,15 +3693,10 @@
                         <span v-if="practiceMode"
                             class="px-1.5 py-0.5 bg-sky-500/20 border border-sky-400/40 rounded text-[9px] font-black text-sky-300 tracking-wider uppercase">修行</span>
 
-                        <span v-if="dailyMode"
-                            class="px-1.5 py-0.5 bg-amber-500/20 border border-amber-400/40 rounded text-[9px] font-black text-amber-300 tracking-wider uppercase">今日</span>
 
                     </div>
 
-                    <div v-if="dailyMode"
-                        class="flex-1 mx-2 text-center text-[10px] font-bold text-amber-200/80 drop-shadow-md truncate italic">
-                        {{ dailySeleneText }}</div>
-                    <div v-else id="battleLog"
+                    <div id="battleLog"
                         class="flex-1 mx-2 text-center text-xs font-bold text-amber-300 drop-shadow-md truncate"
                         aria-live="polite"></div>
 
@@ -3764,9 +3811,8 @@
 
                                     <button v-for="(opt, i) in currentQuestion.choices"
                                         :key="'tap_' + opt + '_' + i" @click="selectChoice(opt, $event)"
-                                        v-show="!isPittariSealed(opt)"
                                         class="resonance-slot group"
-                                        :class="[getChoiceBtnClass(opt), { 'resonance-slot--full-bond': isBattleChoiceBondMax(opt) }]"
+                                        :class="[getChoiceBtnClass(opt), { 'resonance-slot--full-bond': isBattleChoiceBondMax(opt), 'pittari-vanish': isPittariSealed(opt) && pittariAnimating, 'pittari-sealed': isPittariSealed(opt) && !pittariAnimating && !pittariPending }]"
                                         type="button" :aria-label="'選項 ' + opt">
 
                                         <div class="resonance-icon-wrap">
@@ -3796,9 +3842,8 @@
                                     @pointerup="endFlick" @pointercancel="endFlick">
 
                                     <button v-for="(opt, i) in currentQuestion.choices" :key="'flick_' + opt + '_' + i"
-                                        v-show="!isPittariSealed(opt)"
                                         class="resonance-slot"
-                                        :class="{ 'is-active': flickState.activeOpt === opt, 'is-correct': flickState.successOpt === opt, 'resonance-slot--full-bond': isBattleChoiceBondMax(opt) }"
+                                        :class="{ 'is-active': flickState.activeOpt === opt, 'is-correct': flickState.successOpt === opt, 'resonance-slot--full-bond': isBattleChoiceBondMax(opt), 'pittari-vanish': isPittariSealed(opt) && pittariAnimating, 'pittari-sealed': isPittariSealed(opt) && !pittariAnimating && !pittariPending }"
                                         type="button" :aria-label="'選項 ' + opt"
                                         @pointerdown="startFlick($event, opt)">
 
@@ -4265,7 +4310,7 @@
 
                         <div v-for="skill in skillList" :key="skill.id" @click="castAbility(skill.id)"
                             class="group relative bg-slate-900/60 border border-slate-700 hover:border-amber-500/50 rounded-xl p-2.5 flex gap-3 cursor-pointer transition-all hover:bg-slate-800"
-                            :class="['skill-card--' + (skill.type || 'buff'), { 'opacity-50 grayscale cursor-not-allowed': spState.cur < skill.cost || playerDead || monsterDead }]">
+                            :class="['skill-card--' + (skill.type || 'buff'), { 'opacity-50 grayscale cursor-not-allowed': spState.cur < skill.cost || playerDead || monsterDead || isTurnModeDisabledSkill(skill) }]">
 
                             <div
                                 class="skill-icon-frame w-14 h-14 flex-shrink-0 bg-slate-800 rounded-lg flex items-center justify-center text-2xl border border-slate-600 group-hover:border-amber-400">
@@ -4284,7 +4329,7 @@
                                         {{ skill.cost }} SP
                                     </span>
                                 </div>
-                                <p class="text-[11px] text-slate-400 leading-relaxed mt-0.5 group-hover:text-slate-300 transition-colors">{{ skill.desc }}</p>
+                                <p class="text-[11px] text-slate-400 leading-relaxed mt-0.5 group-hover:text-slate-300 transition-colors">{{ getSkillDesc(skill) }}</p>
                             </div>
 
                         </div>
@@ -4606,13 +4651,13 @@
                     </div>
 
                     <div class="stage-records-summary">
-                        <span>已通關 {{ clearedLevels.length }} / {{ maxLevel }}</span>
+                        <span>已通關 {{ clearedLevels.length }} 關</span>
                         <span>S Rank {{ sRankCount }} 關</span>
                     </div>
 
                     <div class="stage-records-list custom-scrollbar">
-                        <div v-for="row in stageRecordRows" :key="row.stageNumber" class="stage-record-row"
-                            :class="{ 'is-uncleared': !row.isCleared }">
+                        <template v-for="row in stageRecordRows" :key="row.stageNumber">
+                        <div v-if="row.isCleared" class="stage-record-row">
                             <div class="stage-record-main">
                                 <div class="stage-record-no">STAGE {{ String(row.stageNumber).padStart(2, '0') }}</div>
                                 <div class="stage-record-name">
@@ -4637,6 +4682,7 @@
                                 </template>
                             </div>
                         </div>
+                        </template>
                     </div>
 
                     <button @click="isStageRecordsOpen = false; resumeBattle(); playSfx('click');"
@@ -4673,7 +4719,7 @@
 
                         <!-- Auto Read -->
 
-                        <div class="modal-section-card">
+                        <div class="modal-section-card space-y-3">
 
                             <label class="flex items-center justify-between cursor-pointer">
 
@@ -4693,9 +4739,7 @@
 
                             </label>
 
-                        </div>
-
-                        <div class="modal-section-card">
+                            <div class="border-t border-white/10"></div>
 
                             <label class="flex items-center justify-between cursor-pointer">
 
@@ -4777,18 +4821,21 @@
 
                                 <div class="grid grid-cols-2 gap-2">
 
-                                    <button @click="settings.enemyAttackMode = 'atb'"
-                                        class="py-2.5 px-1 text-sm font-bold rounded-xl border transition-all"
-                                        :class="settings.enemyAttackMode === 'atb' ? 'bg-rose-500/20 border-rose-500 text-rose-100 shadow-[0_0_15px_rgba(244,63,94,0.2)]' : 'bg-black/20 border-white/5 text-white/85 hover:text-white'">
+                                    <button disabled
+                                        class="py-2.5 px-1 text-sm font-bold rounded-xl border transition-all opacity-50 cursor-not-allowed"
+                                        :class="settings.enemyAttackMode === 'atb' ? 'bg-rose-500/20 border-rose-500 text-rose-100' : 'bg-black/20 border-white/5 text-white/40'">
                                         即時戰鬥
                                     </button>
 
                                     <button disabled
-                                        class="py-2.5 px-1 text-sm font-bold rounded-xl border border-white/5 bg-black/10 text-white/45 cursor-not-allowed italic">
+                                        class="py-2.5 px-1 text-sm font-bold rounded-xl border transition-all opacity-50 cursor-not-allowed"
+                                        :class="settings.enemyAttackMode === 'turn' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-100' : 'bg-black/20 border-white/5 text-white/40'">
                                         回合制
                                     </button>
 
                                 </div>
+
+                                <p class="text-xs text-white/35 mt-1.5 text-center">戰鬥中無法切換</p>
 
                             </div>
 

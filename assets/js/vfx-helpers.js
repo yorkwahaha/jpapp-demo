@@ -1,4 +1,5 @@
 (function () {
+    console.log('[VFX] vfx-helpers.js loaded — version: 26061305 (purple EM cannon hit explosion)');
     const api = window.__JPAPP_VFX || window.JPAPP_VFX || {};
 
     function getComboTier(combo) {
@@ -149,23 +150,16 @@
         const allowShake = vfxShakeSettings == null ? true : vfxShakeSettings.screenShake !== false;
         const stageEl = document.getElementById('stage');
         if (stageEl && allowShake) {
-            const jitter = () => ({
-                dx: (Math.random() - 0.5) * 44,
-                dy: (Math.random() - 0.5) * 44
-            });
-            const pulses = [
-                { t: 0, d: 36 },
-                { t: 48, d: 34 },
-                { t: 98, d: 32 },
-                { t: 138, d: 28 }
-            ];
-            pulses.forEach(({ t, d }) => {
-                setTimeout(() => {
-                    const j = jitter();
-                    stageEl.style.transform = `translate(${j.dx}px,${j.dy}px)`;
-                    setTimeout(() => { stageEl.style.transform = ''; }, d);
-                }, t);
-            });
+            stageEl.style.transform = `translate(${(Math.random() - 0.5) * 92}px,${(Math.random() - 0.5) * 56}px)`;
+            setTimeout(() => { stageEl.style.transform = ''; }, 22);
+            setTimeout(() => {
+                stageEl.style.transform = `translate(${(Math.random() - 0.5) * 58}px,${(Math.random() - 0.5) * 34}px)`;
+                setTimeout(() => { stageEl.style.transform = ''; }, 18);
+            }, 44);
+            setTimeout(() => {
+                stageEl.style.transform = `translate(${(Math.random() - 0.5) * 36}px,${(Math.random() - 0.5) * 20}px)`;
+                setTimeout(() => { stageEl.style.transform = ''; }, 16);
+            }, 68);
         }
 
         const spawn = (css, dur, frames, easing, delayMs = 0) => {
@@ -180,209 +174,80 @@
             else run();
         };
 
-        const tImpact = 52;
+        // Full-screen purple impact flash
+        const impactFlash = document.createElement('div');
+        impactFlash.style.cssText = `position:fixed;inset:0;background:rgba(139,92,246,0.42);pointer-events:none;z-index:9999;`;
+        document.body.appendChild(impactFlash);
+        impactFlash.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 95, easing: 'ease-out', fill: 'forwards' });
+        setTimeout(() => { if (impactFlash.isConnected) impactFlash.remove(); }, 120);
 
+        // White-purple core explosion (120px, instant expand)
         spawn(
-            `position:absolute;width:128px;height:128px;left:${x - 64}px;top:${y - 64}px;z-index:20;pointer-events:none;` +
-            `border-radius:50%;` +
-            `background:radial-gradient(circle,rgba(255,254,249,0.72) 0%,rgba(254,243,199,0.5) 36%,rgba(251,191,36,0.34) 56%,transparent 74%);` +
-            `box-shadow:0 0 34px rgba(251,191,36,0.48),0 0 52px rgba(255,255,255,0.22),inset 0 0 20px rgba(255,255,255,0.16);`,
-            98,
-            [
-                { opacity: 0.62, transform: 'scale(1.26)' },
-                { opacity: 1, transform: 'scale(0.7)' },
-                { opacity: 0, transform: 'scale(0.52)' }
-            ],
-            'cubic-bezier(0.32, 0, 0.15, 1)',
-            0
+            `position:absolute;width:120px;height:120px;left:${x - 60}px;top:${y - 60}px;z-index:42;pointer-events:none;mix-blend-mode:screen;` +
+            `border-radius:50%;background:radial-gradient(circle,#fff 0%,rgba(243,232,255,0.97) 20%,rgba(196,181,253,0.78) 46%,rgba(139,92,246,0.38) 72%,transparent 100%);` +
+            `box-shadow:0 0 14px #fff,0 0 32px rgba(216,180,254,0.98),0 0 64px rgba(139,92,246,0.88),0 0 100px rgba(109,40,217,0.65);`,
+            85,
+            [{ opacity: 1, transform: 'scale(0.06)' }, { opacity: 0, transform: 'scale(2.0)' }],
+            'cubic-bezier(0.03,0.96,0.06,1)'
         );
-        [[-36, 1], [36, -1]].forEach(([rot, dir]) => {
+
+        // 3 expanding shockwave rings
+        [
+            { sz: 160, dur: 170, delay:  0, alpha: 0.94, bw: 4 },
+            { sz: 300, dur: 260, delay: 28, alpha: 0.74, bw: 3 },
+            { sz: 460, dur: 380, delay: 56, alpha: 0.50, bw: 2 }
+        ].forEach(({ sz, dur, delay, alpha, bw }) => {
+            const half = sz / 2;
             spawn(
-                `position:absolute;width:3px;height:122px;left:${x - 1.5}px;top:${y - 61}px;z-index:21;pointer-events:none;` +
-                `transform-origin:center center;mix-blend-mode:screen;` +
-                `background:linear-gradient(to bottom,transparent 8%,rgba(255,253,246,0.72) 40%,rgba(253,224,71,0.92) 50%,transparent 92%);` +
-                `box-shadow:0 0 12px rgba(255,255,255,0.68),0 0 14px rgba(251,191,36,0.45);`,
-                102,
-                [
-                    { opacity: 0.2, transform: `rotate(${rot}deg) scaleY(0.14)` },
-                    { opacity: 0.95, transform: `rotate(${rot + dir * 5}deg) scaleY(0.52)` },
-                    { opacity: 0, transform: `rotate(${rot + dir * 8}deg) scaleY(0.62)` }
-                ],
-                'cubic-bezier(0.28, 0.82, 0.32, 1)',
-                0
+                `position:absolute;width:${sz}px;height:${sz}px;left:${x - half}px;top:${y - half}px;` +
+                `z-index:35;pointer-events:none;border-radius:50%;border:${bw}px solid rgba(196,181,253,${alpha});` +
+                `box-shadow:0 0 24px rgba(167,139,250,0.85),0 0 48px rgba(109,40,217,0.52);`,
+                dur,
+                [{ opacity: alpha, transform: 'scale(0.04)' }, { opacity: 0, transform: 'scale(1)' }],
+                'cubic-bezier(0.02,0.9,0.08,1)',
+                delay
             );
         });
 
-        spawn(
-            `position:absolute;width:64px;height:64px;left:${x - 32}px;top:${y - 32}px;z-index:31;pointer-events:none;mix-blend-mode:screen;` +
-            `border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,1) 0%,rgba(255,250,218,0.55) 45%,transparent 70%);` +
-            `box-shadow:0 0 4px #fff,0 0 22px rgba(255,255,255,1),0 0 42px rgba(254,249,195,0.55);`,
-            44,
-            [
-                { opacity: 0, transform: 'scale(0.2)' },
-                { opacity: 1, transform: 'scale(0.95)' },
-                { opacity: 0, transform: 'scale(1.05)' }
-            ],
-            'cubic-bezier(0.08, 0.92, 0.2, 1)',
-            tImpact
-        );
-
-        spawn(
-            `position:absolute;width:46px;height:46px;left:${x - 23}px;top:${y - 23}px;z-index:26;pointer-events:none;mix-blend-mode:screen;` +
-            `border-radius:50%;` +
-            `background:radial-gradient(circle,#fff 0%,rgba(255,252,240,0.98) 11%,rgba(253,224,71,0.95) 24%,rgba(251,191,36,0.62) 44%,transparent 72%);` +
-            `box-shadow:0 0 2px #fff,0 0 16px rgba(255,255,255,1),0 0 34px rgba(254,249,195,0.72),0 0 52px rgba(251,191,36,0.42);`,
-            74,
-            [
-                { opacity: 0, transform: 'scale(0.24)' },
-                { opacity: 1, transform: 'scale(1)' },
-                { opacity: 0.78, transform: 'scale(1.06)' },
-                { opacity: 0, transform: 'scale(1.22)' }
-            ],
-            'cubic-bezier(0.12, 0.62, 0.2, 1)',
-            tImpact
-        );
-        spawn(
-            `position:absolute;width:56px;height:56px;left:${x - 28}px;top:${y - 28}px;z-index:25;pointer-events:none;mix-blend-mode:screen;` +
-            `border-radius:50%;border:2px solid rgba(255,252,240,1);` +
-            `box-shadow:0 0 12px rgba(255,255,255,0.92),0 0 30px rgba(251,191,36,0.72),inset 0 0 8px rgba(255,255,255,0.32);`,
-            238,
-            [
-                { opacity: 0, transform: 'scale(0.18)' },
-                { opacity: 1, transform: 'scale(0.52)' },
-                { opacity: 0.38, transform: 'scale(1.12)' },
-                { opacity: 0, transform: 'scale(1.92)' }
-            ],
-            'cubic-bezier(0.06, 0.88, 0.22, 1)',
-            tImpact
-        );
-        spawn(
-            `position:absolute;width:104px;height:104px;left:${x - 52}px;top:${y - 52}px;z-index:23;pointer-events:none;` +
-            `border-radius:50%;` +
-            `background:radial-gradient(circle,rgba(255,254,251,0.98) 0%,rgba(253,224,71,0.82) 36%,rgba(251,191,36,0.52) 52%,rgba(251,146,60,0.14) 66%,transparent 78%);` +
-            `box-shadow:0 0 40px rgba(254,229,154,0.55),0 0 62px rgba(251,146,60,0.22);`,
-            296,
-            [{ opacity: 1, transform: 'scale(0.14)' }, { opacity: 0, transform: 'scale(2.72)' }],
-            'cubic-bezier(0.05, 0.9, 0.18, 1)',
-            tImpact
-        );
-
-        [0, 45, 90, 135].forEach((deg) => {
+        // 8 electric slash marks radiating outward
+        [
+            { deg: -75, w: 5, len: 210, alpha: 0.92, delay:  0 },
+            { deg: -45, w: 8, len: 270, alpha: 1.00, delay:  4 },
+            { deg: -18, w: 5, len: 240, alpha: 0.88, delay:  9 },
+            { deg:   8, w: 9, len: 290, alpha: 1.00, delay:  3 },
+            { deg:  32, w: 5, len: 225, alpha: 0.86, delay: 13 },
+            { deg:  58, w: 4, len: 195, alpha: 0.78, delay: 18 },
+            { deg: -96, w: 3, len: 175, alpha: 0.68, delay:  7 },
+            { deg:  84, w: 3, len: 160, alpha: 0.60, delay: 22 }
+        ].forEach(({ deg, w, len, alpha, delay }) => {
             spawn(
-                `position:absolute;width:140px;height:3px;left:${x - 70}px;top:${y - 1.5}px;z-index:30;pointer-events:none;transform-origin:center center;mix-blend-mode:screen;` +
-                `background:linear-gradient(90deg,transparent 4%,rgba(255,255,255,0.97) 44%,rgba(254,249,195,0.98) 50%,rgba(251,191,36,0.85) 56%,transparent 96%);` +
-                `box-shadow:0 0 10px rgba(255,255,255,0.95),0 0 18px rgba(251,191,36,0.55);border-radius:2px;`,
-                115,
-                [
-                    { opacity: 0, transform: `rotate(${deg}deg) scaleX(0.08)` },
-                    { opacity: 1, transform: `rotate(${deg}deg) scaleX(1)` },
-                    { opacity: 0, transform: `rotate(${deg}deg) scaleX(0.56)` }
-                ],
-                'cubic-bezier(0.12, 0.88, 0.26, 1)',
-                tImpact + 6
+                `position:absolute;width:${len}px;height:${w}px;left:${x - len / 2}px;top:${y - w / 2}px;` +
+                `z-index:38;pointer-events:none;mix-blend-mode:screen;border-radius:${w / 2}px;` +
+                `background:linear-gradient(90deg,transparent 2%,rgba(109,40,217,${(alpha * 0.22).toFixed(2)}) 16%,rgba(196,181,253,${alpha}) 46%,rgba(139,92,246,${(alpha * 0.32).toFixed(2)}) 78%,transparent 97%);` +
+                `box-shadow:0 0 ${Math.round(w * 2.5)}px rgba(167,139,250,0.9),0 0 ${Math.round(w * 5)}px rgba(109,40,217,0.58);`,
+                115 + delay * 2,
+                [{ opacity: alpha, transform: `rotate(${deg}deg) scaleX(0.02)` }, { opacity: 0, transform: `rotate(${deg}deg) scaleX(1)` }],
+                'cubic-bezier(0.02,0.94,0.08,1)',
+                delay
             );
         });
 
-        spawn(
-            `position:absolute;width:2px;height:108px;left:${x - 1}px;top:${y - 54}px;z-index:29;pointer-events:none;transform-origin:center center;mix-blend-mode:screen;` +
-            `background:linear-gradient(to bottom,transparent 6%,rgba(255,255,255,1) 44%,#fff 50%,rgba(255,248,218,1) 56%,transparent 94%);` +
-            `box-shadow:0 0 10px rgba(255,255,255,1),0 0 6px rgba(253,224,71,0.95);border-radius:1px;`,
-            65,
-            [
-                { opacity: 0, transform: 'scaleY(0.12)' },
-                { opacity: 1, transform: 'scaleY(1)' },
-                { opacity: 0, transform: 'scaleY(1.06)' }
-            ],
-            'cubic-bezier(0.18, 0.75, 0.2, 1)',
-            tImpact
-        );
-        [[-11, 1], [11, -1], [-88, 1], [88, -1]].forEach(([rot, dir], si) => {
+        // Purple debris burst — 22 particles
+        for (let i = 0; i < 22; i++) {
+            const ang = (Math.PI * 2 / 22) * i + (Math.random() - 0.5) * 0.38;
+            const dist = 55 + Math.random() * 80;
+            const sz = 3 + Math.random() * 7;
             spawn(
-                `position:absolute;width:1.5px;height:96px;left:${x - 0.75}px;top:${y - 48}px;z-index:29;pointer-events:none;transform-origin:center center;mix-blend-mode:screen;` +
-                `background:linear-gradient(to bottom,transparent 8%,rgba(255,255,255,1) 42%,rgba(254,249,232,0.98) 50%,rgba(253,224,71,0.85) 62%,transparent 92%);` +
-                `box-shadow:0 0 8px rgba(255,255,255,0.95),0 0 6px rgba(251,191,36,0.55);border-radius:1px;`,
-                78 + si * 6,
-                [
-                    { opacity: 0, transform: `rotate(${rot}deg) scaleY(0.08)` },
-                    { opacity: 1, transform: `rotate(${rot + dir * 6}deg) scaleY(1)` },
-                    { opacity: 0, transform: `rotate(${rot + dir * 10}deg) scaleY(1.12)` }
-                ],
-                'cubic-bezier(0.12, 0.88, 0.22, 1)',
-                tImpact + 2
-            );
-        });
-
-        const slashes = [
-            [-54, 1, 4.5, 198, 0],
-            [54, -1, 4.5, 198, 0],
-            [-17, -1, 2.8, 158, 14],
-            [17, 1, 2.8, 158, 14]
-        ];
-        slashes.forEach(([rot, dir, sw, sh, extraDelay]) => {
-            const halfW = sw / 2;
-            const halfH = sh / 2;
-            spawn(
-                `position:absolute;width:${sw}px;height:${sh}px;left:${x - halfW}px;top:${y - halfH}px;z-index:28;pointer-events:none;` +
-                `transform-origin:center center;mix-blend-mode:screen;` +
-                `background:linear-gradient(to bottom,transparent 2%,rgba(255,255,255,0.98) 24%,rgba(255,248,220,0.96) 46%,rgba(251,191,36,1) 56%,rgba(249,115,22,0.5) 66%,transparent 97%);` +
-                `border-radius:1px;box-shadow:0 0 8px rgba(255,255,255,0.68),0 0 6px rgba(251,191,36,0.75);`,
-                242,
-                [
-                    { opacity: 1, transform: `rotate(${rot}deg) scaleY(0.05)` },
-                    { opacity: 1, transform: `rotate(${rot + dir * 12}deg) scaleY(1.32)` },
-                    { opacity: 0, transform: `rotate(${rot + dir * 19}deg) scaleY(1.48)` }
-                ],
-                'cubic-bezier(0.05, 0.93, 0.16, 1)',
-                tImpact + extraDelay
-            );
-        });
-
-        for (let i = 0; i < 14; i++) {
-            const ang = (Math.PI * 2 / 14) * i + (i % 2 ? 0.07 : -0.05);
-            const dist = 26 + Math.random() * 28;
-            const len = 6 + Math.random() * 9;
-            spawn(
-                `position:absolute;width:3.5px;height:${len}px;left:${x - 1.75}px;top:${y - len / 2}px;z-index:27;pointer-events:none;mix-blend-mode:screen;` +
-                `border-radius:1px;` +
-                `background:linear-gradient(to top,transparent,rgba(255,255,255,0.98),#fff7c2,rgba(251,191,36,0.98));` +
-                `box-shadow:0 0 8px rgba(255,255,255,0.88),0 0 8px rgba(251,191,36,0.72);`,
-                128 + Math.random() * 48,
-                [
-                    { opacity: 1, transform: `rotate(${ang + Math.PI / 2}rad) translate(0,0) scaleY(0.35)` },
-                    { opacity: 0.9, transform: `rotate(${ang + Math.PI / 2}rad) translate(0,-${dist * 0.32}px) scaleY(1)` },
-                    { opacity: 0, transform: `rotate(${ang + Math.PI / 2}rad) translate(0,-${dist}px) scaleY(0.08)` }
-                ],
-                'cubic-bezier(0.2, 0.82, 0.32, 1)',
-                tImpact + Math.floor(Math.random() * 14)
+                `position:absolute;width:${sz}px;height:${sz}px;left:${x - sz / 2}px;top:${y - sz / 2}px;` +
+                `z-index:36;pointer-events:none;border-radius:50%;mix-blend-mode:screen;` +
+                `background:rgba(216,180,254,0.96);box-shadow:0 0 10px rgba(167,139,250,0.92),0 0 22px rgba(109,40,217,0.65);`,
+                145 + Math.random() * 115,
+                [{ opacity: 0.96, transform: 'translate(0,0) scale(1)' },
+                 { opacity: 0, transform: `translate(${Math.cos(ang) * dist}px,${Math.sin(ang) * dist}px) scale(0.06)` }],
+                'cubic-bezier(0.04,0.88,0.14,1)',
+                i * 5
             );
         }
-        for (let i = 0; i < 8; i++) {
-            const r = i * 45;
-            spawn(
-                `position:absolute;width:22px;height:2px;left:${x - 11}px;top:${y - 1}px;z-index:28;pointer-events:none;mix-blend-mode:screen;` +
-                `border-radius:1px;` +
-                `background:linear-gradient(90deg,transparent,rgba(255,255,255,1),rgba(255,250,220,0.96),rgba(251,191,36,0.65),transparent);` +
-                `box-shadow:0 0 10px rgba(255,255,255,0.95),0 0 8px rgba(251,191,36,0.55);`,
-                112,
-                [
-                    { opacity: 0, transform: `rotate(${r}deg) scaleX(0.12)` },
-                    { opacity: 1, transform: `rotate(${r}deg) scaleX(1)` },
-                    { opacity: 0, transform: `rotate(${r}deg) scaleX(0.42)` }
-                ],
-                'ease-out',
-                tImpact + 5 + i * 6
-            );
-        }
-
-        spawn(
-            `position:absolute;width:112px;height:112px;left:${x - 56}px;top:${y - 56}px;z-index:19;pointer-events:none;` +
-            `border-radius:50%;` +
-            `background:radial-gradient(circle,transparent 0%,rgba(255,241,210,0.34) 36%,rgba(251,191,36,0.2) 56%,transparent 76%);`,
-            125,
-            [{ opacity: 0.68, transform: 'scale(0.9)' }, { opacity: 0, transform: 'scale(1.28)' }],
-            'ease-out',
-            tImpact + 58
-        );
     }
 
     function spawnGiraGiraBurstVfx(x, y) {
@@ -405,152 +270,77 @@
         const allowBurstShake = vfxShakeSettingsBurst == null ? true : vfxShakeSettingsBurst.screenShake !== false;
         const stageBurst = document.getElementById('stage');
         if (stageBurst && allowBurstShake) {
-            const jb = () => ({
-                bx: (Math.random() - 0.5) * 52,
-                by: (Math.random() - 0.5) * 52
-            });
-            const b = jb();
-            stageBurst.style.transform = `translate(${b.bx}px,${b.by}px)`;
-            setTimeout(() => { stageBurst.style.transform = ''; }, 42);
-            setTimeout(() => {
-                const c = jb();
-                stageBurst.style.transform = `translate(${c.bx}px,${c.by}px)`;
-                setTimeout(() => { stageBurst.style.transform = ''; }, 32);
-            }, 76);
+            const bx = (Math.random() - 0.5) * 66, by = (Math.random() - 0.5) * 38;
+            stageBurst.style.transform = `translate(${bx}px,${by}px)`;
+            setTimeout(() => { stageBurst.style.transform = ''; }, 30);
         }
 
-        const t0 = 8;
-
-        spawn(
-            `position:absolute;width:152px;height:152px;left:${x - 76}px;top:${y - 76}px;z-index:35;pointer-events:none;mix-blend-mode:screen;` +
-            `border-radius:50%;background:radial-gradient(circle,#fff 0%,rgba(255,253,246,0.72) 32%,rgba(253,224,71,0.28) 48%,transparent 70%);` +
-            `box-shadow:0 0 22px #fff,0 0 64px rgba(255,255,255,1),0 0 96px rgba(254,249,195,0.52);`,
-            118,
-            [
-                { opacity: 0, transform: 'scale(0.04)' },
-                { opacity: 1, transform: 'scale(1.02)' },
-                { opacity: 0, transform: 'scale(1.12)' }
-            ],
-            'cubic-bezier(0.06, 0.98, 0.18, 1)',
-            t0
-        );
-
-        spawn(
-            `position:absolute;width:198px;height:198px;left:${x - 99}px;top:${y - 99}px;z-index:34;pointer-events:none;mix-blend-mode:screen;border-radius:50%;` +
-            `background:radial-gradient(circle,transparent 26%,rgba(255,253,246,0.78) 38%,rgba(253,224,71,0.42) 50%,rgba(251,191,36,0.16) 62%,transparent 76%);` +
-            `box-shadow:0 0 72px rgba(254,229,154,0.58),0 0 112px rgba(255,251,226,0.22);`,
-            400,
-            [
-                { opacity: 0.9, transform: 'scale(0.05)' },
-                { opacity: 0.65, transform: 'scale(0.72)' },
-                { opacity: 0, transform: 'scale(1.52)' }
-            ],
-            'cubic-bezier(0.03, 0.88, 0.12, 1)',
-            t0 + 10
-        );
-
-        [0, 45].forEach((deg, qi) => {
+        // 3 purple shockwave rings (delayed cascade)
+        [0, 70, 140].forEach((delay, i) => {
+            const sz = 210 + i * 96;
+            const half = sz / 2;
             spawn(
-                `position:absolute;width:168px;height:4px;left:${x - 84}px;top:${y - 2}px;z-index:37;pointer-events:none;mix-blend-mode:screen;border-radius:2px;transform-origin:center center;` +
-                `background:linear-gradient(90deg,transparent 2%,rgba(255,255,255,1) 46%,rgba(254,249,195,1) 50%,rgba(251,191,36,0.85) 54%,transparent 98%);` +
-                `box-shadow:0 0 14px rgba(255,255,255,0.96),0 0 26px rgba(251,191,36,0.45);`,
-                168,
-                [
-                    { opacity: 0, transform: `rotate(${deg}deg) scaleX(0.06)` },
-                    { opacity: 1, transform: `rotate(${deg}deg) scaleX(1)` },
-                    { opacity: 0, transform: `rotate(${deg + (qi ? -6 : 6)}deg) scaleX(0.74)` }
-                ],
-                'cubic-bezier(0.1, 0.93, 0.2, 1)',
-                t0 + 16 + qi * 4
+                `position:absolute;width:${sz}px;height:${sz}px;left:${x - half}px;top:${y - half}px;` +
+                `z-index:33;pointer-events:none;border-radius:50%;border:${3 - Math.floor(i * 0.9)}px solid rgba(167,139,250,${0.88 - i * 0.24});` +
+                `box-shadow:0 0 ${28 + i * 14}px rgba(139,92,246,0.72),0 0 ${54 + i * 18}px rgba(109,40,217,0.38);`,
+                330 + i * 88,
+                [{ opacity: 0.94, transform: 'scale(0.04)' }, { opacity: 0, transform: 'scale(1.65)' }],
+                'cubic-bezier(0.02,0.88,0.1,1)',
+                delay
             );
         });
 
-        [0, 22, 48].forEach((lag, wi) => {
-            const dia = [108, 165, 216][wi];
-            const half = dia / 2;
-            const borderGrad = wi === 0 ? 'rgba(255,255,255,0.95)' : (wi === 1 ? 'rgba(254,249,195,0.84)' : 'rgba(251,191,36,0.65)');
-            spawn(
-                `position:absolute;width:${dia}px;height:${dia}px;left:${x - half}px;top:${y - half}px;z-index:${33 + wi};pointer-events:none;mix-blend-mode:screen;border-radius:50%;` +
-                `border:${3 + wi}px solid transparent;box-shadow:inset 0 0 ${13 + wi * 5}px rgba(255,255,255,0.52),` +
-                `0 0 ${24 + wi * 8}px ${borderGrad},0 0 ${36 + wi * 10}px rgba(255,253,246,${0.38 - wi * 0.08});`,
-                [255, 330, 450][wi],
-                [
-                    { opacity: 0, transform: 'scale(0.16)' },
-                    { opacity: 1, transform: `scale(${0.58 + wi * 0.12})` },
-                    { opacity: 0, transform: `scale(${1.22 + wi * 0.2})` }
-                ],
-                'cubic-bezier(0.04, 0.9, 0.15, 1)',
-                t0 + lag
-            );
-        });
-
-        for (let i = 0; i < 50; i++) {
-            const ang = (Math.PI * 2 / 50) * i;
-            const len = Math.round((10 + ((i % 5) + 6) * 3) * 1.35);
-            const delay = (i % 7) * 4;
-            const reach1 = Math.round((54 + ((i % 4) + 8) * 4) * 1.32);
-            const reach2 = Math.round((96 + ((i % 5) + 9) * 5) * 1.32);
-            spawn(
-                `position:absolute;width:3.5px;height:${len}px;left:${x - 1.75}px;top:${y - len / 2}px;z-index:36;pointer-events:none;mix-blend-mode:screen;border-radius:1px;` +
-                `background:linear-gradient(to top,transparent,rgba(255,255,255,0.98),#fffcef,rgba(251,191,36,0.98));` +
-                `box-shadow:0 0 12px rgba(255,255,255,0.95),0 0 18px rgba(251,191,36,0.62);`,
-                238 + (i % 9) * 16,
-                [
-                    { opacity: 0.98, transform: `rotate(${ang + Math.PI / 2}rad) translateY(0) scaleY(0.16)` },
-                    { opacity: 0.84, transform: `rotate(${ang + Math.PI / 2}rad) translateY(-${reach1}px) scaleY(1)` },
-                    { opacity: 0, transform: `rotate(${ang + Math.PI / 2}rad) translateY(-${reach2}px) scaleY(0.05)` }
-                ],
-                'cubic-bezier(0.16, 0.88, 0.22, 1)',
-                t0 + delay + 12
-            );
-        }
-
+        // Large purple radial bloom
         spawn(
-            `position:absolute;width:56px;height:56px;left:${x - 28}px;top:${y - 28}px;z-index:36;pointer-events:none;mix-blend-mode:screen;border-radius:50%;` +
-            `border:2px solid rgba(255,251,238,0.95);box-shadow:0 0 12px rgba(255,255,255,0.88),inset 0 0 8px rgba(254,249,195,0.35);`,
-            198,
-            [
-                { opacity: 1, transform: 'scale(0.12)' },
-                { opacity: 0.76, transform: 'scale(0.94)' },
-                { opacity: 0, transform: 'scale(1.65)' }
-            ],
-            'cubic-bezier(0.05, 0.93, 0.12, 1)',
-            t0 + 6
+            `position:absolute;width:340px;height:340px;left:${x - 170}px;top:${y - 170}px;` +
+            `z-index:31;pointer-events:none;mix-blend-mode:screen;border-radius:50%;` +
+            `background:radial-gradient(circle,rgba(243,232,255,0.35) 0%,rgba(167,139,250,0.20) 30%,rgba(109,40,217,0.08) 60%,transparent 80%);`,
+            440,
+            [{ opacity: 1, transform: 'scale(0.05)' }, { opacity: 0, transform: 'scale(1.6)' }],
+            'cubic-bezier(0.04,0.88,0.14,1)'
         );
 
-        for (let si = 0; si < 22; si++) {
-            const r = (si / 22) * 360;
+        // 24 electric lightning rays (dense radial burst)
+        for (let i = 0; i < 24; i++) {
+            const ang = (Math.PI * 2 / 24) * i + (Math.random() - 0.5) * 0.15;
+            const dist = 68 + Math.random() * 82;
+            const len = 10 + Math.random() * 20;
             spawn(
-                `position:absolute;width:72px;height:3px;left:${x - 36}px;top:${y - 1.5}px;z-index:35;pointer-events:none;mix-blend-mode:screen;border-radius:1px;` +
-                `background:linear-gradient(90deg,transparent,rgba(255,255,255,1),rgba(254,249,195,0.98),rgba(251,191,36,0.55),transparent);` +
-                `box-shadow:0 0 16px rgba(255,255,255,0.9),0 0 22px rgba(251,191,36,0.42);`,
-                290,
-                [
-                    { opacity: 0.2, transform: `rotate(${r}deg) scaleX(0.06)` },
-                    { opacity: 1, transform: `rotate(${r}deg) scaleX(1)` },
-                    { opacity: 0, transform: `rotate(${r + (si % 2 ? 14 : -14)}deg) scaleX(0.86)` }
-                ],
-                'cubic-bezier(0.12, 0.85, 0.18, 1)',
-                t0 + 32 + (si % 6) * 5
+                `position:absolute;width:3px;height:${len}px;left:${x - 1.5}px;top:${y - len / 2}px;` +
+                `z-index:36;pointer-events:none;mix-blend-mode:screen;border-radius:2px;` +
+                `background:linear-gradient(to top,transparent,rgba(216,180,254,0.98),rgba(167,139,250,0.92));` +
+                `box-shadow:0 0 12px rgba(196,181,253,0.9),0 0 24px rgba(139,92,246,0.65);`,
+                148 + Math.random() * 80,
+                [{ opacity: 0.98, transform: `rotate(${ang + Math.PI / 2}rad) translate(0,0) scaleY(0.1)` },
+                 { opacity: 0, transform: `rotate(${ang + Math.PI / 2}rad) translate(0,-${dist}px) scaleY(0.04)` }],
+                'cubic-bezier(0.04,0.9,0.16,1)',
+                i * 7 + 5
             );
         }
     }
 
     const spawnTrailParticle = (layer, x, y, extras = null) => {
         const isTrueResonance = !!extras?.trueResonance;
-        const p = document.createElement('div');
         const isBondMaxAttack = !!extras?.bondMaxAttack;
-        const size = isBondMaxAttack ? (Math.random() * 9 + 7) : (isTrueResonance ? (Math.random() * 10 + 8) : (Math.random() * 8 + 6));
-        const trailColor = isTrueResonance
-            ? (isBondMaxAttack
-                ? (Math.random() > 0.42 ? '#dc2626' : (Math.random() > 0.5 ? '#ef4444' : '#fff7ed'))
-                : (Math.random() > 0.24 ? '#f97316' : (Math.random() > 0.5 ? '#fef3c7' : '#ef4444')))
-            : (Math.random() > 0.3 ? '#fde047' : '#ffffff');
-        const shadow = isTrueResonance
-            ? (isBondMaxAttack
-                ? '0 0 12px rgba(255,247,237,0.94), 0 0 28px rgba(239,68,68,0.84), 0 0 46px rgba(220,38,38,0.58)'
-                : '0 0 12px #fff7ed, 0 0 24px rgba(249,115,22,0.95), 0 0 38px rgba(220,38,38,0.62)')
-            : '0 0 10px #f59e0b';
+        const isGiraAttack = !!extras?.giraAttack;
+        const p = document.createElement('div');
+        const size = isGiraAttack
+            ? (Math.random() * 5 + 3)
+            : (isBondMaxAttack ? (Math.random() * 9 + 7) : (isTrueResonance ? (Math.random() * 10 + 8) : (Math.random() * 8 + 6)));
+        const trailColor = isGiraAttack
+            ? (Math.random() > 0.38 ? '#e9d5ff' : (Math.random() > 0.5 ? '#a78bfa' : '#c4b5fd'))
+            : (isTrueResonance
+                ? (isBondMaxAttack
+                    ? (Math.random() > 0.42 ? '#dc2626' : (Math.random() > 0.5 ? '#ef4444' : '#fff7ed'))
+                    : (Math.random() > 0.24 ? '#f97316' : (Math.random() > 0.5 ? '#fef3c7' : '#ef4444')))
+                : (Math.random() > 0.3 ? '#fde047' : '#ffffff'));
+        const shadow = isGiraAttack
+            ? '0 0 7px #e9d5ff, 0 0 16px rgba(167,139,250,0.9), 0 0 28px rgba(109,40,217,0.65)'
+            : (isTrueResonance
+                ? (isBondMaxAttack
+                    ? '0 0 12px rgba(255,247,237,0.94), 0 0 28px rgba(239,68,68,0.84), 0 0 46px rgba(220,38,38,0.58)'
+                    : '0 0 12px #fff7ed, 0 0 24px rgba(249,115,22,0.95), 0 0 38px rgba(220,38,38,0.62)')
+                : '0 0 10px #f59e0b');
         p.style.cssText = `
             position: absolute; width: ${size}px; height: ${size}px;
             background: ${trailColor};
@@ -559,11 +349,15 @@
             pointer-events: none; z-index: 10;
         `;
         layer.appendChild(p);
-        const dur = isBondMaxAttack ? (Math.random() * 540 + 340) : (isTrueResonance ? (Math.random() * 480 + 280) : (Math.random() * 400 + 200));
-        const driftX = (Math.random() - 0.5) * (isBondMaxAttack ? 76 : (isTrueResonance ? 44 : 30));
-        const driftY = isBondMaxAttack ? ((Math.random() - 0.15) * 46) : (isTrueResonance ? (Math.random() * 34 + 14) : 20);
+        const dur = isGiraAttack
+            ? (Math.random() * 120 + 80)
+            : (isBondMaxAttack ? (Math.random() * 540 + 340) : (isTrueResonance ? (Math.random() * 480 + 280) : (Math.random() * 400 + 200)));
+        const driftX = (Math.random() - 0.5) * (isGiraAttack ? 10 : (isBondMaxAttack ? 76 : (isTrueResonance ? 44 : 30)));
+        const driftY = isGiraAttack
+            ? ((Math.random() - 0.5) * 10)
+            : (isBondMaxAttack ? ((Math.random() - 0.15) * 46) : (isTrueResonance ? (Math.random() * 34 + 14) : 20));
         p.animate([
-            { opacity: isTrueResonance ? 0.95 : 0.8, transform: `scale(${isBondMaxAttack ? 1.12 : 1}) translate(0, 0)` },
+            { opacity: isGiraAttack ? 0.9 : (isTrueResonance ? 0.95 : 0.8), transform: `scale(${isBondMaxAttack ? 1.12 : 1}) translate(0, 0)` },
             { opacity: 0, transform: `scale(0.1) translate(${driftX}px, ${driftY}px)` }
         ], { duration: dur, easing: 'ease-out', fill: 'forwards' });
         setTimeout(() => { if (p.isConnected) p.remove(); }, dur);
@@ -721,8 +515,9 @@
         const vfxLayer = getVfxLayer();
         const isBondMaxAttack = !!extras?.bondMaxAttack;
         const isTrueResonance = !!extras?.trueResonance || isBondMaxAttack;
+        const isGiraAttack = !!extras?.giraAttack;
         const onHit = typeof extras?.onHit === 'function' ? extras.onHit : null;
-        const ttl = isBondMaxAttack ? 520 : (isTrueResonance ? 430 : 400);
+        const ttl = isGiraAttack ? 280 : (isBondMaxAttack ? 520 : (isTrueResonance ? 430 : 400));
         const dx = toX - fromX;
         const dy = toY - fromY;
         const dist = Math.hypot(dx, dy) || 1;
@@ -755,12 +550,22 @@
         const angle = Math.atan2(dy, dx);
         const projectile = document.createElement('div');
         projectile.style.cssText = `
-            position: absolute; left: ${fromX - (isTrueResonance ? 26 : 20)}px; top: ${fromY - (isTrueResonance ? 26 : 20)}px;
-            width: ${isTrueResonance ? 52 : 40}px; height: ${isTrueResonance ? 52 : 40}px; display: flex; justify-content: center; align-items: center;
+            position: absolute; left: ${fromX - (isGiraAttack ? 34 : (isTrueResonance ? 26 : 20))}px; top: ${fromY - (isGiraAttack ? 34 : (isTrueResonance ? 26 : 20))}px;
+            width: ${isGiraAttack ? 68 : (isTrueResonance ? 52 : 40)}px; height: ${isGiraAttack ? 68 : (isTrueResonance ? 52 : 40)}px; display: flex; justify-content: center; align-items: center;
             pointer-events: none; z-index: 99999;
         `;
         let tail = null;
-        if (isTrueResonance) {
+        if (isGiraAttack) {
+            tail = document.createElement('div');
+            tail.style.cssText = `
+                position: absolute; right: 28px; width: 148px; height: 28px; border-radius: 999px;
+                background: linear-gradient(90deg, transparent, rgba(88,28,135,0.18) 10%, rgba(109,40,217,0.48) 32%, rgba(139,92,246,0.72) 58%, rgba(196,181,253,0.90) 80%, rgba(233,213,255,0.98) 100%);
+                filter: blur(5px);
+                box-shadow: 0 0 18px rgba(167,139,250,0.92), 0 0 38px rgba(109,40,217,0.75), 0 0 66px rgba(88,28,135,0.5);
+                transform: rotate(${angle}rad); transform-origin: 100% 50%; z-index: 6; mix-blend-mode: screen;
+            `;
+            projectile.appendChild(tail);
+        } else if (isTrueResonance) {
             tail = document.createElement('div');
             tail.style.cssText = `
                 position: absolute; right: 22px; width: ${isBondMaxAttack ? 46 : 88}px; height: ${isBondMaxAttack ? 34 : 18}px; border-radius: 999px;
@@ -773,9 +578,9 @@
         let wake = null;
         const core = document.createElement('div');
         core.style.cssText = `
-            position: absolute; width: ${isBondMaxAttack ? 46 : (isTrueResonance ? 34 : 28)}px; height: ${isBondMaxAttack ? 46 : (isTrueResonance ? 34 : 28)}px; border-radius: 50%;
-            background: ${isBondMaxAttack ? 'radial-gradient(circle,#fff 0%,#fff7ed 18%,#fca5a5 38%,#ef4444 64%,#b91c1c 100%)' : (isTrueResonance ? 'radial-gradient(circle,#fff 0%,#fff7ed 30%,#f97316 62%,#dc2626 100%)' : '#ffffff')};
-            box-shadow: ${isBondMaxAttack ? '0 0 22px rgba(255,247,237,0.98), 0 0 50px rgba(248,113,113,0.84), 0 0 82px rgba(239,68,68,0.76), 0 0 112px rgba(220,38,38,0.5)' : (isTrueResonance ? '0 0 18px #fff, 0 0 38px #f97316, 0 0 70px rgba(220,38,38,0.86), 0 0 96px rgba(251,191,36,0.42)' : '0 0 20px #ffffff, 0 0 40px #fde047, 0 0 60px #f59e0b')}; z-index: 10;
+            position: absolute; width: ${isGiraAttack ? 56 : (isBondMaxAttack ? 46 : (isTrueResonance ? 34 : 28))}px; height: ${isGiraAttack ? 56 : (isBondMaxAttack ? 46 : (isTrueResonance ? 34 : 28))}px; border-radius: 50%;
+            background: ${isGiraAttack ? 'radial-gradient(circle,#fff 0%,rgba(243,232,255,0.98) 16%,rgba(196,181,253,0.94) 36%,rgba(139,92,246,0.82) 58%,rgba(109,40,217,0.58) 78%,rgba(76,29,149,0.28) 100%)' : (isBondMaxAttack ? 'radial-gradient(circle,#fff 0%,#fff7ed 18%,#fca5a5 38%,#ef4444 64%,#b91c1c 100%)' : (isTrueResonance ? 'radial-gradient(circle,#fff 0%,#fff7ed 30%,#f97316 62%,#dc2626 100%)' : '#ffffff'))};
+            box-shadow: ${isGiraAttack ? '0 0 18px #fff,0 0 38px rgba(216,180,254,0.98),0 0 68px rgba(167,139,250,0.92),0 0 100px rgba(139,92,246,0.78),0 0 150px rgba(109,40,217,0.55),0 0 200px rgba(88,28,135,0.35)' : (isBondMaxAttack ? '0 0 22px rgba(255,247,237,0.98), 0 0 50px rgba(248,113,113,0.84), 0 0 82px rgba(239,68,68,0.76), 0 0 112px rgba(220,38,38,0.5)' : (isTrueResonance ? '0 0 18px #fff, 0 0 38px #f97316, 0 0 70px rgba(220,38,38,0.86), 0 0 96px rgba(251,191,36,0.42)' : '0 0 20px #ffffff, 0 0 40px #fde047, 0 0 60px #f59e0b'))}; z-index: 10;
         `;
         projectile.appendChild(core);
         vfxLayer.appendChild(projectile);
@@ -866,15 +671,61 @@
                         setTimeout(() => { if (flash.isConnected) flash.remove(); }, 240);
                     }
                 }
-                const particlesThisFrame = isBondMaxAttack ? (Math.floor(Math.random() * 5) + 7) : (isTrueResonance ? (Math.floor(Math.random() * 4) + 5) : (Math.floor(Math.random() * 3) + 3));
+                if (isGiraAttack) {
+                    // Thick plasma trail (main body, very wide)
+                    if (Math.random() < 0.82) {
+                        const sk = document.createElement('div');
+                        const skLen = 70 + Math.random() * 60;
+                        const skW = 18 + Math.random() * 14;
+                        sk.style.cssText = `position:absolute;width:${skLen}px;height:${skW}px;left:${currentX - skLen * 0.94}px;top:${currentY - skW / 2}px;border-radius:${skW}px;pointer-events:none;z-index:9;mix-blend-mode:screen;transform:rotate(${movementAngle}rad);transform-origin:100% 50%;background:linear-gradient(90deg,transparent,rgba(88,28,135,${(0.12 + Math.random() * 0.18).toFixed(2)}) 16%,rgba(109,40,217,${(0.38 + Math.random() * 0.32).toFixed(2)}) 44%,rgba(139,92,246,${(0.62 + Math.random() * 0.28).toFixed(2)}) 72%,rgba(196,181,253,${(0.75 + Math.random() * 0.22).toFixed(2)}) 100%);filter:blur(4px);box-shadow:0 0 ${Math.round(skW * 1.5)}px rgba(167,139,250,0.8),0 0 ${Math.round(skW * 3)}px rgba(109,40,217,0.55);`;
+                        vfxLayer.appendChild(sk);
+                        sk.animate([{ opacity: 0.92 }, { opacity: 0 }], { duration: 72 + Math.random() * 48, easing: 'ease-out', fill: 'forwards' });
+                        setTimeout(() => { if (sk.isConnected) sk.remove(); }, 140);
+                    }
+                    // Electric arc discharge — perpendicular (both sides)
+                    if (Math.random() < 0.62) {
+                        const arcLen = 22 + Math.random() * 36;
+                        const arcW = 2 + Math.random() * 2;
+                        const arcSide = Math.random() > 0.5 ? 1 : -1;
+                        const perpAngle = movementAngle + Math.PI / 2 * arcSide;
+                        const arc = document.createElement('div');
+                        arc.style.cssText = `position:absolute;width:${arcLen}px;height:${arcW}px;left:${currentX}px;top:${currentY - arcW / 2}px;border-radius:${arcW}px;pointer-events:none;z-index:11;mix-blend-mode:screen;transform:rotate(${perpAngle}rad);transform-origin:0% 50%;background:linear-gradient(90deg,rgba(243,232,255,0.98),rgba(167,139,250,0.7),transparent);box-shadow:0 0 8px rgba(216,180,254,0.92),0 0 18px rgba(139,92,246,0.6);`;
+                        vfxLayer.appendChild(arc);
+                        arc.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 42 + Math.random() * 32, easing: 'ease-out', fill: 'forwards' });
+                        setTimeout(() => { if (arc.isConnected) arc.remove(); }, 90);
+                    }
+                    // Radial corona sparks (around the ball itself)
+                    if (Math.random() < 0.48) {
+                        const coronaAng = Math.random() * Math.PI * 2;
+                        const coronaLen = 16 + Math.random() * 26;
+                        const coronaW = 2;
+                        const corona = document.createElement('div');
+                        corona.style.cssText = `position:absolute;width:${coronaLen}px;height:${coronaW}px;left:${currentX}px;top:${currentY - coronaW / 2}px;border-radius:${coronaW}px;pointer-events:none;z-index:12;mix-blend-mode:screen;transform:rotate(${coronaAng}rad);transform-origin:0% 50%;background:linear-gradient(90deg,rgba(255,255,255,0.95),rgba(216,180,254,0.8),transparent);box-shadow:0 0 6px rgba(233,213,255,0.9);`;
+                        vfxLayer.appendChild(corona);
+                        corona.animate([{ opacity: 0.9 }, { opacity: 0 }], { duration: 30 + Math.random() * 24, easing: 'ease-out', fill: 'forwards' });
+                        setTimeout(() => { if (corona.isConnected) corona.remove(); }, 65);
+                    }
+                    // Pre-impact megaflash (large purple burst as projectile approaches)
+                    if (!preImpactFlashed && progress > 0.68) {
+                        preImpactFlashed = true;
+                        const pf = document.createElement('div');
+                        pf.style.cssText = `position:absolute;width:90px;height:90px;left:${currentX - 45}px;top:${currentY - 45}px;border-radius:50%;pointer-events:none;z-index:17;mix-blend-mode:screen;background:radial-gradient(circle,rgba(255,255,255,0.96) 0%,rgba(243,232,255,0.88) 24%,rgba(167,139,250,0.45) 56%,transparent 100%);box-shadow:0 0 28px rgba(216,180,254,0.95),0 0 60px rgba(139,92,246,0.75),0 0 100px rgba(109,40,217,0.45);`;
+                        vfxLayer.appendChild(pf);
+                        pf.animate([{ opacity: 0, transform: 'scale(0.3)' }, { opacity: 1, transform: 'scale(1.2)' }, { opacity: 0, transform: 'scale(2.2)' }], { duration: 240, easing: 'ease-out', fill: 'forwards' });
+                        setTimeout(() => { if (pf.isConnected) pf.remove(); }, 260);
+                    }
+                }
+                const particlesThisFrame = isGiraAttack ? (Math.floor(Math.random() * 2) + 2) : (isBondMaxAttack ? (Math.floor(Math.random() * 5) + 7) : (isTrueResonance ? (Math.floor(Math.random() * 4) + 5) : (Math.floor(Math.random() * 3) + 3)));
                 for (let i = 0; i < particlesThisFrame; i++) {
-                    const offsetX = (Math.random() - 0.5) * (isBondMaxAttack ? 42 : (isTrueResonance ? 30 : 20));
-                    const offsetY = (Math.random() - 0.5) * (isBondMaxAttack ? 42 : (isTrueResonance ? 30 : 20));
+                    const offsetX = (Math.random() - 0.5) * (isGiraAttack ? 8 : (isBondMaxAttack ? 42 : (isTrueResonance ? 30 : 20)));
+                    const offsetY = (Math.random() - 0.5) * (isGiraAttack ? 8 : (isBondMaxAttack ? 42 : (isTrueResonance ? 30 : 20)));
                     spawnTrailParticle(vfxLayer, currentX + offsetX, currentY + offsetY, extras);
                 }
                 requestAnimationFrame(animateTrail);
             } else {
-                spawnHitVfx(toX, toY, { trueResonance: isTrueResonance, bondMaxAttack: isBondMaxAttack, dirX: dx, dirY: dy });
+                if (!extras?.skipHitVfx) {
+                    spawnHitVfx(toX, toY, { trueResonance: isTrueResonance, bondMaxAttack: isBondMaxAttack, dirX: dx, dirY: dy });
+                }
                 if (onHit) onHit();
             }
         };
@@ -882,8 +733,8 @@
         if (!isBondMaxAttack) {
             projectile.animate([
                 { transform: `translate(0px, 0px) scale(1)`, opacity: 1 },
-                { transform: `translate(${dx}px, ${dy}px) scale(${isTrueResonance ? 0.62 : 0.5})`, opacity: isTrueResonance ? 0.72 : 0.5 }
-            ], { duration: ttl, easing: 'cubic-bezier(.2, .8, .2, 1)', fill: 'forwards' });
+                { transform: `translate(${dx}px, ${dy}px) scale(${isGiraAttack ? 1.05 : (isTrueResonance ? 0.62 : 0.5)})`, opacity: isGiraAttack ? 1 : (isTrueResonance ? 0.72 : 0.5) }
+            ], { duration: ttl, easing: isGiraAttack ? 'cubic-bezier(0.08, 0.95, 0.18, 1)' : 'cubic-bezier(.2, .8, .2, 1)', fill: 'forwards' });
         }
         setTimeout(() => { if (projectile.isConnected) projectile.remove(); }, ttl + 50);
     };

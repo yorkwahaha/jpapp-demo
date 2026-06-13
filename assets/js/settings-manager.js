@@ -128,7 +128,7 @@
                     if (!['tap', 'flick'].includes(settings.defaultAttackMode)) {
                         settings.defaultAttackMode = 'tap';
                     }
-                    if (settings.enemyAttackMode !== 'atb') {
+                    if (!['atb', 'turn'].includes(settings.enemyAttackMode)) {
                         settings.enemyAttackMode = 'atb';
                     }
                     if (!['combo', 'correct'].includes(settings.feedbackVoiceMode)) {

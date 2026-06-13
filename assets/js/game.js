@@ -372,10 +372,11 @@ const _jpApp = Vue.createApp({
         const bestGrades = ref({}); // { stageNumber: 'S' }
         const stageBestRecords = ref({}); // { stageNumber: { bestStars, bestTimeMs, bestTimeSeconds, bestCorrectRate, bestMaxCombo, updatedAt } }
 
-        const srsMode = ref(false);
         const practiceMode = ref(false);
-        const dailyMode = ref(false);
-        const dailyLastDate = ref('');
+
+        const isTrainingPalaceOpen = ref(false);
+        const trainingSelectedStages = ref([]);
+        let _trainingSkillIds = [];
 
         const clearedLevels = ref([]);
 
@@ -570,8 +571,6 @@ const _jpApp = Vue.createApp({
 
                     playerStats: playerStats.value,
 
-                    dailyLastDate: dailyLastDate.value
-
                 };
                 const hasLevelConfig = Object.keys(LEVEL_CONFIG.value || {}).length > 0;
                 const unlockedSkillIdsForSave = normalizeUnlockedSkillIdList(unlockedSkillIds.value);
@@ -638,8 +637,6 @@ const _jpApp = Vue.createApp({
 
                     if (parsed.skillMastery) skillMastery.value = normalizeSkillMasteryMap(parsed.skillMastery);
 
-                    if (parsed.dailyLastDate) dailyLastDate.value = parsed.dailyLastDate;
-
                     if (parsed.playerStats) {
                         playerStats.value = parsed.playerStats;
                     } else {
@@ -671,7 +668,6 @@ const _jpApp = Vue.createApp({
             unlockedOnomatopeIds.value = [];
             skillMastery.value = {};
             playerStats.value = { level: 1, exp: 0 };
-            dailyLastDate.value = '';
             activeChapter.value = 'chapter1';
             selectedSegmentIdx.value = 0;
             lastClearedLevel.value = null;
@@ -940,7 +936,6 @@ const _jpApp = Vue.createApp({
             mistakes.value = [];
             window.JPAPPStorageManager.saveMentorSeen([]);
             window.JPAPPStorageManager.saveMistakes([]);
-            window.JPAPPSrsHelpers?.clearSlotWeights();
             SLOT_SCOPED_STORY_KEYS.forEach(key => localStorage.removeItem(slotScopedKey(key, normalized)));
             saveProgression();
             refreshSaveSlotsMetadata();
@@ -1096,101 +1091,6 @@ const _jpApp = Vue.createApp({
             isBattleConfirmOpen.value = true;
         };
 
-        const srsAvailable = computed(() => {
-            if (mistakes.value.length > 0) return true;
-            const mastery = skillMastery.value;
-            return unlockedSkillIds.value.some(id => (mastery[id] ?? 0) < 50);
-        });
-
-        const startSrsMode = () => {
-            if (!window.JPAPPSrsHelpers) return;
-
-            // Derive available skill pool: prefer unlockedSkillIds; fallback to skills inferred from mistake levelIds
-            let targetUnlocked = unlockedSkillIds.value;
-            if (!targetUnlocked.length && mistakes.value.length > 0) {
-                const derived = new Set();
-                mistakes.value.forEach(m => {
-                    if (m.skillId) {
-                        derived.add(m.skillId);
-                    } else if (m.levelId) {
-                        const cfg = LEVEL_CONFIG.value[m.levelId];
-                        if (cfg?.skillId && cfg.skillId !== 'SRS_MODE') derived.add(cfg.skillId);
-                        (cfg?.unlockSkills || []).forEach(s => derived.add(s));
-                    }
-                });
-                targetUnlocked = [...derived];
-            }
-
-            srsSkillQueue = window.JPAPPSrsHelpers.buildSrsSkillQueue(
-                mistakes.value, skillMastery.value, targetUnlocked
-            );
-            if (!srsSkillQueue.length) return;
-            srsMode.value = true;
-            startLevel(0);
-        };
-
-        // ---- [ DAILY MODE — 每日修行 ] ----
-        const DAILY_SELENE_LINES = [
-            '每天一點，助詞就在心裡扎根了。',
-            '昨天沒記住的，今天再來一次！',
-            '這些助詞就像路標，記住它們就不會迷路。',
-            '今天也好好修行，Selene 陪著你。',
-            '不急不慌，一天五題，已經很棒了。',
-            '助詞是心意的橋，慢慢搭，穩穩走。',
-            '今日份的努力已記錄在冒險日記裡！',
-            '每一題都是勇氣，你今天很勇！',
-            '練習不是重複，是把感覺記進身體裡。',
-            '小助靈們都在為你加油，感覺到了嗎？',
-            '今日修行圓滿，明天繼續前行！',
-            '助詞的力量，來自每天的積累。',
-            '五題不多，但每題都有重量。',
-            '你的堅持，Selene 都有看到。',
-        ];
-
-        const _todayDateStr = () => {
-            const t = new Date();
-            return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
-        };
-
-        const isDailyDone = computed(() => !!dailyLastDate.value && dailyLastDate.value === _todayDateStr());
-
-        const dailyAvailable = computed(() => {
-            if (isDailyDone.value) return false;
-            if (mistakes.value.length > 0) return true;
-            const mastery = skillMastery.value;
-            return unlockedSkillIds.value.some(id => (mastery[id] ?? 0) < 50);
-        });
-
-        const dailySeleneText = computed(() => {
-            const t = new Date();
-            const doy = Math.floor((t - new Date(t.getFullYear(), 0, 0)) / 86400000);
-            return DAILY_SELENE_LINES[doy % DAILY_SELENE_LINES.length];
-        });
-
-        const startDailyMode = () => {
-            if (!window.JPAPPSrsHelpers || isDailyDone.value) return;
-            let targetUnlocked = unlockedSkillIds.value;
-            if (!targetUnlocked.length && mistakes.value.length > 0) {
-                const derived = new Set();
-                mistakes.value.forEach(m => {
-                    if (m.skillId) {
-                        derived.add(m.skillId);
-                    } else if (m.levelId) {
-                        const cfg = LEVEL_CONFIG.value[m.levelId];
-                        if (cfg?.skillId && cfg.skillId !== 'SRS_MODE') derived.add(cfg.skillId);
-                        (cfg?.unlockSkills || []).forEach(s => derived.add(s));
-                    }
-                });
-                targetUnlocked = [...derived];
-            }
-            srsSkillQueue = window.JPAPPSrsHelpers.buildSrsSkillQueue(
-                mistakes.value, skillMastery.value, targetUnlocked
-            );
-            if (!srsSkillQueue.length) return;
-            dailyMode.value = true;
-            startLevel(0);
-        };
-
         /** Battle entry from map — DO NOT TOUCH for display-only / map-docs tasks. */
         const confirmAndStartBattle = () => {
             if (selectedStageToConfirm.value !== null) {
@@ -1212,6 +1112,53 @@ const _jpApp = Vue.createApp({
                 if (typeof MapAmbient !== 'undefined') MapAmbient.deactivate();
                 startLevel(lv);
             }
+        };
+
+        // --- Training Palace ---
+
+        const trainingClearedStages = computed(() =>
+            clearedLevels.value.filter(n => n >= 1 && n <= 35 && n % 5 !== 0).sort((a, b) => a - b)
+        );
+
+        const trainingSkillPool = computed(() => {
+            const pool = new Set();
+            trainingSelectedStages.value.forEach(n => {
+                const cfg = LEVEL_CONFIG.value[n];
+                if (!cfg) return;
+                if (cfg.skillId && !cfg.skillId.startsWith('HIDDEN') && !cfg.skillId.startsWith('BOSS_REVIEW')) pool.add(cfg.skillId);
+                (cfg.unlockSkills || []).forEach(id => {
+                    if (id && !id.startsWith('BOSS_REVIEW') && !id.startsWith('FINAL') && !id.startsWith('HIDDEN')) pool.add(id);
+                });
+            });
+            return [...pool];
+        });
+
+        const openTrainingPalace = () => {
+            if (trainingClearedStages.value.length === 0) return;
+            if (trainingSelectedStages.value.length === 0) {
+                trainingSelectedStages.value = [...trainingClearedStages.value];
+            }
+            isTrainingPalaceOpen.value = true;
+            playSfx('uiPop');
+        };
+
+        const closeTrainingPalace = () => {
+            isTrainingPalaceOpen.value = false;
+        };
+
+        const toggleTrainingStage = (n) => {
+            const idx = trainingSelectedStages.value.indexOf(n);
+            if (idx === -1) trainingSelectedStages.value.push(n);
+            else trainingSelectedStages.value.splice(idx, 1);
+        };
+
+        const startTrainingSession = () => {
+            if (trainingSkillPool.value.length === 0) return;
+            _trainingSkillIds = [...trainingSkillPool.value];
+            isTrainingPalaceOpen.value = false;
+            practiceMode.value = true;
+            if (typeof MapAmbient !== 'undefined') MapAmbient.deactivate();
+            startLevel(0);
         };
 
         /** Stage-confirm「姐姐引導」— manual mentor from confirm modal; not map-node auto-intro. */
@@ -1400,9 +1347,7 @@ const _jpApp = Vue.createApp({
             resetBattleOutcomePresentation();
             resetStageClearMetrics();
             isFinished.value = true;
-            srsMode.value = false;
             practiceMode.value = false;
-            dailyMode.value = false;
             showLevelSelect.value = false;
 
             const maxUnlocked = Math.max(...unlockedLevels.value, 1);
@@ -3187,9 +3132,6 @@ const _jpApp = Vue.createApp({
 
                     LEVEL_CONFIG.value = mappedLevels;
 
-                    // Virtual level 0: SRS 特訓之間（不計入正規進度）
-                    LEVEL_CONFIG.value[0] = { title: '特訓之間', name: '特訓之間', blanks: 1, skillId: 'SRS_MODE', srsMode: true, bgImage: '' };
-
                     maxLevel.value = data.length;
 
                     const tempMap = {};
@@ -3273,6 +3215,9 @@ const _jpApp = Vue.createApp({
         const isSkillOpen = ref(false);
 
         const pittariActive = ref(false); // Once-per-battle: current question shows only the correct choice
+        const pittariPending = ref(false);   // true during 1s delay before animation starts
+        const pittariAnimating = ref(false); // true while exit animation is playing (~0.82s)
+        let _pittariAnimGen = 0;
         const pittariUsedThisBattle = ref(false);
         const shikkariUsedThisBattle = ref(false);
         const gatchiriUsedThisBattle = ref(false);
@@ -3332,8 +3277,8 @@ const _jpApp = Vue.createApp({
 
             // Turn-based logic (JIWAJIWA, MORIMORI remain here; WAKUWAKU is consumed only by enemy attack attempts)
 
-            // MORIMORI：SP 每回合恢復
-            if (heroBuffs.morimoriTurns > 0) {
+            // MORIMORI：SP 每回合恢復（回合制停用）
+            if (heroBuffs.morimoriTurns > 0 && settings.enemyAttackMode !== 'turn') {
                 heroBuffs.morimoriTurns--;
                 if (window.regenSP) {
                     window.regenSP();
@@ -3423,6 +3368,12 @@ const _jpApp = Vue.createApp({
 
             if (!skill || !canAffordSP(skill.cost) || (typeof playerDead !== 'undefined' && (playerDead.value || monsterDead.value))) return;
 
+            // 回合制停用技能：不扣 SP
+            if (settings.enemyAttackMode === 'turn' && (id === 'ODOODO' || id === 'MORIMORI')) {
+                showStatusToast('⛔ 此技能在回合制中無效', { bg: 'rgba(100,116,139,0.92)', border: '#475569', color: '#f1f5f9' });
+                return;
+            }
+
             // 扣除 SP
 
             spendSP(skill.cost);
@@ -3433,17 +3384,20 @@ const _jpApp = Vue.createApp({
 
             playSkillSfx(`${sfxBase}.mp3`);
 
-            setTimeout(() => playSkillSfx(`${sfxBase}2.mp3`), 1000);
-
-            if (typeof window.spawnSkillActivationVfx === 'function') window.spawnSkillActivationVfx(id);
+            setTimeout(() => {
+                playSkillSfx(`${sfxBase}2.mp3`);
+                if (typeof window.spawnSkillActivationVfx === 'function') window.spawnSkillActivationVfx(id);
+            }, 1000);
 
             // 觸發技能效果與 UI 提示
 
             if (id === 'ODOODO') {
 
-                heroBuffs.enemyAtbMult = 1.3;
-
-                heroBuffs.odoodoTurns = 3;
+                // Delay buff state so jitter/sweat appear in sync with VFX at 1000ms
+                setTimeout(() => {
+                    heroBuffs.enemyAtbMult = 1.3;
+                    heroBuffs.odoodoTurns = 3;
+                }, 1000);
 
                 showStatusToast('🐌 怪物遲緩！×3次攻擊', {
 
@@ -3462,51 +3416,40 @@ const _jpApp = Vue.createApp({
                 }
 
             } else if (id === 'GACHIGACHI') {
-
-                heroBuffs.enemyDmgMult = 0.6;
-
-                heroBuffs.gachigachiTurns = 3;
-
-                showStatusToast('🛡️ 身體硬化！×3次攻擊', {
-
+                const _isTurn = settings.enemyAttackMode === 'turn';
+                heroBuffs.enemyDmgMult = _isTurn ? 0.7 : 0.6;
+                heroBuffs.gachigachiTurns = _isTurn ? 1 : 3;
+                showStatusToast(_isTurn ? '🛡️ 身體硬化！下次反擊 -30%' : '🛡️ 身體硬化！×3次攻擊', {
                     bg: 'rgba(148,163,184,0.92)',
-
                     border: '#94a3b8',
-
                     color: '#0f172a'
-
                 });
-
                 if (typeof pushBattleLog === 'function') {
-
-                    pushBattleLog(`使用了技能：${skill.name}！你進入硬化狀態（抵禦 3 次攻擊）！`, 'buff');
-
+                    pushBattleLog(_isTurn
+                        ? `使用了技能：${skill.name}！（回合制）下次答錯時傷害減少 30%！`
+                        : `使用了技能：${skill.name}！你進入硬化狀態（抵禦 3 次攻擊）！`, 'buff');
                 }
 
             } else if (id === 'UTOUTO') {
-
                 heroBuffs.monsterSleep = true;
-
-                showStatusToast('💤 怪物睡著了！', {
-
+                const _isTurn = settings.enemyAttackMode === 'turn';
+                showStatusToast(_isTurn ? '💤 身形錯位！下次反擊無效！' : '💤 怪物睡著了！', {
                     bg: 'rgba(168,85,247,0.92)',
-
                     border: '#c084fc',
-
                     color: '#1e0a2e'
-
                 });
-
                 if (typeof pushBattleLog === 'function') {
-
-                    pushBattleLog(`使用了技能：${skill.name}！怪物睡著了（玩家攻擊必定命中）！`, 'buff');
-
+                    pushBattleLog(_isTurn
+                        ? `使用了技能：${skill.name}！（回合制）下次答錯時怪物不反擊！`
+                        : `使用了技能：${skill.name}！怪物睡著了（玩家攻擊必定命中）！`, 'buff');
                 }
 
             } else if (id === 'GIRAGIRA') {
-                heroBuffs.giragiraTurns = 3;
-
-                if (typeof updateHeroStatusBar === 'function') updateHeroStatusBar();
+                // Delay buff state so the aura ring appears in sync with VFX at 1000ms
+                setTimeout(() => {
+                    heroBuffs.giragiraTurns = 3;
+                    if (typeof updateHeroStatusBar === 'function') updateHeroStatusBar();
+                }, 1000);
                 showStatusToast('✨ 鋒芒畢露！傷害提高 50%！', {
                     bg: 'rgba(251,191,36,0.92)',
                     border: '#f59e0b',
@@ -3527,40 +3470,49 @@ const _jpApp = Vue.createApp({
                     pushBattleLog(`使用了 ${skill.name}：8 回合內每回合恢復 SP +1！`, 'buff');
                 }
             } else if (id === 'JIWAJIWA') {
-                heroBuffs.jiwajiwaTurns = 6;
+                const _isTurn = settings.enemyAttackMode === 'turn';
+                heroBuffs.jiwajiwaTurns = _isTurn ? 3 : 6;
                 if (typeof updateHeroStatusBar === 'function') updateHeroStatusBar();
-                showStatusToast('🍃 慢慢康復！HP持續恢復 ×6回合', {
+                showStatusToast(_isTurn ? '🍃 慢慢康復！HP持續恢復 ×3題' : '🍃 慢慢康復！HP持續恢復 ×6回合', {
                     bg: 'rgba(34,197,94,0.92)',
                     border: '#22c55e',
                     color: '#052e16'
                 });
                 if (typeof pushBattleLog === 'function') {
-                    pushBattleLog(`使用了 ${skill.name}：6 回合內每回合恢復 HP +6！`, 'buff');
+                    pushBattleLog(_isTurn
+                        ? `使用了 ${skill.name}：（回合制）接下來 3 題各恢復 HP +6！`
+                        : `使用了 ${skill.name}：6 回合內每回合恢復 HP +6！`, 'buff');
                 }
             } else if (id === 'WAKUWAKU') {
-                // Refreshes to 6 enemy attack attempts; does not stack.
-                refreshWakuwakuCounter(6);
-                if (typeof setSpeedStatus === 'function') setSpeedStatus(25000);
-                showStatusToast('⚡ 感覺輕盈！ (閃避上升)', {
+                const _isTurn = settings.enemyAttackMode === 'turn';
+                refreshWakuwakuCounter(_isTurn ? 1 : 6);
+                if (!_isTurn && typeof setSpeedStatus === 'function') setSpeedStatus(25000);
+                showStatusToast(_isTurn ? '⚡ 機敏姿勢！下次反擊 50% 閃避' : '⚡ 感覺輕盈！ (閃避上升)', {
                     bg: 'rgba(8,145,178,0.92)',
                     border: '#0891b2',
                     color: '#083344'
                 });
                 if (typeof pushBattleLog === 'function') {
-                    pushBattleLog(`使用了 ${skill.name}：接下來 6 次敵方攻擊，閃避率提升到 50%！`, 'buff');
+                    pushBattleLog(_isTurn
+                        ? `使用了 ${skill.name}：（回合制）下次答錯時有 50% 機率閃避怪物攻擊！`
+                        : `使用了 ${skill.name}：接下來 6 次敵方攻擊，閃避率提升到 50%！`, 'buff');
                 }
             } else if (id === 'SUKKIRI') {
-                const healed = Math.min(20, player.value.maxHp - player.value.hp);
-                player.value.hp = Math.min(player.value.maxHp, player.value.hp + 20);
-                showStatusToast(`💧 神清氣爽！回復 ${healed} HP！`, {
-                    bg: 'rgba(56,189,248,0.92)',
-                    border: '#0ea5e9',
-                    color: '#0c4a6e'
-                });
-                if (typeof window.spawnFloatingHeal === 'function') window.spawnFloatingHeal('player', healed);
-                if (typeof pushBattleLog === 'function') {
-                    pushBattleLog(`使用了 ${skill.name}：回復 ${healed} HP！`, 'heal');
-                }
+                const _isTurn = settings.enemyAttackMode === 'turn';
+                const _healMax = _isTurn ? 10 : 20;
+                setTimeout(() => {
+                    const healed = Math.min(_healMax, player.value.maxHp - player.value.hp);
+                    player.value.hp = Math.min(player.value.maxHp, player.value.hp + _healMax);
+                    showStatusToast(`💧 神清氣爽！回復 ${healed} HP！`, {
+                        bg: 'rgba(56,189,248,0.92)',
+                        border: '#0ea5e9',
+                        color: '#0c4a6e'
+                    });
+                    if (typeof window.spawnFloatingHeal === 'function') window.spawnFloatingHeal('player', healed);
+                    if (typeof pushBattleLog === 'function') {
+                        pushBattleLog(`使用了 ${skill.name}：回復 ${healed} HP！`, 'heal');
+                    }
+                }, 1000);
             } else if (id === 'PITTARI') {
                 if (pittariUsedThisBattle.value) {
                     if (typeof pushBattleLog === 'function') pushBattleLog('ぴったり 本場戰鬥已使用過一次。', 'info');
@@ -3571,6 +3523,14 @@ const _jpApp = Vue.createApp({
                 }
                 pittariActive.value = true;
                 pittariUsedThisBattle.value = true;
+                pittariPending.value = true;
+                const _pittariGen = ++_pittariAnimGen;
+                setTimeout(() => {
+                    if (_pittariAnimGen !== _pittariGen) return;
+                    pittariPending.value = false;
+                    pittariAnimating.value = true;
+                    setTimeout(() => { if (_pittariAnimGen === _pittariGen) pittariAnimating.value = false; }, 1000);
+                }, 1000);
                 showStatusToast('🎯 剛好命中！此題只有正確答案！', {
                     bg: 'rgba(234,179,8,0.92)',
                     border: '#ca8a04',
@@ -3770,6 +3730,7 @@ const _jpApp = Vue.createApp({
         let levelPassiveVfxTimer = null;
         const counterSlashVfx = ref(false);
         let counterSlashVfxTimer = null;
+        let _turnModeAttackTimer = null; // 回合制：答錯後延遲反擊計時器
 
         const wrongAnswerPause = ref(false);
 
@@ -7014,12 +6975,17 @@ const _jpApp = Vue.createApp({
 
                     flickState.lastShotDirStored = true;
 
-                    spawnProjectile(startPoint.x, startPoint.y, shot.targetX, shot.targetY, opt, {
+                    const _fExtras = {
                         trueResonance: isBondMaxGuidedHit,
                         bondMaxAttack: isBondMaxGuidedHit,
+                        giraAttack: heroBuffs.giragiraTurns > 0,
                         curveLeadX: dx,
-                        curveLeadY: dy
-                    });
+                        curveLeadY: dy,
+                        skipHitVfx: false
+                    };
+                    if (shot.hitsMonster) flickState._pendingHitExtras = _fExtras;
+
+                    spawnProjectile(startPoint.x, startPoint.y, shot.targetX, shot.targetY, opt, _fExtras);
 
                     handleRuneClick(opt, true);
 
@@ -7072,6 +7038,8 @@ const _jpApp = Vue.createApp({
                 monsterStunSeconds.value = Math.max(0, monsterStunSeconds.value - 0.1);
                 return;
             }
+
+            if (settings.enemyAttackMode === 'turn') return; // 回合制：無 ATB 倒數
 
             // 恢復被誤刪的 ATB 累進邏輯 (26032702)
             timeLeft.value -= (0.1 / heroBuffs.enemyAtbMult) * speedMult;
@@ -7651,7 +7619,7 @@ const _jpApp = Vue.createApp({
                 }
             }
 
-            let isMiss = Math.random() < 0.05;
+            let isMiss = settings.enemyAttackMode === 'turn' ? false : Math.random() < 0.05;
             if (heroBuffs.wakuwakuTurns > 0) {
                 isMiss = Math.random() < 0.50;
                 consumeWakuwakuOnEnemyAttackAttempt();
@@ -7842,7 +7810,6 @@ const _jpApp = Vue.createApp({
 
             saveMistakes();
 
-            if (srsMode.value) window.JPAPPSrsHelpers?.recordWrong(entry.skillId);
 
         };
 
@@ -8682,7 +8649,6 @@ const _jpApp = Vue.createApp({
 
         let bossSkillQueue = [];
         let bossQuestionQueue = []; // L36 專用：不重複題目的完整對列
-        let srsSkillQueue = []; // SRS 特訓之間：按 SRS 權重排列的 skillId 序列
 
         const startBossQueue = (unlockedIds, levelOverride) => {
 
@@ -9336,9 +9302,12 @@ const _jpApp = Vue.createApp({
 
             currentLevel.value = lv;
 
-            const config = LEVEL_CONFIG.value[lv] || LEVEL_CONFIG.value[1] || { blanks: 1 };
+            const _isTrainingSession = lv === 0 && practiceMode.value;
+            const config = _isTrainingSession
+                ? { blanks: 1 }
+                : (LEVEL_CONFIG.value[lv] || LEVEL_CONFIG.value[1] || { blanks: 1 });
 
-            if (config.unlockSkills && config.unlockSkills.length > 0) {
+            if (!_isTrainingSession && config.unlockSkills && config.unlockSkills.length > 0) {
 
                 const newUnlocks = [];
 
@@ -9377,7 +9346,7 @@ const _jpApp = Vue.createApp({
             _normalSlotRetrySkill = null;
             _forceOldNext = false;
             // boss 關每次進入都重建 queue，避免舊關卡的 stale 技能汙染（e.g. L10 → L36）
-            if (isBossLevel(lv)) {
+            if (!_isTrainingSession && isBossLevel(lv)) {
                 bossSkillQueue = [];
                 startBossQueue(unlockedSkillIds.value, lv);
             }
@@ -9412,7 +9381,7 @@ const _jpApp = Vue.createApp({
 
             }
 
-            const _totalQ = (config.skillId === 'HIDDEN_BOSS_36') ? bossQuestionQueue.length : (lv === 0) ? (dailyMode.value ? 5 : 10) : 100;
+            const _totalQ = (!_isTrainingSession && config.skillId === 'HIDDEN_BOSS_36') ? bossQuestionQueue.length : 100;
             for (let i = 0; i < _totalQ; i++) {
 
                 let q = null;
@@ -9421,10 +9390,9 @@ const _jpApp = Vue.createApp({
 
                 let isReview = false;
 
-                if (lv === 0) {
+                if (_isTrainingSession && _trainingSkillIds.length > 0) {
 
-                    // SRS 特訓：從 srsSkillQueue 依序取技能
-                    skillId = srsSkillQueue.length > 0 ? srsSkillQueue[i % srsSkillQueue.length] : null;
+                    skillId = _trainingSkillIds[Math.floor(Math.random() * _trainingSkillIds.length)];
 
                 } else if (lv === 1) {
 
@@ -9751,7 +9719,10 @@ const _jpApp = Vue.createApp({
                 clearTimeout(counterSlashVfxTimer);
                 counterSlashVfxTimer = null;
             }
+            if (_turnModeAttackTimer) { clearTimeout(_turnModeAttackTimer); _turnModeAttackTimer = null; }
             pittariActive.value = false;
+            pittariPending.value = false;
+            pittariAnimating.value = false;
             pittariUsedThisBattle.value = false;
             shikkariUsedThisBattle.value = false;
             gatchiriUsedThisBattle.value = false;
@@ -9852,11 +9823,31 @@ const _jpApp = Vue.createApp({
 
             }
 
+            // --- Training Session Override ---
+            if (_isTrainingSession) {
+                monster.value = {
+                    hp: 300, maxHp: 300,
+                    name: '練習稻草人',
+                    sprite: 'assets/images/monsters/stone-mimic.webp',
+                    spriteHit: 'assets/images/monsters/stone-mimic2.webp',
+                    trait: '普通型',
+                    size: 1,
+                    posX: null, posY: null, infoOffsetY: 0,
+                    attackIntervalMs: 15000,
+                    attackDamageMin: 5, attackDamageMax: 12,
+                    evasionRate: 0.0,
+                    attackRingScale: 1.0
+                };
+                currentBg.value = 'assets/images/backgrounds/map7_trial.webp';
+            }
+
             // --- Background Assignment ---
-            if (config.bgImage && typeof config.bgImage === 'string' && config.bgImage.trim() !== '') {
-                currentBg.value = config.bgImage;
-            } else {
-                currentBg.value = '';
+            if (!_isTrainingSession) {
+                if (config.bgImage && typeof config.bgImage === 'string' && config.bgImage.trim() !== '') {
+                    currentBg.value = config.bgImage;
+                } else {
+                    currentBg.value = '';
+                }
             }
 
             pushBattleLog(monster.value.name + ' 出現了！', 'info');
@@ -10136,7 +10127,6 @@ const _jpApp = Vue.createApp({
             if (!skillId || typeof skillId !== 'string') return;
             if (getSkillMastery(skillId) >= 100) return;
             skillMastery.value[skillId] = Math.min(100, getSkillMastery(skillId) + 1);
-            if (srsMode.value) window.JPAPPSrsHelpers?.recordCorrect(skillId);
             saveProgression();
         };
 
@@ -10371,6 +10361,18 @@ const _jpApp = Vue.createApp({
             flickState.pendingDirectionalMiss = false;
 
             isCurrentCorrect.value = allCorrect;
+
+            // Pre-resolve evasion for flick so the projectile VFX can suppress hit explosion on miss
+            let _preFlickMiss = null;
+            if (allCorrect && flickState._pendingHitExtras) {
+                const _bE = monster.value?.evasionRate ?? 0.05;
+                const _isBM = isCurrentQuestionBondMax();
+                const _er = getFullBondModifiedEnemyEvasionRate(_bE, _isBM);
+                _preFlickMiss = (heroBuffs.giragiraTurns > 0 || heroBuffs.monsterSleep) ? false : (Math.random() < _er);
+                flickState._pendingHitExtras.skipHitVfx = _preFlickMiss;
+                flickState._pendingHitExtras = null;
+            }
+
             traceFeedbackDebug('check-answer-resolved', {
                 correct: allCorrect,
                 answerMode: answerMode.value,
@@ -10409,7 +10411,11 @@ const _jpApp = Vue.createApp({
 
                     const baseEvasionRate = monster.value?.evasionRate ?? 0.05;
                     const effectiveEvasionRate = getFullBondModifiedEnemyEvasionRate(baseEvasionRate, isBondMaxAttack);
-                    const isPlayerMiss = (heroBuffs.giragiraTurns > 0 || heroBuffs.monsterSleep) ? false : (Math.random() < effectiveEvasionRate);
+                    // For flick attacks, use the miss result pre-computed before the projectile launched
+                    // so both the projectile VFX and the battle logic use the same roll.
+                    const isPlayerMiss = (_preFlickMiss !== null)
+                        ? _preFlickMiss
+                        : ((heroBuffs.giragiraTurns > 0 || heroBuffs.monsterSleep) ? false : (Math.random() < effectiveEvasionRate));
 
                     if (isPlayerMiss) {
 
@@ -10418,7 +10424,7 @@ const _jpApp = Vue.createApp({
                         pushBattleLog(`攻擊被閃避了！沒造成傷害！`, 'info');
 
                         monsterDodge.value = true;
-                        setTimeout(() => { monsterDodge.value = false; }, 800);
+                        setTimeout(() => { monsterDodge.value = false; }, 1300);
 
                     } else {
 
@@ -10542,9 +10548,7 @@ const _jpApp = Vue.createApp({
                             window.spawnFloatingDamage('monster', dmg, 'hp', strikeIsGira ? { giraStrike: true } : null);
 
                             if (giraKbPlan && monster.value.hp > 0 && !monsterIsDying.value && !bossDeathVfxActive.value) {
-
                                 armStrikeGiraKnockbackMotion(giraKbPlan);
-
                             }
 
                             if (monster.value.hp <= 0) {
@@ -10562,6 +10566,7 @@ const _jpApp = Vue.createApp({
                                 spawnProjectile(origin.x, origin.y, center.x, center.y, userAnswers.value[0], {
                                     trueResonance: isBondMaxAttack,
                                     bondMaxAttack: isBondMaxAttack,
+                                    giraAttack: strikeIsGira,
                                     curveLeadX: tapBondLead?.x,
                                     curveLeadY: tapBondLead?.y,
                                     onHit: finalizeHitPresentation
@@ -10588,6 +10593,21 @@ const _jpApp = Vue.createApp({
                     if (_isMobileSfx) playUiSfx('miss'); else playSfx('miss');
 
                     pushBattleLog(`攻擊失敗！`, 'info');
+
+                    if (settings.enemyAttackMode === 'turn') {
+                        if (_turnModeAttackTimer) clearTimeout(_turnModeAttackTimer);
+                        _turnModeAttackTimer = setTimeout(() => {
+                            _turnModeAttackTimer = null;
+                            if (!playerDead.value && !monsterDead.value && !isFinished.value && !showLevelSelect.value) {
+                                if (heroBuffs.monsterSleep) {
+                                    heroBuffs.monsterSleep = false;
+                                    if (typeof pushBattleLog === 'function') pushBattleLog('ウトウト 效果發動！怪物這次沒有反擊！', 'buff');
+                                } else {
+                                    applyMonsterAttack();
+                                }
+                            }
+                        }, 2500);
+                    }
 
                     if (window.__TTS_ON_WRONG_TIMEOUT) { clearTimeout(window.__TTS_ON_WRONG_TIMEOUT); window.__TTS_ON_WRONG_TIMEOUT = null; }
 
@@ -10641,11 +10661,12 @@ const _jpApp = Vue.createApp({
 
                 if (window.__AUTO_ADVANCE_TIMEOUT) { clearTimeout(window.__AUTO_ADVANCE_TIMEOUT); window.__AUTO_ADVANCE_TIMEOUT = null; }
 
+                const _wrongDefault = settings.enemyAttackMode === 'turn' ? 4000 : 3000;
                 let delayMs = isCurrentCorrect.value
 
                     ? (settings.correctAdvanceDelayMs !== null && typeof settings.correctAdvanceDelayMs === 'number' ? settings.correctAdvanceDelayMs : 1000)
 
-                    : (settings.wrongAdvanceDelayMs !== null && typeof settings.wrongAdvanceDelayMs === 'number' ? settings.wrongAdvanceDelayMs : 3000);
+                    : (settings.wrongAdvanceDelayMs !== null && typeof settings.wrongAdvanceDelayMs === 'number' ? settings.wrongAdvanceDelayMs : _wrongDefault);
 
                 if (delayMs > 0 && !monsterDead.value) {
 
@@ -10673,6 +10694,8 @@ const _jpApp = Vue.createApp({
 
             if (window.__AUTO_ADVANCE_TIMEOUT) { clearTimeout(window.__AUTO_ADVANCE_TIMEOUT); window.__AUTO_ADVANCE_TIMEOUT = null; }
 
+            if (_turnModeAttackTimer) { clearTimeout(_turnModeAttackTimer); _turnModeAttackTimer = null; }
+
             initAudio();
 
             schedulePageAudioGestureResume();
@@ -10690,6 +10713,8 @@ const _jpApp = Vue.createApp({
             hasSubmitted.value = false;
 
             pittariActive.value = false; // ぴったり consumed on question advance
+            pittariPending.value = false;
+            pittariAnimating.value = false;
 
             applyTurnLogic();
 
@@ -10784,12 +10809,9 @@ const _jpApp = Vue.createApp({
 
                 monsterResultShown.value = true;
 
-                // Update progression (skip for SRS mode — level 0)
-                if (currentLevel.value !== 0) {
+                lastClearedLevel.value = currentLevel.value;
 
-                    lastClearedLevel.value = currentLevel.value;
-
-                    if (!clearedLevels.value.includes(currentLevel.value)) {
+                    if (currentLevel.value > 0 && !clearedLevels.value.includes(currentLevel.value)) {
 
                         clearedLevels.value.push(currentLevel.value);
 
@@ -10826,14 +10848,7 @@ const _jpApp = Vue.createApp({
 
                     }
 
-                }
-
                 // Boss ability rewards are now handled in the tally sequence via rewardAbilityId
-
-                // Mark daily complete on victory
-                if (currentLevel.value === 0 && dailyMode.value) {
-                    dailyLastDate.value = _todayDateStr();
-                }
 
                 saveProgression();
 
@@ -10874,7 +10889,7 @@ const _jpApp = Vue.createApp({
             if (useBossDeathPresentation) {
                 startBossDeathSequence(finalizeVictoryFlow);
             } else {
-                scheduleBattleFlowTimeout(finalizeVictoryFlow, 2000);
+                scheduleBattleFlowTimeout(finalizeVictoryFlow, 3000);
             }
 
             // 拆分出數字遞增邏輯，確保在正確時機點火
@@ -11666,6 +11681,21 @@ const _jpApp = Vue.createApp({
             getDerivedMaxHp, getDerivedMaxSp, getDerivedMaxPotions, getExpRequiredForNextLevel
         });
 
+        // 回合制技能描述替換表
+        const TURN_SKILL_DESC = {
+            GACHIGACHI: '【回合制】下次答錯時傷害減少 30%（1 次）',
+            UTOUTO:     '【回合制】下次答錯時怪物不反擊（1 次）',
+            JIWAJIWA:   '【回合制】連續 3 題各恢復 HP +6',
+            WAKUWAKU:   '【回合制】下次答錯時有 50% 機率閃避怪物攻擊（1 次）',
+            SUKKIRI:    '【回合制】立即回復 HP +10',
+            ODOODO:     '⛔ 回合制中無效',
+            MORIMORI:   '⛔ 回合制中無效',
+        };
+        const isTurnModeDisabledSkill = (skill) =>
+            settings.enemyAttackMode === 'turn' && (skill.id === 'ODOODO' || skill.id === 'MORIMORI');
+        const getSkillDesc = (skill) =>
+            settings.enemyAttackMode === 'turn' ? (TURN_SKILL_DESC[skill.id] ?? skill.desc) : skill.desc;
+
         // ぴったり: returns true if this choice should be hidden while pittariActive
         const isPittariSealed = (opt) => {
             if (!pittariActive.value) return false;
@@ -11687,7 +11717,7 @@ const _jpApp = Vue.createApp({
             handleEscapeToMap, retryCurrentStageWithTransition, escapeOverlayVisible, escapeOverlayOpacity, isEscaping, retryTransitionActive,
             heroBuffs: (typeof heroBuffs !== 'undefined' && heroBuffs) ? heroBuffs : debugControls,
             // ぴったり: hide wrong choices for the next question
-            skillList, castAbility, spState, settings, shouldShowNextButton, comboPopup, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG, getSkillTypeLabel, pittariActive, isPittariSealed, isBattleChoiceBondMax, activeLevelPassiveBadges,
+            skillList, castAbility, spState, settings, shouldShowNextButton, comboPopup, monsterDodge, isDefeated, defeatReturn, HERO_VISUAL_CONFIG, getSkillTypeLabel, pittariActive, pittariPending, pittariAnimating, isPittariSealed, isBattleChoiceBondMax, activeLevelPassiveBadges, isTurnModeDisabledSkill, getSkillDesc,
             // ---- [ RETURN — CODEX BINDINGS ] ----
             skillMastery, getSkillMastery, getSkillMasteryStyle, isBondMaxSkill,
             isMonsterCodexOpen, openMonsterCodex, monsterCodexEntries, selectedMonsterCodexEntry, selectMonsterCodexEntry, handleMonsterCodexImageError,
@@ -11704,9 +11734,9 @@ const _jpApp = Vue.createApp({
             startActiveSaveSlot, openSaveSlotPanel, selectSaveSlot, requestDeleteSaveSlot, cancelDeleteSaveSlot, confirmDeleteSaveSlot, pendingDeleteSaveSlotId, isSaveSlotPanelOpen, saveSlotCards, activeSaveSlotId, saveSlotPanelMode, isLevelUnlocked, isLevelCleared, getStageNodeClass, getStageFocusParticle, getStageFocusLabel, hasMentor,
 
             selectStageFromMap, startStageWithExplanation, returnToMap,
-            srsAvailable, startSrsMode,
             practiceMode, confirmAndStartBattle, confirmAndStartPractice,
-            dailyMode, dailyAvailable, isDailyDone, dailySeleneText, startDailyMode,
+            isTrainingPalaceOpen, trainingSelectedStages, trainingClearedStages, trainingSkillPool,
+            openTrainingPalace, closeTrainingPalace, toggleTrainingStage, startTrainingSession,
             newUnlockLv, bestGrades, getGradeColor, sRankCount,
 
             mapChapters, activeChapter, getMapNodeStyle, selectedSegmentIdx, isSegmentUnlocked, jumpToMapSegment, isMapDropdownOpen,

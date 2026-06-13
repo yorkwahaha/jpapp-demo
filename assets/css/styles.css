@@ -2628,28 +2628,99 @@ body.lock-scroll {
 @keyframes monster-die-sequence {
     0% {
         transform: scale(1) translateY(0);
-        filter: brightness(1) contrast(1);
+        filter: brightness(1) contrast(1) saturate(1);
         opacity: 1;
     }
-
-    10% {
-        /* Sharp white flash at the start */
-        transform: scale(1.25) translateY(-5px);
-        filter: brightness(5) contrast(1.5) drop-shadow(0 0 30px #fff);
+    6% {
+        /* 受擊壓縮 */
+        transform: scale(0.92, 1.06) translateY(4px);
+        filter: brightness(2) contrast(1.3) saturate(1.2);
         opacity: 1;
     }
-
-    25% {
-        transform: scale(1.15) translateY(-15px);
-        filter: brightness(2) contrast(1.2) drop-shadow(0 0 20px #fff);
+    15% {
+        /* 強白閃 - 碎裂瞬間 */
+        transform: scale(1.08) translateY(-4px);
+        filter: brightness(15) contrast(2) saturate(0.4) drop-shadow(0 0 24px rgba(255, 255, 255, 0.9));
         opacity: 1;
     }
-
+    28% {
+        /* 去飽和 - 生命力流失 */
+        transform: scale(1.03) translateY(-2px);
+        filter: brightness(3) contrast(2.2) saturate(0) drop-shadow(0 0 10px rgba(255, 220, 100, 0.5));
+        opacity: 0.9;
+    }
+    50% {
+        transform: scale(1.0) translateY(0);
+        filter: brightness(1.5) contrast(3) saturate(0) blur(1px);
+        opacity: 0.55;
+    }
+    75% {
+        transform: scale(0.95) translateY(4px);
+        filter: brightness(0.5) contrast(2) saturate(0) blur(5px);
+        opacity: 0.18;
+    }
     100% {
-        transform: scale(0.5) translateY(-50px);
-        filter: brightness(3) contrast(1.5) blur(8px);
+        transform: scale(0.88) translateY(8px);
+        filter: brightness(0) blur(12px);
         opacity: 0;
     }
+}
+
+/* 普通怪死亡碎片 VFX */
+.normal-death-vfx-wrap {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0;
+    height: 0;
+    z-index: 5;
+    pointer-events: none;
+    overflow: visible;
+}
+
+.normal-death-burst-core {
+    position: absolute;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(255, 230, 80, 0.85) 40%, rgba(255, 140, 0, 0.4) 70%, transparent 100%);
+    transform: translate(-50%, -50%) scale(0.15);
+    animation: normal-death-burst-fade 0.45s ease-out forwards;
+}
+
+@keyframes normal-death-burst-fade {
+    0%   { transform: translate(-50%, -50%) scale(0.15); opacity: 1; }
+    40%  { opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(2.4); opacity: 0; }
+}
+
+.normal-death-shard-field {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.normal-death-shard {
+    position: absolute;
+    width: var(--sw, 11px);
+    height: var(--sh, 5px);
+    top: calc(var(--sh, 5px) / -2);
+    left: calc(var(--sw, 11px) / -2);
+    background: linear-gradient(120deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 230, 80, 0.88) 45%, rgba(255, 130, 0, 0.65) 100%);
+    box-shadow: 0 0 5px rgba(255, 210, 60, 0.85);
+    clip-path: polygon(0% 20%, 80% 0%, 100% 65%, 18% 100%);
+    animation: normal-death-shard-fly 0.82s cubic-bezier(0.15, 0.8, 0.3, 1) forwards;
+    animation-delay: var(--delay, 0s);
+}
+
+.normal-death-shard:nth-child(3n+1) { clip-path: polygon(0% 20%, 80% 0%, 100% 65%, 18% 100%); }
+.normal-death-shard:nth-child(3n+2) { clip-path: polygon(50% 0%, 100% 35%, 70% 100%, 0% 65%); }
+.normal-death-shard:nth-child(3n)   { clip-path: polygon(15% 0%, 100% 10%, 85% 100%, 0% 80%); }
+
+@keyframes normal-death-shard-fly {
+    0%   { transform: rotate(var(--angle)) translateX(3px); opacity: 1; }
+    18%  { opacity: 1; }
+    100% { transform: rotate(calc(var(--angle) + var(--spin, 80deg))) translateX(var(--dist, 60px)); opacity: 0; }
 }
 
 @keyframes boss-die-sequence {
@@ -8047,15 +8118,15 @@ body.lock-scroll {
 
 .floating-dmg-monster.floating-dmg-giragira-strike {
     animation: float-dmg-bounce 0.9s ease-out forwards, floating-dmg-gira-punch 0.62s cubic-bezier(0.12, 1, 0.32, 1) forwards;
-    color: #fffef5;
+    color: #f0faff;
     text-shadow:
-        2px 2px 0 #b45309,
-        -2px -2px 0 #b45309,
-        2px -2px 0 #b45309,
-        -2px 2px 0 #b45309,
-        0 0 12px rgba(254, 249, 195, 0.95),
-        0 0 22px rgba(251, 191, 36, 0.75),
-        0 0 34px rgba(254, 240, 138, 0.45);
+        2px 2px 0 #0369a1,
+        -2px -2px 0 #0369a1,
+        2px -2px 0 #0369a1,
+        -2px 2px 0 #0369a1,
+        0 0 12px rgba(224, 247, 255, 0.95),
+        0 0 22px rgba(56, 189, 248, 0.8),
+        0 0 36px rgba(14, 165, 233, 0.5);
 }
 
 .floating-dmg-player {
@@ -8478,17 +8549,21 @@ body.lock-scroll {
     animation-delay: var(--sw-delay, 0s);
 }
 
-.odoodo-sweat--1 { left: 8%;   top: 8px;  width: 8px;  height: 13px; --sw-ang: -52deg; --sw-tx: -14px; --sw-ty: -22px; --sw-delay: 0s;     --sw-dur: 1.6s; }
-.odoodo-sweat--2 { left: 24%;  top: 14px; width: 6px;  height: 10px; --sw-ang: -42deg; --sw-tx: -11px; --sw-ty: -17px; --sw-delay: 0.32s;  --sw-dur: 1.5s; }
-.odoodo-sweat--3 { left: 42%;  top: 5px;  width: 7px;  height: 11px; --sw-ang: -58deg; --sw-tx: -12px; --sw-ty: -23px; --sw-delay: 0.65s;  --sw-dur: 1.55s; }
-.odoodo-sweat--4 { right: 26%; top: 11px; width: 6px;  height: 9px;  --sw-ang: -38deg; --sw-tx: -9px;  --sw-ty: -15px; --sw-delay: 0.98s;  --sw-dur: 1.45s; }
-.odoodo-sweat--5 { right: 10%; top: 6px;  width: 5px;  height: 8px;  --sw-ang: -64deg; --sw-tx: -11px; --sw-ty: -21px; --sw-delay: 1.28s;  --sw-dur: 1.4s; }
+/* --sw-ox: horizontal drift in screen space (negative=left, positive=right)  */
+/* --sw-apex: peak height in screen space (negative = upward)                  */
+.odoodo-sweat--1 { left: 8%;   top: 8px;  width: 8px;  height: 13px; --sw-ang: -52deg; --sw-ox: -18px; --sw-apex: -28px; --sw-delay: 0s;     --sw-dur: 1.6s; }
+.odoodo-sweat--2 { left: 24%;  top: 14px; width: 6px;  height: 10px; --sw-ang: -40deg; --sw-ox: -14px; --sw-apex: -22px; --sw-delay: 0.32s;  --sw-dur: 1.5s; }
+.odoodo-sweat--3 { left: 42%;  top: 5px;  width: 7px;  height: 11px; --sw-ang: -12deg; --sw-ox:  -4px; --sw-apex: -30px; --sw-delay: 0.65s;  --sw-dur: 1.55s; }
+.odoodo-sweat--4 { right: 26%; top: 11px; width: 6px;  height: 9px;  --sw-ang:  38deg; --sw-ox:  13px; --sw-apex: -22px; --sw-delay: 0.98s;  --sw-dur: 1.45s; }
+.odoodo-sweat--5 { right: 10%; top: 6px;  width: 5px;  height: 8px;  --sw-ang:  55deg; --sw-ox:  16px; --sw-apex: -26px; --sw-delay: 1.28s;  --sw-dur: 1.4s; }
 
+/* Parabolic arc: translateX/Y are in screen space (before rotate), rotate only tilts the teardrop visually */
 @keyframes odoodo-sweat-fly {
-    0%   { opacity: 0;    transform: rotate(var(--sw-ang)) translate(0, 0) scale(0.3); }
-    9%   { opacity: 0.95; transform: rotate(var(--sw-ang)) translate(-1px, -3px) scale(1); }
-    85%  { opacity: 0.28; transform: rotate(var(--sw-ang)) translate(var(--sw-tx), var(--sw-ty)) scale(0.55); }
-    100% { opacity: 0;    transform: rotate(var(--sw-ang)) translate(var(--sw-tx), var(--sw-ty)) scale(0.3); }
+    0%   { opacity: 0;    transform: translateX(0)                             translateY(0)                           scale(0.3)  rotate(var(--sw-ang)); }
+    10%  { opacity: 0.95; transform: translateX(calc(var(--sw-ox) * 0.15))    translateY(calc(var(--sw-apex) * 0.55)) scale(1)    rotate(var(--sw-ang)); }
+    38%  { opacity: 0.82; transform: translateX(calc(var(--sw-ox) * 0.5))     translateY(calc(var(--sw-apex) * 1.05)) scale(0.88) rotate(var(--sw-ang)); }
+    65%  { opacity: 0.36; transform: translateX(calc(var(--sw-ox) * 0.82))    translateY(calc(var(--sw-apex) * 0.6))  scale(0.68) rotate(var(--sw-ang)); }
+    100% { opacity: 0;    transform: translateX(var(--sw-ox))                 translateY(calc(var(--sw-apex) * 0.12)) scale(0.28) rotate(var(--sw-ang)); }
 }
 
 /* RWD: iPad Landscape 900px-1180px
@@ -8595,6 +8670,27 @@ body.lock-scroll {
 
 .resonance-slot {
     pointer-events: auto;
+}
+
+/* ぴったり：非正解小助靈消失動畫（瞬間移動感） */
+@keyframes pittari-vanish {
+    0%   { opacity: 1;    transform: scale(1)                             translateX(0);    filter: blur(0px)  brightness(1); }
+    18%  { opacity: 1;    transform: scale(1.14)                          translateX(3px);  filter: blur(0px)  brightness(3.0); }
+    48%  { opacity: 0.55; transform: scaleX(1.9) scaleY(0.52)            translateX(20px); filter: blur(5px)  brightness(1.6); }
+    78%  { opacity: 0.12; transform: scaleX(2.8) scaleY(0.18)            translateX(40px); filter: blur(11px) brightness(1); }
+    100% { opacity: 0;    transform: scaleX(3.4) scaleY(0)               translateX(56px); filter: blur(16px); }
+}
+
+.pittari-vanish {
+    animation: pittari-vanish 0.82s cubic-bezier(0.55, 0, 1, 1) forwards;
+    pointer-events: none !important;
+    transform-origin: center center;
+}
+
+.pittari-sealed {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none !important;
 }
 
 /* 真名共鳴：共鳴輪選項外觀（不影響命中／權重；裝飾層 pointer-events: none） */
@@ -11730,4 +11826,131 @@ body.lock-scroll {
         opacity: 0.82;
         transform: translateY(-5px) scale(1.05, 1.08);
     }
+}
+
+/* ── Training Palace ─────────────────────────────── */
+
+.training-palace-node {
+    position: absolute;
+    right: 6%;
+    bottom: 8%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+    z-index: 15;
+    animation: training-palace-float 3s ease-in-out infinite;
+}
+
+.training-palace-glow {
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(14, 165, 233, 0.35) 0%, transparent 70%);
+    pointer-events: none;
+    animation: training-palace-pulse 2.5s ease-in-out infinite;
+}
+
+.training-palace-icon {
+    font-size: 2.8rem;
+    line-height: 1;
+    filter: drop-shadow(0 4px 12px rgba(14, 165, 233, 0.6));
+    position: relative;
+    z-index: 1;
+}
+
+.training-palace-label {
+    font-size: 0.65rem;
+    font-weight: 900;
+    color: #bae6fd;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 12px rgba(14, 165, 233, 0.8);
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    position: relative;
+    z-index: 1;
+    background: rgba(0,0,0,0.5);
+    padding: 1px 6px;
+    border-radius: 6px;
+    border: 1px solid rgba(14, 165, 233, 0.3);
+}
+
+@keyframes training-palace-float {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-5px); }
+}
+
+@keyframes training-palace-pulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50%       { opacity: 1;   transform: scale(1.15); }
+}
+
+
+.training-stage-list::-webkit-scrollbar {
+    width: 4px;
+}
+.training-stage-list::-webkit-scrollbar-thumb {
+    background: rgba(14, 165, 233, 0.3);
+    border-radius: 2px;
+}
+
+.training-stage-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+    min-width: 0;
+}
+
+.training-stage-chip.is-selected {
+    background: rgba(14, 165, 233, 0.15);
+    border-color: rgba(14, 165, 233, 0.5);
+    box-shadow: 0 0 0 1px rgba(14, 165, 233, 0.2);
+}
+
+.training-stage-chip:active {
+    transform: scale(0.95);
+}
+
+.training-stage-chip-num {
+    font-size: 0.6rem;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.35);
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+}
+
+.training-stage-chip.is-selected .training-stage-chip-num {
+    color: rgba(14, 165, 233, 0.8);
+}
+
+.training-stage-chip-particle {
+    font-size: 1rem;
+    font-weight: 900;
+    color: #e2e8f0;
+    font-family: 'Noto Sans JP', sans-serif;
+    flex-shrink: 0;
+    min-width: 1.2ch;
+}
+
+.training-stage-chip-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.5);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.training-stage-chip.is-selected .training-stage-chip-label {
+    color: rgba(186, 230, 253, 0.8);
 }
